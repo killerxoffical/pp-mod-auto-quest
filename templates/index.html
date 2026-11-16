@@ -933,7 +933,10 @@
 
         <!-- Saved Accounts Drawer -->
         <div id="savedAccountsSection" class="saved-accounts-box hidden">
-            <span style="font-size:12px; color:var(--text-secondary); font-weight:700;">💾 আপনার ডিভাইসে সেভ করা অ্যাকাউন্ট:</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-size:12px; color:var(--text-secondary); font-weight:700;">💾 আপনার ডিভাইসে সেভ করা অ্যাকাউন্ট:</span>
+                <a href="javascript:void(0)" onclick="clearAllSavedAccounts()" style="font-size:11px; color:#ef4444; font-weight:700; text-decoration:none;">সব মুছুন 🗑️</a>
+            </div>
             <div id="savedAccountsList"></div>
         </div>
     </div>
@@ -1000,6 +1003,26 @@
                 <button class="btn-outline btn-signout" onclick="handleSignOut()">
                     <span>🚪 সাইন আউট</span>
                 </button>
+            </div>
+
+            <!-- Play Games Master Token Sync Card -->
+            <div id="tokenLinkCard" style="margin-top: 14px; padding: 12px 14px; background: var(--bg-card); border: 1px dashed var(--border-color); border-radius: var(--radius-sm);">
+                <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="toggleDashboardTokenBox()">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:16px;">🔑</span>
+                        <div>
+                            <div style="font-size:12.5px; font-weight:700; color:var(--text-primary);">Play Games মাস্টার টোকেন সিঙ্ক</div>
+                            <div style="font-size:11px; color:var(--text-muted);" id="tokenStatusText">এচিভমেন্ট ও XP আনলক সিঙ্ক</div>
+                        </div>
+                    </div>
+                    <span id="tokenToggleArrow" style="font-size:11px; color:var(--text-muted);">▼</span>
+                </div>
+                <div id="dashboardTokenBox" class="hidden" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-color);">
+                    <input type="password" id="inputDashToken" class="form-input" placeholder="aas_et/... মাস্টার টোকেন পেস্ট করুন" style="font-size: 12px; padding: 8px 12px; margin-bottom: 8px;">
+                    <button class="btn-unlock" style="width: 100%; justify-content: center; padding: 8px 12px; font-size: 12px;" onclick="saveDashToken()">
+                        <span>✅ টোকেন সিঙ্ক ও আসল প্রোফাইল লোড ➔</span>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -1116,10 +1139,36 @@
                         <div style="font-size:11px; color:var(--text-muted);">${acc.email}</div>
                     </div>
                 </div>
-                <button class="btn-unlock" style="padding:6px 12px; font-size:12px;" onclick="switchSavedAccount('${acc.email}')">কানেক্ট ➔</button>
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <button class="btn-unlock" style="padding:6px 12px; font-size:12px;" onclick="switchSavedAccount('${acc.email}')">কানেক্ট ➔</button>
+                    <button title="তালিকা থেকে ডিলিট" onclick="removeSavedAccount('${acc.email}', event)" style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); color:#ef4444; border-radius:8px; padding:6px 9px; cursor:pointer; font-size:12px; font-weight:bold;">✕</button>
+                </div>
             `;
             list.appendChild(item);
         });
+    }
+
+    function removeSavedAccount(email, evt) {
+        if (evt) evt.stopPropagation();
+        savedAccounts = savedAccounts.filter(a => a.email !== email);
+        localStorage.setItem("pq_saved_accounts", JSON.stringify(savedAccounts));
+        const active = JSON.parse(localStorage.getItem("pq_active_session") || "{}");
+        if (active.email === email) {
+            localStorage.removeItem("pq_active_session");
+            currentSession = null;
+        }
+        renderSavedAccounts();
+        showToast("অ্যাকাউন্ট রিমুভ করা হয়েছে।", "info");
+    }
+
+    function clearAllSavedAccounts() {
+        if (!confirm("আপনি কি ডিভাইসে সেভ করা সকল অ্যাকাউন্টের ক্যাশ ডিলিট করতে চান?")) return;
+        localStorage.removeItem("pq_saved_accounts");
+        localStorage.removeItem("pq_active_session");
+        savedAccounts = [];
+        currentSession = null;
+        renderSavedAccounts();
+        showToast("সকল সেভ করা অ্যাকাউন্ট মুছে ফেলা হয়েছে।", "info");
     }
 
     // Auto-restore session on page load
@@ -1164,12 +1213,12 @@
             localStorage.setItem("pq_active_session", JSON.stringify(target));
             showDashboard(target.profile || {
                 display_name: target.email.split("@")[0],
-                current_level: 16,
-                current_xp: 204000,
-                min_xp: 180000,
-                max_xp: 250000,
-                next_level: 17,
-                progress_pct: 70
+                current_level: 1,
+                current_xp: 0,
+                min_xp: 0,
+                max_xp: 10000,
+                next_level: 2,
+                progress_pct: 0
             }, target.email);
             showToast(`🎉 স্বাগতম, ${target.profile?.display_name || target.email}!`, "success");
         }
@@ -1310,7 +1359,62 @@
         if (pct === undefined && span > 0) {
             pct = Math.min(100, Math.max(0, Math.round(((curXp - minXp) / span) * 100)));
         }
-        document.getElementById("playerXpFill").style.width = `${pct || 70}%`;
+        document.getElementById("playerXpFill").style.width = `${pct || 0}%`;
+
+        // Update Token Status Indicator
+        const tokenStatus = document.getElementById("tokenStatusText");
+        if (tokenStatus) {
+            if (currentSession?.master_token) {
+                tokenStatus.innerText = "✅ Play Games টোকেন সক্রিয় ও সিঙ্কড";
+                tokenStatus.style.color = "var(--accent-green)";
+            } else {
+                tokenStatus.innerText = "⚠️ এচিভমেন্ট ও XP আনলক করতে টোকেন দিন";
+                tokenStatus.style.color = "#f59e0b";
+            }
+        }
+    }
+
+    function toggleDashboardTokenBox() {
+        const box = document.getElementById("dashboardTokenBox");
+        const arrow = document.getElementById("tokenToggleArrow");
+        if (box.classList.contains("hidden")) {
+            box.classList.remove("hidden");
+            arrow.innerText = "▲";
+        } else {
+            box.classList.add("hidden");
+            arrow.innerText = "▼";
+        }
+    }
+
+    async function saveDashToken() {
+        const token = document.getElementById("inputDashToken").value.trim();
+        if (!token) {
+            showToast("দয়া করে মাস্টার টোকেন পেস্ট করুন।", "error");
+            return;
+        }
+        showToast("⏳ টোকেন যাচাই ও আসল প্রোফাইল লোড হচ্ছে...", "info");
+        try {
+            const res = await fetch(`${API_BASE}/api/login/token`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: currentSession.email, token })
+            });
+            const data = await res.json();
+            if (data.ok && data.profile) {
+                currentSession.master_token = data.master_token;
+                currentSession.profile = data.profile;
+                saveAccountToStorage(currentSession);
+                updateProfileUI(data.profile, currentSession.email);
+                document.getElementById("dashboardTokenBox").classList.add("hidden");
+                document.getElementById("tokenToggleArrow").innerText = "▼";
+                triggerCelebration();
+                showToast(`🎉 আসল ডেটা সিঙ্ক হয়েছে! LVL ${data.profile.current_level} (${data.profile.current_xp.toLocaleString()} XP)`, "success");
+            } else {
+                showToast(data.error || "টোকেন অকার্যকর বা ভুল।", "error");
+            }
+        } catch(e) {
+            showToast("টোকেন কানেকশন এরর।", "error");
+        }
     }
 
     // Load Games

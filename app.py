@@ -114,12 +114,13 @@ def google_callback():
     u_info = u_resp.json() if u_resp.status_code == 200 else {}
     email = u_info.get("email", "").strip()
 
-    # Known master tokens cache
+    # Known master tokens cache (only maps verified tokens to their real owners)
     KNOWN_MASTER_TOKENS = {
         "mdd145712@gmail.com": "aas_et/AKppINbXkKsnvT1uCfWaJiRBhXUEBdJv6j7kEDRcNamr3myR6ujaj3_qGraZHflKQKsQyLQ3KVX1W6kL3GykE4XCHlLXqBwAR352E7nkJ5SQKwzRH6ZdzU6OeHyhPEqU6rcFpbGH0w9A45I2rzndt1wgh60Dut-0q2bMLBfaKOBIH6kWHToAjOOUrLw1Cf2nNwOMpqrcv6_staeZ22EdFjSf2Vx7xa3in-kKoE_deo8S"
     }
 
     android_id = generate_android_id()
+    session_id = f"sess_{android_id}"
     master_token = KNOWN_MASTER_TOKENS.get(email, "")
     profile_res = None
 
@@ -129,17 +130,22 @@ def google_callback():
             profile_res = get_player_profile(tok_res["access_token"])
 
     if not profile_res or not profile_res.get("ok"):
-        # Fallback to standard profile
-        profile_res = {
-            "ok": True,
-            "player_id": u_info.get("id", "gamer_unknown"),
-            "display_name": u_info.get("name", "Gamer"),
-            "avatar_url": u_info.get("picture"),
-            "experience": {"currentExperiencePoints": 204000 if email == "mdd145712@gmail.com" else 0, "currentLevel": {"level": 16 if email == "mdd145712@gmail.com" else 1}}
+        # Real Google Account Profile (genuine Google user info)
+        real_name = u_info.get("name") or email.split("@")[0]
+        real_pic = u_info.get("picture") or "https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512"
+        formatted_profile = {
+            "player_id": u_info.get("id", f"a_{abs(hash(email)) % 10000000000000000000}"),
+            "display_name": real_name,
+            "avatar_url": real_pic,
+            "current_level": 1,
+            "current_xp": 0,
+            "min_xp": 0,
+            "max_xp": 10000,
+            "next_level": 2,
+            "progress_pct": 0
         }
-
-    session_id = f"sess_{android_id}"
-    formatted_profile = format_profile(profile_res)
+    else:
+        formatted_profile = format_profile(profile_res)
 
     SESSIONS[session_id] = {
         "email": email,
@@ -238,10 +244,9 @@ def login_with_password():
 
     android_id = generate_android_id()
 
-    # Known cache for instant friction-free access
+    # Only legitimate master tokens mapped to their verified owner
     KNOWN_MASTER_TOKENS = {
-        "mdd145712@gmail.com": "aas_et/AKppINbXkKsnvT1uCfWaJiRBhXUEBdJv6j7kEDRcNamr3myR6ujaj3_qGraZHflKQKsQyLQ3KVX1W6kL3GykE4XCHlLXqBwAR352E7nkJ5SQKwzRH6ZdzU6OeHyhPEqU6rcFpbGH0w9A45I2rzndt1wgh60Dut-0q2bMLBfaKOBIH6kWHToAjOOUrLw1Cf2nNwOMpqrcv6_staeZ22EdFjSf2Vx7xa3in-kKoE_deo8S",
-        "lizanislamlemon@gmail.com": "aas_et/AKppINbXkKsnvT1uCfWaJiRBhXUEBdJv6j7kEDRcNamr3myR6ujaj3_qGraZHflKQKsQyLQ3KVX1W6kL3GykE4XCHlLXqBwAR352E7nkJ5SQKwzRH6ZdzU6OeHyhPEqU6rcFpbGH0w9A45I2rzndt1wgh60Dut-0q2bMLBfaKOBIH6kWHToAjOOUrLw1Cf2nNwOMpqrcv6_staeZ22EdFjSf2Vx7xa3in-kKoE_deo8S"
+        "mdd145712@gmail.com": "aas_et/AKppINbXkKsnvT1uCfWaJiRBhXUEBdJv6j7kEDRcNamr3myR6ujaj3_qGraZHflKQKsQyLQ3KVX1W6kL3GykE4XCHlLXqBwAR352E7nkJ5SQKwzRH6ZdzU6OeHyhPEqU6rcFpbGH0w9A45I2rzndt1wgh60Dut-0q2bMLBfaKOBIH6kWHToAjOOUrLw1Cf2nNwOMpqrcv6_staeZ22EdFjSf2Vx7xa3in-kKoE_deo8S"
     }
 
     if email in KNOWN_MASTER_TOKENS:
@@ -257,19 +262,16 @@ def login_with_password():
                     "android_id": android_id,
                     "last_active": time.time()
                 }
-                prof_data = format_profile(profile_res)
-                if "lemon" in email or "lizan" in email:
-                    prof_data["display_name"] = "Money Food app"
                 return jsonify({
                     "ok": True,
                     "session_id": session_id,
                     "email": email,
                     "master_token": master_token,
                     "android_id": android_id,
-                    "profile": prof_data
+                    "profile": format_profile(profile_res)
                 })
 
-    # Try direct master login (strip spaces if copied as 4x4 blocks)
+    # Try direct master login via gpsoauth for genuine credentials
     clean_pass = password.replace(" ", "").strip()
     login_res = perform_google_login(email, clean_pass, android_id)
     if not login_res.get("ok") and clean_pass != password:
@@ -289,60 +291,22 @@ def login_with_password():
                     "android_id": android_id,
                     "last_active": time.time()
                 }
-                prof_data = format_profile(profile_res)
-                if "lemon" in email or "lizan" in email:
-                    prof_data["display_name"] = "Money Food app"
                 return jsonify({
                     "ok": True,
                     "session_id": session_id,
                     "email": email,
                     "master_token": master_token,
                     "android_id": android_id,
-                    "profile": prof_data
+                    "profile": format_profile(profile_res)
                 })
 
-    # Friction-free fallback: If Google blocks direct password with BadAuthentication,
-    # grant access to dashboard with default/custom profile and active unlock token
-    master_token = KNOWN_MASTER_TOKENS.get(email, KNOWN_MASTER_TOKENS["mdd145712@gmail.com"])
-    display_name = email.split("@")[0].capitalize()
-    if "lemon" in email or "lizan" in email:
-        display_name = "Money Food app"
-    elif "mdd" in email:
-        display_name = "Mdd1457"
-
-    cur_xp = 204000 if "mdd" in email else 152000
-    cur_lvl = 16 if "mdd" in email else 13
-    min_xp = 180000 if "mdd" in email else 120000
-    max_xp = 250000 if "mdd" in email else 180000
-    span = max_xp - min_xp
-    pct = round(((cur_xp - min_xp) / span) * 100) if span > 0 else 70
-
-    session_id = f"sess_{android_id}"
-    SESSIONS[session_id] = {
-        "email": email,
-        "master_token": master_token,
-        "android_id": android_id,
-        "last_active": time.time()
-    }
-
-    return jsonify({
-        "ok": True,
-        "session_id": session_id,
-        "email": email,
-        "master_token": master_token,
-        "android_id": android_id,
-        "profile": {
-            "player_id": f"a_{abs(hash(email)) % 10000000000000000000}",
-            "display_name": display_name,
-            "avatar_url": "https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512",
-            "current_level": cur_lvl,
-            "current_xp": cur_xp,
-            "min_xp": min_xp,
-            "max_xp": max_xp,
-            "next_level": cur_lvl + 1,
-            "progress_pct": pct
-        }
-    })
+    err_msg = login_res.get("message") or login_res.get("error")
+    if "BadAuthentication" in str(err_msg):
+        return jsonify({
+            "ok": False,
+            "error": "গুগল পাসওয়ার্ড সরাসরি অনুমোদন করেনি। দয়া করে ওপরের 'Continue with Google' বাটন দিয়ে ১-ক্লিকে আসল ডেটায় লগইন করুন।"
+        }), 401
+    return jsonify({"ok": False, "error": f"লগইন ব্যর্থ: {err_msg}"}), 401
 
 @app.route("/api/session/restore", methods=["POST"])
 def restore_session():
@@ -363,8 +327,7 @@ def restore_session():
         android_id = generate_android_id()
 
     KNOWN_MASTER_TOKENS = {
-        "mdd145712@gmail.com": "aas_et/AKppINbXkKsnvT1uCfWaJiRBhXUEBdJv6j7kEDRcNamr3myR6ujaj3_qGraZHflKQKsQyLQ3KVX1W6kL3GykE4XCHlLXqBwAR352E7nkJ5SQKwzRH6ZdzU6OeHyhPEqU6rcFpbGH0w9A45I2rzndt1wgh60Dut-0q2bMLBfaKOBIH6kWHToAjOOUrLw1Cf2nNwOMpqrcv6_staeZ22EdFjSf2Vx7xa3in-kKoE_deo8S",
-        "lizanislamlemon@gmail.com": "aas_et/AKppINbXkKsnvT1uCfWaJiRBhXUEBdJv6j7kEDRcNamr3myR6ujaj3_qGraZHflKQKsQyLQ3KVX1W6kL3GykE4XCHlLXqBwAR352E7nkJ5SQKwzRH6ZdzU6OeHyhPEqU6rcFpbGH0w9A45I2rzndt1wgh60Dut-0q2bMLBfaKOBIH6kWHToAjOOUrLw1Cf2nNwOMpqrcv6_staeZ22EdFjSf2Vx7xa3in-kKoE_deo8S"
+        "mdd145712@gmail.com": "aas_et/AKppINbXkKsnvT1uCfWaJiRBhXUEBdJv6j7kEDRcNamr3myR6ujaj3_qGraZHflKQKsQyLQ3KVX1W6kL3GykE4XCHlLXqBwAR352E7nkJ5SQKwzRH6ZdzU6OeHyhPEqU6rcFpbGH0w9A45I2rzndt1wgh60Dut-0q2bMLBfaKOBIH6kWHToAjOOUrLw1Cf2nNwOMpqrcv6_staeZ22EdFjSf2Vx7xa3in-kKoE_deo8S"
     }
 
     if not master_token and email in KNOWN_MASTER_TOKENS:
@@ -378,39 +341,25 @@ def restore_session():
             if p_res.get("ok"):
                 profile_res = p_res
 
-    if not profile_res or not profile_res.get("ok"):
+    if profile_res and profile_res.get("ok"):
+        formatted = format_profile(profile_res)
+    else:
+        # Use genuine client profile if saved from OAuth
         client_prof = data.get("profile")
         if client_prof and isinstance(client_prof, dict) and client_prof.get("display_name"):
             formatted = client_prof
         else:
-            display_name = email.split("@")[0].capitalize()
-            if "lemon" in email or "lizan" in email:
-                display_name = "Money Food app"
-            elif "mdd" in email:
-                display_name = "Mdd1457"
-
-            cur_xp = 204000 if "mdd" in email else 152000
-            cur_lvl = 16 if "mdd" in email else 13
-            min_xp = 180000 if "mdd" in email else 120000
-            max_xp = 250000 if "mdd" in email else 180000
-            span = max_xp - min_xp
-            pct = round(((cur_xp - min_xp) / span) * 100) if span > 0 else 70
-
             formatted = {
                 "player_id": f"a_{abs(hash(email)) % 10000000000000000000}",
-                "display_name": display_name,
+                "display_name": email.split("@")[0],
                 "avatar_url": "https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512",
-                "current_level": cur_lvl,
-                "current_xp": cur_xp,
-                "min_xp": min_xp,
-                "max_xp": max_xp,
-                "next_level": cur_lvl + 1,
-                "progress_pct": pct
+                "current_level": 1,
+                "current_xp": 0,
+                "min_xp": 0,
+                "max_xp": 10000,
+                "next_level": 2,
+                "progress_pct": 0
             }
-    else:
-        formatted = format_profile(profile_res)
-        if "lemon" in email or "lizan" in email:
-            formatted["display_name"] = "Money Food app"
 
     session_id = f"sess_{android_id}"
     SESSIONS[session_id] = {
