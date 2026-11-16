@@ -1012,10 +1012,40 @@
 
     <!-- VIEW 1: LOGIN CARD (Pure Master Token Login) -->
     <div id="loginView" class="card">
-        <div style="text-align: center; margin-bottom: 22px;">
-            <div style="font-size: 42px; margin-bottom: 8px;">🔑</div>
-            <h2 style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin-bottom: 6px;">PlayQuest টোকেন লগইন</h2>
-            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">আপনার Google Play Games Master Token দিয়ে ১-ক্লিকে আসল প্রোফাইল ও XP লোড করুন</p>
+        <div style="text-align: center; margin-bottom: 18px;">
+            <div style="font-size: 38px; margin-bottom: 6px;">🔑</div>
+            <h2 style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">PlayQuest টোকেন লগইন</h2>
+            <p style="font-size: 12.5px; color: var(--text-secondary); line-height: 1.5;">Google Play Games Master Token দিয়ে ১-ক্লিকে আসল প্রোফাইল ও XP লোড করুন</p>
+        </div>
+
+        <!-- 2 MOBILE TOKEN FINDER OPTIONS -->
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px;">
+            <!-- Option 2: 1MB Android App -->
+            <a href="/static/PlayQuest_Token_Finder.apk" download class="btn-token-helper" style="background: linear-gradient(135deg, #00a854, #059669); color: #ffffff; text-decoration: none; padding: 11px 14px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 12.5px; box-shadow: 0 4px 12px rgba(0, 168, 84, 0.25);">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:18px;">📱</span>
+                    <span>অ্যান্ড্রয়েড অ্যাপ (PlayQuest APK)</span>
+                </div>
+                <span style="background: rgba(255,255,255,0.25); padding: 3px 8px; border-radius: 6px; font-size: 11px;">মাত্র ২১ KB ⬇️</span>
+            </a>
+
+            <!-- Option 1: Browser 1-Click Guide -->
+            <button type="button" onclick="toggleBrowserGuide()" class="btn-token-helper" style="background: var(--bg-card-subtle); color: var(--text-primary); border: 1px solid var(--border-color); padding: 10px 14px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 12px; cursor: pointer;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:16px;">🌐</span>
+                    <span>ব্রাউজার দিয়ে ১-ক্লিকে টোকেন বের করুন</span>
+                </div>
+                <span id="guideArrow" style="color: var(--accent-green);">নিয়ম দেখুন ▼</span>
+            </button>
+        </div>
+
+        <!-- Collapsible Browser Guide -->
+        <div id="browserGuideBox" class="hidden" style="background: var(--bg-card-subtle); border: 1.5px dashed var(--accent-green); border-radius: 8px; padding: 14px; margin-bottom: 18px; font-size: 12px; line-height: 1.6; color: var(--text-secondary);">
+            <div style="font-weight: 800; color: var(--text-primary); margin-bottom: 6px;">📌 কোনো অ্যাপ ছাড়া ব্রাউজার দিয়ে টোকেন নেওয়ার নিয়ম:</div>
+            ১. <a href="https://accounts.google.com/EmbeddedSetup" target="_blank" style="color: var(--accent-green); font-weight: 800; text-decoration: underline;">এখানে ক্লিক করে গুগলে লগইন করুন ➔</a><br>
+            ২. আপনার নিজের মোবাইল হওয়ায় ১ সেকেন্ডে স্বাভাবিকভাবে লগইন সম্পন্ন হবে।<br>
+            ৩. লগইন শেষ হলে ব্রাউজারের <b>অ্যাড্রেস বারের সম্পূর্ণ লিঙ্কটি (URL)</b> কপি করুন।<br>
+            ৪. নিচের টোকেন বক্সে পেস্ট করলেই আমাদের ওয়েবসাইট নিজে থেকেই টোকেন বের করে নিবে!
         </div>
 
         <div class="form-group">
@@ -1026,9 +1056,9 @@
         </div>
 
         <div class="form-group">
-            <label>⚡ Master Token (aas_et/...) বা oauth_token</label>
+            <label>⚡ Master Token (aas_et/...) বা ব্রাউজারের লিঙ্ক পেস্ট করুন</label>
             <div class="input-wrapper">
-                <input type="password" id="inputToken" class="form-input" placeholder="aas_et/AKppIN... পেস্ট করুন">
+                <input type="text" id="inputToken" class="form-input" placeholder="টোকেন বা গুগলের লিঙ্ক পেস্ট করুন" oninput="handleSmartTokenPaste(this)">
                 <button type="button" class="btn-toggle-pass" onclick="togglePasswordVisibility('inputToken', 'eyeIconToken')">
                     <span id="eyeIconToken">👁️</span>
                 </button>
@@ -1218,6 +1248,45 @@
             }
         } catch (e) {
             autoRestoreSession();
+        }
+    }
+
+    // Browser Guide Toggle
+    function toggleBrowserGuide() {
+        const box = document.getElementById("browserGuideBox");
+        const arrow = document.getElementById("guideArrow");
+        if (!box) return;
+        box.classList.toggle("hidden");
+        arrow.innerText = box.classList.contains("hidden") ? "নিয়ম দেখুন ▼" : "লুকান ▲";
+    }
+
+    // Smart Token / URL Parser (Auto-extracts oauth_token from full Google URLs)
+    function handleSmartTokenPaste(input) {
+        if (!input) return;
+        let val = input.value.trim();
+
+        // 1. If full URL with oauth_token=
+        if (val.includes("oauth_token=")) {
+            const m = val.match(/oauth_token=([a-zA-Z0-9_\-]+)/);
+            if (m) {
+                input.value = m[1];
+                showToast("✨ লিঙ্ক থেকে টোকেন আলাদা করা হয়েছে!", "success");
+            }
+        } else if (val.includes("token=")) {
+            const m = val.match(/token=([a-zA-Z0-9_\-\/]+)/);
+            if (m) {
+                input.value = m[1];
+                showToast("✨ লিঙ্ক থেকে টোকেন আলাদা করা হয়েছে!", "success");
+            }
+        }
+
+        // 2. If URL contains email, auto-fill email field
+        if (val.includes("@gmail.com")) {
+            const mMail = val.match(/[a-zA-Z0-9_.+-]+@gmail\.com/i);
+            const emailInput = document.getElementById("inputEmail");
+            if (mMail && emailInput && !emailInput.value.trim()) {
+                emailInput.value = mMail[0];
+            }
         }
     }
 
