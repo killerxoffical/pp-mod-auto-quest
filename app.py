@@ -61,7 +61,7 @@ def google_login():
     if not client_id:
         return render_template("oauth_setup.html", redirect_uri=redirect_uri)
 
-    scope = "openid email profile"
+    scope = "openid email profile https://www.googleapis.com/auth/games_lite https://www.googleapis.com/auth/games"
     auth_url = (
         f"https://accounts.google.com/o/oauth2/v2/auth?"
         f"client_id={client_id}&"
@@ -128,6 +128,13 @@ def google_callback():
         tok_res = get_games_oauth_token(email, master_token, android_id)
         if tok_res.get("ok"):
             profile_res = get_player_profile(tok_res["access_token"])
+
+    # If no master token or it failed, fetch directly from Google Play Games API using the user's OAuth access_token
+    if not profile_res or not profile_res.get("ok"):
+        if access_token:
+            p_res = get_player_profile(access_token)
+            if p_res.get("ok"):
+                profile_res = p_res
 
     if not profile_res or not profile_res.get("ok"):
         # Real Google Account Profile (genuine Google user info)
