@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PlayQuest Unlocker • VAREON Studio</title>
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --bg-primary: #0a0f1d;
+            --bg-card: rgba(18, 26, 47, 0.85);
+            --bg-card-hover: rgba(26, 38, 68, 0.95);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --accent-green: #00E676;
+            --accent-glow: rgba(0, 230, 118, 0.25);
+            --accent-blue: #3b82f6;
+            --accent-gold: #fbbf24;
+            --text-primary: #ffffff;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --danger: #ef4444;
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --radius-sm: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 230, 118, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.08) 0%, transparent 40%);
+            background-attachment: fixed;
+            padding: 16px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding-bottom: 40px;
+        }
+
+        /* Top Header */
+        .app-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            backdrop-filter: blur(12px);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-logo {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #00E676, #0284c7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        .brand-text h1 {
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            background: linear-gradient(to right, #ffffff, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-text span {
+            font-size: 11px;
+            color: var(--accent-green);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .server-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--accent-green);
+            background: rgba(0, 230, 118, 0.1);
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 230, 118, 0.2);
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            box-shadow: 0 0 8px var(--accent-green);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.9); }
+        }
+
+        /* Glass Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+            transition: all 0.3s ease;
+        }
+
+        /* Login Screen */
+        .login-tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 4px;
+            border-radius: var(--radius-md);
+            margin-bottom: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background: var(--accent-green);
+            color: #0a0f1d;
+            box-shadow: 0 2px 10px var(--accent-glow);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 14px;
+            background: rgba(10, 15, 29, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-md);
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #00E676, #00b0ff);
+            color: #051410;
+            font-size: 15px;
+            font-weight: 700;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 18px var(--accent-glow);
+            transition: all 0.2s;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .tip-box {
+            background: rgba(59, 130, 246, 0.08);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            margin-top: 14px;
+            font-size: 12px;
+            color: #93c5fd;
+            line-height: 1.5;
+        }
+
+        /* Saved Accounts Drawer */
+        .saved-accounts-box {
+            margin-top: 16px;
+            border-top: 1px dashed var(--border-color);
+            padding-top: 14px;
+        }
+
+        .saved-account-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 10px 14px;
+            border-radius: var(--radius-md);
+            margin-top: 8px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .saved-account-item:hover {
+            border-color: var(--accent-green);
+            background: rgba(0, 230, 118, 0.05);
+        }
+
+        /* Player Profile Header Card */
+        .profile-card {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(145deg, rgba(20, 30, 55, 0.95), rgba(12, 18, 35, 0.95));
+            border: 1px solid rgba(0, 230, 118, 0.2);
+        }
+
+        .profile-card::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 140px;
+            height: 140px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .profile-top {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .avatar-wrap {
+            position: relative;
+        }
+
+        .player-avatar {
+            width: 68px;
+            height: 68px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-green);
+            box-shadow: 0 0 16px var(--accent-glow);
+            object-fit: cover;
+            background: #1e293b;
+        }
+
+        .level-badge {
+            position: absolute;
+            bottom: -4px;
+            right: -4px;
+            background: linear-gradient(135deg, #FFD700, #f59e0b);
+            color: #000;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 7px;
+            border-radius: 12px;
+            border: 2px solid var(--bg-primary);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+        }
+
+        .player-info h2 {
+            font-size: 18px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .verified-icon {
+            color: var(--accent-green);
+            font-size: 16px;
+        }
+
+        .player-id-tag {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+            font-family: monospace;
+        }
+
+        .account-email {
+            font-size: 12px;
+            color: var(--accent-blue);
+            margin-top: 2px;
+        }
+
+        /* XP Progress Bar */
+        .xp-container {
+            background: rgba(0, 0, 0, 0.35);
+            padding: 14px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+
+        .xp-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 8px;
+        }
+
+        .xp-title {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .xp-numbers {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--accent-green);
+        }
+
+        .xp-bar-bg {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .xp-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00E676, #00b0ff);
+            border-radius: 20px;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .xp-subtext {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        .profile-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .btn-outline {
+            flex: 1;
+            padding: 9px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .btn-signout {
+            color: #f87171;
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-signout:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* Games List Header */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 6px 0;
+            padding: 0 4px;
+        }
+
+        .section-header h3 {
+            font-size: 15px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .badge-count {
+            background: rgba(0, 230, 118, 0.15);
+            color: var(--accent-green);
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 700;
+        }
+
+        /* Game Cards Grid */
+        .games-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .game-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 12px 14px;
+            transition: all 0.25s ease;
+        }
+
+        .game-item:hover {
+            border-color: rgba(0, 230, 118, 0.3);
+            background: var(--bg-card-hover);
+            transform: translateY(-1px);
+        }
+
+        .game-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .game-icon-box {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            border: 1px solid var(--border-color);
+        }
+
+        .game-text h4 {
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .game-text p {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .btn-unlock {
+            padding: 8px 14px;
+            background: linear-gradient(135deg, #00E676, #00c853);
+            color: #042416;
+            font-size: 12px;
+            font-weight: 800;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            box-shadow: 0 2px 10px var(--accent-glow);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-unlock:active {
+            transform: scale(0.95);
+        }
+
+        .btn-unlock:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background: #475569;
+            color: #cbd5e1;
+            box-shadow: none;
+        }
+
+        /* Activity Log / Toast */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 420px;
+            z-index: 999;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid var(--accent-green);
+            color: #fff;
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 8px;
+            animation: slideUp 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+            pointer-events: auto;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(0, 0, 0, 0.2);
+            border-top-color: #000;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- Top Brand Header -->
+    <header class="app-header">
+        <div class="brand">
+            <div class="brand-logo">🎮</div>
+            <div class="brand-text">
+                <h1>PlayQuest Unlocker</h1>
+                <span>VAREON Studio • 100% Free Engine</span>
+            </div>
+        </div>
+        <div class="server-status">
+            <div class="status-dot"></div>
+            <span>Cloud Live</span>
+        </div>
+    </header>
+
+    <!-- VIEW 1: LOGIN CARD (Displayed when not logged in) -->
+    <div id="loginView" class="card">
+        <div class="login-tabs">
+            <button class="tab-btn active" onclick="switchLoginTab('pass')">🔑 Gmail & App Pass</button>
+            <button class="tab-btn" onclick="switchLoginTab('token')">⚡ EmbeddedSetup Token</button>
+        </div>
+
+        <!-- Tab 1: Password Login -->
+        <div id="tabPassContent">
+            <div class="form-group">
+                <label>📧 Gmail Address</label>
+                <input type="email" id="inputEmailPass" class="form-input" placeholder="example@gmail.com">
+            </div>
+            <div class="form-group">
+                <label>🔑 Google App Password (১৬ অক্ষরের) / পাসওয়ার্ড</label>
+                <input type="password" id="inputPass" class="form-input" placeholder="১৬ অক্ষরের App Password">
+            </div>
+            <button id="btnLoginPass" class="btn-primary" onclick="handlePasswordLogin()">
+                <span>গুগল অ্যাকাউন্টে লগইন করুন</span>
+                <span>➔</span>
+            </button>
+            <div class="tip-box">
+                💡 <b>টিপ:</b> অ্যাকাউন্টে 2-Step Verification অন থাকলে Google Account Security থেকে একটি ১৬ অক্ষরের <b>App Password</b> বানিয়ে নিলে ১০০% নিরাপদে লগইন হবে।
+            </div>
+        </div>
+
+        <!-- Tab 2: Token Login -->
+        <div id="tabTokenContent" class="hidden">
+            <div class="form-group">
+                <label>📧 Gmail Address</label>
+                <input type="email" id="inputEmailToken" class="form-input" placeholder="example@gmail.com">
+            </div>
+            <div class="form-group">
+                <label>⚡ EmbeddedSetup Cookie (oauth_token)</label>
+                <input type="text" id="inputToken" class="form-input" placeholder="oauth_token পেস্ট করুন">
+            </div>
+            <button id="btnLoginToken" class="btn-primary" onclick="handleTokenLogin()">
+                <span>টোকেন দিয়ে সরাসরি কানেক্ট করুন</span>
+                <span>➔</span>
+            </button>
+            <div class="tip-box">
+                💡 <b>কীভাবে পাবেন?</b> গুগল সাইন ইন লিঙ্ক: 
+                <a href="https://accounts.google.com/EmbeddedSetup" target="_blank" style="color:#00E676; text-decoration:underline;">accounts.google.com/EmbeddedSetup</a> - এ লগইন করে কুকিজ থেকে <code>oauth_token</code> কপি করে এখানে দিন।
+            </div>
+        </div>
+
+        <!-- Saved Accounts Drawer -->
+        <div id="savedAccountsSection" class="saved-accounts-box hidden">
+            <span style="font-size:12px; color:var(--text-secondary); font-weight:600;">💾 আপনার ডিভাইসে সেভ করা অ্যাকাউন্ট:</span>
+            <div id="savedAccountsList"></div>
+        </div>
+    </div>
+
+    <!-- VIEW 2: PLAYER PROFILE & UNLOCK DASHBOARD (Displayed when logged in) -->
+    <div id="dashboardView" class="hidden">
+        <!-- Live Profile Card -->
+        <div class="card profile-card">
+            <div class="profile-top">
+                <div class="avatar-wrap">
+                    <img id="playerAvatar" class="player-avatar" src="" alt="Gamer Avatar">
+                    <div id="playerLevelBadge" class="level-badge">LVL 15</div>
+                </div>
+                <div class="player-info">
+                    <h2>
+                        <span id="playerDisplayName">GamerTag</span>
+                        <span class="verified-icon">✓</span>
+                    </h2>
+                    <div id="playerIdTag" class="player-id-tag">ID: a_000000000000</div>
+                    <div id="accountEmailTag" class="account-email">user@gmail.com</div>
+                </div>
+            </div>
+
+            <!-- XP Progress -->
+            <div class="xp-container">
+                <div class="xp-header">
+                    <span class="xp-title">⭐ Google Play Games XP</span>
+                    <span id="playerCurrentXp" class="xp-numbers">185,500 XP</span>
+                </div>
+                <div class="xp-bar-bg">
+                    <div id="playerXpFill" class="xp-bar-fill" style="width: 70%;"></div>
+                </div>
+                <div class="xp-subtext">
+                    <span id="minXpLabel">150,000 XP</span>
+                    <span id="nextLevelLabel">Next: Level 16 (200,000 XP)</span>
+                </div>
+            </div>
+
+            <div class="profile-actions">
+                <button class="btn-outline" onclick="refreshLiveProfile()">
+                    <span>🔄 রিফ্রেশ XP</span>
+                </button>
+                <button class="btn-outline btn-signout" onclick="handleSignOut()">
+                    <span>🚪 সাইন আউট</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Games Catalog Section -->
+        <div class="section-header">
+            <h3>
+                <span>🎯 এচিভমেন্ট ও কোয়েস্ট আনলকার</span>
+                <span id="gamesCountBadge" class="badge-count">৮টি গেম</span>
+            </h3>
+            <span style="font-size:11px; color:var(--text-muted);">১-ক্লিকে ফ্রেশ XP</span>
+        </div>
+
+        <div id="gamesGrid" class="games-grid">
+            <!-- Dynamically populated -->
+        </div>
+    </div>
+</div>
+
+<div id="toastContainer" class="toast-container"></div>
+
+<script>
+    // App State
+    let currentSession = null;
+    let savedAccounts = [];
+    const API_BASE = window.location.origin;
+
+    // Game Icons mapping
+    const GAME_ICONS = {
+        "1": "🏃", // Subway Surfers
+        "2": "🌾", // Hay Day
+        "3": "☕", // Gossip Harbor
+        "4": "🔫", // CODM
+        "5": "🔥", // Free Fire
+        "6": "🚗", // Hill Climb
+        "7": "🗿", // Temple Run 2
+        "8": "🐦"  // Angry Birds 2
+    };
+
+    // Initialize on page load
+    window.addEventListener("DOMContentLoaded", () => {
+        loadSavedAccounts();
+        autoRestoreSession();
+    });
+
+    function switchLoginTab(tab) {
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        if (tab === 'pass') {
+            document.querySelectorAll(".tab-btn")[0].classList.add("active");
+            document.getElementById("tabPassContent").classList.remove("hidden");
+            document.getElementById("tabTokenContent").classList.add("hidden");
+        } else {
+            document.querySelectorAll(".tab-btn")[1].classList.add("active");
+            document.getElementById("tabPassContent").classList.add("hidden");
+            document.getElementById("tabTokenContent").classList.remove("hidden");
+        }
+    }
+
+    // LocalStorage Account Management
+    function loadSavedAccounts() {
+        try {
+            savedAccounts = JSON.parse(localStorage.getItem("pq_saved_accounts") || "[]");
+            renderSavedAccounts();
+        } catch (e) {
+            savedAccounts = [];
+        }
+    }
+
+    function saveAccountToStorage(account) {
+        savedAccounts = savedAccounts.filter(a => a.email !== account.email);
+        savedAccounts.unshift(account);
+        localStorage.setItem("pq_saved_accounts", JSON.stringify(savedAccounts));
+        localStorage.setItem("pq_active_session", JSON.stringify(account));
+        renderSavedAccounts();
+    }
+
+    function renderSavedAccounts() {
+        const section = document.getElementById("savedAccountsSection");
+        const list = document.getElementById("savedAccountsList");
+        if (savedAccounts.length === 0) {
+            section.classList.add("hidden");
+            return;
+        }
+
+        section.classList.remove("hidden");
+        list.innerHTML = "";
+        savedAccounts.forEach(acc => {
+            const item = document.createElement("div");
+            item.className = "saved-account-item";
+            item.innerHTML = `
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:18px;">👤</span>
+                    <div>
+                        <div style="font-size:13px; font-weight:700;">${acc.profile?.display_name || acc.email}</div>
+                        <div style="font-size:11px; color:var(--text-muted);">${acc.email}</div>
+                    </div>
+                </div>
+                <button class="btn-unlock" style="padding:4px 10px; font-size:11px;" onclick="switchSavedAccount('${acc.email}')">কানেক্ট</button>
+            `;
+            list.appendChild(item);
+        });
+    }
+
+    // Auto-restore session on page load
+    async function autoRestoreSession() {
+        const stored = localStorage.getItem("pq_active_session");
+        if (!stored) return;
+
+        try {
+            const acc = JSON.parse(stored);
+            showToast("⚡ সংরক্ষিত সেশন লোড হচ্ছে...", "info");
+
+            const res = await fetch(`${API_BASE}/api/session/restore`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    email: acc.email,
+                    master_token: acc.master_token,
+                    android_id: acc.android_id
+                })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                currentSession = {
+                    email: acc.email,
+                    master_token: acc.master_token,
+                    android_id: acc.android_id,
+                    profile: data.profile
+                };
+                saveAccountToStorage(currentSession);
+                showDashboard(currentSession.profile, currentSession.email);
+                showToast(`🎉 স্বাগতম, ${data.profile.display_name}!`, "success");
+            } else {
+                localStorage.removeItem("pq_active_session");
+            }
+        } catch (e) {
+            console.error("Auto-restore error:", e);
+        }
+    }
+
+    function switchSavedAccount(email) {
+        const target = savedAccounts.find(a => a.email === email);
+        if (target) {
+            localStorage.setItem("pq_active_session", JSON.stringify(target));
+            autoRestoreSession();
+        }
+    }
+
+    // Login via App Password
+    async function handlePasswordLogin() {
+        const email = document.getElementById("inputEmailPass").value.trim();
+        const password = document.getElementById("inputPass").value.trim();
+        const btn = document.getElementById("btnLoginPass");
+
+        if (!email || !password) {
+            showToast("দয়া করে ইমেইল ও পাসওয়ার্ড উভয়ই লিখুন।", "error");
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = `<div class="spinner"></div> <span>গুগলে লগইন হচ্ছে...</span>`;
+
+        try {
+            const res = await fetch(`${API_BASE}/api/login/password`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+
+            if (data.ok) {
+                currentSession = {
+                    email: data.email,
+                    master_token: data.master_token,
+                    android_id: data.android_id,
+                    profile: data.profile
+                };
+                saveAccountToStorage(currentSession);
+                showDashboard(data.profile, data.email);
+                triggerCelebration();
+                showToast(`🎉 স্বাগতম ${data.profile.display_name}! লগইন সফল!`, "success");
+            } else {
+                showToast(data.error || "লগইন ব্যর্থ হয়েছে।", "error");
+            }
+        } catch (e) {
+            showToast("সার্ভার কানেকশন এরর। আবার চেষ্টা করুন।", "error");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = `<span>গুগল অ্যাকাউন্টে লগইন করুন</span> <span>➔</span>`;
+        }
+    }
+
+    // Login via Token
+    async function handleTokenLogin() {
+        const email = document.getElementById("inputEmailToken").value.trim();
+        const oauth_token = document.getElementById("inputToken").value.trim();
+        const btn = document.getElementById("btnLoginToken");
+
+        if (!email || !oauth_token) {
+            showToast("দয়া করে ইমেইল ও oauth_token দিন।", "error");
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = `<div class="spinner"></div> <span>টোকেন যাচাই হচ্ছে...</span>`;
+
+        try {
+            const res = await fetch(`${API_BASE}/api/login/token`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, oauth_token })
+            });
+            const data = await res.json();
+
+            if (data.ok) {
+                currentSession = {
+                    email: data.email,
+                    master_token: data.master_token,
+                    android_id: data.android_id,
+                    profile: data.profile
+                };
+                saveAccountToStorage(currentSession);
+                showDashboard(data.profile, data.email);
+                triggerCelebration();
+                showToast(`🎉 স্বাগতম ${data.profile.display_name}! লগইন সফল!`, "success");
+            } else {
+                showToast(data.error || "টোকেন এক্সচেঞ্জ ব্যর্থ হয়েছে।", "error");
+            }
+        } catch (e) {
+            showToast("সার্ভার এরর। আবার চেষ্টা করুন।", "error");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = `<span>টোকেন দিয়ে সরাসরি কানেক্ট করুন</span> <span>➔</span>`;
+        }
+    }
+
+    // Display Dashboard
+    function showDashboard(profile, email) {
+        document.getElementById("loginView").classList.add("hidden");
+        document.getElementById("dashboardView").classList.remove("hidden");
+
+        updateProfileUI(profile, email);
+        loadGamesCatalog();
+    }
+
+    function updateProfileUI(profile, email) {
+        document.getElementById("playerAvatar").src = profile.avatar_url;
+        document.getElementById("playerLevelBadge").innerText = `LVL ${profile.current_level}`;
+        document.getElementById("playerDisplayName").innerText = profile.display_name || "Gamer";
+        document.getElementById("playerIdTag").innerText = `ID: ${profile.player_id}`;
+        document.getElementById("accountEmailTag").innerText = email || currentSession?.email;
+
+        document.getElementById("playerCurrentXp").innerText = `${Number(profile.current_xp).toLocaleString()} XP`;
+        document.getElementById("playerXpFill").style.width = `${profile.progress_pct || 70}%`;
+        document.getElementById("minXpLabel").innerText = `${Number(profile.min_xp).toLocaleString()} XP`;
+        document.getElementById("nextLevelLabel").innerText = `Next: Level ${profile.next_level} (${Number(profile.max_xp).toLocaleString()} XP)`;
+    }
+
+    // Load Games
+    async function loadGamesCatalog() {
+        try {
+            const res = await fetch(`${API_BASE}/api/games`);
+            const data = await res.json();
+            if (data.ok) {
+                renderGames(data.games);
+            }
+        } catch (e) {
+            console.error("Games fetch error:", e);
+        }
+    }
+
+    function renderGames(games) {
+        const grid = document.getElementById("gamesGrid");
+        grid.innerHTML = "";
+        document.getElementById("gamesCountBadge").innerText = `${games.length}টি গেম`;
+
+        games.forEach(g => {
+            const icon = GAME_ICONS[g.id] || "🎮";
+            const card = document.createElement("div");
+            card.className = "game-item";
+            card.id = `game_card_${g.id}`;
+            card.innerHTML = `
+                <div class="game-info">
+                    <div class="game-icon-box">${icon}</div>
+                    <div class="game-text">
+                        <h4>${g.title}</h4>
+                        <p>${g.desc}</p>
+                    </div>
+                </div>
+                <button class="btn-unlock" id="btn_unlock_${g.id}" onclick="unlockGame('${g.id}')">
+                    <span>⚡ আনলক</span>
+                </button>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    // Unlock Game Achievements
+    async function unlockGame(gameId) {
+        if (!currentSession) return;
+        const btn = document.getElementById(`btn_unlock_${gameId}`);
+        btn.disabled = true;
+        btn.innerHTML = `<div class="spinner"></div>`;
+
+        showToast("⏳ গুগলে আনলক রিকোয়েস্ট পাঠানো হচ্ছে...", "info");
+
+        try {
+            const res = await fetch(`${API_BASE}/api/unlock`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    email: currentSession.email,
+                    master_token: currentSession.master_token,
+                    android_id: currentSession.android_id,
+                    game_id: gameId,
+                    count: 5
+                })
+            });
+            const data = await res.json();
+
+            if (data.ok) {
+                if (data.newly_unlocked_count > 0) {
+                    triggerCelebration();
+                    showToast(`🎉 সফল! ${data.game_title}-এ ${data.newly_unlocked_count}টি এচিভমেন্ট আনলক হয়েছে (+${data.earned_xp.toLocaleString()} XP)!`, "success");
+                } else {
+                    showToast(data.message || "সব এচিভমেন্ট আগেই আনলক ছিল।", "info");
+                }
+
+                if (data.profile) {
+                    updateProfileUI(data.profile, currentSession.email);
+                    currentSession.profile = data.profile;
+                    saveAccountToStorage(currentSession);
+                }
+            } else {
+                showToast(data.error || "আনলক ব্যর্থ হয়েছে।", "error");
+            }
+        } catch (e) {
+            showToast("কানেকশন এরর। আবার চেষ্টা করুন।", "error");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = `<span>⚡ আনলক</span>`;
+        }
+    }
+
+    // Refresh Profile
+    async function refreshLiveProfile() {
+        if (!currentSession) return;
+        showToast("🔄 গুগল সার্ভার থেকে লাইভ XP চেক করা হচ্ছে...", "info");
+        try {
+            const res = await fetch(`${API_BASE}/api/profile`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    email: currentSession.email,
+                    master_token: currentSession.master_token,
+                    android_id: currentSession.android_id
+                })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                updateProfileUI(data.profile, currentSession.email);
+                currentSession.profile = data.profile;
+                saveAccountToStorage(currentSession);
+                showToast("✅ প্রোফাইল ও XP আপডেট হয়েছে!", "success");
+            }
+        } catch (e) {
+            showToast("রিফ্রেশ এরর", "error");
+        }
+    }
+
+    // Sign Out
+    function handleSignOut() {
+        localStorage.removeItem("pq_active_session");
+        currentSession = null;
+        document.getElementById("dashboardView").classList.add("hidden");
+        document.getElementById("loginView").classList.remove("hidden");
+        loadSavedAccounts();
+        showToast("সফলভাবে সাইন আউট হয়েছে।", "info");
+    }
+
+    function triggerCelebration() {
+        if (typeof confetti === 'function') {
+            confetti({
+                particleCount: 80,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }
+    }
+
+    function showToast(message, type = "info") {
+        const container = document.getElementById("toastContainer");
+        const toast = document.createElement("div");
+        toast.className = "toast";
+        const icon = type === "success" ? "🎉" : (type === "error" ? "❌" : "💡");
+        toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = "0";
+            toast.style.transform = "translateY(10px)";
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
+    }
+</script>
+
+</body>
+</html>
