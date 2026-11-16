@@ -29,6 +29,26 @@ def index():
 def health():
     return jsonify({"status": "healthy", "service": "ppmod-quest-unlock", "timestamp": time.time()})
 
+@app.route("/privacy")
+def privacy_policy():
+    return """<!DOCTYPE html><html><head><meta charset="utf-8"><title>Privacy Policy • PlayQuest</title></head>
+    <body style="font-family:sans-serif; padding:40px 20px; max-width:650px; margin:auto; line-height:1.6; color:#1e293b;">
+    <h2>Privacy Policy for PlayQuest</h2>
+    <p>Last updated: November 2026</p>
+    <p>PlayQuest utilizes Google Play Game Services and Google OAuth APIs solely to display your gaming profile, levels, experience points (XP), and unlock achievements upon your explicit request.</p>
+    <p>We do not sell, distribute, or store your passwords or private credentials. All session data is stored client-side in your own browser's local storage.</p>
+    <p><a href="/">Return to Home</a></p>
+    </body></html>"""
+
+@app.route("/terms")
+def terms_of_service():
+    return """<!DOCTYPE html><html><head><meta charset="utf-8"><title>Terms of Service • PlayQuest</title></head>
+    <body style="font-family:sans-serif; padding:40px 20px; max-width:650px; margin:auto; line-height:1.6; color:#1e293b;">
+    <h2>Terms of Service</h2>
+    <p>By using PlayQuest, you agree that this tool is provided for educational and gaming convenience purposes.</p>
+    <p><a href="/">Return to Home</a></p>
+    </body></html>"""
+
 @app.route("/auth/google/login")
 def google_login():
     """
