@@ -7,7 +7,7 @@ import os
 import time
 import json
 import requests
-from flask import Flask, request, jsonify, render_template, send_from_directory
+from flask import Flask, request, jsonify, render_template, send_from_directory, redirect
 from flask_cors import CORS
 
 from config import GAMES_API_BASE, SCOPE_GAMES, PLAY_GAMES_PACKAGE, GOOGLE_CLIENT_SIG
@@ -28,6 +28,107 @@ def index():
 @app.route("/api/health")
 def health():
     return jsonify({"status": "healthy", "service": "ppmod-quest-unlock", "timestamp": time.time()})
+
+@app.route("/auth/google/login")
+def google_login():
+    """
+    1-Click Official Google OAuth Login
+    """
+    client_id = os.environ.get("GOOGLE_CLIENT_ID", "").strip()
+    scheme = request.headers.get("X-Forwarded-Proto", request.scheme)
+    redirect_uri = f"{scheme}://{request.host}/auth/google/callback"
+
+    if not client_id:
+        return render_template("oauth_setup.html", redirect_uri=redirect_uri)
+
+    scope = "https://www.googleapis.com/auth/games https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email"
+    auth_url = (
+        f"https://accounts.google.com/o/oauth2/v2/auth?"
+        f"client_id={client_id}&"
+        f"redirect_uri={redirect_uri}&"
+        f"response_type=code&"
+        f"scope={scope}&"
+        f"access_type=offline&"
+        f"prompt=consent"
+    )
+    return redirect(auth_url)
+
+@app.route("/auth/google/callback")
+def google_callback():
+    """
+    OAuth Callback handler: exchanges authorization code for Google access token
+    """
+    code = request.args.get("code")
+    error = request.args.get("error")
+
+    if error or not code:
+        return f"<h3>Google Sign-In ব্যর্থ হয়েছে: {error or 'Code পাওয়া যায়নি'}</h3><p><a href='/'>হোমপেজে ফিরে যান</a></p>", 400
+
+    client_id = os.environ.get("GOOGLE_CLIENT_ID", "").strip()
+    client_secret = os.environ.get("GOOGLE_CLIENT_SECRET", "").strip()
+    scheme = request.headers.get("X-Forwarded-Proto", request.scheme)
+    redirect_uri = f"{scheme}://{request.host}/auth/google/callback"
+
+    token_resp = requests.post(
+        "https://oauth2.googleapis.com/token",
+        data={
+            "code": code,
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "redirect_uri": redirect_uri,
+            "grant_type": "authorization_code"
+        },
+        timeout=15
+    )
+
+    if token_resp.status_code != 200:
+        return f"<h3>টোকেন এক্সচেঞ্জ ব্যর্থ: {token_resp.text}</h3><p><a href='/'>হোমপেজে ফিরে যান</a></p>", 400
+
+    tok_data = token_resp.json()
+    access_token = tok_data.get("access_token")
+    refresh_token = tok_data.get("refresh_token", "")
+
+    # Fetch user info
+    email = ""
+    u_resp = requests.get("https://www.googleapis.com/oauth2/v2/userinfo", headers={"Authorization": f"Bearer {access_token}"})
+    u_info = u_resp.json() if u_resp.status_code == 200 else {}
+    email = u_info.get("email", "")
+
+    # Fetch player profile
+    profile_res = get_player_profile(access_token)
+    if not profile_res.get("ok"):
+        profile_res = {
+            "ok": True,
+            "player_id": u_info.get("id", "gamer_unknown"),
+            "display_name": u_info.get("name", "Gamer"),
+            "avatar_url": u_info.get("picture"),
+            "experience": {"currentExperiencePoints": 0, "currentLevel": {"level": 1}}
+        }
+
+    android_id = generate_android_id()
+    session_id = f"sess_{android_id}"
+    formatted_profile = format_profile(profile_res)
+
+    SESSIONS[session_id] = {
+        "email": email,
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "android_id": android_id,
+        "auth_type": "google_oauth",
+        "last_active": time.time()
+    }
+
+    session_payload = {
+        "ok": True,
+        "session_id": session_id,
+        "email": email,
+        "access_token": access_token,
+        "android_id": android_id,
+        "auth_type": "google_oauth",
+        "profile": formatted_profile
+    }
+
+    return render_template("oauth_bridge.html", session_json=session_payload)
 
 @app.route("/api/login/token", methods=["POST"])
 def login_with_token():
@@ -144,24 +245,30 @@ def login_with_password():
 @app.route("/api/session/restore", methods=["POST"])
 def restore_session():
     """
-    Restores session from client's stored master_token & android_id.
+    Restores session from client's stored tokens.
     Guarantees user stays logged in until explicit Sign Out!
     """
     data = request.get_json() or {}
     email = data.get("email", "").strip()
     master_token = data.get("master_token", "").strip()
+    access_token = data.get("access_token", "").strip()
     android_id = data.get("android_id", "").strip()
 
-    if not email or not master_token or not android_id:
+    if not email or not android_id:
         return jsonify({"ok": False, "error": "সেশন ডেটা অসম্পূর্ণ।"}), 400
 
-    tok_res = get_games_oauth_token(email, master_token, android_id)
-    if not tok_res.get("ok"):
-        return jsonify({"ok": False, "error": "সেশন এক্সপায়ার হয়েছে। অনুগ্রহ করে পুনরায় লগইন করুন。"}), 401
+    active_token = None
+    if master_token:
+        tok_res = get_games_oauth_token(email, master_token, android_id)
+        if tok_res.get("ok"):
+            active_token = tok_res["access_token"]
+    elif access_token:
+        active_token = access_token
 
-    access_token = tok_res["access_token"]
-    profile_res = get_player_profile(access_token)
+    if not active_token:
+        return jsonify({"ok": False, "error": "সেশন এক্সপায়ার হয়েছে। অনুগ্রহ করে পুনরায় লগইন করুন।"}), 401
 
+    profile_res = get_player_profile(active_token)
     if not profile_res.get("ok"):
         return jsonify({"ok": False, "error": "প্রোফাইল লোড করা যায়নি।"}), 400
 
@@ -169,6 +276,7 @@ def restore_session():
     SESSIONS[session_id] = {
         "email": email,
         "master_token": master_token,
+        "access_token": access_token,
         "android_id": android_id,
         "last_active": time.time()
     }
@@ -186,13 +294,21 @@ def get_live_profile():
     data = request.get_json() or {}
     email = data.get("email", "").strip()
     master_token = data.get("master_token", "").strip()
+    access_token = data.get("access_token", "").strip()
     android_id = data.get("android_id", "").strip()
 
-    tok_res = get_games_oauth_token(email, master_token, android_id)
-    if not tok_res.get("ok"):
-        return jsonify({"ok": False, "error": "টোকেন এরর"}), 401
+    active_token = None
+    if master_token:
+        tok_res = get_games_oauth_token(email, master_token, android_id)
+        if tok_res.get("ok"):
+            active_token = tok_res["access_token"]
+    elif access_token:
+        active_token = access_token
 
-    profile_res = get_player_profile(tok_res["access_token"])
+    if not active_token:
+        return jsonify({"ok": False, "error": "টোকেন পাওয়া যায়নি"}), 401
+
+    profile_res = get_player_profile(active_token)
     if not profile_res.get("ok"):
         return jsonify({"ok": False, "error": "প্রোফাইল পাওয়া যায়নি"}), 400
 
@@ -215,10 +331,12 @@ def get_games_list():
 def unlock_game():
     """
     Unlock achievements for a specific game on behalf of the player.
+    Supports both master_token and access_token.
     """
     data = request.get_json() or {}
     email = data.get("email", "").strip()
     master_token = data.get("master_token", "").strip()
+    access_token = data.get("access_token", "").strip()
     android_id = data.get("android_id", "").strip()
     game_id = str(data.get("game_id", "1")).strip()
     count_requested = int(data.get("count", 5))
@@ -228,19 +346,22 @@ def unlock_game():
 
     game = SUPPORTED_GAMES[game_id]
 
-    # Get game-specific OAuth token
-    tok_res = get_games_oauth_token(
-        email=email,
-        master_token=master_token,
-        android_id=android_id,
-        app_package=game["package"],
-        client_sig=game["client_sig"]
-    )
-
-    if not tok_res.get("ok"):
-        return jsonify({"ok": False, "error": f"গেম অথেনটিকেশন ব্যর্থ: {tok_res.get('error')}"}), 401
-
-    game_token = tok_res["access_token"]
+    if master_token:
+        # Get game-specific OAuth token via master_token
+        tok_res = get_games_oauth_token(
+            email=email,
+            master_token=master_token,
+            android_id=android_id,
+            app_package=game["package"],
+            client_sig=game["client_sig"]
+        )
+        if not tok_res.get("ok"):
+            return jsonify({"ok": False, "error": f"গেম অথেনটিকেশন ব্যর্থ: {tok_res.get('error')}"}), 401
+        game_token = tok_res["access_token"]
+    elif access_token:
+        game_token = access_token
+    else:
+        return jsonify({"ok": False, "error": "অথেনটিকেশন টোকেন পাওয়া যায়নি।"}), 401
 
     # Fetch game achievement definitions
     try:
@@ -301,10 +422,15 @@ def unlock_game():
         time.sleep(0.5)
 
     # Fetch fresh updated profile
-    base_tok = get_games_oauth_token(email, master_token, android_id)
     fresh_profile = None
-    if base_tok.get("ok"):
-        prof_res = get_player_profile(base_tok["access_token"])
+    if master_token:
+        base_tok = get_games_oauth_token(email, master_token, android_id)
+        if base_tok.get("ok"):
+            prof_res = get_player_profile(base_tok["access_token"])
+            if prof_res.get("ok"):
+                fresh_profile = format_profile(prof_res)
+    elif access_token:
+        prof_res = get_player_profile(access_token)
         if prof_res.get("ok"):
             fresh_profile = format_profile(prof_res)
 
