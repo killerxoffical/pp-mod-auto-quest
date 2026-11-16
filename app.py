@@ -14,7 +14,6 @@ from config import GAMES_API_BASE, SCOPE_GAMES, PLAY_GAMES_PACKAGE, GOOGLE_CLIEN
 from auth import exchange_oauth_token_for_master, perform_google_login, get_games_oauth_token, generate_android_id
 from engine import get_player_profile, get_headers, unlock_achievement, set_achievement_steps
 from games_db import SUPPORTED_GAMES
-from tg_bot import start_bot_thread
 
 DATA_DIR = os.path.dirname(os.path.abspath(__file__))
 TOKENS_FILE = os.path.join(DATA_DIR, "known_tokens.json")
@@ -40,13 +39,6 @@ def save_known_token(email, token):
             json.dump(tokens, f, indent=2)
     except Exception:
         pass
-
-# Auto-start DEV PORTAL VS Telegram Bot (@devportalvs_bot) in background
-try:
-    start_bot_thread()
-    print("[+] DEV PORTAL VS Telegram Bot Active (@devportalvs_bot)!")
-except Exception as _e:
-    print(f"[-] Telegram Bot Init Warning: {_e}")
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
 CORS(app)
