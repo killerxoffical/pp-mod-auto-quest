@@ -6,5 +6,4 @@ gunicorn>=21.2.0
 urllib3>=2.0.0
 cryptography>=41.0.0
 pycryptodome>=3.19.0
-selenium>=4.15.0
-undetected-chromedriver>=3.5.5
+pyTelegramBotAPI>=4.14.0

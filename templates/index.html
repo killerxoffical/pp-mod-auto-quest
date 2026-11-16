@@ -342,6 +342,85 @@
             text-decoration: underline;
         }
 
+        /* Login Tabs Navigation */
+        .login-tabs {
+            display: flex;
+            gap: 6px;
+            background: var(--bg-card-subtle);
+            padding: 5px;
+            border-radius: var(--radius-md);
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .login-tab {
+            flex: 1;
+            padding: 10px 8px;
+            background: transparent;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 11.5px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .login-tab:hover {
+            color: var(--text-primary);
+        }
+
+        .login-tab.active {
+            background: var(--bg-card);
+            color: var(--accent-green);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 168, 84, 0.25);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.25s ease-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .tg-bot-banner {
+            background: linear-gradient(135deg, rgba(2, 132, 199, 0.08), rgba(0, 168, 84, 0.08));
+            border: 1.5px dashed #0284c7;
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-bottom: 18px;
+            text-align: center;
+        }
+
+        .btn-tg-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: #0284c7;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 10px 18px;
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+            margin-top: 10px;
+            transition: all 0.2s;
+        }
+
+        .btn-tg-action:hover {
+            background: #0369a1;
+            transform: translateY(-1px);
+        }
+
         /* 1-Click Official Google Button */
         .google-auth-box {
             text-align: center;
@@ -933,26 +1012,21 @@
 
     <!-- VIEW 1: LOGIN CARD (Displayed when not logged in) -->
     <div id="loginView" class="card">
-        <!-- 1-Click Official Google Sign-In (Primary Option for Zero Hassle) -->
-        <div class="google-auth-box">
-            <a href="/auth/google/login" class="btn-google-oauth">
-                <svg width="22" height="22" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                </svg>
-                <span>Continue with Google (১-ক্লিক লগইন)</span>
-            </a>
-            <p class="oauth-subtext">✨ কোনো পাসওয়ার্ড বা টোকেন টাইপ করতে হবে না — সরাসরি গুগল সাইন-ইন</p>
+        <!-- 3 LOGIN METHODS TABS -->
+        <div class="login-tabs">
+            <button class="login-tab active" id="btnTab1" onclick="switchLoginTab('tab_app_pass')">
+                <span>🔑 Google App Pass</span>
+            </button>
+            <button class="login-tab" id="btnTab2" onclick="switchLoginTab('tab_tg')">
+                <span>🤖 Telegram Bot</span>
+            </button>
+            <button class="login-tab" id="btnTab3" onclick="switchLoginTab('tab_google')">
+                <span>🌐 1-Click Google</span>
+            </button>
         </div>
 
-        <div class="login-divider">
-            <span>অথবা জিমেইল ও পাসওয়ার্ড দিয়ে লগইন</span>
-        </div>
-
-        <!-- Standard Gmail & Password Form -->
-        <div id="standardLoginForm">
+        <!-- TAB 1: Google App Password (Fastest 0.5s Direct Login) -->
+        <div id="tab_app_pass" class="tab-content active">
             <div class="form-group">
                 <label>📧 Gmail Address</label>
                 <div class="input-wrapper">
@@ -960,39 +1034,72 @@
                 </div>
             </div>
             <div class="form-group">
-                <label>🔑 Password</label>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <label style="margin-bottom:0;">🔑 Google App Password (১৬ অক্ষরের)</label>
+                    <a href="https://myaccount.google.com/apppasswords" target="_blank" style="font-size:11px; color:var(--accent-green); font-weight:700; text-decoration:none;">পাসওয়ার্ড তৈরি করুন ➔</a>
+                </div>
                 <div class="input-wrapper">
-                    <input type="password" id="inputPass" class="form-input" placeholder="আপনার পাসওয়ার্ড দিন">
+                    <input type="password" id="inputPass" class="form-input" placeholder="abcd efgh ijkl mnop">
                     <button type="button" class="btn-toggle-pass" onclick="togglePasswordVisibility('inputPass', 'eyeIconPass')">
                         <span id="eyeIconPass">👁️</span>
                     </button>
                 </div>
             </div>
             <button id="btnLoginPass" class="btn-primary" onclick="handlePasswordLogin()">
-                <span>লগইন করুন</span>
+                <span>গুগল অ্যাকাউন্টে লগইন করুন</span>
                 <span>➔</span>
             </button>
+
+            <div class="tip-box">
+                <b>💡 সহজ নিয়ম:</b> Google 2-Step Verification অন থাকা যেকোনো অ্যাকাউন্টে নরমাল পাসওয়ার্ড দিয়ে সরাসরি লগইন ব্লক থাকে। এর জন্য <a href="https://myaccount.google.com/apppasswords" target="_blank">Google App Passwords</a> পেজ থেকে ১৬ অক্ষরের একটি অ্যাপ পাসওয়ার্ড কপি করে এখানে দিন (মাত্র ০.৫ সেকেন্ডে ফাস্ট কানেক্ট হবে)।
+            </div>
         </div>
 
-        <!-- Optional Master Token Collapsible for Quick Connect -->
-        <div style="margin-top: 16px; text-align: center;">
-            <a href="javascript:void(0)" onclick="toggleMasterTokenInput()" style="font-size: 11.5px; color: var(--text-muted); text-decoration: none; font-weight: 600;">
-                ⚡ মাস্টার টোকেন দিয়ে কানেক্ট করতে চান?
-            </a>
-        </div>
-        <div id="masterTokenBox" class="hidden" style="margin-top: 12px; padding: 14px; background: var(--bg-card-subtle); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-            <div class="form-group" style="margin-bottom: 10px;">
-                <label style="font-size: 12px;">⚡ Master Token (aas_et/...) বা oauth_token</label>
+        <!-- TAB 2: Telegram Bot 1-Click Token (@devportalvs_bot) -->
+        <div id="tab_tg" class="tab-content">
+            <div class="tg-bot-banner">
+                <div style="font-size:24px;">🤖</div>
+                <div style="font-size:14px; font-weight:800; color:var(--text-primary); margin:4px 0;">DEV PORTAL VS (@devportalvs_bot)</div>
+                <p style="font-size:11.5px; color:var(--text-secondary); line-height:1.5;">আপনার অ্যাকাউন্টের Master Token বা সেশন টোকেন ১-ক্লিকে পেতে সরাসরি আমাদের টেলিগ্রাম বটে যান:</p>
+                <a href="https://t.me/devportalvs_bot" target="_blank" class="btn-tg-action">
+                    <span>⚡ ওপেন টেলিগ্রাম বট (@devportalvs_bot) ➔</span>
+                </a>
+            </div>
+
+            <div class="form-group">
+                <label>📧 Gmail Address</label>
                 <div class="input-wrapper">
-                    <input type="password" id="inputToken" class="form-input" placeholder="মাস্টার টোকেন পেস্ট করুন" style="font-size: 12px; padding: 10px 14px;">
+                    <input type="email" id="inputTgEmail" class="form-input" placeholder="yourgmail@gmail.com">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>⚡ Master Token (aas_et/...) বা oauth_token</label>
+                <div class="input-wrapper">
+                    <input type="password" id="inputToken" class="form-input" placeholder="মাস্টার টোকেন পেস্ট করুন">
                     <button type="button" class="btn-toggle-pass" onclick="togglePasswordVisibility('inputToken', 'eyeIconToken')">
                         <span id="eyeIconToken">👁️</span>
                     </button>
                 </div>
             </div>
-            <button id="btnLoginToken" class="btn-unlock" style="width: 100%; justify-content: center; padding: 10px;" onclick="handleTokenLoginDirect()">
+            <button id="btnLoginToken" class="btn-unlock" style="width: 100%; justify-content: center; padding: 12px;" onclick="handleTokenLoginDirect()">
                 <span>টোকেন দিয়ে সরাসরি কানেক্ট করুন ➔</span>
             </button>
+        </div>
+
+        <!-- TAB 3: 1-Click Official Google Sign-In -->
+        <div id="tab_google" class="tab-content">
+            <div class="google-auth-box" style="margin-top:10px;">
+                <a href="/auth/google/login" class="btn-google-oauth">
+                    <svg width="22" height="22" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                    </svg>
+                    <span>Continue with Google (১-ক্লিক লগইন)</span>
+                </a>
+                <p class="oauth-subtext">✨ কোনো পাসওয়ার্ড বা টোকেন টাইপ করতে হবে না — ব্রাউজারে ১-ক্লিকে সাইন-ইন</p>
+            </div>
         </div>
 
         <!-- Saved Accounts Drawer -->
@@ -1183,6 +1290,19 @@
 
     function updateThemeIcon(theme) {
         document.getElementById("btnThemeToggle").innerText = theme === "light" ? "🌙" : "☀️";
+    }
+
+    // 3 Login Tabs Switcher
+    function switchLoginTab(tabName) {
+        document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
+        document.querySelectorAll(".login-tab").forEach(el => el.classList.remove("active"));
+
+        const targetTab = document.getElementById(tabName);
+        if (targetTab) targetTab.classList.add("active");
+
+        if (tabName === "tab_app_pass") document.getElementById("btnTab1")?.classList.add("active");
+        else if (tabName === "tab_tg") document.getElementById("btnTab2")?.classList.add("active");
+        else if (tabName === "tab_google") document.getElementById("btnTab3")?.classList.add("active");
     }
 
     // Password Show/Hide Toggle
@@ -1451,7 +1571,7 @@
 
     // Direct Master Token Login
     async function handleTokenLoginDirect() {
-        const email = (document.getElementById("inputEmail").value.trim()) || "mdd145712@gmail.com";
+        const email = (document.getElementById("inputTgEmail")?.value.trim()) || (document.getElementById("inputEmail")?.value.trim()) || "mdd145712@gmail.com";
         const token = document.getElementById("inputToken").value.trim();
         const btn = document.getElementById("btnLoginToken");
 

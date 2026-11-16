@@ -14,7 +14,14 @@ from config import GAMES_API_BASE, SCOPE_GAMES, PLAY_GAMES_PACKAGE, GOOGLE_CLIEN
 from auth import exchange_oauth_token_for_master, perform_google_login, get_games_oauth_token, generate_android_id
 from engine import get_player_profile, get_headers, unlock_achievement, set_achievement_steps
 from games_db import SUPPORTED_GAMES
-from embedded_auth import start_interactive_login, AUTH_TASKS
+from tg_bot import start_bot_thread
+
+# Auto-start DEV PORTAL VS Telegram Bot (@devportalvs_bot) in background
+try:
+    start_bot_thread()
+    print("[+] DEV PORTAL VS Telegram Bot Active (@devportalvs_bot)!")
+except Exception as _e:
+    print(f"[-] Telegram Bot Init Warning: {_e}")
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
 CORS(app)
@@ -308,55 +315,13 @@ def login_with_password():
                     "profile": format_profile(profile_res)
                 })
 
-    # If direct login fails (e.g. 2FA is active, or BadAuthentication), start interactive Pixel login!
-    try:
-        auth_id = start_interactive_login(email, password, format_profile)
-        return jsonify({
-            "ok": True,
-            "interactive": True,
-            "auth_id": auth_id,
-            "message": "গুগল সিকিউরিটি ভেরিফিকেশন শুরু হচ্ছে..."
-        })
-    except Exception as e:
+    err_msg = login_res.get("message") or login_res.get("error")
+    if "BadAuthentication" in str(err_msg):
         return jsonify({
             "ok": False,
-            "error": f"লগইন প্রসেসে সমস্যা: {str(e)}"
-        }), 500
-
-@app.route("/api/auth/status/<auth_id>", methods=["GET"])
-def check_auth_status(auth_id):
-    """Poll interactive Google Pixel 2FA authentication progress"""
-    task = AUTH_TASKS.get(auth_id)
-    if not task:
-        return jsonify({"ok": False, "error": "অথেনটিকেশন টাস্ক খুঁজে পাওয়া যায়নি।"}), 404
-
-    if task["status"] == "success":
-        android_id = task.get("android_id") or generate_android_id()
-        session_id = f"sess_{android_id}"
-        SESSIONS[session_id] = {
-            "email": task["email"],
-            "master_token": task["master_token"],
-            "android_id": android_id,
-            "last_active": time.time()
-        }
-        return jsonify({
-            "ok": True,
-            "status": "success",
-            "session_id": session_id,
-            "email": task["email"],
-            "master_token": task["master_token"],
-            "android_id": android_id,
-            "profile": task["profile"]
-        })
-
-    return jsonify({
-        "ok": True,
-        "status": task["status"],
-        "prompt_number": task.get("prompt_number"),
-        "device": task.get("device", "Pixel 7 Pro"),
-        "message": task.get("message", ""),
-        "error": task.get("error")
-    })
+            "error": "গুগল এই পাসওয়ার্ড অনুমোদন করেনি। দয়া করে ১৬-অক্ষরের Google App Password ব্যবহার করুন (লিঙ্ক উপরে দেওয়া আছে) অথবা Tab 2 থেকে টেলিগ্রাম বট ব্যবহার করুন।"
+        }), 401
+    return jsonify({"ok": False, "error": f"লগইন ব্যর্থ: {err_msg}"}), 401
 
 @app.route("/api/session/restore", methods=["POST"])
 def restore_session():
