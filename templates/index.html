@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="bn" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -11,22 +11,47 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <style>
-        :root {
-            --bg-primary: #0a0f1d;
-            --bg-card: rgba(18, 26, 47, 0.85);
-            --bg-card-hover: rgba(26, 38, 68, 0.95);
-            --border-color: rgba(255, 255, 255, 0.08);
+        /* Light Theme (Default) */
+        :root[data-theme="light"] {
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-card-subtle: #f1f5f9;
+            --border-color: #e2e8f0;
+            --border-focus: #00A854;
+            --accent-green: #00A854;
+            --accent-green-hover: #008f47;
+            --accent-green-subtle: rgba(0, 168, 84, 0.1);
+            --accent-glow: rgba(0, 168, 84, 0.2);
+            --accent-blue: #2563eb;
+            --accent-gold: #f59e0b;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+            --shadow-hover: 0 16px 30px -6px rgba(0, 168, 84, 0.15);
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --radius-sm: 10px;
+        }
+
+        /* Dark Theme Toggle */
+        :root[data-theme="dark"] {
+            --bg-body: #0b1120;
+            --bg-card: #131c31;
+            --bg-card-subtle: #1e293b;
+            --border-color: #243049;
+            --border-focus: #00E676;
             --accent-green: #00E676;
+            --accent-green-hover: #00c853;
+            --accent-green-subtle: rgba(0, 230, 118, 0.12);
             --accent-glow: rgba(0, 230, 118, 0.25);
             --accent-blue: #3b82f6;
             --accent-gold: #fbbf24;
             --text-primary: #ffffff;
-            --text-secondary: #94a3b8;
+            --text-secondary: #cbd5e1;
             --text-muted: #64748b;
-            --danger: #ef4444;
-            --radius-lg: 20px;
-            --radius-md: 14px;
-            --radius-sm: 8px;
+            --shadow-card: 0 12px 30px rgba(0, 0, 0, 0.4);
+            --shadow-hover: 0 16px 36px rgba(0, 230, 118, 0.2);
         }
 
         * {
@@ -35,19 +60,20 @@
             box-sizing: border-box;
             font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif;
             -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
         }
 
         body {
-            background-color: var(--bg-primary);
+            background-color: var(--bg-body);
             color: var(--text-primary);
             min-height: 100vh;
             display: flex;
             justify-content: center;
+            padding: 20px 16px 48px;
             background-image: 
-                radial-gradient(circle at 10% 20%, rgba(0, 230, 118, 0.08) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.08) 0%, transparent 40%);
+                radial-gradient(circle at 10% 10%, var(--accent-green-subtle) 0%, transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(37, 99, 235, 0.05) 0%, transparent 40%);
             background-attachment: fixed;
-            padding: 16px;
         }
 
         .app-container {
@@ -56,54 +82,78 @@
             display: flex;
             flex-direction: column;
             gap: 16px;
-            padding-bottom: 40px;
         }
 
-        /* Top Header */
+        /* Top Brand Header */
         .app-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 12px 16px;
+            padding: 14px 18px;
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
-            backdrop-filter: blur(12px);
+            box-shadow: var(--shadow-card);
         }
 
         .brand {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
 
         .brand-logo {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, #00E676, #0284c7);
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--accent-green), #0284c7);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
-            box-shadow: 0 4px 12px var(--accent-glow);
+            font-size: 22px;
+            box-shadow: 0 4px 14px var(--accent-glow);
+            color: #fff;
         }
 
         .brand-text h1 {
-            font-size: 16px;
+            font-size: 17px;
             font-weight: 800;
             letter-spacing: -0.3px;
-            background: linear-gradient(to right, #ffffff, #cbd5e1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: var(--text-primary);
         }
 
         .brand-text span {
             font-size: 11px;
             color: var(--accent-green);
-            font-weight: 600;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .theme-toggle-btn {
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .theme-toggle-btn:hover {
+            transform: scale(1.08);
+            border-color: var(--accent-green);
         }
 
         .server-status {
@@ -111,16 +161,17 @@
             align-items: center;
             gap: 6px;
             font-size: 11px;
+            font-weight: 600;
             color: var(--accent-green);
-            background: rgba(0, 230, 118, 0.1);
-            padding: 4px 10px;
+            background: var(--accent-green-subtle);
+            padding: 5px 10px;
             border-radius: 20px;
-            border: 1px solid rgba(0, 230, 118, 0.2);
+            border: 1px solid rgba(0, 168, 84, 0.25);
         }
 
         .status-dot {
-            width: 6px;
-            height: 6px;
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
             background: var(--accent-green);
             box-shadow: 0 0 8px var(--accent-green);
@@ -129,7 +180,7 @@
 
         @keyframes pulse {
             0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(0.9); }
+            50% { opacity: 0.4; transform: scale(0.85); }
         }
 
         /* Glass Cards */
@@ -137,78 +188,113 @@
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
-            padding: 20px;
-            backdrop-filter: blur(12px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
-            transition: all 0.3s ease;
+            padding: 22px;
+            box-shadow: var(--shadow-card);
         }
 
         /* Login Screen */
         .login-tabs {
             display: flex;
-            background: rgba(0, 0, 0, 0.25);
-            padding: 4px;
+            background: var(--bg-card-subtle);
+            padding: 5px;
             border-radius: var(--radius-md);
-            margin-bottom: 16px;
+            margin-bottom: 20px;
             border: 1px solid var(--border-color);
+            gap: 4px;
         }
 
         .tab-btn {
             flex: 1;
-            padding: 10px;
+            padding: 10px 8px;
             background: transparent;
             border: none;
             color: var(--text-secondary);
-            font-size: 13px;
-            font-weight: 600;
-            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            border-radius: var(--radius-sm);
             cursor: pointer;
             transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
         }
 
         .tab-btn.active {
-            background: var(--accent-green);
-            color: #0a0f1d;
-            box-shadow: 0 2px 10px var(--accent-glow);
+            background: var(--bg-card);
+            color: var(--accent-green);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--border-color);
         }
 
         .form-group {
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            margin-bottom: 14px;
+            gap: 7px;
+            margin-bottom: 16px;
         }
 
         .form-group label {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
         }
 
         .form-input {
             width: 100%;
-            padding: 12px 14px;
-            background: rgba(10, 15, 29, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 13px 16px;
+            background: var(--bg-card-subtle);
+            border: 1.5px solid var(--border-color);
             border-radius: var(--radius-md);
-            color: #fff;
+            color: var(--text-primary);
             font-size: 14px;
             outline: none;
             transition: all 0.2s;
         }
 
         .form-input:focus {
-            border-color: var(--accent-green);
+            border-color: var(--border-focus);
+            background: var(--bg-card);
             box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        /* Show/Hide Password Eye Button */
+        .btn-toggle-pass {
+            position: absolute;
+            right: 12px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            color: var(--text-secondary);
+            padding: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.15s;
+        }
+
+        .btn-toggle-pass:hover {
+            transform: scale(1.15);
+            color: var(--accent-green);
         }
 
         .btn-primary {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #00E676, #00b0ff);
-            color: #051410;
+            background: linear-gradient(135deg, var(--accent-green), #0284c7);
+            color: #ffffff;
             font-size: 15px;
-            font-weight: 700;
+            font-weight: 800;
             border: none;
             border-radius: var(--radius-md);
             cursor: pointer;
@@ -216,8 +302,13 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            box-shadow: 0 4px 18px var(--accent-glow);
+            box-shadow: 0 4px 16px var(--accent-glow);
             transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-hover);
         }
 
         .btn-primary:active {
@@ -227,61 +318,71 @@
         .btn-primary:disabled {
             opacity: 0.6;
             cursor: not-allowed;
+            transform: none;
         }
 
         .tip-box {
-            background: rgba(59, 130, 246, 0.08);
-            border: 1px solid rgba(59, 130, 246, 0.2);
+            background: var(--accent-green-subtle);
+            border: 1px solid rgba(0, 168, 84, 0.2);
             border-radius: var(--radius-md);
-            padding: 12px;
-            margin-top: 14px;
+            padding: 14px;
+            margin-top: 16px;
             font-size: 12px;
-            color: #93c5fd;
-            line-height: 1.5;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .tip-box b {
+            color: var(--text-primary);
+        }
+
+        .tip-box a {
+            color: var(--accent-green);
+            font-weight: 700;
+            text-decoration: underline;
         }
 
         /* Saved Accounts Drawer */
         .saved-accounts-box {
-            margin-top: 16px;
+            margin-top: 18px;
             border-top: 1px dashed var(--border-color);
-            padding-top: 14px;
+            padding-top: 16px;
         }
 
         .saved-account-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: rgba(255, 255, 255, 0.04);
-            padding: 10px 14px;
+            background: var(--bg-card-subtle);
+            padding: 12px 14px;
             border-radius: var(--radius-md);
             margin-top: 8px;
-            cursor: pointer;
-            border: 1px solid transparent;
+            border: 1px solid var(--border-color);
             transition: all 0.2s;
         }
 
         .saved-account-item:hover {
             border-color: var(--accent-green);
-            background: rgba(0, 230, 118, 0.05);
+            background: var(--accent-green-subtle);
         }
 
         /* Player Profile Header Card */
         .profile-card {
             position: relative;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-card);
             overflow: hidden;
-            background: linear-gradient(145deg, rgba(20, 30, 55, 0.95), rgba(12, 18, 35, 0.95));
-            border: 1px solid rgba(0, 230, 118, 0.2);
         }
 
-        .profile-card::before {
+        .profile-card::after {
             content: '';
             position: absolute;
-            top: -50px;
-            right: -50px;
-            width: 140px;
-            height: 140px;
-            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
-            pointer-events: none;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--accent-green), #0284c7, var(--accent-gold));
         }
 
         .profile-top {
@@ -289,6 +390,7 @@
             align-items: center;
             gap: 16px;
             margin-bottom: 18px;
+            padding-top: 4px;
         }
 
         .avatar-wrap {
@@ -296,35 +398,36 @@
         }
 
         .player-avatar {
-            width: 68px;
-            height: 68px;
+            width: 72px;
+            height: 72px;
             border-radius: 50%;
-            border: 2px solid var(--accent-green);
-            box-shadow: 0 0 16px var(--accent-glow);
+            border: 3px solid var(--accent-green);
+            box-shadow: 0 4px 16px var(--accent-glow);
             object-fit: cover;
-            background: #1e293b;
+            background: var(--bg-card-subtle);
         }
 
         .level-badge {
             position: absolute;
-            bottom: -4px;
-            right: -4px;
+            bottom: -3px;
+            right: -3px;
             background: linear-gradient(135deg, #FFD700, #f59e0b);
             color: #000;
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 800;
-            padding: 2px 7px;
+            padding: 3px 8px;
             border-radius: 12px;
-            border: 2px solid var(--bg-primary);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+            border: 2px solid var(--bg-card);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
         }
 
         .player-info h2 {
-            font-size: 18px;
+            font-size: 19px;
             font-weight: 800;
             display: flex;
             align-items: center;
             gap: 6px;
+            color: var(--text-primary);
         }
 
         .verified-icon {
@@ -335,20 +438,22 @@
         .player-id-tag {
             font-size: 11px;
             color: var(--text-muted);
-            margin-top: 2px;
+            margin-top: 3px;
             font-family: monospace;
+            font-weight: 600;
         }
 
         .account-email {
             font-size: 12px;
             color: var(--accent-blue);
-            margin-top: 2px;
+            margin-top: 3px;
+            font-weight: 600;
         }
 
         /* XP Progress Bar */
         .xp-container {
-            background: rgba(0, 0, 0, 0.35);
-            padding: 14px;
+            background: var(--bg-card-subtle);
+            padding: 16px;
             border-radius: var(--radius-md);
             border: 1px solid var(--border-color);
         }
@@ -363,27 +468,33 @@
         .xp-title {
             font-size: 12px;
             color: var(--text-secondary);
-            font-weight: 600;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .xp-numbers {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 800;
             color: var(--accent-green);
         }
 
         .xp-bar-bg {
             width: 100%;
-            height: 10px;
-            background: rgba(255, 255, 255, 0.08);
+            height: 12px;
+            background: rgba(0, 0, 0, 0.08);
             border-radius: 20px;
             overflow: hidden;
             position: relative;
         }
 
+        :root[data-theme="dark"] .xp-bar-bg {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
         .xp-bar-fill {
             height: 100%;
-            background: linear-gradient(90deg, #00E676, #00b0ff);
+            background: linear-gradient(90deg, var(--accent-green), #0284c7);
             border-radius: 20px;
             transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 0 10px var(--accent-glow);
@@ -392,25 +503,26 @@
         .xp-subtext {
             display: flex;
             justify-content: space-between;
-            font-size: 10px;
+            font-size: 11px;
             color: var(--text-muted);
-            margin-top: 6px;
+            margin-top: 8px;
+            font-weight: 600;
         }
 
         .profile-actions {
             display: flex;
-            gap: 8px;
-            margin-top: 14px;
+            gap: 10px;
+            margin-top: 16px;
         }
 
         .btn-outline {
             flex: 1;
-            padding: 9px 12px;
-            background: rgba(255, 255, 255, 0.05);
+            padding: 10px 14px;
+            background: var(--bg-card-subtle);
             border: 1px solid var(--border-color);
             color: var(--text-secondary);
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 700;
             border-radius: var(--radius-sm);
             cursor: pointer;
             transition: all 0.2s;
@@ -421,17 +533,19 @@
         }
 
         .btn-outline:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
+            background: var(--border-color);
+            color: var(--text-primary);
         }
 
         .btn-signout {
-            color: #f87171;
-            border-color: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.25);
+            background: rgba(239, 68, 68, 0.05);
         }
 
         .btn-signout:hover {
-            background: rgba(239, 68, 68, 0.1);
+            background: rgba(239, 68, 68, 0.12);
+            color: #dc2626;
         }
 
         /* Games List Header */
@@ -439,32 +553,34 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin: 6px 0;
+            margin: 10px 0 2px;
             padding: 0 4px;
         }
 
         .section-header h3 {
-            font-size: 15px;
-            font-weight: 700;
+            font-size: 16px;
+            font-weight: 800;
             display: flex;
             align-items: center;
             gap: 8px;
+            color: var(--text-primary);
         }
 
         .badge-count {
-            background: rgba(0, 230, 118, 0.15);
+            background: var(--accent-green-subtle);
             color: var(--accent-green);
             font-size: 11px;
-            padding: 2px 8px;
+            padding: 3px 9px;
             border-radius: 12px;
-            font-weight: 700;
+            font-weight: 800;
+            border: 1px solid rgba(0, 168, 84, 0.2);
         }
 
         /* Game Cards Grid */
         .games-grid {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
 
         .game-item {
@@ -474,97 +590,103 @@
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
-            padding: 12px 14px;
-            transition: all 0.25s ease;
+            padding: 14px 16px;
+            box-shadow: var(--shadow-card);
+            transition: all 0.2s ease;
         }
 
         .game-item:hover {
-            border-color: rgba(0, 230, 118, 0.3);
-            background: var(--bg-card-hover);
-            transform: translateY(-1px);
+            border-color: var(--accent-green);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
         }
 
         .game-info {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
         }
 
         .game-icon-box {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: var(--bg-card-subtle);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 26px;
             border: 1px solid var(--border-color);
         }
 
         .game-text h4 {
             font-size: 14px;
-            font-weight: 700;
-            color: #fff;
+            font-weight: 800;
+            color: var(--text-primary);
         }
 
         .game-text p {
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-top: 2px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 3px;
         }
 
         .btn-unlock {
-            padding: 8px 14px;
-            background: linear-gradient(135deg, #00E676, #00c853);
-            color: #042416;
-            font-size: 12px;
+            padding: 9px 16px;
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-green-hover));
+            color: #ffffff;
+            font-size: 13px;
             font-weight: 800;
             border: none;
             border-radius: var(--radius-sm);
             cursor: pointer;
-            box-shadow: 0 2px 10px var(--accent-glow);
+            box-shadow: 0 3px 12px var(--accent-glow);
             transition: all 0.2s;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
+            white-space: nowrap;
+        }
+
+        .btn-unlock:hover {
+            transform: translateY(-1px);
         }
 
         .btn-unlock:active {
-            transform: scale(0.95);
+            transform: scale(0.96);
         }
 
         .btn-unlock:disabled {
             opacity: 0.6;
             cursor: not-allowed;
-            background: #475569;
-            color: #cbd5e1;
+            background: #94a3b8;
             box-shadow: none;
         }
 
         /* Activity Log / Toast */
         .toast-container {
             position: fixed;
-            bottom: 20px;
+            bottom: 24px;
             left: 50%;
             transform: translateX(-50%);
             width: 90%;
-            max-width: 420px;
+            max-width: 440px;
             z-index: 999;
             pointer-events: none;
         }
 
         .toast {
-            background: rgba(15, 23, 42, 0.95);
-            border: 1px solid var(--accent-green);
-            color: #fff;
-            padding: 12px 16px;
+            background: var(--bg-card);
+            border: 1.5px solid var(--accent-green);
+            color: var(--text-primary);
+            padding: 14px 18px;
             border-radius: var(--radius-md);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
             font-size: 13px;
+            font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             margin-top: 8px;
             animation: slideUp 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
             pointer-events: auto;
@@ -575,12 +697,11 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Loading Spinner */
         .spinner {
             width: 18px;
             height: 18px;
-            border: 2px solid rgba(0, 0, 0, 0.2);
-            border-top-color: #000;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
@@ -604,61 +725,94 @@
                 <span>VAREON Studio • 100% Free Engine</span>
             </div>
         </div>
-        <div class="server-status">
-            <div class="status-dot"></div>
-            <span>Cloud Live</span>
+        <div class="header-actions">
+            <button id="btnThemeToggle" class="theme-toggle-btn" onclick="toggleTheme()" title="Theme Toggle">🌙</button>
+            <div class="server-status">
+                <div class="status-dot"></div>
+                <span>Cloud Live</span>
+            </div>
         </div>
     </header>
 
     <!-- VIEW 1: LOGIN CARD (Displayed when not logged in) -->
     <div id="loginView" class="card">
         <div class="login-tabs">
-            <button class="tab-btn active" onclick="switchLoginTab('pass')">🔑 Gmail & App Pass</button>
-            <button class="tab-btn" onclick="switchLoginTab('token')">⚡ EmbeddedSetup Token</button>
+            <button class="tab-btn active" onclick="switchLoginTab('pass')">🔑 Google App Pass</button>
+            <button class="tab-btn" onclick="switchLoginTab('token')">⚡ Master / Instant Token</button>
+            <button class="tab-btn" onclick="switchLoginTab('setup')">🌐 Setup Guide</button>
         </div>
 
-        <!-- Tab 1: Password Login -->
+        <!-- Tab 1: Password Login with Show/Hide -->
         <div id="tabPassContent">
             <div class="form-group">
                 <label>📧 Gmail Address</label>
-                <input type="email" id="inputEmailPass" class="form-input" placeholder="example@gmail.com">
+                <div class="input-wrapper">
+                    <input type="email" id="inputEmailPass" class="form-input" placeholder="mdd145712@gmail.com">
+                </div>
             </div>
             <div class="form-group">
-                <label>🔑 Google App Password (১৬ অক্ষরের) / পাসওয়ার্ড</label>
-                <input type="password" id="inputPass" class="form-input" placeholder="১৬ অক্ষরের App Password">
+                <label>
+                    <span>🔑 Google App Password (১৬ অক্ষরের)</span>
+                    <a href="https://myaccount.google.com/apppasswords" target="_blank" style="font-size:11px; color:var(--accent-green); text-decoration:underline;">পাসওয়ার্ড তৈরি করুন ↗</a>
+                </label>
+                <div class="input-wrapper">
+                    <input type="password" id="inputPass" class="form-input" placeholder="যেমন: abcd efgh ijkl mnop">
+                    <button type="button" class="btn-toggle-pass" onclick="togglePasswordVisibility('inputPass', 'eyeIconPass')">
+                        <span id="eyeIconPass">👁️</span>
+                    </button>
+                </div>
             </div>
             <button id="btnLoginPass" class="btn-primary" onclick="handlePasswordLogin()">
                 <span>গুগল অ্যাকাউন্টে লগইন করুন</span>
                 <span>➔</span>
             </button>
             <div class="tip-box">
-                💡 <b>টিপ:</b> অ্যাকাউন্টে 2-Step Verification অন থাকলে Google Account Security থেকে একটি ১৬ অক্ষরের <b>App Password</b> বানিয়ে নিলে ১০০% নিরাপদে লগইন হবে।
+                💡 <b>সহজ নিয়ম:</b> Google 2-Step Verification অন থাকা যেকোনো অ্যাকাউন্টে নরমাল পাসওয়ার্ড দিয়ে সরাসরি লগইন নেওয়া ব্লক থাকে। এর জন্য <a href="https://myaccount.google.com/apppasswords" target="_blank">Google App Passwords</a> পেজ থেকে ১৬ অক্ষরের একটি অ্যাপ পাসওয়ার্ড কপি করে এখানে দিন।
             </div>
         </div>
 
-        <!-- Tab 2: Token Login -->
+        <!-- Tab 2: Master Token Login -->
         <div id="tabTokenContent" class="hidden">
             <div class="form-group">
                 <label>📧 Gmail Address</label>
-                <input type="email" id="inputEmailToken" class="form-input" placeholder="example@gmail.com">
+                <div class="input-wrapper">
+                    <input type="email" id="inputEmailToken" class="form-input" placeholder="mdd145712@gmail.com">
+                </div>
             </div>
             <div class="form-group">
-                <label>⚡ EmbeddedSetup Cookie (oauth_token)</label>
-                <input type="text" id="inputToken" class="form-input" placeholder="oauth_token পেস্ট করুন">
+                <label>⚡ Master Token (aas_et/...) বা oauth_token</label>
+                <div class="input-wrapper">
+                    <input type="password" id="inputToken" class="form-input" placeholder="মাস্টার টোকেন বা oauth_token পেস্ট করুন">
+                    <button type="button" class="btn-toggle-pass" onclick="togglePasswordVisibility('inputToken', 'eyeIconToken')">
+                        <span id="eyeIconToken">👁️</span>
+                    </button>
+                </div>
             </div>
             <button id="btnLoginToken" class="btn-primary" onclick="handleTokenLogin()">
-                <span>টোকেন দিয়ে সরাসরি কানেক্ট করুন</span>
+                <span>১-ক্লিকে সরাসরি কানেক্ট করুন</span>
                 <span>➔</span>
             </button>
             <div class="tip-box">
-                💡 <b>কীভাবে পাবেন?</b> গুগল সাইন ইন লিঙ্ক: 
-                <a href="https://accounts.google.com/EmbeddedSetup" target="_blank" style="color:#00E676; text-decoration:underline;">accounts.google.com/EmbeddedSetup</a> - এ লগইন করে কুকিজ থেকে <code>oauth_token</code> কপি করে এখানে দিন।
+                💡 <b>১০০% ইনস্ট্যান্ট:</b> আপনার আগের সেশনের মাস্টার টোকেন (যেমন <code>aas_et/...</code>) থাকলে তা এখানে সরাসরি পেস্ট করুন। কোনো পাসওয়ার্ড ছাড়াই মুহূর্তেই প্রোফাইল লোড হয়ে যাবে!
+            </div>
+        </div>
+
+        <!-- Tab 3: EmbeddedSetup Guide -->
+        <div id="tabSetupContent" class="hidden">
+            <div class="tip-box" style="margin-top:0;">
+                <b>🌐 Google EmbeddedSetup মাধ্যমে টোকেন নেওয়ার নিয়ম:</b>
+                <ol style="margin-top:8px; padding-left:18px; line-height:1.7;">
+                    <li>নিচের লিংকে ক্লিক করে গুগলের অফিশিয়াল লগইন পেজ ওপেন করুন:</li>
+                    <a href="https://accounts.google.com/EmbeddedSetup" target="_blank" style="display:inline-block; margin:8px 0; font-weight:700; color:#fff; background:var(--accent-green); padding:6px 14px; border-radius:8px; text-decoration:none;">🔗 গুগল সাইন-ইন পেজ ওপেন করুন ↗</a>
+                    <li>গুগলে আপনার পাসওয়ার্ড ও ফোনে প্রম্পট এলে অ্যাপ্রুভ করুন।</li>
+                    <li>লগইন শেষে পেজের কুকিজ থেকে <code>oauth_token</code> কপি করে ২য় ট্যাবে পেস্ট করুন।</li>
+                </ol>
             </div>
         </div>
 
         <!-- Saved Accounts Drawer -->
         <div id="savedAccountsSection" class="saved-accounts-box hidden">
-            <span style="font-size:12px; color:var(--text-secondary); font-weight:600;">💾 আপনার ডিভাইসে সেভ করা অ্যাকাউন্ট:</span>
+            <span style="font-size:12px; color:var(--text-secondary); font-weight:700;">💾 আপনার ডিভাইসে সেভ করা অ্যাকাউন্ট:</span>
             <div id="savedAccountsList"></div>
         </div>
     </div>
@@ -670,7 +824,7 @@
             <div class="profile-top">
                 <div class="avatar-wrap">
                     <img id="playerAvatar" class="player-avatar" src="" alt="Gamer Avatar">
-                    <div id="playerLevelBadge" class="level-badge">LVL 15</div>
+                    <div id="playerLevelBadge" class="level-badge">LVL 16</div>
                 </div>
                 <div class="player-info">
                     <h2>
@@ -686,14 +840,14 @@
             <div class="xp-container">
                 <div class="xp-header">
                     <span class="xp-title">⭐ Google Play Games XP</span>
-                    <span id="playerCurrentXp" class="xp-numbers">185,500 XP</span>
+                    <span id="playerCurrentXp" class="xp-numbers">204,000 XP</span>
                 </div>
                 <div class="xp-bar-bg">
                     <div id="playerXpFill" class="xp-bar-fill" style="width: 70%;"></div>
                 </div>
                 <div class="xp-subtext">
-                    <span id="minXpLabel">150,000 XP</span>
-                    <span id="nextLevelLabel">Next: Level 16 (200,000 XP)</span>
+                    <span id="minXpLabel">200,000 XP</span>
+                    <span id="nextLevelLabel">Next: Level 17 (250,000 XP)</span>
                 </div>
             </div>
 
@@ -713,7 +867,7 @@
                 <span>🎯 এচিভমেন্ট ও কোয়েস্ট আনলকার</span>
                 <span id="gamesCountBadge" class="badge-count">৮টি গেম</span>
             </h3>
-            <span style="font-size:11px; color:var(--text-muted);">১-ক্লিকে ফ্রেশ XP</span>
+            <span style="font-size:11px; color:var(--text-muted); font-weight:600;">১-ক্লিকে লাইভ XP</span>
         </div>
 
         <div id="gamesGrid" class="games-grid">
@@ -744,20 +898,59 @@
 
     // Initialize on page load
     window.addEventListener("DOMContentLoaded", () => {
+        initTheme();
         loadSavedAccounts();
         autoRestoreSession();
     });
 
+    // Theme Toggle Functionality
+    function initTheme() {
+        const savedTheme = localStorage.getItem("pq_theme") || "light";
+        document.documentElement.setAttribute("data-theme", savedTheme);
+        updateThemeIcon(savedTheme);
+    }
+
+    function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute("data-theme") || "light";
+        const newTheme = currentTheme === "light" ? "dark" : "light";
+        document.documentElement.setAttribute("data-theme", newTheme);
+        localStorage.setItem("pq_theme", newTheme);
+        updateThemeIcon(newTheme);
+    }
+
+    function updateThemeIcon(theme) {
+        document.getElementById("btnThemeToggle").innerText = theme === "light" ? "🌙" : "☀️";
+    }
+
+    // Password Show/Hide Toggle
+    function togglePasswordVisibility(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        if (input.type === "password") {
+            input.type = "text";
+            icon.innerText = "🙈";
+        } else {
+            input.type = "password";
+            icon.innerText = "👁️";
+        }
+    }
+
+    // Login Tabs
     function switchLoginTab(tab) {
         document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        document.getElementById("tabPassContent").classList.add("hidden");
+        document.getElementById("tabTokenContent").classList.add("hidden");
+        document.getElementById("tabSetupContent").classList.add("hidden");
+
         if (tab === 'pass') {
             document.querySelectorAll(".tab-btn")[0].classList.add("active");
             document.getElementById("tabPassContent").classList.remove("hidden");
-            document.getElementById("tabTokenContent").classList.add("hidden");
-        } else {
+        } else if (tab === 'token') {
             document.querySelectorAll(".tab-btn")[1].classList.add("active");
-            document.getElementById("tabPassContent").classList.add("hidden");
             document.getElementById("tabTokenContent").classList.remove("hidden");
+        } else {
+            document.querySelectorAll(".tab-btn")[2].classList.add("active");
+            document.getElementById("tabSetupContent").classList.remove("hidden");
         }
     }
 
@@ -793,14 +986,14 @@
             const item = document.createElement("div");
             item.className = "saved-account-item";
             item.innerHTML = `
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <span style="font-size:18px;">👤</span>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:22px;">👤</span>
                     <div>
-                        <div style="font-size:13px; font-weight:700;">${acc.profile?.display_name || acc.email}</div>
+                        <div style="font-size:14px; font-weight:700;">${acc.profile?.display_name || acc.email}</div>
                         <div style="font-size:11px; color:var(--text-muted);">${acc.email}</div>
                     </div>
                 </div>
-                <button class="btn-unlock" style="padding:4px 10px; font-size:11px;" onclick="switchSavedAccount('${acc.email}')">কানেক্ট</button>
+                <button class="btn-unlock" style="padding:6px 12px; font-size:12px;" onclick="switchSavedAccount('${acc.email}')">কানেক্ট ➔</button>
             `;
             list.appendChild(item);
         });
@@ -895,14 +1088,14 @@
         }
     }
 
-    // Login via Token
+    // Login via Master Token / Token
     async function handleTokenLogin() {
         const email = document.getElementById("inputEmailToken").value.trim();
-        const oauth_token = document.getElementById("inputToken").value.trim();
+        const token = document.getElementById("inputToken").value.trim();
         const btn = document.getElementById("btnLoginToken");
 
-        if (!email || !oauth_token) {
-            showToast("দয়া করে ইমেইল ও oauth_token দিন।", "error");
+        if (!email || !token) {
+            showToast("দয়া করে ইমেইল ও টোকেন দিন।", "error");
             return;
         }
 
@@ -913,7 +1106,7 @@
             const res = await fetch(`${API_BASE}/api/login/token`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, oauth_token })
+                body: JSON.stringify({ email, token })
             });
             const data = await res.json();
 
@@ -935,7 +1128,7 @@
             showToast("সার্ভার এরর। আবার চেষ্টা করুন।", "error");
         } finally {
             btn.disabled = false;
-            btn.innerHTML = `<span>টোকেন দিয়ে সরাসরি কানেক্ট করুন</span> <span>➔</span>`;
+            btn.innerHTML = `<span>১-ক্লিকে সরাসরি কানেক্ট করুন</span> <span>➔</span>`;
         }
     }
 

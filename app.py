@@ -32,23 +32,29 @@ def health():
 @app.route("/api/login/token", methods=["POST"])
 def login_with_token():
     """
-    Login using an EmbeddedSetup oauth_token (from browser or cookie).
+    Login using an EmbeddedSetup oauth_token (from browser or cookie) or master_token (aas_et/...).
     This 100% bypasses Google bot-detection and 2FA blocks.
     """
     data = request.get_json() or {}
     email = data.get("email", "").strip()
-    oauth_token = data.get("oauth_token", "").strip()
+    token_str = data.get("oauth_token", "") or data.get("token", "")
+    token_str = token_str.strip()
 
-    if not email or not oauth_token:
-        return jsonify({"ok": False, "error": "Email এবং OAuth Token উভয়ই প্রয়োজন।"}), 400
+    if not email or not token_str:
+        return jsonify({"ok": False, "error": "Email এবং Token উভয়ই প্রয়োজন।"}), 400
 
-    android_id = generate_android_id()
-    ex_res = exchange_oauth_token_for_master(email, oauth_token, android_id)
+    android_id = data.get("android_id", "").strip() or generate_android_id()
 
-    if not ex_res.get("ok"):
-        return jsonify({"ok": False, "error": f"গুগল টোকেন এক্সচেঞ্জ ব্যর্থ: {ex_res.get('error')}"}), 401
-
-    master_token = ex_res["master_token"]
+    # Check if already a master token
+    if token_str.startswith("aas_et/"):
+        master_token = token_str
+    else:
+        # Strip oauth_token= prefix if pasted with cookie name
+        clean_tok = token_str.replace("oauth_token=", "").strip()
+        ex_res = exchange_oauth_token_for_master(email, clean_tok, android_id)
+        if not ex_res.get("ok"):
+            return jsonify({"ok": False, "error": f"গুগল টোকেন এক্সচেঞ্জ ব্যর্থ: {ex_res.get('error')}"}), 401
+        master_token = ex_res["master_token"]
 
     # Google Play Games token
     tok_res = get_games_oauth_token(email, master_token, android_id)
@@ -77,6 +83,10 @@ def login_with_token():
         "android_id": android_id,
         "profile": format_profile(profile_res)
     })
+
+@app.route("/api/login/master", methods=["POST"])
+def login_with_master_token():
+    return login_with_token()
 
 @app.route("/api/login/password", methods=["POST"])
 def login_with_password():
