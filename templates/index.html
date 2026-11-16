@@ -1270,8 +1270,48 @@
     window.addEventListener("DOMContentLoaded", () => {
         initTheme();
         loadSavedAccounts();
+
+        // Check for 1-Click login parameters from Telegram Bot
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlEmail = urlParams.get("email");
+        const urlToken = urlParams.get("token");
+        if (urlEmail && urlToken) {
+            window.history.replaceState({}, document.title, window.location.pathname);
+            loginWithDirectToken(urlEmail, urlToken);
+            return;
+        }
+
         autoRestoreSession();
     });
+
+    async function loginWithDirectToken(email, token) {
+        showToast("টেলিগ্রাম বট সেশন কানেক্ট হচ্ছে...", "info");
+        try {
+            const res = await fetch(`${API_BASE}/api/login/token`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, token })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                currentSession = {
+                    email: data.email,
+                    master_token: data.master_token,
+                    android_id: data.android_id,
+                    profile: data.profile
+                };
+                localStorage.setItem("pq_current_session", JSON.stringify(currentSession));
+                saveAccountToStorage(data.email, data.profile, data.master_token, "");
+                renderProfile(data.profile);
+                switchView("dashboard");
+                showToast("স্বাগতম! টেলিগ্রাম থেকে ১-ক্লিক লগইন সফল হয়েছে!", "success");
+            } else {
+                autoRestoreSession();
+            }
+        } catch (e) {
+            autoRestoreSession();
+        }
+    }
 
     // Theme Toggle Functionality
     function initTheme() {
@@ -1571,12 +1611,12 @@
 
     // Direct Master Token Login
     async function handleTokenLoginDirect() {
-        const email = (document.getElementById("inputTgEmail")?.value.trim()) || (document.getElementById("inputEmail")?.value.trim()) || "mdd145712@gmail.com";
+        const email = (document.getElementById("inputTgEmail")?.value.trim()) || (document.getElementById("inputEmail")?.value.trim());
         const token = document.getElementById("inputToken").value.trim();
         const btn = document.getElementById("btnLoginToken");
 
-        if (!token) {
-            showToast("দয়া করে মাস্টার টোকেন পেস্ট করুন।", "error");
+        if (!email) {
+            showToast("দয়া করে আপনার জিমেইল এড্রেস লিখুন।", "error");
             return;
         }
 

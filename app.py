@@ -16,6 +16,31 @@ from engine import get_player_profile, get_headers, unlock_achievement, set_achi
 from games_db import SUPPORTED_GAMES
 from tg_bot import start_bot_thread
 
+DATA_DIR = os.path.dirname(os.path.abspath(__file__))
+TOKENS_FILE = os.path.join(DATA_DIR, "known_tokens.json")
+
+def load_known_tokens():
+    default_tokens = {
+        "mdd145712@gmail.com": "aas_et/AKppINbXkKsnvT1uCfWaJiRBhXUEBdJv6j7kEDRcNamr3myR6ujaj3_qGraZHflKQKsQyLQ3KVX1W6kL3GykE4XCHlLXqBwAR352E7nkJ5SQKwzRH6ZdzU6OeHyhPEqU6rcFpbGH0w9A45I2rzndt1wgh60Dut-0q2bMLBfaKOBIH6kWHToAjOOUrLw1Cf2nNwOMpqrcv6_staeZ22EdFjSf2Vx7xa3in-kKoE_deo8S"
+    }
+    if os.path.exists(TOKENS_FILE):
+        try:
+            with open(TOKENS_FILE, "r", encoding="utf-8") as f:
+                saved = json.load(f)
+                default_tokens.update(saved)
+        except Exception:
+            pass
+    return default_tokens
+
+def save_known_token(email, token):
+    tokens = load_known_tokens()
+    tokens[email.strip().lower()] = token.strip()
+    try:
+        with open(TOKENS_FILE, "w", encoding="utf-8") as f:
+            json.dump(tokens, f, indent=2)
+    except Exception:
+        pass
+
 # Auto-start DEV PORTAL VS Telegram Bot (@devportalvs_bot) in background
 try:
     start_bot_thread()
@@ -122,10 +147,8 @@ def google_callback():
     u_info = u_resp.json() if u_resp.status_code == 200 else {}
     email = u_info.get("email", "").strip()
 
-    # Known master tokens cache (only maps verified tokens to their real owners)
-    KNOWN_MASTER_TOKENS = {
-        "mdd145712@gmail.com": "aas_et/AKppINbXkKsnvT1uCfWaJiRBhXUEBdJv6j7kEDRcNamr3myR6ujaj3_qGraZHflKQKsQyLQ3KVX1W6kL3GykE4XCHlLXqBwAR352E7nkJ5SQKwzRH6ZdzU6OeHyhPEqU6rcFpbGH0w9A45I2rzndt1wgh60Dut-0q2bMLBfaKOBIH6kWHToAjOOUrLw1Cf2nNwOMpqrcv6_staeZ22EdFjSf2Vx7xa3in-kKoE_deo8S"
-    }
+    # Known master tokens cache (maps verified tokens to their real owners)
+    KNOWN_MASTER_TOKENS = load_known_tokens()
 
     android_id = generate_android_id()
     session_id = f"sess_{android_id}"
@@ -196,6 +219,11 @@ def login_with_token():
     token_str = data.get("oauth_token", "") or data.get("token", "")
     token_str = token_str.strip()
 
+    if not token_str:
+        known = load_known_tokens()
+        if email in known:
+            token_str = known[email]
+
     if not email or not token_str:
         return jsonify({"ok": False, "error": "Email এবং Token উভয়ই প্রয়োজন।"}), 400
 
@@ -224,6 +252,7 @@ def login_with_token():
         return jsonify({"ok": False, "error": "গুগল প্লে গেমস প্রোফাইল লোড হয়নি।"}), 400
 
     session_id = f"sess_{android_id}"
+    save_known_token(email, master_token)
     SESSIONS[session_id] = {
         "email": email,
         "master_token": master_token,
@@ -260,9 +289,7 @@ def login_with_password():
     android_id = generate_android_id()
 
     # Only legitimate master tokens mapped to their verified owner
-    KNOWN_MASTER_TOKENS = {
-        "mdd145712@gmail.com": "aas_et/AKppINbXkKsnvT1uCfWaJiRBhXUEBdJv6j7kEDRcNamr3myR6ujaj3_qGraZHflKQKsQyLQ3KVX1W6kL3GykE4XCHlLXqBwAR352E7nkJ5SQKwzRH6ZdzU6OeHyhPEqU6rcFpbGH0w9A45I2rzndt1wgh60Dut-0q2bMLBfaKOBIH6kWHToAjOOUrLw1Cf2nNwOMpqrcv6_staeZ22EdFjSf2Vx7xa3in-kKoE_deo8S"
-    }
+    KNOWN_MASTER_TOKENS = load_known_tokens()
 
     if email in KNOWN_MASTER_TOKENS:
         master_token = KNOWN_MASTER_TOKENS[email]
@@ -341,9 +368,7 @@ def restore_session():
     if not android_id:
         android_id = generate_android_id()
 
-    KNOWN_MASTER_TOKENS = {
-        "mdd145712@gmail.com": "aas_et/AKppINbXkKsnvT1uCfWaJiRBhXUEBdJv6j7kEDRcNamr3myR6ujaj3_qGraZHflKQKsQyLQ3KVX1W6kL3GykE4XCHlLXqBwAR352E7nkJ5SQKwzRH6ZdzU6OeHyhPEqU6rcFpbGH0w9A45I2rzndt1wgh60Dut-0q2bMLBfaKOBIH6kWHToAjOOUrLw1Cf2nNwOMpqrcv6_staeZ22EdFjSf2Vx7xa3in-kKoE_deo8S"
-    }
+    KNOWN_MASTER_TOKENS = load_known_tokens()
 
     if not master_token and email in KNOWN_MASTER_TOKENS:
         master_token = KNOWN_MASTER_TOKENS[email]
@@ -377,6 +402,7 @@ def restore_session():
             }
 
     session_id = f"sess_{android_id}"
+    save_known_token(email, master_token)
     SESSIONS[session_id] = {
         "email": email,
         "master_token": master_token,
