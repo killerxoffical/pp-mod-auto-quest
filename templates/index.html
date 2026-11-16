@@ -505,22 +505,19 @@
             font-size: 16px;
         }
 
+        /* Hide Player ID tag as requested */
         .player-id-tag {
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-top: 3px;
-            font-family: monospace;
-            font-weight: 600;
+            display: none !important;
         }
 
         .account-email {
-            font-size: 12px;
+            font-size: 13px;
             color: var(--accent-blue);
             margin-top: 3px;
-            font-weight: 600;
+            font-weight: 700;
         }
 
-        /* XP Progress Bar */
+        /* XP Progress Bar - Official Google Play Games Style */
         .xp-container {
             background: var(--bg-card-subtle);
             padding: 16px;
@@ -532,7 +529,7 @@
             display: flex;
             justify-content: space-between;
             align-items: baseline;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .xp-title {
@@ -544,14 +541,55 @@
         }
 
         .xp-numbers {
-            font-size: 18px;
-            font-weight: 800;
+            font-size: 19px;
+            font-weight: 900;
             color: var(--accent-green);
         }
 
+        /* Running Level on left, Next Level on right */
+        .xp-track-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 12px 0 8px;
+        }
+
+        .level-pill {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            font-size: 9px;
+            font-weight: 800;
+            line-height: 1.1;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .level-pill b {
+            font-size: 15px;
+            font-weight: 900;
+        }
+
+        .level-pill.current {
+            background: linear-gradient(135deg, #00A854, #0284c7);
+            color: #ffffff;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 12px rgba(0, 168, 84, 0.3);
+        }
+
+        .level-pill.next {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
         .xp-bar-bg {
-            width: 100%;
-            height: 12px;
+            flex: 1;
+            height: 14px;
             background: rgba(0, 0, 0, 0.08);
             border-radius: 20px;
             overflow: hidden;
@@ -559,24 +597,49 @@
         }
 
         :root[data-theme="dark"] .xp-bar-bg {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.12);
         }
 
         .xp-bar-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--accent-green), #0284c7);
+            background: linear-gradient(90deg, #00A854, #0284c7, #38bdf8);
             border-radius: 20px;
-            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 0 10px var(--accent-glow);
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 10px rgba(0, 168, 84, 0.35);
         }
 
-        .xp-subtext {
+        .xp-info-row {
             display: flex;
+            align-items: center;
             justify-content: space-between;
-            font-size: 11px;
+            font-size: 12px;
+            margin-top: 6px;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .xp-needed-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: var(--accent-green-subtle);
+            color: var(--accent-green);
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 12px;
+            border: 1px solid rgba(0, 168, 84, 0.2);
+        }
+
+        .xp-needed-badge b {
+            color: #0284c7;
+            font-size: 13px;
+        }
+
+        .xp-range-text {
             color: var(--text-muted);
-            margin-top: 8px;
-            font-weight: 600;
+            font-size: 11px;
+            font-weight: 700;
         }
 
         .profile-actions {
@@ -889,23 +952,44 @@
                         <span id="playerDisplayName">GamerTag</span>
                         <span class="verified-icon">✓</span>
                     </h2>
-                    <div id="playerIdTag" class="player-id-tag">ID: a_000000000000</div>
                     <div id="accountEmailTag" class="account-email">user@gmail.com</div>
                 </div>
             </div>
 
-            <!-- XP Progress -->
+            <!-- XP Progress (Google Play Games Style) -->
             <div class="xp-container">
                 <div class="xp-header">
                     <span class="xp-title">⭐ Google Play Games XP</span>
                     <span id="playerCurrentXp" class="xp-numbers">204,000 XP</span>
                 </div>
-                <div class="xp-bar-bg">
-                    <div id="playerXpFill" class="xp-bar-fill" style="width: 70%;"></div>
+
+                <!-- Running Level on Left, Progress Bar in Center, Next Level on Right -->
+                <div class="xp-track-row">
+                    <div class="level-pill current">
+                        <span>LVL</span>
+                        <b id="barCurrentLvlNum">16</b>
+                    </div>
+
+                    <div class="xp-bar-bg">
+                        <div id="playerXpFill" class="xp-bar-fill" style="width: 70%;"></div>
+                    </div>
+
+                    <div class="level-pill next">
+                        <span>LVL</span>
+                        <b id="barNextLvlNum">17</b>
+                    </div>
                 </div>
-                <div class="xp-subtext">
-                    <span id="minXpLabel">200,000 XP</span>
-                    <span id="nextLevelLabel">Next: Level 17 (250,000 XP)</span>
+
+                <!-- XP Needed for Next Level & XP Range -->
+                <div class="xp-info-row">
+                    <div class="xp-needed-badge">
+                        <span>🎯 পরবর্তী লেভেলে যেতে আর</span>
+                        <b id="xpNeededLabel">46,000 XP</b>
+                        <span>প্রয়োজন</span>
+                    </div>
+                    <div class="xp-range-text">
+                        <span id="minXpLabel">180,000</span> / <span id="maxXpLabel">250,000 XP</span>
+                    </div>
                 </div>
             </div>
 
@@ -1045,7 +1129,10 @@
 
         try {
             const acc = JSON.parse(stored);
-            showToast("⚡ সংরক্ষিত সেশন লোড হচ্ছে...", "info");
+            currentSession = acc;
+            if (acc.profile) {
+                showDashboard(acc.profile, acc.email);
+            }
 
             const res = await fetch(`${API_BASE}/api/session/restore`, {
                 method: "POST",
@@ -1054,23 +1141,16 @@
                     email: acc.email,
                     master_token: acc.master_token,
                     access_token: acc.access_token,
-                    android_id: acc.android_id
+                    android_id: acc.android_id,
+                    profile: acc.profile
                 })
             });
             const data = await res.json();
-            if (data.ok) {
-                currentSession = {
-                    email: acc.email,
-                    master_token: acc.master_token,
-                    access_token: acc.access_token,
-                    android_id: acc.android_id,
-                    profile: data.profile
-                };
+            if (data.ok && data.profile) {
+                currentSession.profile = data.profile;
+                if (data.master_token) currentSession.master_token = data.master_token;
                 saveAccountToStorage(currentSession);
-                showDashboard(currentSession.profile, currentSession.email);
-                showToast(`🎉 স্বাগতম, ${data.profile.display_name}!`, "success");
-            } else {
-                localStorage.removeItem("pq_active_session");
+                updateProfileUI(currentSession.profile, currentSession.email);
             }
         } catch (e) {
             console.error("Auto-restore error:", e);
@@ -1080,8 +1160,18 @@
     function switchSavedAccount(email) {
         const target = savedAccounts.find(a => a.email === email);
         if (target) {
+            currentSession = target;
             localStorage.setItem("pq_active_session", JSON.stringify(target));
-            autoRestoreSession();
+            showDashboard(target.profile || {
+                display_name: target.email.split("@")[0],
+                current_level: 16,
+                current_xp: 204000,
+                min_xp: 180000,
+                max_xp: 250000,
+                next_level: 17,
+                progress_pct: 70
+            }, target.email);
+            showToast(`🎉 স্বাগতম, ${target.profile?.display_name || target.email}!`, "success");
         }
     }
 
@@ -1188,16 +1278,39 @@
     }
 
     function updateProfileUI(profile, email) {
-        document.getElementById("playerAvatar").src = profile.avatar_url;
-        document.getElementById("playerLevelBadge").innerText = `LVL ${profile.current_level}`;
+        document.getElementById("playerAvatar").src = profile.avatar_url || "https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512";
+        const curLvl = profile.current_level || 1;
+        const nextLvl = profile.next_level || (curLvl + 1);
+        document.getElementById("playerLevelBadge").innerText = `LVL ${curLvl}`;
         document.getElementById("playerDisplayName").innerText = profile.display_name || "Gamer";
-        document.getElementById("playerIdTag").innerText = `ID: ${profile.player_id}`;
-        document.getElementById("accountEmailTag").innerText = email || currentSession?.email;
+        document.getElementById("accountEmailTag").innerText = email || currentSession?.email || "";
 
-        document.getElementById("playerCurrentXp").innerText = `${Number(profile.current_xp).toLocaleString()} XP`;
-        document.getElementById("playerXpFill").style.width = `${profile.progress_pct || 70}%`;
-        document.getElementById("minXpLabel").innerText = `${Number(profile.min_xp).toLocaleString()} XP`;
-        document.getElementById("nextLevelLabel").innerText = `Next: Level ${profile.next_level} (${Number(profile.max_xp).toLocaleString()} XP)`;
+        // Running level on left, Next level on right
+        const barCurLvl = document.getElementById("barCurrentLvlNum");
+        if (barCurLvl) barCurLvl.innerText = curLvl;
+        const barNxtLvl = document.getElementById("barNextLvlNum");
+        if (barNxtLvl) barNxtLvl.innerText = nextLvl;
+
+        // Current XP and XP needed for next level
+        const curXp = Number(profile.current_xp || 0);
+        const minXp = Number(profile.min_xp || 0);
+        const maxXp = Number(profile.max_xp || (curXp + 10000));
+        const neededXp = Math.max(0, maxXp - curXp);
+
+        document.getElementById("playerCurrentXp").innerText = `${curXp.toLocaleString()} XP`;
+        const neededLbl = document.getElementById("xpNeededLabel");
+        if (neededLbl) neededLbl.innerText = `${neededXp.toLocaleString()} XP`;
+        const minLbl = document.getElementById("minXpLabel");
+        if (minLbl) minLbl.innerText = `${minXp.toLocaleString()} XP`;
+        const maxLbl = document.getElementById("maxXpLabel");
+        if (maxLbl) maxLbl.innerText = `${maxXp.toLocaleString()} XP`;
+
+        const span = maxXp - minXp;
+        let pct = profile.progress_pct;
+        if (pct === undefined && span > 0) {
+            pct = Math.min(100, Math.max(0, Math.round(((curXp - minXp) / span) * 100)));
+        }
+        document.getElementById("playerXpFill").style.width = `${pct || 70}%`;
     }
 
     // Load Games
