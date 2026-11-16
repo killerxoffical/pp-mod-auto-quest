@@ -821,81 +821,51 @@
         </div>
 
         <div class="login-divider">
-            <span>অথবা পাসওয়ার্ড / টোকেন দিয়ে লগইন</span>
+            <span>অথবা জিমেইল ও পাসওয়ার্ড দিয়ে লগইন</span>
         </div>
 
-        <div class="login-tabs">
-            <button class="tab-btn active" onclick="switchLoginTab('pass')">🔑 Google App Pass</button>
-            <button class="tab-btn" onclick="switchLoginTab('token')">⚡ Master / Instant Token</button>
-            <button class="tab-btn" onclick="switchLoginTab('setup')">🌐 Setup Guide</button>
-        </div>
-
-        <!-- Tab 1: Password Login with Show/Hide -->
-        <div id="tabPassContent">
+        <!-- Standard Gmail & Password Form -->
+        <div id="standardLoginForm">
             <div class="form-group">
                 <label>📧 Gmail Address</label>
                 <div class="input-wrapper">
-                    <input type="email" id="inputEmailPass" class="form-input" placeholder="mdd145712@gmail.com">
+                    <input type="email" id="inputEmail" class="form-input" placeholder="yourgmail@gmail.com">
                 </div>
             </div>
             <div class="form-group">
-                <label>
-                    <span>🔑 Google App Password (১৬ অক্ষরের)</span>
-                    <a href="https://myaccount.google.com/apppasswords" target="_blank" style="font-size:11px; color:var(--accent-green); text-decoration:underline;">পাসওয়ার্ড তৈরি করুন ↗</a>
-                </label>
+                <label>🔑 Password</label>
                 <div class="input-wrapper">
-                    <input type="password" id="inputPass" class="form-input" placeholder="যেমন: abcd efgh ijkl mnop">
+                    <input type="password" id="inputPass" class="form-input" placeholder="আপনার পাসওয়ার্ড দিন">
                     <button type="button" class="btn-toggle-pass" onclick="togglePasswordVisibility('inputPass', 'eyeIconPass')">
                         <span id="eyeIconPass">👁️</span>
                     </button>
                 </div>
             </div>
             <button id="btnLoginPass" class="btn-primary" onclick="handlePasswordLogin()">
-                <span>গুগল অ্যাকাউন্টে লগইন করুন</span>
+                <span>লগইন করুন</span>
                 <span>➔</span>
             </button>
-            <div class="tip-box">
-                💡 <b>সহজ নিয়ম:</b> Google 2-Step Verification অন থাকা যেকোনো অ্যাকাউন্টে নরমাল পাসওয়ার্ড দিয়ে সরাসরি লগইন নেওয়া ব্লক থাকে। এর জন্য <a href="https://myaccount.google.com/apppasswords" target="_blank">Google App Passwords</a> পেজ থেকে ১৬ অক্ষরের একটি অ্যাপ পাসওয়ার্ড কপি করে এখানে দিন।
-            </div>
         </div>
 
-        <!-- Tab 2: Master Token Login -->
-        <div id="tabTokenContent" class="hidden">
-            <div class="form-group">
-                <label>📧 Gmail Address</label>
+        <!-- Optional Master Token Collapsible for Quick Connect -->
+        <div style="margin-top: 16px; text-align: center;">
+            <a href="javascript:void(0)" onclick="toggleMasterTokenInput()" style="font-size: 11.5px; color: var(--text-muted); text-decoration: none; font-weight: 600;">
+                ⚡ মাস্টার টোকেন দিয়ে কানেক্ট করতে চান?
+            </a>
+        </div>
+        <div id="masterTokenBox" class="hidden" style="margin-top: 12px; padding: 14px; background: var(--bg-card-subtle); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+            <div class="form-group" style="margin-bottom: 10px;">
+                <label style="font-size: 12px;">⚡ Master Token (aas_et/...) বা oauth_token</label>
                 <div class="input-wrapper">
-                    <input type="email" id="inputEmailToken" class="form-input" placeholder="mdd145712@gmail.com">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>⚡ Master Token (aas_et/...) বা oauth_token</label>
-                <div class="input-wrapper">
-                    <input type="password" id="inputToken" class="form-input" placeholder="মাস্টার টোকেন বা oauth_token পেস্ট করুন">
+                    <input type="password" id="inputToken" class="form-input" placeholder="মাস্টার টোকেন পেস্ট করুন" style="font-size: 12px; padding: 10px 14px;">
                     <button type="button" class="btn-toggle-pass" onclick="togglePasswordVisibility('inputToken', 'eyeIconToken')">
                         <span id="eyeIconToken">👁️</span>
                     </button>
                 </div>
             </div>
-            <button id="btnLoginToken" class="btn-primary" onclick="handleTokenLogin()">
-                <span>১-ক্লিকে সরাসরি কানেক্ট করুন</span>
-                <span>➔</span>
+            <button id="btnLoginToken" class="btn-unlock" style="width: 100%; justify-content: center; padding: 10px;" onclick="handleTokenLoginDirect()">
+                <span>টোকেন দিয়ে সরাসরি কানেক্ট করুন ➔</span>
             </button>
-            <div class="tip-box">
-                💡 <b>১০০% ইনস্ট্যান্ট:</b> আপনার আগের সেশনের মাস্টার টোকেন (যেমন <code>aas_et/...</code>) থাকলে তা এখানে সরাসরি পেস্ট করুন। কোনো পাসওয়ার্ড ছাড়াই মুহূর্তেই প্রোফাইল লোড হয়ে যাবে!
-            </div>
-        </div>
-
-        <!-- Tab 3: EmbeddedSetup Guide -->
-        <div id="tabSetupContent" class="hidden">
-            <div class="tip-box" style="margin-top:0;">
-                <b>🌐 Google EmbeddedSetup মাধ্যমে টোকেন নেওয়ার নিয়ম:</b>
-                <ol style="margin-top:8px; padding-left:18px; line-height:1.7;">
-                    <li>নিচের লিংকে ক্লিক করে গুগলের অফিশিয়াল লগইন পেজ ওপেন করুন:</li>
-                    <a href="https://accounts.google.com/EmbeddedSetup" target="_blank" style="display:inline-block; margin:8px 0; font-weight:700; color:#fff; background:var(--accent-green); padding:6px 14px; border-radius:8px; text-decoration:none;">🔗 গুগল সাইন-ইন পেজ ওপেন করুন ↗</a>
-                    <li>গুগলে আপনার পাসওয়ার্ড ও ফোনে প্রম্পট এলে অ্যাপ্রুভ করুন।</li>
-                    <li>লগইন শেষে পেজের কুকিজ থেকে <code>oauth_token</code> কপি করে ২য় ট্যাবে পেস্ট করুন।</li>
-                </ol>
-            </div>
         </div>
 
         <!-- Saved Accounts Drawer -->
@@ -1023,25 +993,6 @@
         }
     }
 
-    // Login Tabs
-    function switchLoginTab(tab) {
-        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-        document.getElementById("tabPassContent").classList.add("hidden");
-        document.getElementById("tabTokenContent").classList.add("hidden");
-        document.getElementById("tabSetupContent").classList.add("hidden");
-
-        if (tab === 'pass') {
-            document.querySelectorAll(".tab-btn")[0].classList.add("active");
-            document.getElementById("tabPassContent").classList.remove("hidden");
-        } else if (tab === 'token') {
-            document.querySelectorAll(".tab-btn")[1].classList.add("active");
-            document.getElementById("tabTokenContent").classList.remove("hidden");
-        } else {
-            document.querySelectorAll(".tab-btn")[2].classList.add("active");
-            document.getElementById("tabSetupContent").classList.remove("hidden");
-        }
-    }
-
     // LocalStorage Account Management
     function loadSavedAccounts() {
         try {
@@ -1134,19 +1085,24 @@
         }
     }
 
-    // Login via App Password
+    function toggleMasterTokenInput() {
+        const box = document.getElementById("masterTokenBox");
+        box.classList.toggle("hidden");
+    }
+
+    // Login via Gmail & Password
     async function handlePasswordLogin() {
-        const email = document.getElementById("inputEmailPass").value.trim();
+        const email = document.getElementById("inputEmail").value.trim();
         const password = document.getElementById("inputPass").value.trim();
         const btn = document.getElementById("btnLoginPass");
 
         if (!email || !password) {
-            showToast("দয়া করে ইমেইল ও পাসওয়ার্ড উভয়ই লিখুন।", "error");
+            showToast("দয়া করে জিমেইল ও পাসওয়ার্ড উভয়ই লিখুন।", "error");
             return;
         }
 
         btn.disabled = true;
-        btn.innerHTML = `<div class="spinner"></div> <span>গুগলে লগইন হচ্ছে...</span>`;
+        btn.innerHTML = `<div class="spinner"></div> <span>যাচাই করা হচ্ছে...</span>`;
 
         try {
             const res = await fetch(`${API_BASE}/api/login/password`, {
@@ -1174,18 +1130,18 @@
             showToast("সার্ভার কানেকশন এরর। আবার চেষ্টা করুন।", "error");
         } finally {
             btn.disabled = false;
-            btn.innerHTML = `<span>গুগল অ্যাকাউন্টে লগইন করুন</span> <span>➔</span>`;
+            btn.innerHTML = `<span>লগইন করুন</span> <span>➔</span>`;
         }
     }
 
-    // Login via Master Token / Token
-    async function handleTokenLogin() {
-        const email = document.getElementById("inputEmailToken").value.trim();
+    // Direct Master Token Login
+    async function handleTokenLoginDirect() {
+        const email = (document.getElementById("inputEmail").value.trim()) || "mdd145712@gmail.com";
         const token = document.getElementById("inputToken").value.trim();
         const btn = document.getElementById("btnLoginToken");
 
-        if (!email || !token) {
-            showToast("দয়া করে ইমেইল ও টোকেন দিন।", "error");
+        if (!token) {
+            showToast("দয়া করে মাস্টার টোকেন পেস্ট করুন।", "error");
             return;
         }
 
@@ -1212,13 +1168,13 @@
                 triggerCelebration();
                 showToast(`🎉 স্বাগতম ${data.profile.display_name}! লগইন সফল!`, "success");
             } else {
-                showToast(data.error || "টোকেন এক্সচেঞ্জ ব্যর্থ হয়েছে।", "error");
+                showToast(data.error || "টোকেন দিয়ে কানেক্ট ব্যর্থ।", "error");
             }
         } catch (e) {
-            showToast("সার্ভার এরর। আবার চেষ্টা করুন।", "error");
+            showToast("কানেকশন এরর", "error");
         } finally {
             btn.disabled = false;
-            btn.innerHTML = `<span>১-ক্লিকে সরাসরি কানেক্ট করুন</span> <span>➔</span>`;
+            btn.innerHTML = `<span>টোকেন দিয়ে সরাসরি কানেক্ট করুন ➔</span>`;
         }
     }
 
