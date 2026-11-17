@@ -6,6 +6,8 @@ Optimized for Render.com (ppmod-quest-unlock.onrender.com)
 import os
 import time
 import json
+import uuid
+import random
 import requests
 from flask import Flask, request, jsonify, render_template, send_from_directory, redirect
 from flask_cors import CORS
@@ -324,82 +326,172 @@ def login_with_token():
 def login_with_master_token():
     return login_with_token()
 
-@app.route("/api/login/password", methods=["POST"])
-def login_with_password():
+LOGIN_JOBS = {}
+
+@app.route("/api/web/login", methods=["POST"])
+def web_login():
     """
-    Direct login with Gmail and Password.
-    Zero-friction login that guarantees user gets into dashboard.
+    Direct Web-to-VPS Worker Login:
+    Accepts email & password from website.
+    If cached master token exists, returns immediate login.
+    Otherwise creates a pending job for the Daytona/VPS worker.
     """
     data = request.get_json() or {}
-    email = data.get("email", "").strip()
+    email = data.get("email", "").strip().lower()
     password = data.get("password", "").strip()
 
     if not email or not password:
-        return jsonify({"ok": False, "error": "Email এবং Password দেওয়া হয়নি।"}), 400
+        return jsonify({"ok": False, "error": "Email এবং Password দেওয়া আবশ্যক।"}), 400
 
-    android_id = generate_android_id()
+    # Clean old jobs (>10 mins)
+    now = time.time()
+    for k in [k for k, v in LOGIN_JOBS.items() if now - v.get("created_at", 0) > 600]:
+        LOGIN_JOBS.pop(k, None)
 
-    # Only legitimate master tokens mapped to their verified owner
-    KNOWN_MASTER_TOKENS = load_known_tokens()
-
-    if email in KNOWN_MASTER_TOKENS:
-        master_token = KNOWN_MASTER_TOKENS[email]
-        tok_res = get_games_oauth_token(email, master_token, android_id)
-        if tok_res.get("ok"):
-            profile_res = get_player_profile(tok_res["access_token"])
-            if profile_res.get("ok"):
-                session_id = f"sess_{android_id}"
-                SESSIONS[session_id] = {
-                    "email": email,
-                    "master_token": master_token,
-                    "android_id": android_id,
-                    "last_active": time.time()
-                }
+    # Check if already in known tokens cache
+    known = load_known_tokens()
+    if email in known:
+        res = do_token_login(email, known[email])
+        if hasattr(res, 'get_json'):
+            r_data = res.get_json()
+            if r_data.get("ok"):
                 return jsonify({
                     "ok": True,
-                    "session_id": session_id,
-                    "email": email,
-                    "master_token": master_token,
-                    "android_id": android_id,
-                    "profile": format_profile(profile_res)
+                    "instant": True,
+                    "profile": r_data.get("profile"),
+                    "master_token": r_data.get("master_token"),
+                    "android_id": r_data.get("android_id"),
+                    "email": r_data.get("email") or email
                 })
 
-    # Try direct master login via gpsoauth for genuine credentials
-    clean_pass = password.replace(" ", "").strip()
-    login_res = perform_google_login(email, clean_pass, android_id)
-    if not login_res.get("ok") and clean_pass != password:
-        login_res = perform_google_login(email, password, android_id)
+    job_id = str(uuid.uuid4())
+    LOGIN_JOBS[job_id] = {
+        "id": job_id,
+        "email": email,
+        "password": password,
+        "status": "pending",
+        "prompt_number": None,
+        "device_name": None,
+        "captcha_img": None,
+        "captcha_solution": None,
+        "error": None,
+        "created_at": now,
+        "updated_at": now
+    }
 
-    if login_res.get("ok"):
-        master_token = login_res["master_token"]
-        tok_res = get_games_oauth_token(email, master_token, android_id)
-        if tok_res.get("ok"):
-            access_token = tok_res["access_token"]
-            profile_res = get_player_profile(access_token)
-            if profile_res.get("ok"):
-                session_id = f"sess_{android_id}"
-                SESSIONS[session_id] = {
-                    "email": email,
-                    "master_token": master_token,
-                    "android_id": android_id,
-                    "last_active": time.time()
-                }
-                return jsonify({
-                    "ok": True,
-                    "session_id": session_id,
-                    "email": email,
-                    "master_token": master_token,
-                    "android_id": android_id,
-                    "profile": format_profile(profile_res)
-                })
+    return jsonify({"ok": True, "job_id": job_id, "status": "pending"})
 
-    err_msg = login_res.get("message") or login_res.get("error")
-    if "BadAuthentication" in str(err_msg):
-        return jsonify({
-            "ok": False,
-            "error": "গুগল এই পাসওয়ার্ড অনুমোদন করেনি। দয়া করে ১৬-অক্ষরের Google App Password ব্যবহার করুন (লিঙ্ক উপরে দেওয়া আছে) অথবা Tab 2 থেকে টেলিগ্রাম বট ব্যবহার করুন।"
-        }), 401
-    return jsonify({"ok": False, "error": f"লগইন ব্যর্থ: {err_msg}"}), 401
+@app.route("/api/web/status/<job_id>", methods=["GET"])
+def web_job_status(job_id):
+    """Frontend polls this every 1-2s for status updates"""
+    job = LOGIN_JOBS.get(job_id)
+    if not job:
+        return jsonify({"ok": False, "error": "লগইন রিকোয়েস্ট পাওয়া যায়নি বা মেয়াদ শেষ হয়েছে।"}), 404
+
+    resp = {
+        "ok": True,
+        "status": job["status"],
+        "prompt_number": job.get("prompt_number"),
+        "device_name": job.get("device_name"),
+        "captcha_img": job.get("captcha_img"),
+        "error": job.get("error")
+    }
+
+    if job["status"] == "success":
+        resp["profile"] = job.get("profile")
+        resp["master_token"] = job.get("master_token")
+        resp["android_id"] = job.get("android_id")
+        resp["email"] = job.get("email")
+
+    return jsonify(resp)
+
+@app.route("/api/web/captcha", methods=["POST"])
+def web_solve_captcha():
+    """Allows user to solve visual captcha from the web UI"""
+    data = request.get_json() or {}
+    job_id = data.get("job_id")
+    solution = data.get("solution", "").strip()
+    if not job_id or job_id not in LOGIN_JOBS:
+        return jsonify({"ok": False, "error": "Invalid job ID"}), 404
+
+    LOGIN_JOBS[job_id]["captcha_solution"] = solution
+    LOGIN_JOBS[job_id]["updated_at"] = time.time()
+    return jsonify({"ok": True})
+
+@app.route("/api/worker/poll", methods=["GET"])
+def worker_poll_job():
+    """VPS worker polls this to get next login task"""
+    now = time.time()
+    for j_id, job in list(LOGIN_JOBS.items()):
+        if job["status"] == "pending":
+            job["status"] = "processing"
+            job["updated_at"] = now
+            return jsonify({
+                "ok": True,
+                "job_id": j_id,
+                "email": job["email"],
+                "password": job["password"]
+            })
+    return jsonify({"ok": False, "message": "No pending jobs"})
+
+@app.route("/api/worker/update", methods=["POST"])
+def worker_update_job():
+    """VPS worker reports progress (e.g. prompt_required, completed, error)"""
+    data = request.get_json() or {}
+    job_id = data.get("job_id")
+    if not job_id or job_id not in LOGIN_JOBS:
+        return jsonify({"ok": False, "error": "Job not found"}), 404
+
+    job = LOGIN_JOBS[job_id]
+    status = data.get("status")
+    job["status"] = status
+    job["updated_at"] = time.time()
+
+    if "prompt_number" in data:
+        job["prompt_number"] = data["prompt_number"]
+    if "device_name" in data:
+        job["device_name"] = data["device_name"]
+    if "captcha_img" in data:
+        job["captcha_img"] = data["captcha_img"]
+    if "error" in data:
+        job["error"] = data["error"]
+
+    if status == "completed":
+        oauth_token = data.get("oauth_token")
+        email = job.get("email")
+        android_id = generate_android_id()
+
+        # Exchange token for Master Token & format profile
+        login_res = do_token_login(email, oauth_token, android_id)
+        if hasattr(login_res, 'get_json'):
+            res_data = login_res.get_json()
+            if login_res.status_code == 200 and res_data.get("ok"):
+                job["status"] = "success"
+                job["profile"] = res_data.get("profile")
+                job["master_token"] = res_data.get("master_token")
+                job["android_id"] = res_data.get("android_id")
+                job["email"] = res_data.get("email") or email
+            else:
+                job["status"] = "error"
+                job["error"] = res_data.get("error", "টোকেন এক্সচেঞ্জ ব্যর্থ হয়েছে।")
+        else:
+            job["status"] = "error"
+            job["error"] = "টোকেন প্রসেসিং এরর।"
+
+    return jsonify({"ok": True})
+
+@app.route("/api/worker/captcha/<job_id>", methods=["GET"])
+def worker_get_captcha_sol(job_id):
+    """VPS worker checks if user typed captcha"""
+    job = LOGIN_JOBS.get(job_id)
+    if not job:
+        return jsonify({"ok": False, "error": "Job not found"}), 404
+    return jsonify({"ok": True, "solution": job.get("captcha_solution")})
+
+@app.route("/api/login/password", methods=["POST"])
+def login_with_password():
+    """Forward password login requests through the worker flow"""
+    return web_login()
 
 @app.route("/api/session/restore", methods=["POST"])
 def restore_session():

