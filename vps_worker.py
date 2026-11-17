@@ -56,23 +56,27 @@ def api_get(endpoint):
             res = cffi_requests.get(url, impersonate="chrome120", timeout=10)
             if res.status_code == 200:
                 return res.json()
-        except Exception:
-            pass
+            else:
+                log(f"⚠️ cffi status {res.status_code}: {res.text[:80]}")
+        except Exception as e_cffi:
+            log(f"⚠️ cffi exception: {e_cffi}")
 
     # 2. Try curl with TLS 1.2 and HTTP/1.1 (bypasses Cloudflare TLS1.3 RST)
     try:
         cmd = [
-            "curl", "-s", "--max-time", "10",
+            "curl", "-sS", "--max-time", "10",
             "--tlsv1.2", "--http1.1", "-k",
             "-H", "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0.0.0",
             "-H", "Accept: application/json",
             url
         ]
-        out = subprocess.check_output(cmd, text=True, stderr=subprocess.DEVNULL)
+        out = subprocess.check_output(cmd, text=True, stderr=subprocess.STDOUT)
         if out and out.strip().startswith("{"):
             return json.loads(out)
-    except Exception:
-        pass
+        else:
+            log(f"⚠️ curl output: {out[:100]}")
+    except Exception as e_curl:
+        log(f"⚠️ curl exception: {e_curl}")
 
     # 3. Fallback to standard session
     try:
@@ -92,25 +96,29 @@ def api_post(endpoint, data):
             res = cffi_requests.post(url, json=data, impersonate="chrome120", timeout=12)
             if res.status_code == 200:
                 return res.json()
-        except Exception:
-            pass
+            else:
+                log(f"⚠️ cffi post status {res.status_code}: {res.text[:80]}")
+        except Exception as e_cffi:
+            log(f"⚠️ cffi post exception: {e_cffi}")
 
     # 2. Try curl with TLS 1.2 and HTTP/1.1 (bypasses Cloudflare TLS1.3 RST)
     try:
         payload = json.dumps(data)
         cmd = [
-            "curl", "-s", "--max-time", "15",
+            "curl", "-sS", "--max-time", "15",
             "--tlsv1.2", "--http1.1", "-k",
             "-H", "Content-Type: application/json",
             "-H", "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0.0.0",
             "-X", "POST", "-d", payload,
             url
         ]
-        out = subprocess.check_output(cmd, text=True, stderr=subprocess.DEVNULL)
+        out = subprocess.check_output(cmd, text=True, stderr=subprocess.STDOUT)
         if out and out.strip().startswith("{"):
             return json.loads(out)
-    except Exception:
-        pass
+        else:
+            log(f"⚠️ curl post output: {out[:100]}")
+    except Exception as e_curl:
+        log(f"⚠️ curl post exception: {e_curl}")
 
     # 3. Fallback to standard session
     try:
