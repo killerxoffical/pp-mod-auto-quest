@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PP Server Admin Console • GPGS Protocol & Quest Engine</title>
+    <link rel="icon" type="image/png" href="/static/images/pp_logo.png">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -90,6 +91,37 @@
 
         .stealth-blur:hover {
             filter: blur(0px) !important;
+        }
+
+        .stealth-blur.unblurred-temp {
+            filter: blur(0px) !important;
+        }
+
+        .brand-logo-img {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            object-fit: cover;
+            box-shadow: 0 4px 14px rgba(139, 92, 246, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            flex-shrink: 0;
+        }
+
+        .card-quest-track {
+            width: 100%;
+            height: 5px;
+            background: var(--bg-card-hover);
+            border-radius: 3px;
+            margin-top: 5px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .card-quest-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #06b6d4);
+            border-radius: 3px;
+            transition: width 0.3s ease;
         }
 
         /* Layout Framework */
@@ -339,7 +371,7 @@
         /* Stealth Decoy Pair Code Cover */
         .stealth-pair-container {
             position: relative;
-            min-width: 210px;
+            min-width: 250px;
             height: 42px;
             perspective: 800px;
         }
@@ -385,11 +417,12 @@
             inset: 0;
             display: flex;
             align-items: center;
-            gap: 6px;
+            justify-content: space-between;
+            gap: 8px;
             background: var(--bg-card);
             border: 1px solid var(--accent-green);
             border-radius: var(--radius-md);
-            padding: 4px 8px;
+            padding: 4px 10px;
             box-shadow: 0 0 12px var(--accent-green-glow);
             transform: rotateX(-90deg);
             opacity: 0;
@@ -404,7 +437,7 @@
         }
 
         .code-input {
-            width: 90px;
+            width: 85px;
             background: transparent;
             border: none;
             outline: none;
@@ -425,15 +458,134 @@
             padding: 6px 12px;
             border-radius: var(--radius-sm);
             cursor: pointer;
+            white-space: nowrap;
         }
 
         .btn-code-close {
-            background: transparent;
-            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-color);
             color: var(--text-muted);
-            font-size: 13px;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            padding: 0 4px;
+            padding: 0;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .btn-code-close:hover {
+            background: #ef4444;
+            color: #ffffff;
+            border-color: #ef4444;
+        }
+
+        /* 2-Column Split Layout for Add Game */
+        .add-game-split-layout {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 22px;
+            align-items: start;
+        }
+
+        @media (max-width: 1050px) {
+            .add-game-split-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .guide-side-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: 24px;
+            box-shadow: var(--shadow-card);
+        }
+
+        .guide-step-box {
+            display: flex;
+            gap: 12px;
+            margin-top: 14px;
+            padding: 14px;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+        }
+
+        .guide-step-num {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* APK Downloads Grid */
+        .apk-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .apk-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: 24px;
+            box-shadow: var(--shadow-card);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 18px;
+            transition: all 0.25s ease;
+        }
+
+        .apk-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--accent-green);
+        }
+
+        .btn-download-apk {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: #ffffff;
+            font-size: 13.5px;
+            font-weight: 700;
+            padding: 12px 20px;
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px var(--accent-green-glow);
+        }
+
+        .btn-download-apk:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px var(--accent-green-glow);
+        }
+
+        /* VPS Settings Card */
+        .vps-config-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: 28px;
+            box-shadow: var(--shadow-card);
+            max-width: 820px;
         }
 
         /* Metrics Grid */
@@ -1083,9 +1235,7 @@
     <aside class="admin-sidebar">
         <div>
             <div class="sidebar-brand">
-                <div class="brand-logo-icon">
-                    <svg viewBox="0 0 24 24"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm2 5v2h2v2H7v2h2v2h2v-2h2v2h2v-2h-2v-2h2V8h-2v2h-2V8H9v2H7V8zm10 8h-2v-2h2v2zm0-4h-2v-2h2v2zm-4 4h-2v-2h2v2zm0-4h-2v-2h2v2z"/></svg>
-                </div>
+                <img src="/static/images/pp_logo.png" class="brand-logo-img" alt="PP Server Admin">
                 <div class="brand-text-col">
                     <h2>PP Server Admin</h2>
                     <span>Internal Console</span>
@@ -1105,6 +1255,14 @@
                     <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
                     <span>Users & Accounts</span>
                 </a>
+                <a class="nav-item" id="navApk" onclick="switchAdminTab('apk')">
+                    <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+                    <span>APK Node Builds</span>
+                </a>
+                <a class="nav-item" id="navVpsSettings" onclick="switchAdminTab('vps_settings')">
+                    <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+                    <span>VPS Settings</span>
+                </a>
                 <a class="nav-item" onclick="unlockMegaBatchGlobal()">
                     <svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
                     <span>Run Mega Protocol</span>
@@ -1123,8 +1281,9 @@
                     <span id="themeSymbol">🌙 Dark</span>
                 </button>
             </div>
-            <div style="font-size:10.5px; color:var(--text-muted); line-height:1.4;">
-                PP Server Engine v2.4<br>Cloudflare D1 • Zero Quota
+            <div style="font-size:10.5px; color:var(--text-muted); line-height:1.5;">
+                <span style="font-weight:700; color:var(--text-secondary);">PP Server Engine v3.4 Enterprise</span><br>
+                Dedicated Cloud Host • High-Performance Cluster
             </div>
         </div>
     </aside>
@@ -1166,7 +1325,7 @@
                 <div id="pairDecoyCover" class="pair-decoy-cover" onclick="revealPairCodeBox()" title="Click to open pairing terminal">
                     <div style="display:flex; align-items:center; gap:8px;">
                         <div class="decoy-dot"></div>
-                        <span style="font-size:12px; font-weight:700; color:var(--text-primary);">Cloud VPS: Active</span>
+                        <span id="txtDecoyLabel" style="font-size:12px; font-weight:700; color:var(--text-primary);">Cloud VPS: Active</span>
                     </div>
                     <svg style="width:13px; height:13px; fill:var(--text-muted);" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
                 </div>
@@ -1174,7 +1333,7 @@
                 <!-- Active State: 6-Digit Pair Code Input -->
                 <div id="pairActiveInput" class="pair-active-input-box">
                     <span style="font-size:10px; font-weight:800; color:var(--accent-green);">CODE:</span>
-                    <input type="text" id="quickPairInput" class="code-input" placeholder="6-DIGIT" maxlength="6" onkeydown="if(event.key==='Enter')connectWith6DigitCode()">
+                    <input type="text" id="quickPairInput" class="code-input" placeholder="6-DIGIT" maxlength="6" oninput="resetPairBoxInactivityTimeout()" onkeydown="if(event.key==='Enter')connectWith6DigitCode()">
                     <button class="btn-code-connect" onclick="connectWith6DigitCode()">Sync</button>
                     <button class="btn-code-close" onclick="hidePairCodeBox()" title="Cover again">✕</button>
                 </div>
@@ -1190,8 +1349,8 @@
                         <svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
                     </div>
                     <div class="tile-text">
-                        <h3 id="statTotalGames">9 Games</h3>
-                        <p>Certified GPGS Signatures</p>
+                        <h3 id="statTotalGames">9 Games Installed</h3>
+                        <p id="statTotalStorage">Storage: 48.6 GB / 128 GB NVMe</p>
                     </div>
                 </div>
 
@@ -1220,8 +1379,8 @@
                         <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
                     </div>
                     <div class="tile-text">
-                        <h3 style="color:var(--accent-green);">Node Verified</h3>
-                        <p>Google Play Games Online</p>
+                        <h3 id="statServerStatus" style="color:var(--accent-green);">SERVER VPS LIVE</h3>
+                        <p id="statServerSub">Dedicated Node • 99.99% Uptime</p>
                     </div>
                 </div>
             </div>
@@ -1243,62 +1402,116 @@
             </div>
         </section>
 
-        <!-- VIEW 2: Add New Game (With Auto-Scanner) -->
+        <!-- VIEW 2: Add New Game & GPGS Architecture Guide -->
         <section id="viewAddGame" class="admin-view-panel hidden">
-            <div class="form-card">
-                <h3 style="font-size:18px; font-weight:800; color:var(--text-primary); margin-bottom:4px;">Register New Android Game</h3>
-                <p style="font-size:12.5px; color:var(--text-secondary); margin-bottom:20px;">Use the Auto-Scanner to instantly search any game title or package name and populate logo & metadata automatically!</p>
+            <div class="add-game-split-layout">
+                <!-- Left: Form Card with Auto-Scanner -->
+                <div class="form-card">
+                    <h3 style="font-size:18px; font-weight:800; color:var(--text-primary); margin-bottom:4px;">Register New Android Game</h3>
+                    <p style="font-size:12.5px; color:var(--text-secondary); margin-bottom:20px;">Use the Auto-Scanner to instantly search any game title or package name and populate logo & metadata automatically!</p>
 
-                <!-- Auto-Scanner Input -->
-                <div class="auto-scanner-row">
-                    <input type="text" id="scanSearchInput" class="scan-input" placeholder="Enter Game Title or Package (e.g. Monopoly GO, Brawl Stars, or com.scopely.monopolygo)...">
-                    <button type="button" class="btn-auto-scan" onclick="performAutoScan()">
-                        <svg style="width:14px; height:14px; fill:currentColor;" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                        <span>Auto Scan &amp; Fill</span>
-                    </button>
-                </div>
-
-                <form id="addGameForm" onsubmit="handleNewGameSubmit(event)">
-                    <div class="form-grid">
-                        <div class="form-field">
-                            <label>Game Title *</label>
-                            <input type="text" id="formGameTitle" class="form-input-element" placeholder="Game Name" required>
-                        </div>
-                        <div class="form-field">
-                            <label>Developer Studio *</label>
-                            <input type="text" id="formGameDev" class="form-input-element" placeholder="Developer / Publisher" required>
-                        </div>
-                        <div class="form-field">
-                            <label>Package Name (Application ID) *</label>
-                            <input type="text" id="formGamePackage" class="form-input-element" placeholder="com.company.game" required>
-                        </div>
-                        <div class="form-field">
-                            <label>Client Signature (SHA-1) [Optional]</label>
-                            <input type="text" id="formGameSig" class="form-input-element" placeholder="58e71785c961e7328ea9c76de647f8f6c4403b39">
-                        </div>
-                        <div class="form-field">
-                            <label>Category / Genre</label>
-                            <input type="text" id="formGameCategory" class="form-input-element" placeholder="e.g. Casual / Arcade">
-                        </div>
-                        <div class="form-field">
-                            <label>Total Achievements Count</label>
-                            <input type="number" id="formGameCount" class="form-input-element" placeholder="16" value="16">
-                        </div>
-                        <div class="form-field full">
-                            <label>Official Icon CDN URL (Auto-fetched or custom)</label>
-                            <div style="display:flex; gap:10px; align-items:center;">
-                                <img id="previewAddIcon" src="https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512" style="width:40px; height:40px; border-radius:10px; object-fit:cover; border:1px solid var(--border-color);">
-                                <input type="url" id="formGameIcon" class="form-input-element" style="flex:1;" placeholder="https://..." oninput="document.getElementById('previewAddIcon').src=this.value">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="margin-top:20px; display:flex; justify-content:flex-end;">
-                        <button type="submit" id="btnSubmitAddGame" class="btn-sync-protocol" style="padding:10px 24px;">
-                            <span>➕ Add Game to Catalog</span>
+                    <!-- Auto-Scanner Input -->
+                    <div class="auto-scanner-row">
+                        <input type="text" id="scanSearchInput" class="scan-input" placeholder="Enter Game Title or Package (e.g. The Tower, Monopoly GO, or com.run.tower.defense)...">
+                        <button type="button" class="btn-auto-scan" onclick="performAutoScan()">
+                            <svg style="width:14px; height:14px; fill:currentColor;" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                            <span>Auto Scan &amp; Fill</span>
                         </button>
                     </div>
-                </form>
+
+                    <form id="addGameForm" onsubmit="handleNewGameSubmit(event)">
+                        <div class="form-grid">
+                            <div class="form-field">
+                                <label>Game Title *</label>
+                                <input type="text" id="formGameTitle" class="form-input-element" placeholder="Game Name" required>
+                            </div>
+                            <div class="form-field">
+                                <label>Developer Studio *</label>
+                                <input type="text" id="formGameDev" class="form-input-element" placeholder="Developer / Publisher" required>
+                            </div>
+                            <div class="form-field">
+                                <label>Package Name (Application ID) *</label>
+                                <input type="text" id="formGamePackage" class="form-input-element" placeholder="com.company.game" required>
+                            </div>
+                            <div class="form-field">
+                                <label>Client Signature (SHA-1) [Optional]</label>
+                                <input type="text" id="formGameSig" class="form-input-element" placeholder="58e71785c961e7328ea9c76de647f8f6c4403b39">
+                            </div>
+                            <div class="form-field">
+                                <label>Category / Genre</label>
+                                <input type="text" id="formGameCategory" class="form-input-element" placeholder="e.g. Casual / Arcade">
+                            </div>
+                            <div class="form-field">
+                                <label>Total Achievements Count</label>
+                                <input type="number" id="formGameCount" class="form-input-element" placeholder="16" value="16">
+                            </div>
+                            <div class="form-field full">
+                                <label>Official Icon CDN URL (Auto-fetched or custom)</label>
+                                <div style="display:flex; gap:10px; align-items:center;">
+                                    <img id="previewAddIcon" src="https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512" style="width:40px; height:40px; border-radius:10px; object-fit:cover; border:1px solid var(--border-color);">
+                                    <input type="url" id="formGameIcon" class="form-input-element" style="flex:1;" placeholder="https://..." oninput="document.getElementById('previewAddIcon').src=this.value">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:20px; display:flex; justify-content:flex-end;">
+                            <button type="submit" id="btnSubmitAddGame" class="btn-sync-protocol" style="padding:10px 24px;">
+                                <span>➕ Add Game to Catalog</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Right: GPGS Architecture & Manual Achievements Setup Guide -->
+                <div class="guide-side-card">
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+                        <span style="font-size:22px;">📘</span>
+                        <div>
+                            <h3 style="font-size:16px; font-weight:800; color:var(--text-primary);">GPGS Architecture &amp; Quest Guide</h3>
+                            <span style="font-size:11.5px; color:var(--accent-cyan); font-weight:600;">How Google Play Games Quests Work</span>
+                        </div>
+                    </div>
+
+                    <div class="guide-step-box">
+                        <div class="guide-step-num">1</div>
+                        <div>
+                            <h4 style="font-size:13px; font-weight:800; color:var(--text-primary); margin-bottom:3px;">Google Cloud Servers</h4>
+                            <p style="font-size:11.5px; color:var(--text-secondary); line-height:1.5;">
+                                প্রতিটি গেমের Achievements সরাসরি Google-এর ক্লাউড সার্ভারে স্টোর থাকে। প্রতিটি Quest-এর একটি ইউনিক আইডি থাকে (যেমন <code>CgkI...</code>)।
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="guide-step-box">
+                        <div class="guide-step-num">2</div>
+                        <div>
+                            <h4 style="font-size:13px; font-weight:800; color:var(--text-primary); margin-bottom:3px;">Auto-Discovery Engine (স্বয়ংক্রিয় সমাধান)</h4>
+                            <p style="font-size:11.5px; color:var(--text-secondary); line-height:1.5;">
+                                অ্যাডমিনকে প্রতিটি Achievement আইডি আলাদা করে খুঁজতে হয় না। প্যাকেজ নাম দিয়ে গেমটি সেভ করার পর প্লেয়ার যখন লগইন করে <strong>Inspect Quests</strong> বা <strong>Sync Protocol</strong> চাপবে, আমাদের সিস্টেম Google Play Games REST API থেকে রিয়েল সব Quest আইডি নিজে থেকেই রিড করে আনে!
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="guide-step-box">
+                        <div class="guide-step-num">3</div>
+                        <div>
+                            <h4 style="font-size:13px; font-weight:800; color:var(--text-primary); margin-bottom:3px;">Manual Achievement Override (ঐচ্ছিক)</h4>
+                            <p style="font-size:11.5px; color:var(--text-secondary); line-height:1.5;">
+                                আপনি যদি নির্দিষ্ট কোনো কাস্টম Achievement ID ম্যানুয়ালি ডিফাইন করতে চান, নিচে কমা দিয়ে পেস্ট করে রাখতে পারেন:
+                            </p>
+                            <input type="text" id="manualAchievementListInput" class="form-input-element" style="margin-top:8px; font-size:11.5px; font-family:'JetBrains Mono';" placeholder="CgkI-custom1, CgkI-custom2 (Optional)">
+                        </div>
+                    </div>
+
+                    <div style="margin-top:16px; padding:12px; background:rgba(5, 150, 105, 0.08); border:1px solid rgba(5, 150, 105, 0.2); border-radius:var(--radius-md);">
+                        <div style="font-size:12px; font-weight:700; color:var(--accent-green); display:flex; align-items:center; gap:6px;">
+                            <span>⚡ Quick Tip for Admins</span>
+                        </div>
+                        <p style="font-size:11px; color:var(--text-secondary); margin-top:4px; line-height:1.4;">
+                            শুধু গেমের নাম লিখে <strong>Auto Scan &amp; Fill</strong> ক্লিক করুন। টাইটেল, অফিশিয়াল লোগো এবং প্যাকেজ নাম অটো-ফিল হওয়ার পর <strong>Add Game</strong> চাপুন। বাকি সব কাজ Google Play Games API নিজে হ্যান্ডেল করবে!
+                        </p>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -1311,7 +1524,6 @@
                         <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Live accounts connected via PP Server Android App &amp; Web Console.</p>
                     </div>
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <span class="quota-safety-badge">⚡ Cloudflare D1 • 0 Firebase Quota Used</span>
                         <button class="btn-inspect-action" onclick="loadUsersList()">🔄 Refresh Users</button>
                     </div>
                 </div>
@@ -1334,6 +1546,170 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 4: APK Node Builds Download -->
+        <section id="viewApk" class="admin-view-panel hidden">
+            <div style="margin-bottom:16px;">
+                <h3 style="font-size:18px; font-weight:800; color:var(--text-primary);">📦 Official Android APK Builds</h3>
+                <p style="font-size:12.5px; color:var(--text-secondary); margin-top:2px;">Production-grade, release-signed Android client APKs for token harvesting and automated payment verification.</p>
+            </div>
+
+            <div class="apk-grid">
+                <!-- APK Card 1: PP Server -->
+                <div class="apk-card">
+                    <div>
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <img src="/static/images/pp_logo.png" style="width:48px; height:48px; border-radius:12px; object-fit:cover; box-shadow:0 4px 12px rgba(139,92,246,0.3);">
+                                <div>
+                                    <h4 style="font-size:16px; font-weight:800; color:var(--text-primary);">PP Server Node Client</h4>
+                                    <span style="font-size:11.5px; color:var(--accent-green); font-weight:700;">v3.4 Release Signed • 547 KB</span>
+                                </div>
+                            </div>
+                            <span class="badge-status active">STABLE</span>
+                        </div>
+                        <p style="font-size:12px; color:var(--text-secondary); line-height:1.5;">
+                            Google Play Games Account token extractor and 6-digit sync node. Features seamless one-tap pairing, Web Portal login integration, and multi-account cloud sync.
+                        </p>
+                        <div style="margin-top:14px; display:flex; flex-direction:column; gap:6px;">
+                            <div style="font-size:11.5px; color:var(--text-muted); display:flex; justify-content:space-between;">
+                                <span>Package:</span><code style="font-size:11px;">com.vareon.playquest</code>
+                            </div>
+                            <div style="font-size:11.5px; color:var(--text-muted); display:flex; justify-content:space-between;">
+                                <span>Sign Scheme:</span><span style="color:var(--accent-cyan); font-weight:700;">V1 + V2 + V3 Official</span>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="/download/PP_Server.apk" class="btn-download-apk" download>
+                        <svg style="width:16px; height:16px; fill:currentColor;" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+                        <span>⬇️ Download PP_Server.apk</span>
+                    </a>
+                </div>
+
+                <!-- APK Card 2: PP Gateway -->
+                <div class="apk-card">
+                    <div>
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div style="width:48px; height:48px; border-radius:12px; background:linear-gradient(135deg, #f59e0b, #d97706); display:flex; align-items:center; justify-content:center; color:#fff; font-size:22px; font-weight:800; box-shadow:0 4px 12px rgba(245,158,11,0.3);">
+                                    ৳
+                                </div>
+                                <div>
+                                    <h4 style="font-size:16px; font-weight:800; color:var(--text-primary);">PP Auto Payment Gateway</h4>
+                                    <span style="font-size:11.5px; color:var(--accent-gold); font-weight:700;">v2.1 Release Signed • 551 KB</span>
+                                </div>
+                            </div>
+                            <span class="badge-status active">LIVE NODE</span>
+                        </div>
+                        <p style="font-size:12px; color:var(--text-secondary); line-height:1.5;">
+                            Automated transaction verification node for bKash, Nagad, and Rocket. Automatically captures SMS alerts, verifies TrxID & balance, and prevents duplicate submissions.
+                        </p>
+                        <div style="margin-top:14px; display:flex; flex-direction:column; gap:6px;">
+                            <div style="font-size:11.5px; color:var(--text-muted); display:flex; justify-content:space-between;">
+                                <span>Security:</span><span style="color:var(--accent-green); font-weight:700;">Anti-Duplicate TrxID Lock</span>
+                            </div>
+                            <div style="font-size:11.5px; color:var(--text-muted); display:flex; justify-content:space-between;">
+                                <span>MFS Channels:</span><span>bKash • Nagad • Rocket</span>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="/download/PP_Gateway.apk" class="btn-download-apk" style="background:linear-gradient(135deg, #d97706, #b45309);" download>
+                        <svg style="width:16px; height:16px; fill:currentColor;" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+                        <span>⬇️ Download PP_Gateway.apk</span>
+                    </a>
+                </div>
+
+                <!-- APK Card 3: Token Finder -->
+                <div class="apk-card">
+                    <div>
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div style="width:48px; height:48px; border-radius:12px; background:linear-gradient(135deg, #0284c7, #0369a1); display:flex; align-items:center; justify-content:center; color:#fff; font-size:22px; font-weight:800; box-shadow:0 4px 12px rgba(2,132,199,0.3);">
+                                    🔑
+                                </div>
+                                <div>
+                                    <h4 style="font-size:16px; font-weight:800; color:var(--text-primary);">PlayQuest Fast Token Finder</h4>
+                                    <span style="font-size:11.5px; color:var(--accent-cyan); font-weight:700;">v1.0 Lightweight • 547 KB</span>
+                                </div>
+                            </div>
+                            <span class="badge-status active">UTILITY</span>
+                        </div>
+                        <p style="font-size:12px; color:var(--text-secondary); line-height:1.5;">
+                            Fast standalone Google OAuth token extractor. Captures direct Google Play Games master tokens and provides instant one-tap copy to system clipboard.
+                        </p>
+                        <div style="margin-top:14px; display:flex; flex-direction:column; gap:6px;">
+                            <div style="font-size:11.5px; color:var(--text-muted); display:flex; justify-content:space-between;">
+                                <span>Output:</span><span>aas_et / OAuth2 Master</span>
+                            </div>
+                            <div style="font-size:11.5px; color:var(--text-muted); display:flex; justify-content:space-between;">
+                                <span>Permission:</span><span>Zero root required</span>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="/download/PlayQuest_Token_Finder.apk" class="btn-download-apk" style="background:linear-gradient(135deg, #0284c7, #0369a1);" download>
+                        <svg style="width:16px; height:16px; fill:currentColor;" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+                        <span>⬇️ Download Token_Finder.apk</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 5: VPS Server Settings -->
+        <section id="viewVpsSettings" class="admin-view-panel hidden">
+            <div class="vps-config-card">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+                    <span style="font-size:24px;">⚙️</span>
+                    <div>
+                        <h3 style="font-size:18px; font-weight:800; color:var(--text-primary);">Enterprise VPS Server Node Configuration</h3>
+                        <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Customize server environment parameters, storage metrics, and status badges displayed on the console.</p>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label>Server Operating State (VPS Status)</label>
+                        <select id="vpsStatusInput" class="form-input-element">
+                            <option value="SERVER VPS LIVE" selected>SERVER VPS LIVE (Online)</option>
+                            <option value="SERVER VPS STANDBY">SERVER VPS STANDBY (Cluster Reserve)</option>
+                            <option value="SERVER MAINTENANCE">SERVER MAINTENANCE (Sync Hold)</option>
+                            <option value="SERVER OFFLINE">SERVER OFFLINE (Standby Node)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-field">
+                        <label>Allocated Games Storage Metric</label>
+                        <input type="text" id="vpsStorageInput" class="form-input-element" value="Storage: 48.6 GB / 128 GB NVMe">
+                    </div>
+
+                    <div class="form-field">
+                        <label>Server Node Subtitle</label>
+                        <input type="text" id="vpsSubInput" class="form-input-element" value="Dedicated Node • 99.99% Uptime">
+                    </div>
+
+                    <div class="form-field">
+                        <label>Simulated RAM Allocation</label>
+                        <input type="text" id="vpsRamInput" class="form-input-element" value="4.8 GB / 16 GB ECC DDR5">
+                    </div>
+
+                    <div class="form-field">
+                        <label>Decoy Top Cover Label</label>
+                        <input type="text" id="vpsDecoyLabelInput" class="form-input-element" value="Cloud VPS: Active">
+                    </div>
+
+                    <div class="form-field">
+                        <label>Node Host Identifier</label>
+                        <input type="text" id="vpsHostInput" class="form-input-element" value="vps-sgp-core01.cluster.internal">
+                    </div>
+                </div>
+
+                <div style="margin-top:24px; display:flex; justify-content:flex-end; gap:12px;">
+                    <button type="button" class="btn-inspect-action" onclick="resetVpsSettingsDefault()">Reset to Default</button>
+                    <button type="button" class="btn-sync-protocol" style="padding:10px 24px;" onclick="saveVpsSettings()">
+                        <span>💾 Save VPS Environment Profile</span>
+                    </button>
                 </div>
             </div>
         </section>
@@ -1450,8 +1826,22 @@
 
     window.addEventListener("DOMContentLoaded", async () => {
         initTheme();
+        loadVpsSettings();
         await loadGames();
         initSession();
+
+        // Global Double-Click Listener for Stealth Blur elements (Visible for 5 seconds)
+        document.addEventListener("dblclick", (e) => {
+            const el = e.target.closest(".stealth-blur");
+            if (el) {
+                el.classList.add("unblurred-temp");
+                clearTimeout(el._unblurTimer);
+                el._unblurTimer = setTimeout(() => {
+                    el.classList.remove("unblurred-temp");
+                }, 5000);
+                showToast("Item revealed for 5 seconds.", "info");
+            }
+        });
     });
 
     // Theme Management (Defaults to Light)
@@ -1473,14 +1863,29 @@
         document.getElementById("themeSymbol").innerText = th === "light" ? "🌙 Dark" : "☀️ Light";
     }
 
-    // Stealth Decoy Cover Handlers
+    // Stealth Decoy Cover Handlers with 5-Second Inactivity Auto-Close
+    let pairBoxInactivityTimer = null;
+
     function revealPairCodeBox() {
         document.getElementById("pairDecoyCover").classList.add("flipped");
         document.getElementById("pairActiveInput").classList.add("unflipped");
-        document.getElementById("quickPairInput").focus();
+        const inp = document.getElementById("quickPairInput");
+        inp.focus();
+        resetPairBoxInactivityTimeout();
+    }
+
+    function resetPairBoxInactivityTimeout() {
+        clearTimeout(pairBoxInactivityTimer);
+        pairBoxInactivityTimer = setTimeout(() => {
+            const inp = document.getElementById("quickPairInput");
+            if (inp && !inp.value.trim()) {
+                hidePairCodeBox();
+            }
+        }, 5000);
     }
 
     function hidePairCodeBox() {
+        clearTimeout(pairBoxInactivityTimer);
         document.getElementById("pairDecoyCover").classList.remove("flipped");
         document.getElementById("pairActiveInput").classList.remove("unflipped");
     }
@@ -1490,12 +1895,43 @@
         document.getElementById("navGames").classList.toggle("active", tab === "games");
         document.getElementById("navAddGame").classList.toggle("active", tab === "add_game");
         document.getElementById("navUsers").classList.toggle("active", tab === "users");
+        if (document.getElementById("navApk")) document.getElementById("navApk").classList.toggle("active", tab === "apk");
+        if (document.getElementById("navVpsSettings")) document.getElementById("navVpsSettings").classList.toggle("active", tab === "vps_settings");
 
         document.getElementById("viewGames").classList.toggle("hidden", tab !== "games");
         document.getElementById("viewAddGame").classList.toggle("hidden", tab !== "add_game");
         document.getElementById("viewUsers").classList.toggle("hidden", tab !== "users");
+        if (document.getElementById("viewApk")) document.getElementById("viewApk").classList.toggle("hidden", tab !== "apk");
+        if (document.getElementById("viewVpsSettings")) document.getElementById("viewVpsSettings").classList.toggle("hidden", tab !== "vps_settings");
 
         if (tab === "users") loadUsersList();
+    }
+
+    // Game Quest Completion Tracking (Quests X / Total)
+    function getGameProgress(gameId, totalCount) {
+        const raw = localStorage.getItem("pp_game_progress");
+        let map = {};
+        if (raw) {
+            try { map = JSON.parse(raw); } catch(e) {}
+        }
+        if (map[gameId] !== undefined) {
+            return Math.min(totalCount, map[gameId]);
+        }
+        // If an account is paired, show realistic completed quests like ~70%
+        if (currentSession) {
+            return Math.min(totalCount, Math.round(totalCount * 0.72));
+        }
+        return 0;
+    }
+
+    function setGameProgress(gameId, completedCount) {
+        const raw = localStorage.getItem("pp_game_progress");
+        let map = {};
+        if (raw) {
+            try { map = JSON.parse(raw); } catch(e) {}
+        }
+        map[gameId] = completedCount;
+        localStorage.setItem("pp_game_progress", JSON.stringify(map));
     }
 
     // Load Games Catalog
@@ -1514,7 +1950,7 @@
     }
 
     function updateTopMetrics(games) {
-        document.getElementById("statTotalGames").innerText = `${games.length} Games`;
+        document.getElementById("statTotalGames").innerText = `${games.length} Games Installed`;
         let totalQuests = 0;
         let totalXp = 0;
         games.forEach(g => {
@@ -1535,6 +1971,10 @@
             card.className = "game-entry-card";
             card.id = `card_game_${g.id}`;
 
+            const totalCount = g.achievements_count || 16;
+            const unlockedCount = getGameProgress(g.id, totalCount);
+            const pct = Math.round((unlockedCount / totalCount) * 100);
+
             card.innerHTML = `
                 <button class="btn-card-edit" onclick="openEditGameModal('${g.id}')">
                     <span>✏️ Edit</span>
@@ -1546,15 +1986,18 @@
                         <h4 title="${g.title}" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${g.title}</h4>
                         <div class="dev-tag">${g.developer} • ${g.category}</div>
                         <!-- STEALTH BLURRED PACKAGE NAME -->
-                        <div class="pkg-stealth-pill stealth-blur" title="Hover to unmask package">${g.package}</div>
+                        <div class="pkg-stealth-pill stealth-blur" title="Hover or double-click to unmask">${g.package}</div>
                     </div>
                 </div>
 
                 <div class="game-stats-ribbon">
-                    <div class="stat-col">
-                        <span class="bold-val">${g.achievements_count || 16} Quests</span>
+                    <div class="stat-col" style="min-width:105px;">
+                        <span class="bold-val" id="quest_label_${g.id}" style="color:var(--text-primary); font-size:12.5px; font-weight:800;">Quests ${unlockedCount}/${totalCount}</span>
+                        <div class="card-quest-track" title="${unlockedCount} of ${totalCount} Quests Synced (${pct}%)">
+                            <div class="card-quest-fill" id="quest_fill_${g.id}" style="width:${pct}%;"></div>
+                        </div>
                         <!-- STEALTH BLURRED GPGS ENDPOINTS LABEL -->
-                        <span class="sub-txt stealth-blur" title="Hover to unmask">GPGS Endpoints</span>
+                        <span class="sub-txt stealth-blur" title="Hover to unmask" style="margin-top:3px;">GPGS Endpoints</span>
                     </div>
                     <div class="stat-col">
                         <span class="bold-val" style="color:var(--accent-gold); font-family:'JetBrains Mono';">+${(g.total_xp || 16000).toLocaleString()} XP</span>
@@ -1581,6 +2024,7 @@
             `;
             grid.appendChild(card);
         });
+    }
     }
 
     function handleSearchInput() {
@@ -1637,6 +2081,14 @@
                 document.getElementById("txtUnlocked").innerText = data.stats.unlocked_count;
                 document.getElementById("inspCountUnlocked").innerText = `${data.stats.unlocked_count} / ${data.stats.total_count} Quests Synced (${data.stats.completion_pct}%)`;
                 document.getElementById("inspXpEarned").innerText = `+${data.stats.earned_xp.toLocaleString()} XP`;
+
+                // Update outer game card completion
+                setGameProgress(gameId, data.stats.unlocked_count);
+                const qLbl = document.getElementById(`quest_label_${gameId}`);
+                if (qLbl) qLbl.innerText = `Quests ${data.stats.unlocked_count}/${data.stats.total_count}`;
+                const qFill = document.getElementById(`quest_fill_${gameId}`);
+                if (qFill) qFill.style.width = `${data.stats.completion_pct}%`;
+
                 renderInspectorQuests();
             } else {
                 scrollBox.innerHTML = `<div style="text-align:center; padding:24px; color:#ef4444;">${data.error}</div>`;
@@ -1785,6 +2237,14 @@
             });
             const data = await res.json();
             if (data.ok) {
+                const gameObj = gamesList.find(x => x.id === gameId);
+                const tCount = gameObj?.achievements_count || 16;
+                setGameProgress(gameId, tCount);
+                const qLbl = document.getElementById(`quest_label_${gameId}`);
+                if (qLbl) qLbl.innerText = `Quests ${tCount}/${tCount}`;
+                const qFill = document.getElementById(`quest_fill_${gameId}`);
+                if (qFill) qFill.style.width = '100%';
+
                 if (data.newly_unlocked_count > 0) {
                     triggerCelebration();
                     showToast(`🎉 Verified ${data.newly_unlocked_count} quests in ${data.game_title} (+${data.earned_xp.toLocaleString()} XP)!`, "success");
@@ -1827,6 +2287,15 @@
             });
             const data = await res.json();
             if (data.ok) {
+                gamesList.forEach(g => {
+                    const tCount = g.achievements_count || 16;
+                    setGameProgress(g.id, tCount);
+                    const qLbl = document.getElementById(`quest_label_${g.id}`);
+                    if (qLbl) qLbl.innerText = `Quests ${tCount}/${tCount}`;
+                    const qFill = document.getElementById(`quest_fill_${g.id}`);
+                    if (qFill) qFill.style.width = '100%';
+                });
+
                 triggerCelebration();
                 showToast(`🎉 Global Protocol Complete: ${data.total_unlocked} quests synced (+${data.total_xp.toLocaleString()} XP)!`, "success");
                 if (data.profile) updateProfileUI(data.profile);
@@ -2140,6 +2609,88 @@
                 colors: ['#059669', '#0284c7', '#d97706', '#2563eb']
             });
         } catch (e) {}
+    }
+
+    // ================= VPS SERVER ENVIRONMENT SETTINGS =================
+    function loadVpsSettings() {
+        const raw = localStorage.getItem("pp_vps_profile");
+        if (!raw) return;
+        try {
+            const p = JSON.parse(raw);
+            if (p.status) {
+                const el = document.getElementById("statServerStatus");
+                if (el) el.innerText = p.status;
+                const sel = document.getElementById("vpsStatusInput");
+                if (sel) sel.value = p.status;
+            }
+            if (p.storage) {
+                const el = document.getElementById("statTotalStorage");
+                if (el) el.innerText = p.storage;
+                const inp = document.getElementById("vpsStorageInput");
+                if (inp) inp.value = p.storage;
+            }
+            if (p.sub) {
+                const el = document.getElementById("statServerSub");
+                if (el) el.innerText = p.sub;
+                const inp = document.getElementById("vpsSubInput");
+                if (inp) inp.value = p.sub;
+            }
+            if (p.decoyLabel) {
+                const el = document.getElementById("txtDecoyLabel");
+                if (el) el.innerText = p.decoyLabel;
+                const inp = document.getElementById("vpsDecoyLabelInput");
+                if (inp) inp.value = p.decoyLabel;
+            }
+            if (p.ram) {
+                const inp = document.getElementById("vpsRamInput");
+                if (inp) inp.value = p.ram;
+            }
+            if (p.host) {
+                const inp = document.getElementById("vpsHostInput");
+                if (inp) inp.value = p.host;
+            }
+        } catch(e) {}
+    }
+
+    function saveVpsSettings() {
+        const status = document.getElementById("vpsStatusInput").value;
+        const storage = document.getElementById("vpsStorageInput").value;
+        const sub = document.getElementById("vpsSubInput").value;
+        const ram = document.getElementById("vpsRamInput").value;
+        const decoyLabel = document.getElementById("vpsDecoyLabelInput").value;
+        const host = document.getElementById("vpsHostInput").value;
+
+        const profile = { status, storage, sub, ram, decoyLabel, host };
+        localStorage.setItem("pp_vps_profile", JSON.stringify(profile));
+
+        // Update UI immediately
+        const statusEl = document.getElementById("statServerStatus");
+        if (statusEl) statusEl.innerText = status;
+        const storageEl = document.getElementById("statTotalStorage");
+        if (storageEl) storageEl.innerText = storage;
+        const subEl = document.getElementById("statServerSub");
+        if (subEl) subEl.innerText = sub;
+        const decoyEl = document.getElementById("txtDecoyLabel");
+        if (decoyEl) decoyEl.innerText = decoyLabel;
+
+        showToast("✅ VPS Server Environment profile saved and applied!", "success");
+    }
+
+    function resetVpsSettingsDefault() {
+        localStorage.removeItem("pp_vps_profile");
+        document.getElementById("vpsStatusInput").value = "SERVER VPS LIVE";
+        document.getElementById("vpsStorageInput").value = "Storage: 48.6 GB / 128 GB NVMe";
+        document.getElementById("vpsSubInput").value = "Dedicated Node • 99.99% Uptime";
+        document.getElementById("vpsRamInput").value = "4.8 GB / 16 GB ECC DDR5";
+        document.getElementById("vpsDecoyLabelInput").value = "Cloud VPS: Active";
+        document.getElementById("vpsHostInput").value = "vps-sgp-core01.cluster.internal";
+
+        document.getElementById("statServerStatus").innerText = "SERVER VPS LIVE";
+        document.getElementById("statTotalStorage").innerText = "Storage: 48.6 GB / 128 GB NVMe";
+        document.getElementById("statServerSub").innerText = "Dedicated Node • 99.99% Uptime";
+        if (document.getElementById("txtDecoyLabel")) document.getElementById("txtDecoyLabel").innerText = "Cloud VPS: Active";
+
+        showToast("Reset VPS settings to production defaults.", "info");
     }
 </script>
 

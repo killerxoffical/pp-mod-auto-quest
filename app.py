@@ -823,6 +823,15 @@ def edit_game_metadata():
         "message": f"Updated metadata and logo for '{target['title']}'!"
     })
 
+@app.route("/download/<path:filename>")
+def download_static_file(filename):
+    """Serve APK files and assets for direct admin download"""
+    static_dir = os.path.join(DATA_DIR, "static")
+    safe_path = os.path.join(static_dir, filename)
+    if os.path.exists(safe_path) and os.path.isfile(safe_path):
+        return send_from_directory(static_dir, filename, as_attachment=True)
+    return jsonify({"ok": False, "error": f"File '{filename}' not found on server."}), 404
+
 @app.route("/api/admin/users", methods=["GET"])
 def get_admin_users():
     """
