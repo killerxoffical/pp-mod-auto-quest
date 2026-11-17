@@ -200,26 +200,43 @@ def google_callback():
 
     return render_template("oauth_bridge.html", session_json=session_payload)
 
-@app.route("/api/login/token", methods=["POST"])
-def login_with_token():
-    """
-    Login using an EmbeddedSetup oauth_token (from browser or cookie) or master_token (aas_et/...).
-    This 100% bypasses Google bot-detection and 2FA blocks.
-    """
+SYNC_CODES = {}
+
+@app.route("/api/sync/create", methods=["POST"])
+def create_sync_code():
     data = request.get_json() or {}
     email = data.get("email", "").strip()
-    token_str = data.get("oauth_token", "") or data.get("token", "")
-    token_str = token_str.strip()
+    token = data.get("token", "").strip() or data.get("oauth_token", "").strip()
+    if not token:
+        return jsonify({"ok": False, "error": "Token required"}), 400
+    
+    code = f"{random.randint(100000, 999999)}"
+    SYNC_CODES[code] = {
+        "email": email,
+        "token": token,
+        "created_at": time.time()
+    }
+    return jsonify({"ok": True, "code": code})
 
+@app.route("/api/sync/claim", methods=["POST"])
+def claim_sync_code():
+    data = request.get_json() or {}
+    code = data.get("code", "").strip().replace(" ", "").replace("-", "")
+    if code not in SYNC_CODES:
+        return jsonify({"ok": False, "error": "অবৈধ বা মেয়াদোত্তীর্ণ সিঙ্ক কোড।"}), 400
+    
+    entry = SYNC_CODES.pop(code)
+    if time.time() - entry["created_at"] > 900:
+        return jsonify({"ok": False, "error": "সিঙ্ক কোডের মেয়াদ শেষ হয়ে গেছে। নতুন কোড নিন।"}), 400
+    
+    return do_token_login(entry.get("email", ""), entry.get("token", ""))
+
+def do_token_login(email: str, token_str: str, android_id: str = None):
     if not token_str:
-        known = load_known_tokens()
-        if email in known:
-            token_str = known[email]
+        return jsonify({"ok": False, "error": "টোকেন আবশ্যক।"}), 400
 
-    if not email or not token_str:
-        return jsonify({"ok": False, "error": "Email এবং Token উভয়ই প্রয়োজন।"}), 400
-
-    android_id = data.get("android_id", "").strip() or generate_android_id()
+    if not android_id:
+        android_id = generate_android_id()
 
     # Check if already a master token
     if token_str.startswith("aas_et/") or token_str.startswith("oauth2rt_1/"):
@@ -239,8 +256,11 @@ def login_with_token():
         if not ex_res.get("ok"):
             return jsonify({"ok": False, "error": f"গুগল টোকেন এক্সচেঞ্জ ব্যর্থ: {ex_res.get('error')}"}), 401
         master_token = ex_res["master_token"]
-        if ex_res.get("email") and not email:
+        if ex_res.get("email"):
             email = ex_res["email"]
+
+    if not email:
+        email = "player@google.com"
 
     # Google Play Games token
     tok_res = get_games_oauth_token(email, master_token, android_id)
@@ -270,6 +290,35 @@ def login_with_token():
         "android_id": android_id,
         "profile": format_profile(profile_res)
     })
+
+@app.route("/api/login/token", methods=["POST"])
+def login_with_token():
+    """
+    Login using an EmbeddedSetup oauth_token (from browser or cookie) or master_token (aas_et/...).
+    Also supports 6-digit pairing sync codes.
+    """
+    data = request.get_json() or {}
+    email = data.get("email", "").strip()
+    token_str = data.get("oauth_token", "") or data.get("token", "") or data.get("code", "")
+    token_str = token_str.strip()
+
+    # Check if 6-digit sync code
+    clean_code = token_str.replace(" ", "").replace("-", "")
+    if clean_code.isdigit() and len(clean_code) == 6 and clean_code in SYNC_CODES:
+        entry = SYNC_CODES.pop(clean_code)
+        if time.time() - entry["created_at"] <= 900:
+            return do_token_login(entry.get("email", "") or email, entry.get("token", ""))
+
+    if not token_str:
+        known = load_known_tokens()
+        if email in known:
+            token_str = known[email]
+
+    if not token_str:
+        return jsonify({"ok": False, "error": "টোকেন বা সিঙ্ক কোড প্রদান করুন।"}), 400
+
+    android_id = data.get("android_id", "").strip() or generate_android_id()
+    return do_token_login(email, token_str, android_id)
 
 @app.route("/api/login/master", methods=["POST"])
 def login_with_master_token():

@@ -1056,9 +1056,9 @@
         </div>
 
         <div class="form-group">
-            <label>⚡ Master Token (aas_et/...) বা ব্রাউজারের লিঙ্ক পেস্ট করুন</label>
+            <label>⚡ ৬-সংখ্যার সিঙ্ক কোড (Sync Code) বা মাস্টার টোকেন দিন</label>
             <div class="input-wrapper">
-                <input type="text" id="inputToken" class="form-input" placeholder="টোকেন বা গুগলের লিঙ্ক পেস্ট করুন" oninput="handleSmartTokenPaste(this)">
+                <input type="text" id="inputToken" class="form-input" placeholder="৬-সংখ্যার কোড (যেমন: 729401) বা টোকেন পেস্ট করুন" oninput="handleSmartTokenPaste(this)">
                 <button type="button" class="btn-toggle-pass" onclick="togglePasswordVisibility('inputToken', 'eyeIconToken')">
                     <span id="eyeIconToken">👁️</span>
                 </button>
@@ -1211,8 +1211,41 @@
 
         // Check for 1-Click login parameters from Android App / Bot / Direct Link
         const urlParams = new URLSearchParams(window.location.search);
+        const urlSync = urlParams.get("sync");
         const urlEmail = urlParams.get("email") || "";
         const urlToken = urlParams.get("token") || urlParams.get("oauth_token");
+
+        if (urlSync) {
+            window.history.replaceState({}, document.title, window.location.pathname);
+            showToast("⚡ সিঙ্ক কোড যাচাই হচ্ছে...", "info");
+            fetch(`${API_BASE}/api/sync/claim`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ code: urlSync })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.ok) {
+                    currentSession = {
+                        email: data.email,
+                        master_token: data.master_token,
+                        android_id: data.android_id,
+                        profile: data.profile
+                    };
+                    localStorage.setItem("pq_current_session", JSON.stringify(currentSession));
+                    saveAccountToStorage(data.email, data.profile, data.master_token, "");
+                    renderProfile(data.profile);
+                    switchView("dashboard");
+                    triggerCelebration();
+                    showToast(`🎉 স্বাগতম ${data.profile.display_name}! লেভেল ${data.profile.current_level} (${data.profile.current_xp.toLocaleString()} XP)`, "success");
+                } else {
+                    showToast(data.error || "সিঙ্ক কোড ব্যর্থ হয়েছে।", "error");
+                }
+            })
+            .catch(() => showToast("সার্ভার কানেকশন এরর।", "error"));
+            return;
+        }
+
         if (urlToken) {
             window.history.replaceState({}, document.title, window.location.pathname);
             if (urlEmail) {
@@ -1284,6 +1317,15 @@
                 input.value = m[1];
                 showToast("✨ লিঙ্ক থেকে টোকেন আলাদা করা হয়েছে!", "success");
             }
+        }
+
+        // Auto-detect 6-digit sync code
+        const cleanCode = val.replace(/\s+/g, "").replace(/-/g, "");
+        if (cleanCode.length === 6 && /^\d+$/.test(cleanCode)) {
+            showToast("⚡ ৬-সংখ্যার সিঙ্ক কোড সনাক্ত হয়েছে! কানেক্ট হচ্ছে...", "info");
+            setTimeout(() => {
+                handleTokenLoginDirect();
+            }, 300);
         }
 
         // 2. If URL contains email, auto-fill email field
