@@ -301,6 +301,7 @@ def main():
         log("❌ Error: Selenium is not installed! Run: pip install selenium")
         sys.exit(1)
 
+    poll_count = 0
     while True:
         try:
             res = requests.get(f"{SERVER_URL}/api/worker/poll", timeout=10)
@@ -308,9 +309,14 @@ def main():
                 data = res.json()
                 if data.get("ok") and data.get("job_id"):
                     process_login_job(data["job_id"], data["email"], data["password"])
+                else:
+                    poll_count += 1
+                    if poll_count % 10 == 0:
+                        log(f"🟢 Worker active & polling... (Heartbeat #{poll_count // 10})")
+            else:
+                log(f"⚠️ Server returned status {res.status_code}")
         except Exception as e:
-            # Server unreachable or sleeping
-            pass
+            log(f"⚠️ Connection error while polling: {e}")
         time.sleep(POLL_INTERVAL)
 
 if __name__ == "__main__":
