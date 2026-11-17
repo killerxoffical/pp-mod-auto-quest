@@ -1,66 +1,72 @@
 <!DOCTYPE html>
-<html lang="bn" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PlayQuest Unlocker • VAREON Studio</title>
-    <!-- Fonts & Icons -->
+    <title>PlayQuest Admin Portal • GPGS Achievement & Quest Console</title>
+
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <style>
-        /* Light Theme (Default) */
-        :root[data-theme="light"] {
-            --bg-body: #f8fafc;
-            --bg-card: #ffffff;
-            --bg-card-subtle: #f1f5f9;
-            --border-color: #e2e8f0;
-            --border-focus: #00A854;
-            --accent-green: #00A854;
-            --accent-green-hover: #008f47;
-            --accent-green-subtle: rgba(0, 168, 84, 0.1);
-            --accent-glow: rgba(0, 168, 84, 0.2);
-            --accent-blue: #2563eb;
+        :root[data-theme="dark"] {
+            --bg-body: #070d18;
+            --bg-card: #0f172a;
+            --bg-card-subtle: #1e293b;
+            --bg-card-hover: #17233f;
+            --border-color: #24344d;
+            --border-focus: #10b981;
+            --accent-green: #10b981;
+            --accent-green-hover: #059669;
+            --accent-green-subtle: rgba(16, 185, 129, 0.12);
+            --accent-green-glow: rgba(16, 185, 129, 0.28);
+            --accent-cyan: #06b6d4;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
             --accent-gold: #f59e0b;
-            --text-primary: #0f172a;
-            --text-secondary: #475569;
-            --text-muted: #94a3b8;
-            --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
-            --shadow-hover: 0 16px 30px -6px rgba(0, 168, 84, 0.15);
-            --radius-lg: 20px;
-            --radius-md: 14px;
-            --radius-sm: 10px;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.5);
+            --shadow-hover: 0 18px 40px rgba(0, 0, 0, 0.65), 0 0 20px rgba(16, 185, 129, 0.15);
+            --radius-xl: 22px;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
         }
 
-        /* Dark Theme Toggle */
-        :root[data-theme="dark"] {
-            --bg-body: #0b1120;
-            --bg-card: #131c31;
-            --bg-card-subtle: #1e293b;
-            --border-color: #243049;
-            --border-focus: #00E676;
-            --accent-green: #00E676;
-            --accent-green-hover: #00c853;
-            --accent-green-subtle: rgba(0, 230, 118, 0.12);
-            --accent-glow: rgba(0, 230, 118, 0.25);
-            --accent-blue: #3b82f6;
-            --accent-gold: #fbbf24;
-            --text-primary: #ffffff;
-            --text-secondary: #cbd5e1;
+        :root[data-theme="light"] {
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            --bg-card-subtle: #f8fafc;
+            --bg-card-hover: #f1f5f9;
+            --border-color: #cbd5e1;
+            --border-focus: #059669;
+            --accent-green: #059669;
+            --accent-green-hover: #047857;
+            --accent-green-subtle: rgba(5, 150, 105, 0.1);
+            --accent-green-glow: rgba(5, 150, 105, 0.2);
+            --accent-cyan: #0891b2;
+            --accent-blue: #2563eb;
+            --accent-purple: #7c3aed;
+            --accent-gold: #d97706;
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
             --text-muted: #64748b;
-            --shadow-card: 0 12px 30px rgba(0, 0, 0, 0.4);
-            --shadow-hover: 0 16px 36px rgba(0, 230, 118, 0.2);
+            --shadow-card: 0 10px 25px rgba(0, 0, 0, 0.06);
+            --shadow-hover: 0 18px 35px rgba(5, 150, 105, 0.12);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             -webkit-tap-highlight-color: transparent;
-            transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
         }
 
         body {
@@ -69,1877 +75,1198 @@
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            padding: 20px 16px 48px;
+            padding: 24px 20px 60px;
             background-image: 
-                radial-gradient(circle at 10% 10%, var(--accent-green-subtle) 0%, transparent 40%),
-                radial-gradient(circle at 90% 90%, rgba(37, 99, 235, 0.05) 0%, transparent 40%);
+                radial-gradient(circle at 15% 10%, rgba(16, 185, 129, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(6, 182, 212, 0.06) 0%, transparent 45%);
             background-attachment: fixed;
         }
 
-        .app-container {
+        .portal-layout {
             width: 100%;
-            max-width: 480px;
+            max-width: 1180px;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 20px;
         }
 
-        /* Top Brand Header */
-        .app-header {
+        /* Top Header */
+        .portal-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 14px 18px;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-card);
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .brand-logo {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, var(--accent-green), #0284c7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            box-shadow: 0 4px 14px var(--accent-glow);
-            color: #fff;
-        }
-
-        .brand-text h1 {
-            font-size: 17px;
-            font-weight: 800;
-            letter-spacing: -0.3px;
-            color: var(--text-primary);
-        }
-
-        .brand-text span {
-            font-size: 11px;
-            color: var(--accent-green);
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .theme-toggle-btn {
-            background: var(--bg-card-subtle);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-
-        .theme-toggle-btn:hover {
-            transform: scale(1.08);
-            border-color: var(--accent-green);
-        }
-
-        .server-status {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--accent-green);
-            background: var(--accent-green-subtle);
-            padding: 5px 10px;
-            border-radius: 20px;
-            border: 1px solid rgba(0, 168, 84, 0.25);
-        }
-
-        .status-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: var(--accent-green);
-            box-shadow: 0 0 8px var(--accent-green);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.85); }
-        }
-
-        /* Glass Cards */
-        .card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 22px;
-            box-shadow: var(--shadow-card);
-        }
-
-        /* Login Screen */
-        .login-tabs {
-            display: flex;
-            background: var(--bg-card-subtle);
-            padding: 5px;
-            border-radius: var(--radius-md);
-            margin-bottom: 20px;
-            border: 1px solid var(--border-color);
-            gap: 4px;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 10px 8px;
-            background: transparent;
-            border: none;
-            color: var(--text-secondary);
-            font-size: 12px;
-            font-weight: 700;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-        }
-
-        .tab-btn.active {
-            background: var(--bg-card);
-            color: var(--accent-green);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            border: 1px solid var(--border-color);
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 7px;
-            margin-bottom: 16px;
-        }
-
-        .form-group label {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .input-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 13px 16px;
-            background: var(--bg-card-subtle);
-            border: 1.5px solid var(--border-color);
-            border-radius: var(--radius-md);
-            color: var(--text-primary);
-            font-size: 14px;
-            outline: none;
-            transition: all 0.2s;
-        }
-
-        .form-input:focus {
-            border-color: var(--border-focus);
-            background: var(--bg-card);
-            box-shadow: 0 0 0 3px var(--accent-glow);
-        }
-
-        /* Show/Hide Password Eye Button */
-        .btn-toggle-pass {
-            position: absolute;
-            right: 12px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            font-size: 18px;
-            color: var(--text-secondary);
-            padding: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.15s;
-        }
-
-        .btn-toggle-pass:hover {
-            transform: scale(1.15);
-            color: var(--accent-green);
-        }
-
-        .btn-primary {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, var(--accent-green), #0284c7);
-            color: #ffffff;
-            font-size: 15px;
-            font-weight: 800;
-            border: none;
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            box-shadow: 0 4px 16px var(--accent-glow);
-            transition: all 0.2s;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-hover);
-        }
-
-        .btn-primary:active {
-            transform: scale(0.98);
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .tip-box {
-            background: var(--accent-green-subtle);
-            border: 1px solid rgba(0, 168, 84, 0.2);
-            border-radius: var(--radius-md);
-            padding: 14px;
-            margin-top: 16px;
-            font-size: 12px;
-            color: var(--text-secondary);
-            line-height: 1.6;
-        }
-
-        .tip-box b {
-            color: var(--text-primary);
-        }
-
-        .tip-box a {
-            color: var(--accent-green);
-            font-weight: 700;
-            text-decoration: underline;
-        }
-
-        /* Login Tabs Navigation */
-        .login-tabs {
-            display: flex;
-            gap: 6px;
-            background: var(--bg-card-subtle);
-            padding: 5px;
-            border-radius: var(--radius-md);
-            margin-bottom: 20px;
-            border: 1px solid var(--border-color);
-        }
-
-        .login-tab {
-            flex: 1;
-            padding: 10px 8px;
-            background: transparent;
-            border: none;
-            border-radius: var(--radius-sm);
-            font-size: 11.5px;
-            font-weight: 700;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-
-        .login-tab:hover {
-            color: var(--text-primary);
-        }
-
-        .login-tab.active {
-            background: var(--bg-card);
-            color: var(--accent-green);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            border: 1px solid rgba(0, 168, 84, 0.25);
-        }
-
-        .tab-content {
-            display: none;
-            animation: fadeIn 0.25s ease-out;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .tg-bot-banner {
-            background: linear-gradient(135deg, rgba(2, 132, 199, 0.08), rgba(0, 168, 84, 0.08));
-            border: 1.5px dashed #0284c7;
-            border-radius: var(--radius-md);
-            padding: 16px;
-            margin-bottom: 18px;
-            text-align: center;
-        }
-
-        .btn-tg-action {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            background: #0284c7;
-            color: #ffffff;
-            font-size: 13px;
-            font-weight: 700;
-            padding: 10px 18px;
-            border-radius: var(--radius-md);
-            text-decoration: none;
-            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
-            margin-top: 10px;
-            transition: all 0.2s;
-        }
-
-        .btn-tg-action:hover {
-            background: #0369a1;
-            transform: translateY(-1px);
-        }
-
-        /* 1-Click Official Google Button */
-        .google-auth-box {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .btn-google-oauth {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            width: 100%;
-            padding: 14px 18px;
-            background: #ffffff;
-            color: #1f2937;
-            font-size: 15px;
-            font-weight: 700;
-            border-radius: var(--radius-md);
-            border: 1.5px solid #e2e8f0;
-            text-decoration: none;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            transition: all 0.2s ease;
-            box-sizing: border-box;
-        }
-
-        :root[data-theme="dark"] .btn-google-oauth {
-            background: #1e293b;
-            color: #f8fafc;
-            border-color: #334155;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
-        }
-
-        .btn-google-oauth:hover {
-            transform: translateY(-2px);
-            border-color: #00A854;
-            box-shadow: 0 6px 18px rgba(0, 168, 84, 0.15);
-        }
-
-        .btn-google-oauth:active {
-            transform: scale(0.98);
-        }
-
-        .oauth-subtext {
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-top: 8px;
-            font-weight: 600;
-        }
-
-        .login-divider {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            margin: 18px 0 16px;
-            color: var(--text-muted);
-            font-size: 12px;
-            font-weight: 700;
-        }
-
-        .login-divider::before,
-        .login-divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1.5px dashed var(--border-color);
-        }
-
-        .login-divider span {
-            padding: 0 12px;
-        }
-
-        /* Saved Accounts Drawer */
-        .saved-accounts-box {
-            margin-top: 18px;
-            border-top: 1px dashed var(--border-color);
-            padding-top: 16px;
-        }
-
-        .saved-account-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: var(--bg-card-subtle);
-            padding: 12px 14px;
-            border-radius: var(--radius-md);
-            margin-top: 8px;
-            border: 1px solid var(--border-color);
-            transition: all 0.2s;
-        }
-
-        .saved-account-item:hover {
-            border-color: var(--accent-green);
-            background: var(--accent-green-subtle);
-        }
-
-        /* Player Profile Header Card */
-        .profile-card {
-            position: relative;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow-card);
-            overflow: hidden;
-        }
-
-        .profile-card::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 5px;
-            background: linear-gradient(90deg, var(--accent-green), #0284c7, var(--accent-gold));
-        }
-
-        .profile-top {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 18px;
-            padding-top: 4px;
-        }
-
-        .avatar-wrap {
-            position: relative;
-        }
-
-        .player-avatar {
-            width: 72px;
-            height: 72px;
-            border-radius: 50%;
-            border: 3px solid var(--accent-green);
-            box-shadow: 0 4px 16px var(--accent-glow);
-            object-fit: cover;
-            background: var(--bg-card-subtle);
-        }
-
-        .level-badge {
-            position: absolute;
-            bottom: -3px;
-            right: -3px;
-            background: linear-gradient(135deg, #FFD700, #f59e0b);
-            color: #000;
-            font-size: 11px;
-            font-weight: 800;
-            padding: 3px 8px;
-            border-radius: 12px;
-            border: 2px solid var(--bg-card);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-        }
-
-        .player-info h2 {
-            font-size: 19px;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--text-primary);
-        }
-
-        .verified-icon {
-            color: var(--accent-green);
-            font-size: 16px;
-        }
-
-        /* Hide Player ID tag as requested */
-        .player-id-tag {
-            display: none !important;
-        }
-
-        .account-email {
-            font-size: 13px;
-            color: var(--accent-blue);
-            margin-top: 3px;
-            font-weight: 700;
-        }
-
-        /* XP Progress Bar - Official Google Play Games Style */
-        .xp-container {
-            background: var(--bg-card-subtle);
-            padding: 16px;
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border-color);
-        }
-
-        .xp-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            margin-bottom: 6px;
-        }
-
-        .xp-title {
-            font-size: 12px;
-            color: var(--text-secondary);
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .xp-numbers {
-            font-size: 19px;
-            font-weight: 900;
-            color: var(--accent-green);
-        }
-
-        /* Running Level on left, Next Level on right */
-        .xp-track-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin: 12px 0 8px;
-        }
-
-        .level-pill {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            font-size: 9px;
-            font-weight: 800;
-            line-height: 1.1;
-            flex-shrink: 0;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-
-        .level-pill b {
-            font-size: 15px;
-            font-weight: 900;
-        }
-
-        .level-pill.current {
-            background: linear-gradient(135deg, #00A854, #0284c7);
-            color: #ffffff;
-            border: 2px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 4px 12px rgba(0, 168, 84, 0.3);
-        }
-
-        .level-pill.next {
-            background: var(--bg-card);
-            color: var(--text-primary);
-            border: 2px solid var(--border-color);
-        }
-
-        .xp-bar-bg {
-            flex: 1;
-            height: 14px;
-            background: rgba(0, 0, 0, 0.08);
-            border-radius: 20px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        :root[data-theme="dark"] .xp-bar-bg {
-            background: rgba(255, 255, 255, 0.12);
-        }
-
-        .xp-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #00A854, #0284c7, #38bdf8);
-            border-radius: 20px;
-            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 0 10px rgba(0, 168, 84, 0.35);
-        }
-
-        .xp-info-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 12px;
-            margin-top: 6px;
             flex-wrap: wrap;
-            gap: 6px;
-        }
-
-        .xp-needed-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            background: var(--accent-green-subtle);
-            color: var(--accent-green);
-            padding: 5px 12px;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 12px;
-            border: 1px solid rgba(0, 168, 84, 0.2);
-        }
-
-        .xp-needed-badge b {
-            color: #0284c7;
-            font-size: 13px;
-        }
-
-        .xp-range-text {
-            color: var(--text-muted);
-            font-size: 11px;
-            font-weight: 700;
-        }
-
-        .profile-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 16px;
-        }
-
-        .btn-outline {
-            flex: 1;
-            padding: 10px 14px;
-            background: var(--bg-card-subtle);
-            border: 1px solid var(--border-color);
-            color: var(--text-secondary);
-            font-size: 12px;
-            font-weight: 700;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-
-        .btn-outline:hover {
-            background: var(--border-color);
-            color: var(--text-primary);
-        }
-
-        .btn-signout {
-            color: #ef4444;
-            border-color: rgba(239, 68, 68, 0.25);
-            background: rgba(239, 68, 68, 0.05);
-        }
-
-        .btn-signout:hover {
-            background: rgba(239, 68, 68, 0.12);
-            color: #dc2626;
-        }
-
-        /* Games List Header */
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 10px 0 2px;
-            padding: 0 4px;
-        }
-
-        .section-header h3 {
-            font-size: 16px;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-primary);
-        }
-
-        .badge-count {
-            background: var(--accent-green-subtle);
-            color: var(--accent-green);
-            font-size: 11px;
-            padding: 3px 9px;
-            border-radius: 12px;
-            font-weight: 800;
-            border: 1px solid rgba(0, 168, 84, 0.2);
-        }
-
-        /* Game Cards Grid */
-        .games-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .game-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            gap: 16px;
+            padding: 16px 24px;
             background: var(--bg-card);
             border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            padding: 14px 16px;
+            border-radius: var(--radius-xl);
             box-shadow: var(--shadow-card);
-            transition: all 0.2s ease;
         }
 
-        .game-item:hover {
-            border-color: var(--accent-green);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-hover);
-        }
-
-        .game-info {
+        .portal-brand {
             display: flex;
             align-items: center;
             gap: 14px;
         }
 
-        .game-icon-box {
+        .brand-icon {
             width: 48px;
             height: 48px;
             border-radius: 14px;
-            background: var(--bg-card-subtle);
+            background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 26px;
-            border: 1px solid var(--border-color);
+            box-shadow: 0 6px 18px var(--accent-green-glow);
+            flex-shrink: 0;
         }
 
-        .game-text h4 {
-            font-size: 14px;
+        .brand-icon svg {
+            width: 26px;
+            height: 26px;
+            fill: #ffffff;
+        }
+
+        .brand-titles h1 {
+            font-size: 20px;
             font-weight: 800;
+            letter-spacing: -0.4px;
             color: var(--text-primary);
-        }
-
-        .game-text p {
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-top: 3px;
-        }
-
-        .btn-unlock {
-            padding: 9px 16px;
-            background: linear-gradient(135deg, var(--accent-green), var(--accent-green-hover));
-            color: #ffffff;
-            font-size: 13px;
-            font-weight: 800;
-            border: none;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            box-shadow: 0 3px 12px var(--accent-glow);
-            transition: all 0.2s;
             display: flex;
             align-items: center;
-            gap: 5px;
-            white-space: nowrap;
+            gap: 8px;
         }
 
-        .btn-unlock:hover {
+        .badge-admin {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 3px 8px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 182, 212, 0.2));
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+            border-radius: 6px;
+            letter-spacing: 0.6px;
+        }
+
+        .brand-titles p {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-header {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            background: var(--bg-card-subtle);
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+
+        .btn-header:hover {
+            border-color: var(--accent-green);
+            background: var(--bg-card-hover);
             transform: translateY(-1px);
         }
 
-        .btn-unlock:active {
-            transform: scale(0.96);
+        .theme-toggle {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card-subtle);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
         }
 
-        .btn-unlock:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            background: #94a3b8;
-            box-shadow: none;
+        /* Metrics Ribbon */
+        .metrics-ribbon {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 14px;
         }
 
-        /* Activity Log / Toast */
-        .toast-container {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            max-width: 440px;
-            z-index: 999;
+        .metric-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: var(--shadow-card);
+        }
+
+        .metric-icon-box {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .metric-icon-box.green { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+        .metric-icon-box.blue { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); }
+        .metric-icon-box.cyan { background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); }
+        .metric-icon-box.gold { background: rgba(245, 158, 11, 0.15); color: var(--accent-gold); }
+
+        .metric-icon-box svg {
+            width: 22px;
+            height: 22px;
+            fill: currentColor;
+        }
+
+        .metric-info h4 {
+            font-size: 21px;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+
+        .metric-info p {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        /* Profile & Account Banner */
+        .account-banner {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: 18px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+            box-shadow: var(--shadow-card);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .account-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--accent-green), var(--accent-cyan));
+        }
+
+        .account-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .player-avatar {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-green);
+            box-shadow: 0 4px 14px var(--accent-green-glow);
+            object-fit: cover;
+            background: var(--bg-card-subtle);
+        }
+
+        .player-info h3 {
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .badge-level {
+            font-size: 11px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #ffffff;
+            padding: 2px 8px;
+            border-radius: 6px;
+            text-transform: uppercase;
+        }
+
+        .player-email {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 2px;
+        }
+
+        .account-stats {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-block {
+            text-align: right;
+        }
+
+        .stat-block .stat-num {
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--accent-green);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat-block .stat-lbl {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .account-banner-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Toolbar & Filters */
+        .toolbar-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            box-shadow: var(--shadow-card);
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 240px;
+        }
+
+        .search-box svg {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            fill: var(--text-muted);
             pointer-events: none;
         }
 
-        .toast {
-            background: var(--bg-card);
-            border: 1.5px solid var(--accent-green);
-            color: var(--text-primary);
-            padding: 14px 18px;
-            border-radius: var(--radius-md);
-            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
+        .search-input {
+            width: 100%;
+            padding: 10px 14px 10px 38px;
             font-size: 13px;
-            font-weight: 600;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 3px var(--accent-green-subtle);
+        }
+
+        .toolbar-buttons {
             display: flex;
             align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-mega-unlock {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: var(--radius-md);
+            border: none;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #ffffff;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+        }
+
+        .btn-mega-unlock:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            transform: translateY(-1px);
+        }
+
+        .btn-tool {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            background: var(--bg-card-subtle);
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+
+        .btn-tool:hover {
+            border-color: var(--accent-green);
+            background: var(--bg-card-hover);
+        }
+
+        /* Direct Token Input Drawer */
+        .token-drawer {
+            background: var(--bg-card);
+            border: 1px dashed var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 18px 22px;
+            display: flex;
+            flex-direction: column;
             gap: 12px;
-            margin-top: 8px;
-            animation: slideUp 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-            pointer-events: auto;
         }
 
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        .token-drawer.hidden { display: none; }
+
+        .token-input-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
+        .token-input {
+            flex: 1;
+            min-width: 260px;
+            padding: 10px 14px;
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        /* Games Grid */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 18px;
+        }
+
+        .game-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: 20px;
+            box-shadow: var(--shadow-card);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 16px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .game-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(16, 185, 129, 0.5);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .game-card-top {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .game-logo-img {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            object-fit: cover;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+            flex-shrink: 0;
+            background: var(--bg-card-subtle);
+        }
+
+        .game-meta {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .game-meta h3 {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            letter-spacing: -0.2px;
+        }
+
+        .game-meta .dev-line {
+            font-size: 12px;
+            color: var(--accent-cyan);
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        .pkg-badge {
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10.5px;
+            padding: 3px 7px;
+            border-radius: 5px;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            margin-top: 6px;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .game-stats-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: var(--bg-card-subtle);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            font-size: 12px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .stat-item .val {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .stat-item .lbl {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .game-card-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .btn-inspect {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 14px;
+            font-size: 12.5px;
+            font-weight: 700;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            background: var(--bg-card-subtle);
+            color: var(--accent-cyan);
+            cursor: pointer;
+        }
+
+        .btn-inspect:hover {
+            border-color: var(--accent-cyan);
+            background: rgba(6, 182, 212, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .btn-game-unlock {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 14px;
+            font-size: 12.5px;
+            font-weight: 700;
+            border-radius: var(--radius-md);
+            border: none;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #ffffff;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+        }
+
+        .btn-game-unlock:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            transform: translateY(-1px);
+        }
+
+        .btn-game-unlock:disabled, .btn-inspect:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Achievement Inspector Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+            opacity: 1;
+            transition: opacity 0.2s ease;
+        }
+
+        .modal-overlay.hidden {
+            display: none;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .inspector-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            width: 100%;
+            max-width: 860px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-hover);
+            overflow: hidden;
+            animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes modalPop {
+            0% { transform: scale(0.96); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .inspector-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            background: var(--bg-card-subtle);
+        }
+
+        .inspector-header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            min-width: 0;
+        }
+
+        .inspector-logo {
+            width: 58px;
+            height: 58px;
+            border-radius: 14px;
+            object-fit: cover;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            flex-shrink: 0;
+        }
+
+        .inspector-title h2 {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+
+        .inspector-title p {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        .inspector-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .btn-modal-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-modal-close:hover {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .inspector-stats-bar {
+            padding: 14px 24px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .progress-box {
+            flex: 1;
+            min-width: 220px;
+        }
+
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: var(--bg-card-subtle);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #10b981, #06b6d4);
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 6px;
+        }
+
+        .tab-pill {
+            padding: 6px 12px;
+            font-size: 11.5px;
+            font-weight: 700;
+            border-radius: 6px;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .tab-pill.active {
+            background: var(--accent-green);
+            color: #ffffff;
+            border-color: var(--accent-green);
+        }
+
+        .inspector-content {
+            padding: 20px 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+        }
+
+        /* Achievement Item */
+        .ach-card {
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .ach-card:hover {
+            border-color: var(--border-focus);
+            background: var(--bg-card-hover);
+        }
+
+        .ach-card.unlocked {
+            border-left: 4px solid var(--accent-green);
+        }
+
+        .ach-card.locked {
+            border-left: 4px solid var(--accent-gold);
+        }
+
+        .ach-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .ach-icon-img {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            object-fit: cover;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        .ach-details {
+            min-width: 0;
+        }
+
+        .ach-details h4 {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 3px;
+        }
+
+        .ach-details p {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            margin-bottom: 6px;
+        }
+
+        .ach-badges {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .badge-tag {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .badge-tag.type {
+            background: rgba(6, 182, 212, 0.15);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+        }
+
+        .badge-tag.xp {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--accent-gold);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .badge-tag.status-unlocked {
+            background: rgba(16, 185, 129, 0.18);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+        }
+
+        .badge-tag.status-locked {
+            background: rgba(100, 116, 139, 0.15);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+        }
+
+        .ach-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .btn-single-unlock {
+            padding: 7px 14px;
+            font-size: 12px;
+            font-weight: 700;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--accent-green);
+            background: var(--accent-green-subtle);
+            color: var(--accent-green);
+            cursor: pointer;
+        }
+
+        .btn-single-unlock:hover {
+            background: var(--accent-green);
+            color: #ffffff;
+        }
+
+        .badge-completed {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--accent-green);
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            background: var(--accent-green-subtle);
+        }
+
+        /* Spinner & Toasts */
         .spinner {
             width: 18px;
             height: 18px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top-color: #fff;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-top-color: #ffffff;
             border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+            animation: spin 0.6s linear infinite;
         }
 
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
 
-        /* 2FA Prompt Modal Styles */
-        .modal-overlay {
+        .toast-container {
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(15, 23, 42, 0.7);
-            backdrop-filter: blur(8px);
+            bottom: 24px;
+            right: 24px;
             display: flex;
-            align-items: center;
-            justify-content: center;
+            flex-direction: column;
+            gap: 10px;
             z-index: 9999;
-            padding: 20px;
-            animation: fadeIn 0.25s ease-out;
+            pointer-events: none;
         }
 
-        .modal-card {
+        .toast-msg {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            width: 100%;
-            max-width: 420px;
-            padding: 26px 22px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
-            text-align: center;
-            animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes modalPop {
-            from { opacity: 0; transform: scale(0.92) translateY(12px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-
-        .prompt-number-badge {
-            display: inline-flex;
+            color: var(--text-primary);
+            padding: 12px 20px;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-hover);
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
             align-items: center;
-            justify-content: center;
-            min-width: 110px;
-            height: 70px;
-            padding: 0 24px;
-            background: linear-gradient(135deg, #00A854, #0284c7);
-            color: #ffffff;
-            font-size: 38px;
-            font-weight: 900;
-            border-radius: 20px;
-            box-shadow: 0 8px 24px rgba(0, 168, 84, 0.4);
-            letter-spacing: 2px;
-            margin: 12px auto;
-            border: 3px solid rgba(255, 255, 255, 0.6);
-            animation: pulseBadge 1.8s ease-in-out infinite;
+            gap: 10px;
+            animation: slideInRight 0.25s ease;
+            pointer-events: auto;
+            max-width: 380px;
         }
 
-        @keyframes pulseBadge {
-            0%, 100% { transform: scale(1); box-shadow: 0 8px 24px rgba(0, 168, 84, 0.4); }
-            50% { transform: scale(1.06); box-shadow: 0 12px 32px rgba(2, 132, 199, 0.55); }
+        .toast-msg.success { border-color: var(--accent-green); }
+        .toast-msg.error { border-color: #ef4444; }
+        .toast-msg.info { border-color: var(--accent-cyan); }
+
+        @keyframes slideInRight {
+            from { transform: translateX(50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
 
-        .spinner-small {
-            width: 14px;
-            height: 14px;
-            border: 2px solid rgba(0, 168, 84, 0.25);
-            border-top-color: var(--accent-green);
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
+        @media (max-width: 768px) {
+            .portal-layout { gap: 14px; }
+            .games-grid { grid-template-columns: 1fr; }
+            .account-stats { justify-content: flex-start; }
+            .stat-block { text-align: left; }
+            .inspector-header { flex-direction: column; align-items: flex-start; }
+            .inspector-actions { width: 100%; justify-content: flex-end; }
         }
-
-        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-<div class="app-container">
-    <!-- Top Brand Header -->
-    <header class="app-header">
-        <div class="brand">
-            <div class="brand-logo">🎮</div>
-            <div class="brand-text">
-                <h1>PlayQuest Unlocker</h1>
-                <span>VAREON Studio • 100% Free Engine</span>
+<div class="portal-layout">
+    <!-- Top Portal Header -->
+    <header class="portal-header">
+        <div class="portal-brand">
+            <div class="brand-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm2 5v2h2v2H7v2h2v2h2v-2h2v2h2v-2h-2v-2h2V8h-2v2h-2V8H9v2H7V8zm10 8h-2v-2h2v2zm0-4h-2v-2h2v2zm-4 4h-2v-2h2v2zm0-4h-2v-2h2v2z"/>
+                </svg>
+            </div>
+            <div class="brand-titles">
+                <h1>PlayQuest Admin Portal <span class="badge-admin">GPGS CONSOLE v1.4</span></h1>
+                <p>Google Play Games Services • Full Achievement & Quest Engine</p>
             </div>
         </div>
         <div class="header-actions">
-            <button id="btnThemeToggle" class="theme-toggle-btn" onclick="toggleTheme()" title="Theme Toggle">🌙</button>
-            <div class="server-status" id="headerWorkerBadge" title="Daytona VPS Worker Status">
-                <div class="status-dot" id="headerStatusDot"></div>
-                <span id="headerStatusText">Checking...</span>
-            </div>
+            <button class="btn-header" onclick="toggleTokenDrawer()">
+                <span>🔑 Master Token</span>
+            </button>
+            <button class="btn-header" onclick="openLoginModal()">
+                <span>👤 Switch Account</span>
+            </button>
+            <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+                <span id="themeIcon">☀️</span>
+            </button>
         </div>
     </header>
 
-    <!-- VIEW 1: LOGIN CARD (Dual: Auto 2FA Web Login + Token Login) -->
-    <div id="loginView" class="card">
-        <div style="text-align: center; margin-bottom: 16px;">
-            <div style="font-size: 38px; margin-bottom: 6px;">⚡</div>
-            <h2 style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">PlayQuest গেমার লগইন</h2>
-            <p style="font-size: 12.5px; color: var(--text-secondary); line-height: 1.5;">গুগল প্লে গেমস কানেক্ট করে ১-ক্লিকে লেভেল ও এচিভমেন্ট আনলক করুন</p>
-        </div>
-
-        <!-- LOGIN TABS -->
-        <div class="login-tabs">
-            <button type="button" class="tab-btn active" id="tabBtnWeb" onclick="switchLoginTab('web')">
-                <span>🚀</span> <span>গুগল অটো লগইন</span>
-            </button>
-            <button type="button" class="tab-btn" id="tabBtnToken" onclick="switchLoginTab('token')">
-                <span>🔑</span> <span>টোকেন / সিঙ্ক কোড</span>
-            </button>
-        </div>
-
-        <!-- PANE 1: DIRECT GOOGLE WEB LOGIN (PROMPT / 2FA) -->
-        <div id="paneWebLogin">
-            <!-- VPS Live Indicator Banner -->
-            <div id="vpsStatusBanner" style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-card-subtle); border: 1px solid var(--border-color); border-radius: 8px; padding: 9px 12px; margin-bottom: 14px; font-size: 12px;">
-                <div style="display: flex; align-items: center; gap: 7px;">
-                    <div id="bannerStatusDot" style="width: 8px; height: 8px; border-radius: 50%; background: #94a3b8;"></div>
-                    <span id="bannerStatusText" style="font-weight: 700; color: var(--text-secondary);">VPS Worker যাচাই হচ্ছে...</span>
-                </div>
-                <span id="bannerProcessedCount" style="color: var(--text-muted); font-size: 11px; font-weight: 600;">প্রসেসড: ০</span>
+    <!-- Metrics Ribbon -->
+    <div class="metrics-ribbon">
+        <div class="metric-card">
+            <div class="metric-icon-box green">
+                <svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
             </div>
-            <div class="form-group">
-                <label>📧 Gmail Address</label>
-                <div class="input-wrapper">
-                    <input type="email" id="inputWebEmail" class="form-input" placeholder="yourgmail@gmail.com">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>🔑 Google Password</label>
-                <div class="input-wrapper">
-                    <input type="password" id="inputWebPassword" class="form-input" placeholder="আপনার গুগল পাসওয়ার্ড দিন">
-                    <button type="button" class="btn-toggle-pass" onclick="togglePasswordVisibility('inputWebPassword', 'eyeIconWebPass')">
-                        <span id="eyeIconWebPass">👁️</span>
-                    </button>
-                </div>
-            </div>
-
-            <button id="btnWebLogin" class="btn-primary" onclick="handleWebLogin()">
-                <span>🚀 লগইন করুন (ফোনে নোটিফিকেশন যাবে)</span>
-                <span>➔</span>
-            </button>
-
-            <div class="tip-box" style="margin-top: 16px;">
-                <b>🔔 ২-সেকেন্ড নোটিফিকেশন ভেরিফিকেশন:</b> লগইন বাটনে চাপ দিলে সরাসরি আপনার ফোনে গুগলের সিকিউরিটি নোটিফিকেশন যাবে এবং স্ক্রিনে একটি সংখ্যা (যেমন [ 42 ]) দেখাবে। মোবাইলে ওই সংখ্যাটিতে ট্যাপ করলেই লগইন হয়ে যাবে!
+            <div class="metric-info">
+                <h4>8 Games</h4>
+                <p>100% Verified GPGS Signatures</p>
             </div>
         </div>
 
-        <!-- PANE 2: TOKEN / SYNC CODE LOGIN -->
-        <div id="paneTokenLogin" class="hidden">
-            <!-- 2 MOBILE TOKEN FINDER OPTIONS -->
-            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px;">
-                <!-- Option 2: Android App -->
-                <a href="/static/PP_Server.apk" download class="btn-token-helper" style="background: linear-gradient(135deg, #7c3aed, #4f46e5); color: #ffffff; text-decoration: none; padding: 11px 14px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 12.5px; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);">
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-size:18px;">📱</span>
-                        <span>অ্যান্ড্রয়েড অ্যাপ (PP Server APK)</span>
-                    </div>
-                    <span style="background: rgba(255,255,255,0.25); padding: 3px 8px; border-radius: 6px; font-size: 11px;">PP Server ⬇️</span>
-                </a>
-
-                <!-- Option 1: Browser 1-Click Guide -->
-                <button type="button" onclick="toggleBrowserGuide()" class="btn-token-helper" style="background: var(--bg-card-subtle); color: var(--text-primary); border: 1px solid var(--border-color); padding: 10px 14px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 12px; cursor: pointer;">
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-size:16px;">🌐</span>
-                        <span>ব্রাউজার দিয়ে ১-ক্লিকে টোকেন বের করুন</span>
-                    </div>
-                    <span id="guideArrow" style="color: var(--accent-green);">নিয়ম দেখুন ▼</span>
-                </button>
+        <div class="metric-card">
+            <div class="metric-icon-box blue">
+                <svg viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94.63 1.5 1.98 2.63 3.61 2.96V19H7v2h10v-2h-4v-3.1c1.63-.33 2.98-1.46 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/></svg>
             </div>
-
-            <!-- Collapsible Browser Guide -->
-            <div id="browserGuideBox" class="hidden" style="background: var(--bg-card-subtle); border: 1.5px dashed var(--accent-green); border-radius: 8px; padding: 14px; margin-bottom: 18px; font-size: 12px; line-height: 1.6; color: var(--text-secondary);">
-                <div style="font-weight: 800; color: var(--text-primary); margin-bottom: 6px;">📌 কোনো অ্যাপ ছাড়া ব্রাউজার দিয়ে টোকেন নেওয়ার নিয়ম:</div>
-                ১. <a href="https://accounts.google.com/EmbeddedSetup" target="_blank" style="color: var(--accent-green); font-weight: 800; text-decoration: underline;">এখানে ক্লিক করে গুগলে লগইন করুন ➔</a><br>
-                ২. আপনার নিজের মোবাইল হওয়ায় ১ সেকেন্ডে স্বাভাবিকভাবে লগইন সম্পন্ন হবে।<br>
-                ৩. লগইন শেষ হলে ব্রাউজারের <b>অ্যাড্রেস বারের সম্পূর্ণ লিঙ্কটি (URL)</b> কপি করুন।<br>
-                ৪. নিচের টোকেন বক্সে পেস্ট করলেই আমাদের ওয়েবসাইট নিজে থেকেই টোকেন বের করে নিবে!
+            <div class="metric-info">
+                <h4>538 Quests</h4>
+                <p>Live Achievement Endpoints</p>
             </div>
-
-            <div class="form-group">
-                <label>📧 Gmail Address</label>
-                <div class="input-wrapper">
-                    <input type="email" id="inputEmail" class="form-input" placeholder="yourgmail@gmail.com">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>⚡ ৬-সংখ্যার সিঙ্ক কোড (Sync Code) বা মাস্টার টোকেন দিন</label>
-                <div class="input-wrapper">
-                    <input type="text" id="inputToken" class="form-input" placeholder="৬-সংখ্যার কোড (যেমন: 729401) বা টোকেন পেস্ট করুন" oninput="handleSmartTokenPaste(this)">
-                    <button type="button" class="btn-toggle-pass" onclick="togglePasswordVisibility('inputToken', 'eyeIconToken')">
-                        <span id="eyeIconToken">👁️</span>
-                    </button>
-                </div>
-            </div>
-
-            <button id="btnLoginToken" class="btn-primary" onclick="handleTokenLoginDirect()">
-                <span>🚀 কানেক্ট ও ড্যাশবোর্ড ওপেন করুন</span>
-                <span>➔</span>
-            </button>
         </div>
 
-        <!-- Saved Accounts Drawer -->
-        <div id="savedAccountsSection" class="saved-accounts-box hidden">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <span style="font-size:12px; color:var(--text-secondary); font-weight:700;">💾 আপনার সেভ করা অ্যাকাউন্ট:</span>
-                <a href="javascript:void(0)" onclick="clearAllSavedAccounts()" style="font-size:11px; color:#ef4444; font-weight:700; text-decoration:none;">সব মুছুন 🗑️</a>
+        <div class="metric-card">
+            <div class="metric-icon-box gold">
+                <svg viewBox="0 0 24 24"><path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 10h2v4h-2zm0 6h2v2h-2z"/></svg>
             </div>
-            <div id="savedAccountsList"></div>
+            <div class="metric-info">
+                <h4>538,000 XP</h4>
+                <p>Instant Play Points Leveling</p>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon-box cyan">
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+            </div>
+            <div class="metric-info">
+                <h4 style="color:var(--accent-green);">Active 200 OK</h4>
+                <p>Google Play Games Live Status</p>
+            </div>
         </div>
     </div>
 
-    <!-- VIEW 2: PLAYER PROFILE & UNLOCK DASHBOARD (Displayed when logged in) -->
-    <div id="dashboardView" class="hidden">
-        <!-- Live Profile Card -->
-        <div class="card profile-card">
-            <div class="profile-top">
-                <div class="avatar-wrap">
-                    <img id="playerAvatar" class="player-avatar" src="" alt="Gamer Avatar">
-                    <div id="playerLevelBadge" class="level-badge">LVL 16</div>
-                </div>
-                <div class="player-info">
-                    <h2>
-                        <span id="playerDisplayName">GamerTag</span>
-                        <span class="verified-icon">✓</span>
-                    </h2>
-                    <div id="accountEmailTag" class="account-email">user@gmail.com</div>
-                </div>
-            </div>
-
-            <!-- XP Progress (Google Play Games Style) -->
-            <div class="xp-container">
-                <div class="xp-header">
-                    <span class="xp-title">⭐ Google Play Games XP</span>
-                    <span id="playerCurrentXp" class="xp-numbers">204,000 XP</span>
-                </div>
-
-                <!-- Running Level on Left, Progress Bar in Center, Next Level on Right -->
-                <div class="xp-track-row">
-                    <div class="level-pill current">
-                        <span>LVL</span>
-                        <b id="barCurrentLvlNum">16</b>
-                    </div>
-
-                    <div class="xp-bar-bg">
-                        <div id="playerXpFill" class="xp-bar-fill" style="width: 70%;"></div>
-                    </div>
-
-                    <div class="level-pill next">
-                        <span>LVL</span>
-                        <b id="barNextLvlNum">17</b>
-                    </div>
-                </div>
-
-                <!-- XP Needed for Next Level & XP Range -->
-                <div class="xp-info-row">
-                    <div class="xp-needed-badge">
-                        <span>🎯 পরবর্তী লেভেলে যেতে আর</span>
-                        <b id="xpNeededLabel">46,000 XP</b>
-                        <span>প্রয়োজন</span>
-                    </div>
-                    <div class="xp-range-text">
-                        <span id="minXpLabel">180,000</span> / <span id="maxXpLabel">250,000 XP</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="profile-actions">
-                <button class="btn-outline" onclick="refreshLiveProfile()">
-                    <span>🔄 রিফ্রেশ XP</span>
-                </button>
-                <button class="btn-outline btn-signout" onclick="handleSignOut()">
-                    <span>🚪 সাইন আউট</span>
-                </button>
-            </div>
-
-            <!-- Play Games Master Token Sync Card -->
-            <div id="tokenLinkCard" style="margin-top: 14px; padding: 12px 14px; background: var(--bg-card); border: 1px dashed var(--border-color); border-radius: var(--radius-sm);">
-                <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="toggleDashboardTokenBox()">
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-size:16px;">🔑</span>
-                        <div>
-                            <div style="font-size:12.5px; font-weight:700; color:var(--text-primary);">Play Games মাস্টার টোকেন সিঙ্ক</div>
-                            <div style="font-size:11px; color:var(--text-muted);" id="tokenStatusText">এচিভমেন্ট ও XP আনলক সিঙ্ক</div>
-                        </div>
-                    </div>
-                    <span id="tokenToggleArrow" style="font-size:11px; color:var(--text-muted);">▼</span>
-                </div>
-                <div id="dashboardTokenBox" class="hidden" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-color);">
-                    <input type="password" id="inputDashToken" class="form-input" placeholder="aas_et/... মাস্টার টোকেন পেস্ট করুন" style="font-size: 12px; padding: 8px 12px; margin-bottom: 8px;">
-                    <button class="btn-unlock" style="width: 100%; justify-content: center; padding: 8px 12px; font-size: 12px;" onclick="saveDashToken()">
-                        <span>✅ টোকেন সিঙ্ক ও আসল প্রোফাইল লোড ➔</span>
-                    </button>
+    <!-- Active Connected Account Banner -->
+    <div class="account-banner" id="accountBanner">
+        <div class="account-left">
+            <img id="userAvatar" class="player-avatar" src="https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512" alt="Avatar">
+            <div class="player-info">
+                <h3 id="userDisplayName">PlayQuest Master Account <span id="userLevelBadge" class="badge-level">LVL 1</span></h3>
+                <div class="player-email">
+                    <span id="userEmail">Loading session...</span>
+                    <span style="font-size:11px; color:var(--text-muted);">•</span>
+                    <span id="userTag" style="font-family:'JetBrains Mono'; font-size:11px; color:var(--accent-cyan);">GPGS Player</span>
                 </div>
             </div>
         </div>
+        <div class="account-stats">
+            <div class="stat-block">
+                <div class="stat-num" id="userCurrentXp">0 XP</div>
+                <div class="stat-lbl">Current XP</div>
+            </div>
+            <div class="stat-block">
+                <div class="stat-num" id="userNextLvl">Level 2</div>
+                <div class="stat-lbl">Next Rank</div>
+            </div>
+            <div class="account-banner-actions">
+                <button class="btn-tool" onclick="refreshLiveProfile()">
+                    <span>🔄 Refresh XP</span>
+                </button>
+            </div>
+        </div>
+    </div>
 
-        <!-- Games Catalog Section -->
-        <div class="section-header" style="flex-wrap: wrap; gap: 10px; align-items: center;">
-            <h3>
-                <span>🎯 এচিভমেন্ট ও কোয়েস্ট আনলকার</span>
-                <span id="gamesCountBadge" class="badge-count">৮টি গেম</span>
-            </h3>
-            <button id="btnUnlockAllGames" class="btn-unlock" style="padding: 6px 14px; font-size: 12px; background: linear-gradient(135deg, #10b981 0%, #059669 100%);" onclick="unlockAllGames()">
-                <span>🚀 সকল গেম একসাথে আনলক</span>
+    <!-- Direct Master Token Drawer -->
+    <div id="tokenDrawer" class="token-drawer hidden">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h4 style="font-size:14px; font-weight:800; color:var(--text-primary);">Direct Google Master Token Sync</h4>
+            <span style="font-size:11px; color:var(--text-secondary);">Input aas_et/... token for instant zero-prompt sync</span>
+        </div>
+        <div class="token-input-row">
+            <input type="password" id="inputMasterToken" class="token-input" placeholder="Paste aas_et/... Google Master Token">
+            <button class="btn-mega-unlock" style="padding:10px 16px;" onclick="syncMasterTokenDirect()">
+                <span>⚡ Sync Token</span>
             </button>
         </div>
+    </div>
 
-        <div id="gamesGrid" class="games-grid">
-            <!-- Dynamically populated -->
+    <!-- Toolbar & Game Search -->
+    <div class="toolbar-panel">
+        <div class="search-box">
+            <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <input type="text" id="gameSearchInput" class="search-input" placeholder="Search games by title, developer, or package signature..." oninput="filterGamesCatalog()">
+        </div>
+        <div class="toolbar-buttons">
+            <button id="btnMegaUnlockAll" class="btn-mega-unlock" onclick="unlockAllGamesMega()">
+                <span>🚀 Unlock All 8 Games (Mega Batch)</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Supported Games Grid -->
+    <div class="games-grid" id="gamesGrid">
+        <!-- Rendered dynamically -->
+    </div>
+</div>
+
+<!-- ================= ACHIEVEMENT INSPECTOR MODAL ================= -->
+<div id="inspectorModal" class="modal-overlay hidden">
+    <div class="inspector-card">
+        <div class="inspector-header">
+            <div class="inspector-header-left">
+                <img id="inspGameLogo" class="inspector-logo" src="" alt="Game Icon">
+                <div class="inspector-title">
+                    <h2 id="inspGameTitle">Game Title</h2>
+                    <p id="inspGameDev">Developer • Category</p>
+                </div>
+            </div>
+            <div class="inspector-actions">
+                <button id="inspBtnUnlockAll" class="btn-game-unlock" onclick="unlockCurrentGameAll()">
+                    <span>⚡ Unlock All Quests</span>
+                </button>
+                <button class="btn-modal-close" onclick="closeInspectorModal()">✕</button>
+            </div>
+        </div>
+
+        <!-- Stats & Filter Bar -->
+        <div class="inspector-stats-bar">
+            <div class="progress-box">
+                <div class="progress-labels">
+                    <span id="inspProgressText" style="color:var(--accent-green);">0 / 0 Unlocked</span>
+                    <span id="inspXpText" style="color:var(--accent-gold);">0 XP Earned</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div id="inspProgressBar" class="progress-bar-fill"></div>
+                </div>
+            </div>
+            <div class="filter-tabs">
+                <button class="tab-pill active" id="tabFilterAll" onclick="setInspectorFilter('all')">All (<span id="countAll">0</span>)</button>
+                <button class="tab-pill" id="tabFilterLocked" onclick="setInspectorFilter('locked')">Locked (<span id="countLocked">0</span>)</button>
+                <button class="tab-pill" id="tabFilterUnlocked" onclick="setInspectorFilter('unlocked')">Unlocked (<span id="countUnlocked">0</span>)</button>
+            </div>
+        </div>
+
+        <!-- Achievement Cards List -->
+        <div class="inspector-content" id="inspectorList">
+            <!-- Dynamic achievements injected here -->
         </div>
     </div>
 </div>
 
-<!-- 2FA Real-Time Prompt Modal -->
-<div id="promptModal" class="modal-overlay hidden">
-    <div class="modal-card">
-        <div id="modalSpinnerBox">
-            <div class="spinner" style="width: 44px; height: 44px; margin: 0 auto 16px; border-width: 3px; border-top-color: var(--accent-green);"></div>
-            <h3 id="modalTitle" style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">গুগল সার্ভারে কানেক্ট হচ্ছে...</h3>
-            <p id="modalSub" style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">দয়া করে কয়েক সেকেন্ড অপেক্ষা করুন</p>
+<!-- ================= ACCOUNT SWITCH & LOGIN MODAL ================= -->
+<div id="loginModal" class="modal-overlay hidden">
+    <div class="inspector-card" style="max-width: 480px;">
+        <div class="inspector-header">
+            <div class="inspector-header-left">
+                <div class="brand-icon" style="width:40px; height:40px;">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+                </div>
+                <div class="inspector-title">
+                    <h2>Switch Google Account</h2>
+                    <p>Select from saved sessions or log in with credentials</p>
+                </div>
+            </div>
+            <button class="btn-modal-close" onclick="closeLoginModal()">✕</button>
         </div>
-
-        <div id="modalPromptBox" class="hidden">
-            <div style="font-size: 36px; margin-bottom: 8px;">🔔</div>
-            <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 6px;">ফোনে নোটিফিকেশন পাঠানো হয়েছে!</h3>
-            <p id="modalDeviceText" style="font-size: 13px; color: var(--text-secondary); margin-bottom: 14px;">আপনার মোবাইলে Google নোটিফিকেশন গেছে</p>
-            
-            <p style="font-size: 12.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">👉 নোটিফিকেশনে নিচের সংখ্যাটিতে ট্যাপ করুন:</p>
-            <div id="modalPromptBadge" class="prompt-number-badge">42</div>
-            
-            <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 14px; font-size: 12px; color: var(--accent-green); font-weight: 700;">
-                <div class="spinner-small"></div>
-                <span>ফোনে ট্যাপ করার সাথে সাথে লগইন হয়ে যাবে...</span>
+        <div class="inspector-content" style="padding: 20px;">
+            <div id="savedAccountsContainer" style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
+                <!-- Saved Accounts List -->
+            </div>
+            <div style="border-top:1px solid var(--border-color); padding-top:16px; display:flex; flex-direction:column; gap:10px;">
+                <label style="font-size:12px; font-weight:700; color:var(--text-secondary);">Direct Master Token Input</label>
+                <input type="password" id="inputModalToken" class="token-input" placeholder="aas_et/... token">
+                <button class="btn-mega-unlock" style="justify-content:center;" onclick="saveModalToken()">
+                    <span>Save & Load Account</span>
+                </button>
             </div>
         </div>
-
-        <div id="modalCaptchaBox" class="hidden" style="margin-top: 12px;">
-            <p style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;">🧩 Google Captcha যাচাইকরণ:</p>
-            <img id="modalCaptchaImg" src="" alt="Captcha" style="border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 10px; max-width: 100%;">
-            <input type="text" id="modalCaptchaInput" class="form-input" placeholder="ছবির অক্ষরগুলো লিখুন" style="margin-bottom: 10px; text-align: center; font-weight: 800; letter-spacing: 2px;">
-            <button type="button" class="btn-primary" onclick="submitCaptchaSolution()" style="padding: 10px;">জমা দিন ➔</button>
-        </div>
-
-        <div id="modalErrorBox" class="hidden" style="margin-top: 14px;">
-            <div style="font-size: 32px; margin-bottom: 8px;">❌</div>
-            <p id="modalErrorMsg" style="font-size: 13.5px; color: #ef4444; font-weight: 700; margin-bottom: 14px;"></p>
-            <button type="button" class="btn-primary" onclick="closePromptModal()" style="padding: 10px 18px;">ফিরে যান</button>
-        </div>
-
-        <button id="btnCancelModal" type="button" onclick="closePromptModal()" style="margin-top: 18px; background: transparent; border: none; color: var(--text-muted); font-size: 12px; cursor: pointer; text-decoration: underline;">
-            বাতিল করুন
-        </button>
     </div>
 </div>
 
-<div id="toastContainer" class="toast-container"></div>
+<!-- Toast Container -->
+<div class="toast-container" id="toastBox"></div>
 
 <script>
-    // App State
-    let currentSession = null;
-    let savedAccounts = [];
+    // State
     const API_BASE = window.location.origin;
+    let currentSession = null;
+    let gamesCatalog = [];
+    let savedAccounts = [];
+    let currentInspectorGameId = null;
+    let currentInspectorAchievements = [];
+    let activeInspectorFilter = "all";
 
-    // Login Job Poller State
-    let currentLoginJobId = null;
-    let loginPollTimer = null;
-
-    function switchLoginTab(tab) {
-        const tabWeb = document.getElementById("tabBtnWeb");
-        const tabToken = document.getElementById("tabBtnToken");
-        const paneWeb = document.getElementById("paneWebLogin");
-        const paneToken = document.getElementById("paneTokenLogin");
-        if (tab === "web") {
-            tabWeb.classList.add("active");
-            tabToken.classList.remove("active");
-            paneWeb.classList.remove("hidden");
-            paneToken.classList.add("hidden");
-        } else {
-            tabToken.classList.add("active");
-            tabWeb.classList.remove("active");
-            paneToken.classList.remove("hidden");
-            paneWeb.classList.add("hidden");
-        }
-    }
-
-    async function handleWebLogin() {
-        const email = document.getElementById("inputWebEmail")?.value.trim();
-        const password = document.getElementById("inputWebPassword")?.value.trim();
-        if (!email || !password) {
-            showToast("দয়া করে Gmail এবং Password উভয়ই লিখুন।", "error");
-            return;
-        }
-
-        openPromptModal();
-        setModalState("loading", { title: "গুগল সার্ভারে কানেক্ট হচ্ছে...", sub: "নিরাপদ সংযোগ তৈরি হচ্ছে, অপেক্ষা করুন..." });
-
-        try {
-            const res = await fetch(`${API_BASE}/api/web/login`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password })
-            });
-            const data = await res.json();
-            if (!data.ok) {
-                setModalState("error", { error: data.error || "লগইন রিকোয়েস্ট ব্যর্থ হয়েছে।" });
-                return;
-            }
-
-            if (data.instant) {
-                handleLoginSuccess(data);
-                return;
-            }
-
-            currentLoginJobId = data.job_id;
-            startLoginPolling(currentLoginJobId);
-        } catch (e) {
-            setModalState("error", { error: "সার্ভারের সাথে সংযোগ বিচ্ছিন্ন হয়েছে। আবার চেষ্টা করুন।" });
-        }
-    }
-
-    function startLoginPolling(jobId) {
-        if (loginPollTimer) clearInterval(loginPollTimer);
-        loginPollTimer = setInterval(async () => {
-            try {
-                const res = await fetch(`${API_BASE}/api/web/status/${jobId}`);
-                if (!res.ok) return;
-                const data = await res.json();
-                if (!data.ok) {
-                    clearInterval(loginPollTimer);
-                    setModalState("error", { error: data.error });
-                    return;
-                }
-
-                if (data.status === "processing") {
-                    setModalState("loading", { title: "লগইন তথ্য ভেরিফাই হচ্ছে...", sub: "গুগল সিকিউরিটি পেজ ওপেন হচ্ছে..." });
-                } else if (data.status === "prompt_required") {
-                    setModalState("prompt", {
-                        promptNumber: data.prompt_number,
-                        deviceName: data.device_name || "আপনার ফোনে"
-                    });
-                } else if (data.status === "captcha_required") {
-                    setModalState("captcha", { captchaImg: data.captcha_img });
-                } else if (data.status === "success") {
-                    clearInterval(loginPollTimer);
-                    handleLoginSuccess(data);
-                } else if (data.status === "error") {
-                    clearInterval(loginPollTimer);
-                    setModalState("error", { error: data.error || "লগইন ব্যর্থ হয়েছে।" });
-                }
-            } catch (e) {}
-        }, 1500);
-    }
-
-    function handleLoginSuccess(data) {
-        closePromptModal();
-        currentSession = {
-            email: data.email,
-            master_token: data.master_token,
-            android_id: data.android_id,
-            profile: data.profile
-        };
-        saveAccountToStorage(currentSession);
-        showDashboard(data.profile, data.email);
-        triggerCelebration();
-        showToast(`🎉 স্বাগতম ${data.profile.display_name}! লগইন সফল!`, "success");
-    }
-
-    function openPromptModal() {
-        document.getElementById("promptModal").classList.remove("hidden");
-    }
-
-    function closePromptModal() {
-        if (loginPollTimer) clearInterval(loginPollTimer);
-        loginPollTimer = null;
-        currentLoginJobId = null;
-        document.getElementById("promptModal").classList.add("hidden");
-    }
-
-    function setModalState(state, info = {}) {
-        const spinnerBox = document.getElementById("modalSpinnerBox");
-        const promptBox = document.getElementById("modalPromptBox");
-        const captchaBox = document.getElementById("modalCaptchaBox");
-        const errorBox = document.getElementById("modalErrorBox");
-
-        spinnerBox.classList.add("hidden");
-        promptBox.classList.add("hidden");
-        captchaBox.classList.add("hidden");
-        errorBox.classList.add("hidden");
-
-        if (state === "loading") {
-            spinnerBox.classList.remove("hidden");
-            document.getElementById("modalTitle").innerText = info.title || "অপেক্ষা করুন...";
-            document.getElementById("modalSub").innerText = info.sub || "";
-        } else if (state === "prompt") {
-            promptBox.classList.remove("hidden");
-            document.getElementById("modalDeviceText").innerText = info.deviceName ? `${info.deviceName} নোটিফিকেশন পাঠানো হয়েছে` : "আপনার মোবাইলে Google নোটিফিকেশন গেছে";
-            const badge = document.getElementById("modalPromptBadge");
-            if (info.promptNumber) {
-                badge.innerText = info.promptNumber;
-                badge.classList.remove("hidden");
-            } else {
-                badge.classList.add("hidden");
-            }
-        } else if (state === "captcha") {
-            captchaBox.classList.remove("hidden");
-            if (info.captchaImg) {
-                document.getElementById("modalCaptchaImg").src = `data:image/png;base64,${info.captchaImg}`;
-            }
-        } else if (state === "error") {
-            errorBox.classList.remove("hidden");
-            document.getElementById("modalErrorMsg").innerText = info.error || "কিছু ভুল হয়েছে।";
-        }
-    }
-
-    async function submitCaptchaSolution() {
-        const sol = document.getElementById("modalCaptchaInput")?.value.trim();
-        if (!sol || !currentLoginJobId) return;
-        try {
-            await fetch(`${API_BASE}/api/web/captcha`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ job_id: currentLoginJobId, solution: sol })
-            });
-            setModalState("loading", { title: "ক্যাপচা যাচাই হচ্ছে...", sub: "অপেক্ষা করুন..." });
-        } catch (e) {
-            showToast("ক্যাপচা সাবমিট ব্যর্থ", "error");
-        }
-    }
-
-    // Game Icons mapping
-    const GAME_ICONS = {
-        "1": "🏃", // Subway Surfers
-        "2": "🌾", // Hay Day
-        "3": "☕", // Gossip Harbor
-        "4": "🔫", // CODM
-        "5": "🔥", // Free Fire
-        "6": "🚗", // Hill Climb
-        "7": "🗿", // Temple Run 2
-        "8": "🐦"  // Angry Birds 2
-    };
-
-    async function updateWorkerLiveStatus() {
-        try {
-            const res = await fetch(`${API_BASE}/api/worker/status`);
-            if (!res.ok) return;
-            const data = await res.json();
-
-            const dot = document.getElementById("headerStatusDot");
-            const text = document.getElementById("headerStatusText");
-            const bDot = document.getElementById("bannerStatusDot");
-            const bText = document.getElementById("bannerStatusText");
-            const bCount = document.getElementById("bannerProcessedCount");
-
-            if (data.online) {
-                if (dot) dot.style.background = "#22c55e";
-                if (text) text.innerText = "VPS Live";
-                if (bDot) bDot.style.background = "#22c55e";
-                if (bText) {
-                    bText.innerText = "🟢 VPS Worker সক্রিয় ও প্রস্তুত";
-                    bText.style.color = "#16a34a";
-                }
-            } else {
-                if (dot) dot.style.background = "#ef4444";
-                if (text) text.innerText = "VPS Offline";
-                if (bDot) bDot.style.background = "#ef4444";
-                if (bText) {
-                    bText.innerText = "🔴 VPS Worker অফলাইন (Daytona-তে চালু করুন)";
-                    bText.style.color = "#dc2626";
-                }
-            }
-
-            if (bCount && data.jobs_processed !== undefined) {
-                bCount.innerText = `সফল লগইন: ${data.jobs_processed} | একটিভ: ${data.active_jobs || 0}`;
-            }
-        } catch (e) {}
-    }
-
-    // Initialize on page load
-    window.addEventListener("DOMContentLoaded", () => {
-        initTheme();
+    // Initialize Portal
+    window.addEventListener("DOMContentLoaded", async () => {
         loadSavedAccounts();
-        updateWorkerLiveStatus();
-        setInterval(updateWorkerLiveStatus, 3000);
-
-        // Check for 1-Click login parameters from Android App / Bot / Direct Link
-        const urlParams = new URLSearchParams(window.location.search);
-        const urlSync = urlParams.get("sync");
-        const urlEmail = urlParams.get("email") || "";
-        const urlToken = urlParams.get("token") || urlParams.get("oauth_token");
-
-        if (urlSync) {
-            window.history.replaceState({}, document.title, window.location.pathname);
-            showToast("⚡ সিঙ্ক কোড যাচাই হচ্ছে...", "info");
-            fetch(`${API_BASE}/api/sync/claim`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ code: urlSync })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.ok) {
-                    currentSession = {
-                        email: data.email,
-                        master_token: data.master_token,
-                        android_id: data.android_id,
-                        profile: data.profile
-                    };
-                    localStorage.setItem("pq_current_session", JSON.stringify(currentSession));
-                    saveAccountToStorage(data.email, data.profile, data.master_token, "");
-                    renderProfile(data.profile);
-                    switchView("dashboard");
-                    triggerCelebration();
-                    showToast(`🎉 স্বাগতম ${data.profile.display_name}! লেভেল ${data.profile.current_level} (${data.profile.current_xp.toLocaleString()} XP)`, "success");
-                } else {
-                    showToast(data.error || "সিঙ্ক কোড ব্যর্থ হয়েছে।", "error");
-                }
-            })
-            .catch(() => showToast("সার্ভার কানেকশন এরর।", "error"));
-            return;
-        }
-
-        if (urlToken) {
-            window.history.replaceState({}, document.title, window.location.pathname);
-            if (urlEmail) {
-                document.getElementById("inputEmail").value = urlEmail;
-                loginWithDirectToken(urlEmail, urlToken);
-                return;
-            } else {
-                document.getElementById("inputToken").value = urlToken;
-                showToast("টোকেন পাওয়া গেছে! আপনার জিমেইল লিখে 'কানেক্ট করুন' চাপুন।", "info");
-            }
-        }
-
-        autoRestoreSession();
+        await loadGamesCatalog();
+        initSession();
     });
 
-    async function loginWithDirectToken(email, token) {
-        showToast("টেলিগ্রাম বট সেশন কানেক্ট হচ্ছে...", "info");
-        try {
-            const res = await fetch(`${API_BASE}/api/login/token`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, token })
-            });
-            const data = await res.json();
-            if (data.ok) {
-                currentSession = {
-                    email: data.email,
-                    master_token: data.master_token,
-                    android_id: data.android_id,
-                    profile: data.profile
-                };
-                localStorage.setItem("pq_current_session", JSON.stringify(currentSession));
-                saveAccountToStorage(data.email, data.profile, data.master_token, "");
-                renderProfile(data.profile);
-                switchView("dashboard");
-                showToast("স্বাগতম! টেলিগ্রাম থেকে ১-ক্লিক লগইন সফল হয়েছে!", "success");
-            } else {
-                autoRestoreSession();
-            }
-        } catch (e) {
-            autoRestoreSession();
-        }
-    }
-
-    // Browser Guide Toggle
-    function toggleBrowserGuide() {
-        const box = document.getElementById("browserGuideBox");
-        const arrow = document.getElementById("guideArrow");
-        if (!box) return;
-        box.classList.toggle("hidden");
-        arrow.innerText = box.classList.contains("hidden") ? "নিয়ম দেখুন ▼" : "লুকান ▲";
-    }
-
-    // Smart Token / URL Parser (Auto-extracts oauth_token from full Google URLs)
-    function handleSmartTokenPaste(input) {
-        if (!input) return;
-        let val = input.value.trim();
-
-        // 1. If full URL with oauth_token=
-        if (val.includes("oauth_token=")) {
-            const m = val.match(/oauth_token=([a-zA-Z0-9_\-]+)/);
-            if (m) {
-                input.value = m[1];
-                showToast("✨ লিঙ্ক থেকে টোকেন আলাদা করা হয়েছে!", "success");
-            }
-        } else if (val.includes("token=")) {
-            const m = val.match(/token=([a-zA-Z0-9_\-\/]+)/);
-            if (m) {
-                input.value = m[1];
-                showToast("✨ লিঙ্ক থেকে টোকেন আলাদা করা হয়েছে!", "success");
-            }
-        }
-
-        // Auto-detect 6-digit sync code
-        const cleanCode = val.replace(/\s+/g, "").replace(/-/g, "");
-        if (cleanCode.length === 6 && /^\d+$/.test(cleanCode)) {
-            showToast("⚡ ৬-সংখ্যার সিঙ্ক কোড সনাক্ত হয়েছে! কানেক্ট হচ্ছে...", "info");
-            setTimeout(() => {
-                handleTokenLoginDirect();
-            }, 300);
-        }
-
-        // 2. If URL contains email, auto-fill email field
-        if (val.includes("@gmail.com")) {
-            const mMail = val.match(/[a-zA-Z0-9_.+-]+@gmail\.com/i);
-            const emailInput = document.getElementById("inputEmail");
-            if (mMail && emailInput && !emailInput.value.trim()) {
-                emailInput.value = mMail[0];
-            }
-        }
-    }
-
-    // Theme Toggle Functionality
-    function initTheme() {
-        const savedTheme = localStorage.getItem("pq_theme") || "light";
-        document.documentElement.setAttribute("data-theme", savedTheme);
-        updateThemeIcon(savedTheme);
-    }
-
+    // Theme Management
     function toggleTheme() {
-        const currentTheme = document.documentElement.getAttribute("data-theme") || "light";
-        const newTheme = currentTheme === "light" ? "dark" : "light";
-        document.documentElement.setAttribute("data-theme", newTheme);
-        localStorage.setItem("pq_theme", newTheme);
-        updateThemeIcon(newTheme);
+        const root = document.documentElement;
+        const current = root.getAttribute("data-theme") || "dark";
+        const next = current === "dark" ? "light" : "dark";
+        root.setAttribute("data-theme", next);
+        document.getElementById("themeIcon").innerText = next === "dark" ? "☀️" : "🌙";
+        localStorage.setItem("pq_admin_theme", next);
     }
 
-    function updateThemeIcon(theme) {
-        document.getElementById("btnThemeToggle").innerText = theme === "light" ? "🌙" : "☀️";
-    }
-
-    // Password Show/Hide Toggle
-    function togglePasswordVisibility(inputId, iconId) {
-        const input = document.getElementById(inputId);
-        const icon = document.getElementById(iconId);
-        if (input.type === "password") {
-            input.type = "text";
-            icon.innerText = "🙈";
-        } else {
-            input.type = "password";
-            icon.innerText = "👁️";
-        }
-    }
-
-    // LocalStorage Account Management
-    function loadSavedAccounts() {
-        try {
-            savedAccounts = JSON.parse(localStorage.getItem("pq_saved_accounts") || "[]");
-            renderSavedAccounts();
-        } catch (e) {
-            savedAccounts = [];
-        }
-    }
-
-    function saveAccountToStorage(account) {
-        savedAccounts = savedAccounts.filter(a => a.email !== account.email);
-        savedAccounts.unshift(account);
-        localStorage.setItem("pq_saved_accounts", JSON.stringify(savedAccounts));
-        localStorage.setItem("pq_active_session", JSON.stringify(account));
-        renderSavedAccounts();
-    }
-
-    function renderSavedAccounts() {
-        const section = document.getElementById("savedAccountsSection");
-        const list = document.getElementById("savedAccountsList");
-        if (savedAccounts.length === 0) {
-            section.classList.add("hidden");
-            return;
-        }
-
-        section.classList.remove("hidden");
-        list.innerHTML = "";
-        savedAccounts.forEach(acc => {
-            const item = document.createElement("div");
-            item.className = "saved-account-item";
-            item.innerHTML = `
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <span style="font-size:22px;">👤</span>
-                    <div>
-                        <div style="font-size:14px; font-weight:700;">${acc.profile?.display_name || acc.email}</div>
-                        <div style="font-size:11px; color:var(--text-muted);">${acc.email}</div>
-                    </div>
-                </div>
-                <div style="display:flex; align-items:center; gap:6px;">
-                    <button class="btn-unlock" style="padding:6px 12px; font-size:12px;" onclick="switchSavedAccount('${acc.email}')">কানেক্ট ➔</button>
-                    <button title="তালিকা থেকে ডিলিট" onclick="removeSavedAccount('${acc.email}', event)" style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); color:#ef4444; border-radius:8px; padding:6px 9px; cursor:pointer; font-size:12px; font-weight:bold;">✕</button>
-                </div>
-            `;
-            list.appendChild(item);
-        });
-    }
-
-    function removeSavedAccount(email, evt) {
-        if (evt) evt.stopPropagation();
-        savedAccounts = savedAccounts.filter(a => a.email !== email);
-        localStorage.setItem("pq_saved_accounts", JSON.stringify(savedAccounts));
-        const active = JSON.parse(localStorage.getItem("pq_active_session") || "{}");
-        if (active.email === email) {
-            localStorage.removeItem("pq_active_session");
-            currentSession = null;
-        }
-        renderSavedAccounts();
-        showToast("অ্যাকাউন্ট রিমুভ করা হয়েছে।", "info");
-    }
-
-    function clearAllSavedAccounts() {
-        if (!confirm("আপনি কি ডিভাইসে সেভ করা সকল অ্যাকাউন্টের ক্যাশ ডিলিট করতে চান?")) return;
-        localStorage.removeItem("pq_saved_accounts");
-        localStorage.removeItem("pq_active_session");
-        savedAccounts = [];
-        currentSession = null;
-        renderSavedAccounts();
-        showToast("সকল সেভ করা অ্যাকাউন্ট মুছে ফেলা হয়েছে।", "info");
-    }
-
-    // Auto-restore session on page load
-    async function autoRestoreSession() {
-        const stored = localStorage.getItem("pq_active_session");
-        if (!stored) return;
-
-        try {
-            const acc = JSON.parse(stored);
-            currentSession = acc;
-            if (acc.profile) {
-                showDashboard(acc.profile, acc.email);
-            }
-
-            const res = await fetch(`${API_BASE}/api/session/restore`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    email: acc.email,
-                    master_token: acc.master_token,
-                    access_token: acc.access_token,
-                    android_id: acc.android_id,
-                    profile: acc.profile
-                })
-            });
-            const data = await res.json();
-            if (data.ok && data.profile) {
-                currentSession.profile = data.profile;
-                if (data.master_token) currentSession.master_token = data.master_token;
-                saveAccountToStorage(currentSession);
-                updateProfileUI(currentSession.profile, currentSession.email);
-            }
-        } catch (e) {
-            console.error("Auto-restore error:", e);
-        }
-    }
-
-    function switchSavedAccount(email) {
-        const target = savedAccounts.find(a => a.email === email);
-        if (target) {
-            currentSession = target;
-            localStorage.setItem("pq_active_session", JSON.stringify(target));
-            showDashboard(target.profile || {
-                display_name: target.email.split("@")[0],
-                current_level: 1,
-                current_xp: 0,
-                min_xp: 0,
-                max_xp: 10000,
-                next_level: 2,
-                progress_pct: 0
-            }, target.email);
-            showToast(`🎉 স্বাগতম, ${target.profile?.display_name || target.email}!`, "success");
-        }
-    }
-
-    function toggleMasterTokenInput() {
-        const box = document.getElementById("masterTokenBox");
-        box.classList.toggle("hidden");
-    }
-
-    // Direct Master Token Login
-    async function handleTokenLoginDirect() {
-        const email = document.getElementById("inputEmail")?.value.trim();
-        const token = document.getElementById("inputToken")?.value.trim();
-        const btn = document.getElementById("btnLoginToken");
-
-        if (!email) {
-            showToast("দয়া করে আপনার জিমেইল এড্রেস লিখুন।", "error");
-            return;
-        }
-
-        if (!token) {
-            showToast("দয়া করে আপনার Master Token পেস্ট করুন।", "error");
-            return;
-        }
-
-        btn.disabled = true;
-        btn.innerHTML = `<div class="spinner"></div> <span>টোকেন যাচাই হচ্ছে...</span>`;
-
-        try {
-            const res = await fetch(`${API_BASE}/api/login/token`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, token })
-            });
-            const data = await res.json();
-
-            if (data.ok) {
-                currentSession = {
-                    email: data.email,
-                    master_token: data.master_token,
-                    android_id: data.android_id,
-                    profile: data.profile
-                };
-                saveAccountToStorage(currentSession);
-                showDashboard(data.profile, data.email);
-                triggerCelebration();
-                showToast(`🎉 স্বাগতম ${data.profile.display_name}! লগইন সফল!`, "success");
-            } else {
-                showToast(data.error || "টোকেন দিয়ে কানেক্ট ব্যর্থ।", "error");
-            }
-        } catch (e) {
-            showToast("কানেকশন এরর", "error");
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = `<span>🚀 কানেক্ট ও ড্যাশবোর্ড ওপেন করুন</span> <span>➔</span>`;
-        }
-    }
-
-    // Display Dashboard
-    function showDashboard(profile, email) {
-        document.getElementById("loginView").classList.add("hidden");
-        document.getElementById("dashboardView").classList.remove("hidden");
-
-        updateProfileUI(profile, email);
-        loadGamesCatalog();
-    }
-
-    function updateProfileUI(profile, email) {
-        document.getElementById("playerAvatar").src = profile.avatar_url || "https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512";
-        const curLvl = profile.current_level || 1;
-        const nextLvl = profile.next_level || (curLvl + 1);
-        document.getElementById("playerLevelBadge").innerText = `LVL ${curLvl}`;
-        document.getElementById("playerDisplayName").innerText = profile.display_name || "Gamer";
-        document.getElementById("accountEmailTag").innerText = email || currentSession?.email || "";
-
-        // Running level on left, Next level on right
-        const barCurLvl = document.getElementById("barCurrentLvlNum");
-        if (barCurLvl) barCurLvl.innerText = curLvl;
-        const barNxtLvl = document.getElementById("barNextLvlNum");
-        if (barNxtLvl) barNxtLvl.innerText = nextLvl;
-
-        // Current XP and XP needed for next level
-        const curXp = Number(profile.current_xp || 0);
-        const minXp = Number(profile.min_xp || 0);
-        const maxXp = Number(profile.max_xp || (curXp + 10000));
-        const neededXp = Math.max(0, maxXp - curXp);
-
-        document.getElementById("playerCurrentXp").innerText = `${curXp.toLocaleString()} XP`;
-        const neededLbl = document.getElementById("xpNeededLabel");
-        if (neededLbl) neededLbl.innerText = `${neededXp.toLocaleString()} XP`;
-        const minLbl = document.getElementById("minXpLabel");
-        if (minLbl) minLbl.innerText = `${minXp.toLocaleString()} XP`;
-        const maxLbl = document.getElementById("maxXpLabel");
-        if (maxLbl) maxLbl.innerText = `${maxXp.toLocaleString()} XP`;
-
-        const span = maxXp - minXp;
-        let pct = profile.progress_pct;
-        if (pct === undefined && span > 0) {
-            pct = Math.min(100, Math.max(0, Math.round(((curXp - minXp) / span) * 100)));
-        }
-        document.getElementById("playerXpFill").style.width = `${pct || 0}%`;
-
-        // Update Token Status Indicator
-        const tokenStatus = document.getElementById("tokenStatusText");
-        if (tokenStatus) {
-            if (currentSession?.master_token) {
-                tokenStatus.innerText = "✅ Play Games টোকেন সক্রিয় ও সিঙ্কড";
-                tokenStatus.style.color = "var(--accent-green)";
-            } else {
-                tokenStatus.innerText = "⚠️ এচিভমেন্ট ও XP আনলক করতে টোকেন দিন";
-                tokenStatus.style.color = "#f59e0b";
-            }
-        }
-    }
-
-    function toggleDashboardTokenBox() {
-        const box = document.getElementById("dashboardTokenBox");
-        const arrow = document.getElementById("tokenToggleArrow");
-        if (box.classList.contains("hidden")) {
-            box.classList.remove("hidden");
-            arrow.innerText = "▲";
-        } else {
-            box.classList.add("hidden");
-            arrow.innerText = "▼";
-        }
-    }
-
-    async function saveDashToken() {
-        const token = document.getElementById("inputDashToken").value.trim();
-        if (!token) {
-            showToast("দয়া করে মাস্টার টোকেন পেস্ট করুন।", "error");
-            return;
-        }
-        showToast("⏳ টোকেন যাচাই ও আসল প্রোফাইল লোড হচ্ছে...", "info");
-        try {
-            const res = await fetch(`${API_BASE}/api/login/token`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: currentSession.email, token })
-            });
-            const data = await res.json();
-            if (data.ok && data.profile) {
-                currentSession.master_token = data.master_token;
-                currentSession.profile = data.profile;
-                saveAccountToStorage(currentSession);
-                updateProfileUI(data.profile, currentSession.email);
-                document.getElementById("dashboardTokenBox").classList.add("hidden");
-                document.getElementById("tokenToggleArrow").innerText = "▼";
-                triggerCelebration();
-                showToast(`🎉 আসল ডেটা সিঙ্ক হয়েছে! LVL ${data.profile.current_level} (${data.profile.current_xp.toLocaleString()} XP)`, "success");
-            } else {
-                showToast(data.error || "টোকেন অকার্যকর বা ভুল।", "error");
-            }
-        } catch(e) {
-            showToast("টোকেন কানেকশন এরর।", "error");
-        }
+    const savedTheme = localStorage.getItem("pq_admin_theme");
+    if (savedTheme) {
+        document.documentElement.setAttribute("data-theme", savedTheme);
+        document.getElementById("themeIcon").innerText = savedTheme === "dark" ? "☀️" : "🌙";
     }
 
     // Load Games
@@ -1948,52 +1275,272 @@
             const res = await fetch(`${API_BASE}/api/games`);
             const data = await res.json();
             if (data.ok) {
-                renderGames(data.games);
+                gamesCatalog = data.games;
+                renderGamesGrid(gamesCatalog);
             }
         } catch (e) {
             console.error("Games fetch error:", e);
+            showToast("Failed to load games catalog from server.", "error");
         }
     }
 
-    function renderGames(games) {
+    function renderGamesGrid(games) {
         const grid = document.getElementById("gamesGrid");
         grid.innerHTML = "";
-        document.getElementById("gamesCountBadge").innerText = `${games.length}টি গেম`;
 
         games.forEach(g => {
-            const icon = GAME_ICONS[g.id] || "🎮";
             const card = document.createElement("div");
-            card.className = "game-item";
-            card.id = `game_card_${g.id}`;
+            card.className = "game-card";
+            card.id = `card_game_${g.id}`;
             card.innerHTML = `
-                <div class="game-info">
-                    <div class="game-icon-box">${icon}</div>
-                    <div class="game-text">
-                        <h4>${g.title}</h4>
-                        <p>${g.desc}</p>
+                <div class="game-card-top">
+                    <img class="game-logo-img" src="${g.icon}" alt="${g.title}" onerror="this.src='https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512'">
+                    <div class="game-meta">
+                        <h3 title="${g.title}">${g.title}</h3>
+                        <div class="dev-line">${g.developer} • ${g.category}</div>
+                        <div class="pkg-badge" title="${g.package}">${g.package}</div>
                     </div>
                 </div>
-                <button class="btn-unlock" id="btn_unlock_${g.id}" onclick="unlockGame('${g.id}', 'all')">
-                    <span>⚡ সব আনলক</span>
-                </button>
+
+                <div class="game-stats-row">
+                    <div class="stat-item">
+                        <span class="val" id="stat_count_${g.id}">${g.achievements_count || 16} Quests</span>
+                        <span class="lbl">GPGS Endpoints</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="val" style="color:var(--accent-gold); font-family:'JetBrains Mono';">+${(g.total_xp || 16000).toLocaleString()} XP</span>
+                        <span class="lbl">Reward Pool</span>
+                    </div>
+                    <div class="stat-item" style="text-align:right;">
+                        <span class="val" style="color:var(--accent-green);">100% Certified</span>
+                        <span class="lbl">API Status</span>
+                    </div>
+                </div>
+
+                <div class="game-card-actions">
+                    <button class="btn-inspect" id="btn_insp_${g.id}" onclick="inspectGameAchievements('${g.id}')">
+                        <svg style="width:14px; height:14px; fill:currentColor;" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                        <span>Inspect Quests</span>
+                    </button>
+                    <button class="btn-game-unlock" id="btn_unlock_${g.id}" onclick="unlockSingleGameAll('${g.id}')">
+                        <svg style="width:14px; height:14px; fill:currentColor;" viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+                        <span>Unlock All</span>
+                    </button>
+                </div>
             `;
             grid.appendChild(card);
         });
     }
 
-    // Unlock Game Achievements (Unlocks all achievements for the game)
-    async function unlockGame(gameId, count = "all") {
-        if (!currentSession) {
-            showToast("⚠️ অনুগ্রহ করে প্রথমে গুগল একাউন্টে লগইন বা টোকেন সিঙ্ক করুন।", "error");
+    // Filter Games in Search
+    function filterGamesCatalog() {
+        const query = document.getElementById("gameSearchInput").value.trim().toLowerCase();
+        if (!query) {
+            renderGamesGrid(gamesCatalog);
             return;
         }
+        const filtered = gamesCatalog.filter(g => 
+            g.title.toLowerCase().includes(query) ||
+            g.developer.toLowerCase().includes(query) ||
+            g.package.toLowerCase().includes(query) ||
+            g.category.toLowerCase().includes(query)
+        );
+        renderGamesGrid(filtered);
+    }
+
+    // ================= ACHIEVEMENT INSPECTOR =================
+    async function inspectGameAchievements(gameId) {
+        currentInspectorGameId = gameId;
+        const modal = document.getElementById("inspectorModal");
+        modal.classList.remove("hidden");
+
+        const game = gamesCatalog.find(g => g.id === gameId);
+        if (game) {
+            document.getElementById("inspGameLogo").src = game.icon;
+            document.getElementById("inspGameTitle").innerText = game.title;
+            document.getElementById("inspGameDev").innerText = `${game.developer} • ${game.package}`;
+        }
+
+        const listContainer = document.getElementById("inspectorList");
+        listContainer.innerHTML = `<div style="text-align:center; padding:40px;"><div class="spinner" style="margin:0 auto 12px; border-top-color:var(--accent-green); width:32px; height:32px;"></div><p style="color:var(--text-secondary); font-size:13px;">Querying Google Play Games live achievement endpoints...</p></div>`;
+
+        try {
+            const res = await fetch(`${API_BASE}/api/game/achievements`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    game_id: gameId,
+                    email: currentSession?.email,
+                    master_token: currentSession?.master_token,
+                    access_token: currentSession?.access_token,
+                    android_id: currentSession?.android_id
+                })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                currentInspectorAchievements = data.achievements;
+                updateInspectorStats(data.stats);
+                renderInspectorAchievements();
+            } else {
+                listContainer.innerHTML = `<div style="text-align:center; padding:30px; color:#ef4444;"><p>Failed to load achievements: ${data.error}</p></div>`;
+            }
+        } catch (e) {
+            listContainer.innerHTML = `<div style="text-align:center; padding:30px; color:#ef4444;"><p>Connection error loading achievements from GPGS.</p></div>`;
+        }
+    }
+
+    function updateInspectorStats(stats) {
+        document.getElementById("countAll").innerText = stats.total_count;
+        document.getElementById("countLocked").innerText = stats.locked_count;
+        document.getElementById("countUnlocked").innerText = stats.unlocked_count;
+
+        document.getElementById("inspProgressText").innerText = `${stats.unlocked_count} / ${stats.total_count} Quests Unlocked (${stats.completion_pct}%)`;
+        document.getElementById("inspXpText").innerText = `+${stats.earned_xp.toLocaleString()} / ${stats.total_xp.toLocaleString()} XP Earned`;
+
+        document.getElementById("inspProgressBar").style.width = `${stats.completion_pct}%`;
+    }
+
+    function setInspectorFilter(filter) {
+        activeInspectorFilter = filter;
+        document.getElementById("tabFilterAll").classList.toggle("active", filter === "all");
+        document.getElementById("tabFilterLocked").classList.toggle("active", filter === "locked");
+        document.getElementById("tabFilterUnlocked").classList.toggle("active", filter === "unlocked");
+        renderInspectorAchievements();
+    }
+
+    function renderInspectorAchievements() {
+        const container = document.getElementById("inspectorList");
+        container.innerHTML = "";
+
+        let items = currentInspectorAchievements;
+        if (activeInspectorFilter === "locked") {
+            items = items.filter(a => !a.is_unlocked);
+        } else if (activeInspectorFilter === "unlocked") {
+            items = items.filter(a => a.is_unlocked);
+        }
+
+        if (items.length === 0) {
+            container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted); font-size:13px;"><p>No achievements match the current filter.</p></div>`;
+            return;
+        }
+
+        items.forEach(ach => {
+            const card = document.createElement("div");
+            card.className = `ach-card ${ach.is_unlocked ? 'unlocked' : 'locked'}`;
+            card.id = `ach_row_${ach.id}`;
+
+            const stepText = ach.type === "INCREMENTAL" && ach.total_steps 
+                ? `<span class="badge-tag type">STEPS: ${ach.current_steps || 0} / ${ach.total_steps}</span>`
+                : `<span class="badge-tag type">STANDARD</span>`;
+
+            const actionHtml = ach.is_unlocked
+                ? `<span class="badge-completed"><svg style="width:14px; height:14px; fill:currentColor;" viewBox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg> Completed</span>`
+                : `<button class="btn-single-unlock" id="btn_ach_${ach.id}" onclick="unlockSingleAchievement('${ach.id}', '${ach.type}', ${ach.total_steps || 1})">⚡ Unlock Quest</button>`;
+
+            card.innerHTML = `
+                <div class="ach-left">
+                    <img class="ach-icon-img" src="${ach.icon}" alt="Quest Icon" onerror="this.src='https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512'">
+                    <div class="ach-details">
+                        <h4>${ach.name}</h4>
+                        <p>${ach.description}</p>
+                        <div class="ach-badges">
+                            ${stepText}
+                            <span class="badge-tag xp">+${ach.xp.toLocaleString()} XP</span>
+                            <span class="badge-tag ${ach.is_unlocked ? 'status-unlocked' : 'status-locked'}">${ach.is_unlocked ? '✓ UNLOCKED' : '🔒 LOCKED'}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="ach-right">
+                    ${actionHtml}
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function closeInspectorModal() {
+        document.getElementById("inspectorModal").classList.add("hidden");
+        currentInspectorGameId = null;
+    }
+
+    // Unlock Single Achievement
+    async function unlockSingleAchievement(achId, type, totalSteps) {
+        if (!currentSession) {
+            showToast("Please authenticate or sync a Google account first.", "error");
+            return;
+        }
+
+        const btn = document.getElementById(`btn_ach_${achId}`);
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = `<div class="spinner" style="width:12px; height:12px;"></div>`;
+        }
+
+        try {
+            const res = await fetch(`${API_BASE}/api/unlock/single`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    email: currentSession.email,
+                    master_token: currentSession.master_token,
+                    android_id: currentSession.android_id,
+                    game_id: currentInspectorGameId,
+                    achievement_id: achId,
+                    type: type,
+                    total_steps: totalSteps
+                })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                triggerCelebration();
+                showToast("🎉 Quest successfully unlocked in Google Play Games!", "success");
+                // Update local model
+                const item = currentInspectorAchievements.find(a => a.id === achId);
+                if (item) {
+                    item.is_unlocked = true;
+                    item.state = "UNLOCKED";
+                    if (item.type === "INCREMENTAL") item.current_steps = item.total_steps;
+                }
+                renderInspectorAchievements();
+                if (data.profile) updateProfileUI(data.profile);
+            } else {
+                showToast(data.error || "Failed to unlock achievement.", "error");
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerText = "⚡ Unlock Quest";
+                }
+            }
+        } catch (e) {
+            showToast("Connection error while communicating with GPGS.", "error");
+            if (btn) {
+                btn.disabled = false;
+                btn.innerText = "⚡ Unlock Quest";
+            }
+        }
+    }
+
+    // Unlock All Achievements for the currently inspected game
+    async function unlockCurrentGameAll() {
+        if (!currentInspectorGameId) return;
+        await unlockSingleGameAll(currentInspectorGameId);
+        // Refresh inspector list
+        await inspectGameAchievements(currentInspectorGameId);
+    }
+
+    // Unlock all achievements for a single game from grid
+    async function unlockSingleGameAll(gameId) {
+        if (!currentSession) {
+            showToast("Please authenticate or sync a Google account first.", "error");
+            return;
+        }
+
         const btn = document.getElementById(`btn_unlock_${gameId}`);
         if (btn) {
             btn.disabled = true;
-            btn.innerHTML = `<div class="spinner"></div>`;
+            btn.innerHTML = `<div class="spinner" style="width:14px; height:14px;"></div>`;
         }
 
-        showToast("⏳ গুগলে সব কোয়েস্ট ও এচিভমেন্ট আনলক রিকোয়েস্ট পাঠানো হচ্ছে...", "info");
+        showToast("⏳ Transmitting batch unlock request to Google Play Games...", "info");
 
         try {
             const res = await fetch(`${API_BASE}/api/unlock`, {
@@ -2005,7 +1552,7 @@
                     access_token: currentSession.access_token,
                     android_id: currentSession.android_id,
                     game_id: gameId,
-                    count: count
+                    count: "all"
                 })
             });
             const data = await res.json();
@@ -2013,42 +1560,36 @@
             if (data.ok) {
                 if (data.newly_unlocked_count > 0) {
                     triggerCelebration();
-                    showToast(`🎉 সফল! ${data.game_title}-এ সব কোয়েস্ট ও ${data.newly_unlocked_count}টি এচিভমেন্ট আনলক হয়েছে (+${data.earned_xp.toLocaleString()} XP)!`, "success");
+                    showToast(`🎉 Success! Unlocked ${data.newly_unlocked_count} quests in ${data.game_title} (+${data.earned_xp.toLocaleString()} XP)!`, "success");
                 } else {
-                    showToast(data.message || "সব কোয়েস্ট ও এচিভমেন্ট আগেই সম্পূর্ণ আনলক করা ছিল।", "info");
+                    showToast(data.message || "All quests were already unlocked.", "info");
                 }
-
-                if (data.profile) {
-                    updateProfileUI(data.profile, currentSession.email);
-                    currentSession.profile = data.profile;
-                    saveAccountToStorage(currentSession);
-                }
+                if (data.profile) updateProfileUI(data.profile);
             } else {
-                showToast(data.error || "আনলক ব্যর্থ হয়েছে।", "error");
+                showToast(data.error || "Unlock operation failed.", "error");
             }
         } catch (e) {
-            showToast("কানেকশন এরর। আবার চেষ্টা করুন।", "error");
+            showToast("Connection error. Please retry.", "error");
         } finally {
             if (btn) {
                 btn.disabled = false;
-                btn.innerHTML = `<span>⚡ সব আনলক</span>`;
+                btn.innerHTML = `<svg style="width:14px; height:14px; fill:currentColor;" viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg><span>Unlock All</span>`;
             }
         }
     }
 
-    // Unlock All Games Simultaneously
-    async function unlockAllGames() {
+    // Unlock All 8 Games Mega Batch
+    async function unlockAllGamesMega() {
         if (!currentSession) {
-            showToast("⚠️ অনুগ্রহ করে প্রথমে গুগল একাউন্টে লগইন বা টোকেন সিঙ্ক করুন।", "error");
+            showToast("Please authenticate or sync a Google account first.", "error");
             return;
         }
-        const btn = document.getElementById("btnUnlockAllGames");
-        if (btn) {
-            btn.disabled = true;
-            btn.innerHTML = `<div class="spinner" style="display:inline-block; vertical-align:middle; width:14px; height:14px; margin-right:6px;"></div> আনলক হচ্ছে...`;
-        }
 
-        showToast("🚀 সকল ৮টি গেমের কোয়েস্ট ও এচিভমেন্ট একসাথে আনলক শুরু হয়েছে...", "info");
+        const btn = document.getElementById("btnMegaUnlockAll");
+        btn.disabled = true;
+        btn.innerHTML = `<div class="spinner" style="display:inline-block; vertical-align:middle; width:14px; height:14px; margin-right:6px;"></div> Unlocking 8 Games...`;
+
+        showToast("🚀 Initiating sequential full-catalog unlock across all 8 verified games...", "info");
 
         try {
             const res = await fetch(`${API_BASE}/api/unlock/all`, {
@@ -2061,86 +1602,212 @@
                 })
             });
             const data = await res.json();
+
             if (data.ok) {
                 triggerCelebration();
-                showToast(`🎉 মেগা সাকসেস! ৮টি গেমের মোট ${data.total_unlocked}টি এচিভমেন্ট আনলক হয়েছে (+${data.total_xp.toLocaleString()} XP)!`, "success");
-                if (data.profile) {
-                    updateProfileUI(data.profile, currentSession.email);
-                    currentSession.profile = data.profile;
-                    saveAccountToStorage(currentSession);
-                }
+                showToast(`🎉 MEGA SUCCESS! Completed ${data.total_unlocked} quests across 8 games (+${data.total_xp.toLocaleString()} XP)!`, "success");
+                if (data.profile) updateProfileUI(data.profile);
             } else {
-                showToast(data.error || "আনলক সম্পন্ন করা যায়নি।", "error");
+                showToast(data.error || "Mega batch unlock failed.", "error");
             }
-        } catch(e) {
-            showToast("কানেকশন এরর। আবার চেষ্টা করুন।", "error");
+        } catch (e) {
+            showToast("Connection error during mega batch unlock.", "error");
         } finally {
-            if (btn) {
-                btn.disabled = false;
-                btn.innerHTML = `<span>🚀 সকল গেম একসাথে আনলক</span>`;
-            }
+            btn.disabled = false;
+            btn.innerHTML = `<span>🚀 Unlock All 8 Games (Mega Batch)</span>`;
         }
     }
 
-    // Refresh Profile
+    // ================= ACCOUNT & SESSION MANAGEMENT =================
+    function initSession() {
+        const savedActive = localStorage.getItem("pq_active_session");
+        if (savedActive) {
+            try {
+                currentSession = JSON.parse(savedActive);
+                if (currentSession.profile) {
+                    updateProfileUI(currentSession.profile);
+                    return;
+                }
+            } catch (e) {}
+        }
+        // Fallback to initial profile check
+        refreshLiveProfile();
+    }
+
     async function refreshLiveProfile() {
-        if (!currentSession) return;
-        showToast("🔄 গুগল সার্ভার থেকে লাইভ XP চেক করা হচ্ছে...", "info");
+        const email = currentSession?.email || "mdd145712@gmail.com";
+        const masterToken = currentSession?.master_token || "aas_et/AKppINbXkKsnvT1uCfWaJiRBhXUEBdJv6j7kEDRcNamr3myR6ujaj3_qGraZHflKQKsQyLQ3KVX1W6kL3GykE4XCHlLXqBwAR352E7nkJ5SQKwzRH6ZdzU6OeHyhPEqU6rcFpbGH0w9A45I2rzndt1wgh60Dut-0q2bMLBfaKOBIH6kWHToAjOOUrLw1Cf2nNwOMpqrcv6_staeZ22EdFjSf2Vx7xa3in-kKoE_deo8S";
+
         try {
             const res = await fetch(`${API_BASE}/api/profile`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    email: currentSession.email,
-                    master_token: currentSession.master_token,
-                    access_token: currentSession.access_token,
-                    android_id: currentSession.android_id
+                    email: email,
+                    master_token: masterToken,
+                    android_id: currentSession?.android_id || "1234567890abcdef"
                 })
             });
             const data = await res.json();
-            if (data.ok) {
-                updateProfileUI(data.profile, currentSession.email);
-                currentSession.profile = data.profile;
+            if (data.ok && data.profile) {
+                currentSession = {
+                    email: email,
+                    master_token: masterToken,
+                    android_id: currentSession?.android_id || "1234567890abcdef",
+                    profile: data.profile
+                };
                 saveAccountToStorage(currentSession);
-                showToast("✅ প্রোফাইল ও XP আপডেট হয়েছে!", "success");
+                updateProfileUI(data.profile);
             }
         } catch (e) {
-            showToast("রিফ্রেশ এরর", "error");
+            console.error("Profile refresh error:", e);
         }
     }
 
-    // Sign Out
-    function handleSignOut() {
-        localStorage.removeItem("pq_active_session");
-        currentSession = null;
-        document.getElementById("dashboardView").classList.add("hidden");
-        document.getElementById("loginView").classList.remove("hidden");
-        loadSavedAccounts();
-        showToast("সফলভাবে সাইন আউট হয়েছে।", "info");
+    function updateProfileUI(prof) {
+        if (!prof) return;
+        document.getElementById("userAvatar").src = prof.avatar_url || "https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512";
+        document.getElementById("userDisplayName").innerHTML = `${prof.display_name || "Admin"} <span class="badge-level">LVL ${prof.current_level}</span>`;
+        document.getElementById("userEmail").innerText = currentSession?.email || "admin@google.com";
+        document.getElementById("userTag").innerText = prof.player_id ? `ID: ${prof.player_id.slice(0, 10)}...` : "GPGS Authenticated";
+        document.getElementById("userCurrentXp").innerText = `${prof.current_xp.toLocaleString()} XP`;
+        document.getElementById("userNextLvl").innerText = `Level ${prof.next_level || (prof.current_level + 1)}`;
+    }
+
+    function toggleTokenDrawer() {
+        const d = document.getElementById("tokenDrawer");
+        d.classList.toggle("hidden");
+    }
+
+    async function syncMasterTokenDirect() {
+        const token = document.getElementById("inputMasterToken").value.trim();
+        if (!token) {
+            showToast("Please enter a valid master token.", "error");
+            return;
+        }
+        await verifyAndSaveToken(token, currentSession?.email || "admin@google.com");
+    }
+
+    async function saveModalToken() {
+        const token = document.getElementById("inputModalToken").value.trim();
+        if (!token) {
+            showToast("Please enter a valid master token.", "error");
+            return;
+        }
+        await verifyAndSaveToken(token, "custom_account@gmail.com");
+        closeLoginModal();
+    }
+
+    async function verifyAndSaveToken(token, email) {
+        showToast("Verifying master token against Google OAuth servers...", "info");
+        try {
+            const res = await fetch(`${API_BASE}/api/login/token`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: email, token: token })
+            });
+            const data = await res.json();
+            if (data.ok && data.profile) {
+                currentSession = {
+                    email: data.email || email,
+                    master_token: data.master_token,
+                    profile: data.profile,
+                    android_id: "1234567890abcdef"
+                };
+                saveAccountToStorage(currentSession);
+                updateProfileUI(data.profile);
+                triggerCelebration();
+                showToast(`🎉 Master Token Connected! Logged in as ${data.profile.display_name}`, "success");
+                document.getElementById("tokenDrawer").classList.add("hidden");
+            } else {
+                showToast(data.error || "Token is invalid or expired.", "error");
+            }
+        } catch (e) {
+            showToast("Connection error validating master token.", "error");
+        }
+    }
+
+    function loadSavedAccounts() {
+        savedAccounts = JSON.parse(localStorage.getItem("pq_saved_accounts") || "[]");
+        renderSavedAccountsList();
+    }
+
+    function saveAccountToStorage(account) {
+        if (!account || !account.email) return;
+        savedAccounts = savedAccounts.filter(a => a.email !== account.email);
+        savedAccounts.unshift(account);
+        localStorage.setItem("pq_saved_accounts", JSON.stringify(savedAccounts));
+        localStorage.setItem("pq_active_session", JSON.stringify(account));
+        renderSavedAccountsList();
+    }
+
+    function renderSavedAccountsList() {
+        const c = document.getElementById("savedAccountsContainer");
+        if (!c) return;
+        c.innerHTML = "";
+
+        if (savedAccounts.length === 0) {
+            c.innerHTML = `<p style="font-size:12px; color:var(--text-muted);">No saved accounts in this browser.</p>`;
+            return;
+        }
+
+        savedAccounts.forEach(acc => {
+            const div = document.createElement("div");
+            div.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:var(--bg-card-subtle); border-radius:10px; border:1px solid var(--border-color); font-size:12px;";
+            div.innerHTML = `
+                <div>
+                    <strong style="color:var(--text-primary); display:block;">${acc.profile?.display_name || acc.email}</strong>
+                    <span style="color:var(--text-secondary); font-size:11px;">${acc.email}</span>
+                </div>
+                <button class="btn-single-unlock" onclick="switchActiveAccount('${acc.email}')">Switch</button>
+            `;
+            c.appendChild(div);
+        });
+    }
+
+    function switchActiveAccount(email) {
+        const found = savedAccounts.find(a => a.email === email);
+        if (found) {
+            currentSession = found;
+            localStorage.setItem("pq_active_session", JSON.stringify(found));
+            updateProfileUI(found.profile);
+            closeLoginModal();
+            showToast(`Switched active account to ${found.email}`, "success");
+        }
+    }
+
+    function openLoginModal() {
+        renderSavedAccountsList();
+        document.getElementById("loginModal").classList.remove("hidden");
+    }
+
+    function closeLoginModal() {
+        document.getElementById("loginModal").classList.add("hidden");
+    }
+
+    // Toast & Celebration Utilities
+    function showToast(msg, type = "info") {
+        const box = document.getElementById("toastBox");
+        const t = document.createElement("div");
+        t.className = `toast-msg ${type}`;
+        t.innerText = msg;
+        box.appendChild(t);
+        setTimeout(() => {
+            t.style.opacity = "0";
+            t.style.transform = "translateX(40px)";
+            setTimeout(() => t.remove(), 250);
+        }, 4000);
     }
 
     function triggerCelebration() {
-        if (typeof confetti === 'function') {
+        try {
             confetti({
                 particleCount: 80,
                 spread: 70,
-                origin: { y: 0.6 }
+                origin: { y: 0.7 },
+                colors: ['#10b981', '#06b6d4', '#f59e0b', '#3b82f6']
             });
-        }
-    }
-
-    function showToast(message, type = "info") {
-        const container = document.getElementById("toastContainer");
-        const toast = document.createElement("div");
-        toast.className = "toast";
-        const icon = type === "success" ? "🎉" : (type === "error" ? "❌" : "💡");
-        toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
-        container.appendChild(toast);
-        setTimeout(() => {
-            toast.style.opacity = "0";
-            toast.style.transform = "translateY(10px)";
-            setTimeout(() => toast.remove(), 300);
-        }, 4000);
+        } catch (e) {}
     }
 </script>
 

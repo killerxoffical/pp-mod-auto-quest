@@ -605,26 +605,262 @@ def get_live_profile():
         active_token = access_token
 
     if not active_token:
-        return jsonify({"ok": False, "error": "টোকেন পাওয়া যায়নি"}), 401
+        return jsonify({"ok": False, "error": "Authentication token missing."}), 401
 
     profile_res = get_player_profile(active_token)
     if not profile_res.get("ok"):
-        return jsonify({"ok": False, "error": "প্রোফাইল পাওয়া যায়নি"}), 400
+        return jsonify({"ok": False, "error": "Could not retrieve player profile from Google."}), 400
 
     return jsonify({"ok": True, "profile": format_profile(profile_res)})
 
 @app.route("/api/games", methods=["GET"])
 def get_games_list():
-    """Return catalog of supported games"""
+    """Return catalog of supported games with rich metadata"""
     games = []
     for k, v in SUPPORTED_GAMES.items():
         games.append({
             "id": k,
-            "title": v["title"],
-            "package": v["package"],
-            "desc": v["desc"]
+            "title": v.get("title"),
+            "developer": v.get("developer", "Google Play Partner"),
+            "package": v.get("package"),
+            "category": v.get("category", "Games"),
+            "icon": v.get("icon"),
+            "achievements_count": v.get("achievements_count", 0),
+            "total_xp": v.get("total_xp", 0),
+            "desc": v.get("desc"),
+            "tags": v.get("tags", [])
         })
     return jsonify({"ok": True, "games": games})
+
+@app.route("/api/game/achievements", methods=["POST"])
+def get_game_achievements():
+    """
+    Fetch all GPGS achievement definitions & live player progress for a specific game.
+    Allows Admin to inspect every quest name, description, XP, steps, and unlock state.
+    """
+    data = request.get_json() or {}
+    game_id = str(data.get("game_id", "1")).strip()
+    email = data.get("email", "").strip()
+    master_token = data.get("master_token", "").strip()
+    access_token = data.get("access_token", "").strip()
+    android_id = data.get("android_id", "").strip()
+
+    if game_id not in SUPPORTED_GAMES:
+        return jsonify({"ok": False, "error": "Invalid game ID selected."}), 400
+
+    game = SUPPORTED_GAMES[game_id]
+
+    # Acquire active game OAuth token
+    game_token = None
+    if master_token:
+        tok_res = get_games_oauth_token(
+            email=email,
+            master_token=master_token,
+            android_id=android_id,
+            app_package=game["package"],
+            client_sig=game["client_sig"]
+        )
+        if tok_res.get("ok"):
+            game_token = tok_res["access_token"]
+    elif access_token:
+        game_token = access_token
+    else:
+        # Fallback to test known token if available so definitions are ALWAYS inspectable
+        known = load_known_tokens()
+        if known:
+            first_email = list(known.keys())[0]
+            first_tok = known[first_email]
+            tok_res = get_games_oauth_token(
+                email=first_email,
+                master_token=first_tok,
+                android_id=android_id or "1234567890abcdef",
+                app_package=game["package"],
+                client_sig=game["client_sig"]
+            )
+            if tok_res.get("ok"):
+                game_token = tok_res["access_token"]
+
+    if not game_token:
+        return jsonify({"ok": False, "error": "No valid authentication token available to query Google Play Games."}), 401
+
+    # Fetch GPGS definitions (with pagination)
+    all_defs = []
+    page_token = None
+    try:
+        while True:
+            url = f"{GAMES_API_BASE}/achievements?maxResults=50"
+            if page_token:
+                url += f"&pageToken={page_token}"
+            defs_res = requests.get(url, headers=get_headers(game_token), timeout=10)
+            if defs_res.status_code != 200:
+                break
+            defs_json = defs_res.json()
+            all_defs.extend(defs_json.get("items", []))
+            page_token = defs_json.get("nextPageToken")
+            if not page_token:
+                break
+    except Exception as e:
+        return jsonify({"ok": False, "error": f"Failed to fetch GPGS definitions: {str(e)}"}), 500
+
+    # Fetch player achievements if authenticated session
+    p_map = {}
+    if master_token or access_token:
+        try:
+            page_token = None
+            while True:
+                p_url = f"{GAMES_API_BASE}/players/me/achievements?maxResults=50"
+                if page_token:
+                    p_url += f"&pageToken={page_token}"
+                p_res = requests.get(p_url, headers=get_headers(game_token), timeout=10)
+                if p_res.status_code == 200:
+                    p_json = p_res.json()
+                    for p in p_json.get("items", []):
+                        p_map[p.get("id")] = p
+                    page_token = p_json.get("nextPageToken")
+                    if not page_token:
+                        break
+                else:
+                    break
+        except Exception:
+            pass
+
+    # Build rich achievement items list
+    items = []
+    unlocked_count = 0
+    total_xp = 0
+    earned_xp = 0
+
+    for d in all_defs:
+        ach_id = d.get("id")
+        ach_name = d.get("name", "Achievement")
+        ach_desc = d.get("description", "No description provided.")
+        ach_type = d.get("achievementType", "STANDARD")
+        total_steps = d.get("totalSteps")
+        xp = int(d.get("experiencePoints", 500) or 500)
+        total_xp += xp
+
+        icon_url = d.get("unlockedIconUrl") or d.get("revealedIconUrl") or game.get("icon")
+
+        p_info = p_map.get(ach_id, {})
+        state = p_info.get("achievementState", "LOCKED")
+        current_steps = p_info.get("currentSteps", 0 if ach_type == "INCREMENTAL" else None)
+        is_unlocked = (state == "UNLOCKED")
+
+        if is_unlocked:
+            unlocked_count += 1
+            earned_xp += xp
+
+        items.append({
+            "id": ach_id,
+            "name": ach_name,
+            "description": ach_desc,
+            "type": ach_type,
+            "total_steps": total_steps,
+            "current_steps": current_steps,
+            "xp": xp,
+            "icon": icon_url,
+            "state": state,
+            "is_unlocked": is_unlocked,
+            "last_updated": p_info.get("lastUpdatedTimestamp")
+        })
+
+    locked_count = len(items) - unlocked_count
+    completion_pct = round((unlocked_count / len(items)) * 100) if items else 0
+
+    return jsonify({
+        "ok": True,
+        "game": {
+            "id": game_id,
+            "title": game.get("title"),
+            "developer": game.get("developer"),
+            "package": game.get("package"),
+            "category": game.get("category"),
+            "icon": game.get("icon"),
+            "desc": game.get("desc")
+        },
+        "stats": {
+            "total_count": len(items),
+            "unlocked_count": unlocked_count,
+            "locked_count": locked_count,
+            "completion_pct": completion_pct,
+            "total_xp": total_xp,
+            "earned_xp": earned_xp
+        },
+        "achievements": items
+    })
+
+@app.route("/api/unlock/single", methods=["POST"])
+def unlock_single_achievement():
+    """
+    Unlock a single specific achievement by ID for the admin console.
+    """
+    data = request.get_json() or {}
+    email = data.get("email", "").strip()
+    master_token = data.get("master_token", "").strip()
+    access_token = data.get("access_token", "").strip()
+    android_id = data.get("android_id", "").strip()
+    game_id = str(data.get("game_id", "1")).strip()
+    ach_id = str(data.get("achievement_id", "")).strip()
+
+    if not ach_id:
+        return jsonify({"ok": False, "error": "Achievement ID is required."}), 400
+
+    if game_id not in SUPPORTED_GAMES:
+        return jsonify({"ok": False, "error": "Invalid game selected."}), 400
+
+    game = SUPPORTED_GAMES[game_id]
+
+    if master_token:
+        tok_res = get_games_oauth_token(
+            email=email,
+            master_token=master_token,
+            android_id=android_id,
+            app_package=game["package"],
+            client_sig=game["client_sig"]
+        )
+        if not tok_res.get("ok"):
+            return jsonify({"ok": False, "error": f"Game authentication failed: {tok_res.get('error')}"}), 401
+        game_token = tok_res["access_token"]
+    elif access_token:
+        game_token = access_token
+    else:
+        return jsonify({"ok": False, "error": "Authentication token missing."}), 401
+
+    # 1. Reveal if hidden
+    reveal_achievement(game_token, ach_id)
+
+    # 2. Get achievement definition to check if INCREMENTAL
+    total_steps = data.get("total_steps")
+    ach_type = data.get("type", "STANDARD")
+
+    res = None
+    if ach_type == "INCREMENTAL" and total_steps:
+        res = set_achievement_steps(game_token, ach_id, int(total_steps))
+        if not res.get("ok") or not res.get("newly_unlocked"):
+            res_u = unlock_achievement(game_token, ach_id)
+            if res_u.get("ok"):
+                res = res_u
+    else:
+        res = unlock_achievement(game_token, ach_id)
+
+    if not res or not res.get("ok"):
+        return jsonify({"ok": False, "error": res.get("error", "Unlock failed on Google server.")}), 400
+
+    # Refresh profile
+    fresh_profile = None
+    if master_token:
+        base_tok = get_games_oauth_token(email, master_token, android_id)
+        if base_tok.get("ok"):
+            prof_res = get_player_profile(base_tok["access_token"])
+            if prof_res.get("ok"):
+                fresh_profile = format_profile(prof_res)
+
+    return jsonify({
+        "ok": True,
+        "achievement_id": ach_id,
+        "message": "Achievement successfully unlocked!",
+        "profile": fresh_profile
+    })
 
 @app.route("/api/unlock", methods=["POST"])
 def unlock_game():
@@ -650,7 +886,7 @@ def unlock_game():
             count_requested = 9999
 
     if game_id not in SUPPORTED_GAMES:
-        return jsonify({"ok": False, "error": "অননুমোদিত গেম সিলেক্ট করা হয়েছে।"}), 400
+        return jsonify({"ok": False, "error": "Invalid game selected."}), 400
 
     game = SUPPORTED_GAMES[game_id]
 
@@ -664,12 +900,12 @@ def unlock_game():
             client_sig=game["client_sig"]
         )
         if not tok_res.get("ok"):
-            return jsonify({"ok": False, "error": f"গেম অথেনটিকেশন ব্যর্থ: {tok_res.get('error')}"}), 401
+            return jsonify({"ok": False, "error": f"Game authentication failed: {tok_res.get('error')}"}), 401
         game_token = tok_res["access_token"]
     elif access_token:
         game_token = access_token
     else:
-        return jsonify({"ok": False, "error": "অথেনটিকেশন টোকেন পাওয়া যায়নি।"}), 401
+        return jsonify({"ok": False, "error": "Authentication token missing."}), 401
 
     # Fetch game achievement definitions with pagination support
     all_defs = []
@@ -682,7 +918,7 @@ def unlock_game():
             defs_res = requests.get(url, headers=get_headers(game_token), timeout=10)
             if defs_res.status_code != 200:
                 if not all_defs:
-                    return jsonify({"ok": False, "error": "গেমটির এচিভমেন্ট ডেটা পাওয়া যায়নি।"}), 400
+                    return jsonify({"ok": False, "error": "Could not fetch game achievement metadata."}), 400
                 break
             defs_json = defs_res.json()
             all_defs.extend(defs_json.get("items", []))
@@ -725,7 +961,7 @@ def unlock_game():
     if not targets:
         return jsonify({
             "ok": True,
-            "message": f"এই গেমের ({game['title']}) সকল {len(all_defs)}টি এচিভমেন্ট ও কোয়েস্ট আপনার অ্যাকাউন্টে আগেই সম্পূর্ণ আনলক করা হয়েছে!",
+            "message": f"All {len(all_defs)} achievements for {game['title']} are already 100% unlocked on this account!",
             "newly_unlocked_count": 0,
             "earned_xp": 0,
             "total_game_achievements": len(all_defs)
@@ -800,7 +1036,7 @@ def unlock_all_games():
     android_id = data.get("android_id", "").strip()
 
     if not email or not master_token:
-        return jsonify({"ok": False, "error": "ইমেইল ও মাস্টার টোকেন প্রয়োজন।"}), 400
+        return jsonify({"ok": False, "error": "Email and master token are required."}), 400
 
     results = []
     total_unlocked_all = 0
