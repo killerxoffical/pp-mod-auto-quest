@@ -34,10 +34,10 @@
             --text-muted: #94a3b8;
             --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
             --shadow-hover: 0 10px 24px rgba(5, 150, 105, 0.12);
-            --radius-xl: 18px;
-            --radius-lg: 14px;
-            --radius-md: 10px;
-            --radius-sm: 6px;
+            --radius-xl: 8px;
+            --radius-lg: 6px;
+            --radius-md: 4px;
+            --radius-sm: 3px;
         }
 
         :root[data-theme="dark"] {
@@ -61,6 +61,10 @@
             --text-muted: #64748b;
             --shadow-card: 0 10px 25px rgba(0, 0, 0, 0.45);
             --shadow-hover: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 20px rgba(16, 185, 129, 0.12);
+            --radius-xl: 8px;
+            --radius-lg: 6px;
+            --radius-md: 4px;
+            --radius-sm: 3px;
         }
 
         * {
@@ -100,7 +104,7 @@
         .brand-logo-img {
             width: 44px;
             height: 44px;
-            border-radius: 12px;
+            border-radius: var(--radius-md);
             object-fit: cover;
             box-shadow: 0 4px 14px rgba(139, 92, 246, 0.4);
             border: 2px solid rgba(255, 255, 255, 0.2);
@@ -158,7 +162,7 @@
         .brand-logo-icon {
             width: 44px;
             height: 44px;
-            border-radius: 12px;
+            border-radius: var(--radius-md);
             background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
             display: flex;
             align-items: center;
@@ -251,7 +255,7 @@
             border: 1px solid var(--border-color);
             color: var(--text-primary);
             padding: 6px 12px;
-            border-radius: 20px;
+            border-radius: var(--radius-sm);
             cursor: pointer;
             font-size: 12px;
             font-weight: 700;
@@ -609,7 +613,7 @@
         .tile-icon {
             width: 42px;
             height: 42px;
-            border-radius: 12px;
+            border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -716,7 +720,7 @@
         .game-thumb-logo {
             width: 60px;
             height: 60px;
-            border-radius: 14px;
+            border-radius: var(--radius-lg);
             object-fit: cover;
             border: 1px solid rgba(0, 0, 0, 0.08);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
@@ -1089,7 +1093,7 @@
         .inspector-logo-sq {
             width: 52px;
             height: 52px;
-            border-radius: 12px;
+            border-radius: var(--radius-md);
             object-fit: cover;
             border: 1px solid var(--border-color);
         }
@@ -1110,7 +1114,7 @@
             display: flex;
             background: var(--bg-card-subtle);
             border: 1px solid var(--border-color);
-            border-radius: 10px;
+            border-radius: var(--radius-sm);
             padding: 3px;
             gap: 4px;
         }
@@ -1120,7 +1124,7 @@
             align-items: center;
             gap: 6px;
             padding: 6px 14px;
-            border-radius: 7px;
+            border-radius: var(--radius-sm);
             border: 1px solid transparent;
             background: transparent;
             color: var(--text-secondary);
@@ -1174,11 +1178,39 @@
         .ach-icon-thumb {
             width: 40px;
             height: 40px;
-            border-radius: 8px;
+            border-radius: var(--radius-sm);
             object-fit: cover;
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             flex-shrink: 0;
+        }
+
+        .btn-copy-mini {
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 10px;
+            transition: all 0.15s ease;
+            margin-left: 5px;
+            vertical-align: middle;
+        }
+
+        .btn-copy-mini:hover {
+            color: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+            background: var(--bg-card-hover);
+        }
+
+        .user-clickable-cell {
+            cursor: pointer;
+            transition: opacity 0.15s ease;
+        }
+
+        .user-clickable-cell:hover {
+            opacity: 0.85;
         }
 
         /* Spinner & Toasts */
@@ -1467,17 +1499,18 @@
                     <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
                         <span style="font-size:22px;">📘</span>
                         <div>
-                            <h3 style="font-size:16px; font-weight:800; color:var(--text-primary);">GPGS Architecture &amp; Quest Guide</h3>
-                            <span style="font-size:11.5px; color:var(--accent-cyan); font-weight:600;">How Google Play Games Quests Work</span>
+                            <h3 style="font-size:16px; font-weight:800; color:var(--text-primary);">Game Setup &amp; Quest Architecture</h3>
+                            <span style="font-size:11.5px; color:var(--accent-cyan); font-weight:600;">Package Name, SHA-1 &amp; Achievement Discovery Guide</span>
                         </div>
                     </div>
 
                     <div class="guide-step-box">
                         <div class="guide-step-num">1</div>
                         <div>
-                            <h4 style="font-size:13px; font-weight:800; color:var(--text-primary); margin-bottom:3px;">Google Cloud Servers</h4>
+                            <h4 style="font-size:13px; font-weight:800; color:var(--text-primary); margin-bottom:3px;">১. Package Name (Application ID) কোথায় পাবেন?</h4>
                             <p style="font-size:11.5px; color:var(--text-secondary); line-height:1.5;">
-                                প্রতিটি গেমের Achievements সরাসরি Google-এর ক্লাউড সার্ভারে স্টোর থাকে। প্রতিটি Quest-এর একটি ইউনিক আইডি থাকে (যেমন <code>CgkI...</code>)।
+                                Google Play Store-এ যেকোনো গেম ওপেন করলে ব্রাউজারের লিংকে <code>id=...</code> এর পর যে নাম থাকে (যেমন: <code>com.kiloo.subwaysurf</code>), সেটাই হলো গেমটির অফিশিয়াল Package Name।<br>
+                                <strong style="color:var(--accent-green);">সহজ সমাধান:</strong> উপরের Auto-Scanner বক্সে গেমের নাম লিখে <strong>Auto Scan &amp; Fill</strong> ক্লিক করলেই প্লে-স্টোর থেকে সঠিক প্যাকেজ নাম, ডেভেলপার এবং অফিশিয়াল লোগো অটোম্যাটিক চলে আসবে!
                             </p>
                         </div>
                     </div>
@@ -1485,9 +1518,11 @@
                     <div class="guide-step-box">
                         <div class="guide-step-num">2</div>
                         <div>
-                            <h4 style="font-size:13px; font-weight:800; color:var(--text-primary); margin-bottom:3px;">Auto-Discovery Engine (স্বয়ংক্রিয় সমাধান)</h4>
+                            <h4 style="font-size:13px; font-weight:800; color:var(--text-primary); margin-bottom:3px;">২. Client Signature (SHA-1) কী ও কোথায় পাবেন?</h4>
                             <p style="font-size:11.5px; color:var(--text-secondary); line-height:1.5;">
-                                অ্যাডমিনকে প্রতিটি Achievement আইডি আলাদা করে খুঁজতে হয় না। প্যাকেজ নাম দিয়ে গেমটি সেভ করার পর প্লেয়ার যখন লগইন করে <strong>Inspect Quests</strong> বা <strong>Sync Protocol</strong> চাপবে, আমাদের সিস্টেম Google Play Games REST API থেকে রিয়েল সব Quest আইডি নিজে থেকেই রিড করে আনে!
+                                Google Play Games সার্টিফিকেট ভেরিফিকেশনের জন্য SHA-1 ফিঙ্গারপ্রিন্ট প্রয়োজন হয়।<br>
+                                আমাদের সিস্টেমে স্ট্যান্ডার্ড ইউনিভার্সাল GPGS SHA-1 সার্টিফিকেট (<code>58e71785c961e7328ea9c76de647f8f6c4403b39</code>) অলরেডি প্রি-ফিল্ড করা আছে, যা ৯৯% অ্যান্ড্রয়েড গেমের ক্ষেত্রে সরাসরি কাজ করে!<br>
+                                <span style="color:var(--text-muted); font-size:11px;">(ঐচ্ছিক: এটি খালি রাখলেও সার্ভার গুগল ক্লাউড টোকেন দিয়ে সরাসরি অথেন্টিকেট করতে পারে। এছাড়া গেম APK থেকে <code>apksigner verify --print-certs</code> দিয়েও বের করা যায়।)</span>
                             </p>
                         </div>
                     </div>
@@ -1495,11 +1530,11 @@
                     <div class="guide-step-box">
                         <div class="guide-step-num">3</div>
                         <div>
-                            <h4 style="font-size:13px; font-weight:800; color:var(--text-primary); margin-bottom:3px;">Manual Achievement Override (ঐচ্ছিক)</h4>
+                            <h4 style="font-size:13px; font-weight:800; color:var(--text-primary); margin-bottom:3px;">৩. Achievements (Quests) কীভাবে পাওয়া যাবে?</h4>
                             <p style="font-size:11.5px; color:var(--text-secondary); line-height:1.5;">
-                                আপনি যদি নির্দিষ্ট কোনো কাস্টম Achievement ID ম্যানুয়ালি ডিফাইন করতে চান, নিচে কমা দিয়ে পেস্ট করে রাখতে পারেন:
+                                অ্যাডমিনকে শত শত Achievement বা Quest আইডি ম্যানুয়ালি খুঁজতে বা টাইপ করতে হবে না!<br>
+                                প্যাকেজ নাম দিয়ে গেমটি অ্যাড করলেই যথেষ্ট। প্লেয়ার যখন একাউন্ট সিঙ্ক করে <strong>Inspect Quests</strong> বা <strong>Sync Protocol</strong> চালাবে, আমাদের সার্ভার সরাসরি Google Play Games অফিশিয়াল REST API (<code>/games/v1/applications/{id}/achievements</code>) থেকে রিয়েল সব Quest আইডি, টাইটেল ও XP রিওয়ার্ড স্বয়ংক্রিয়ভাবে লাইভ লোড করে আনলক করে দেবে!
                             </p>
-                            <input type="text" id="manualAchievementListInput" class="form-input-element" style="margin-top:8px; font-size:11.5px; font-family:'JetBrains Mono';" placeholder="CgkI-custom1, CgkI-custom2 (Optional)">
                         </div>
                     </div>
 
@@ -1508,7 +1543,7 @@
                             <span>⚡ Quick Tip for Admins</span>
                         </div>
                         <p style="font-size:11px; color:var(--text-secondary); margin-top:4px; line-height:1.4;">
-                            শুধু গেমের নাম লিখে <strong>Auto Scan &amp; Fill</strong> ক্লিক করুন। টাইটেল, অফিশিয়াল লোগো এবং প্যাকেজ নাম অটো-ফিল হওয়ার পর <strong>Add Game</strong> চাপুন। বাকি সব কাজ Google Play Games API নিজে হ্যান্ডেল করবে!
+                            নতুন যেকোনো গেম অ্যাড করতে শুধু টাইটেল লিখে <strong>Auto Scan &amp; Fill</strong> দিন, তারপর <strong>Add Game to Catalog</strong> চাপুন। বাকি সব কাজ Google Play Games API নিজে থেকেই পরিচালনা করবে।
                         </p>
                     </div>
                 </div>
@@ -1520,11 +1555,27 @@
             <div class="users-table-card">
                 <div class="table-header-box">
                     <div>
-                        <h3 style="font-size:17px; font-weight:800; color:var(--text-primary);">Active App Users &amp; Synced Accounts</h3>
-                        <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Live accounts connected via PP Server Android App &amp; Web Console.</p>
+                        <h3 style="font-size:17px; font-weight:800; color:var(--text-primary);">PP Mod Users &amp; Synced Accounts</h3>
+                        <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Live registered Google accounts connected via PP Mod UID &amp; 6-digit sync code nodes.</p>
                     </div>
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <button class="btn-inspect-action" onclick="loadUsersList()">🔄 Refresh Users</button>
+                        <span class="quota-safety-badge">⚡ Zero Quota Overhead • CF D1</span>
+                    </div>
+                </div>
+
+                <!-- Search & Manual Add Action Bar -->
+                <div style="padding: 14px 24px; border-bottom: 1px solid var(--border-color); display: flex; gap: 12px; align-items: center; background: var(--bg-card-subtle); flex-wrap: wrap;">
+                    <div style="position: relative; flex: 1; min-width: 260px;">
+                        <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--text-muted);">🔍</span>
+                        <input type="text" id="userSearchInput" class="form-input-element" style="width: 100%; padding-left: 34px; font-size: 12px; border-radius: var(--radius-sm);" placeholder="Search by PP Mod UID, Display Name, or Google Email..." oninput="handleUserSearch()">
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-sync-protocol" style="padding: 8px 16px; font-size: 12px;" onclick="openAddUserModal()">
+                            <span>➕ Add User / Account</span>
+                        </button>
+                        <button class="btn-inspect-action" style="padding: 8px 14px; font-size: 12px;" onclick="loadUsersList()">
+                            <span>🔄 Refresh</span>
+                        </button>
                     </div>
                 </div>
 
@@ -1532,12 +1583,12 @@
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>User / Display</th>
+                                <th>PP Mod User / UID</th>
                                 <th>Connected Google Email</th>
                                 <th>6-Digit Pair Code</th>
                                 <th>Master Token</th>
                                 <th>Status</th>
-                                <th>Access Control</th>
+                                <th>Access &amp; Actions</th>
                             </tr>
                         </thead>
                         <tbody id="usersTableBody">
@@ -1546,6 +1597,16 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+
+                <!-- Pagination Bar (10 users per page) -->
+                <div style="padding: 12px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--bg-card-subtle); flex-wrap: wrap; gap: 10px;">
+                    <span id="userPageInfo" style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">Showing 0 - 0 of 0 accounts</span>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button id="btnUserPrev" class="btn-inspect-action" style="padding: 6px 12px; font-size: 11.5px;" onclick="changeUserPage(-1)" disabled>◀ Prev 10</button>
+                        <span id="userCurrentPage" style="font-size: 11.5px; font-weight: 700; color: var(--accent-cyan); padding: 0 4px;">Page 1 / 1</span>
+                        <button id="btnUserNext" class="btn-inspect-action" style="padding: 6px 12px; font-size: 11.5px;" onclick="changeUserPage(1)" disabled>Next 10 ▶</button>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1563,7 +1624,7 @@
                     <div>
                         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
                             <div style="display:flex; align-items:center; gap:12px;">
-                                <img src="/static/images/pp_logo.png" style="width:48px; height:48px; border-radius:12px; object-fit:cover; box-shadow:0 4px 12px rgba(139,92,246,0.3);">
+                                <img src="/static/images/pp_logo.png" style="width:48px; height:48px; border-radius:var(--radius-md); object-fit:cover; box-shadow:0 4px 12px rgba(139,92,246,0.3); border:1px solid var(--border-color);">
                                 <div>
                                     <h4 style="font-size:16px; font-weight:800; color:var(--text-primary);">PP Server Node Client</h4>
                                     <span style="font-size:11.5px; color:var(--accent-green); font-weight:700;">v3.4 Release Signed • 547 KB</span>
@@ -1572,7 +1633,7 @@
                             <span class="badge-status active">STABLE</span>
                         </div>
                         <p style="font-size:12px; color:var(--text-secondary); line-height:1.5;">
-                            Google Play Games Account token extractor and 6-digit sync node. Features seamless one-tap pairing, Web Portal login integration, and multi-account cloud sync.
+                            ইউজাররা এই ক্লায়েন্ট অ্যাপে সরাসরি PP Mod একাউন্ট দিয়ে লগইন করে গুগল প্লে অ্যাকাউন্ট সিঙ্ক ও ৬-ডিজিটের অটো-পেয়ারিং কোড জেনারেট করতে পারে।
                         </p>
                         <div style="margin-top:14px; display:flex; flex-direction:column; gap:6px;">
                             <div style="font-size:11.5px; color:var(--text-muted); display:flex; justify-content:space-between;">
@@ -1594,7 +1655,7 @@
                     <div>
                         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
                             <div style="display:flex; align-items:center; gap:12px;">
-                                <div style="width:48px; height:48px; border-radius:12px; background:linear-gradient(135deg, #f59e0b, #d97706); display:flex; align-items:center; justify-content:center; color:#fff; font-size:22px; font-weight:800; box-shadow:0 4px 12px rgba(245,158,11,0.3);">
+                                <div style="width:48px; height:48px; border-radius:var(--radius-md); background:linear-gradient(135deg, #f59e0b, #d97706); display:flex; align-items:center; justify-content:center; color:#fff; font-size:22px; font-weight:800; box-shadow:0 4px 12px rgba(245,158,11,0.3); border:1px solid var(--border-color);">
                                     ৳
                                 </div>
                                 <div>
@@ -1605,7 +1666,7 @@
                             <span class="badge-status active">LIVE NODE</span>
                         </div>
                         <p style="font-size:12px; color:var(--text-secondary); line-height:1.5;">
-                            Automated transaction verification node for bKash, Nagad, and Rocket. Automatically captures SMS alerts, verifies TrxID & balance, and prevents duplicate submissions.
+                            বিকাশ, নগদ এবং রকেট অটোমেটিক এসএমএস নোটিফিকেশন ভেরিফায়ার নোড। TrxID অটো-ক্যাপচার ও ডুপ্লিকেট পেমেন্ট লক হ্যান্ডেল করে।
                         </p>
                         <div style="margin-top:14px; display:flex; flex-direction:column; gap:6px;">
                             <div style="font-size:11.5px; color:var(--text-muted); display:flex; justify-content:space-between;">
@@ -1627,9 +1688,7 @@
                     <div>
                         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
                             <div style="display:flex; align-items:center; gap:12px;">
-                                <div style="width:48px; height:48px; border-radius:12px; background:linear-gradient(135deg, #0284c7, #0369a1); display:flex; align-items:center; justify-content:center; color:#fff; font-size:22px; font-weight:800; box-shadow:0 4px 12px rgba(2,132,199,0.3);">
-                                    🔑
-                                </div>
+                                <img src="/static/images/token_finder_logo.png" style="width:48px; height:48px; border-radius:var(--radius-md); object-fit:cover; box-shadow:0 4px 12px rgba(139,92,246,0.3); border:1px solid var(--border-color);">
                                 <div>
                                     <h4 style="font-size:16px; font-weight:800; color:var(--text-primary);">PlayQuest Fast Token Finder</h4>
                                     <span style="font-size:11.5px; color:var(--accent-cyan); font-weight:700;">v1.0 Lightweight • 547 KB</span>
@@ -1638,7 +1697,7 @@
                             <span class="badge-status active">UTILITY</span>
                         </div>
                         <p style="font-size:12px; color:var(--text-secondary); line-height:1.5;">
-                            Fast standalone Google OAuth token extractor. Captures direct Google Play Games master tokens and provides instant one-tap copy to system clipboard.
+                            ইমার্জেন্সি স্ট্যান্ডঅ্যালোন গুগল মাস্টার টোকেন এক্সট্রাক্টর। রুট ছাড়াই প্লে গেমসের ডিরেক্ট মাস্টার টোকেন (aas_et/...) এক্সট্র্যাক্ট এবং ১-ক্লিকে কপি করতে ব্যবহৃত হয়।
                         </p>
                         <div style="margin-top:14px; display:flex; flex-direction:column; gap:6px;">
                             <div style="font-size:11.5px; color:var(--text-muted); display:flex; justify-content:space-between;">
@@ -1782,7 +1841,7 @@
             <input type="hidden" id="editGameId">
             <div style="display:flex; flex-direction:column; gap:14px;">
                 <div style="display:flex; gap:14px; align-items:center;">
-                    <img id="editLogoPreview" src="" style="width:58px; height:58px; border-radius:14px; object-fit:cover; border:1px solid var(--border-color); background:var(--bg-card-subtle);">
+                    <img id="editLogoPreview" src="" style="width:58px; height:58px; border-radius:8px; object-fit:cover; border:1px solid var(--border-color); background:var(--bg-card-subtle);">
                     <div style="flex:1;">
                         <label style="font-size:11.5px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">Official Logo URL</label>
                         <input type="url" id="editLogoInput" class="form-input-element" style="width:100%; font-size:12px;" placeholder="https://..." oninput="document.getElementById('editLogoPreview').src=this.value">
@@ -1808,6 +1867,117 @@
                     <button type="button" class="btn-inspect-action" onclick="closeEditModal()">Cancel</button>
                     <button type="button" class="btn-sync-protocol" onclick="submitEditGame()">Save Changes</button>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= ADMIN MANUAL ADD USER / ACCOUNT MODAL ================= -->
+<div id="adminAddUserModal" class="modal-overlay hidden">
+    <div class="inspector-panel-card" style="max-width: 520px;">
+        <div class="inspector-top-row">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-size:20px;">👤</span>
+                <div>
+                    <h3 style="font-size:16px; font-weight:800; color:var(--text-primary);">Manual User &amp; Account Setup</h3>
+                    <span style="font-size:11px; color:var(--accent-cyan); font-weight:600;">Register PP Mod user &amp; generate 6-digit sync code</span>
+                </div>
+            </div>
+            <button style="background:var(--bg-card); border:1px solid var(--border-color); color:var(--text-primary); width:32px; height:32px; border-radius:var(--radius-sm); cursor:pointer;" onclick="closeAddUserModal()">✕</button>
+        </div>
+        <div style="padding: 24px;">
+            <form onsubmit="submitAdminAddUser(event)" style="display:flex; flex-direction:column; gap:14px;">
+                <div class="form-field">
+                    <label>PP Mod User UID (User ID)</label>
+                    <input type="text" id="addAccUid" class="form-input-element" placeholder="e.g. UID-984721 or PPMod_User12 (Optional)">
+                    <span style="font-size:10.5px; color:var(--text-muted); margin-top:3px;">ফাঁকা রাখলে স্বয়ংক্রিয়ভাবে একটি ইউনিক UID তৈরি হবে।</span>
+                </div>
+                <div class="form-field">
+                    <label>PP Mod Display Name</label>
+                    <input type="text" id="addAccDisplay" class="form-input-element" placeholder="e.g. Rubel Modder / Pro Player (Optional)">
+                </div>
+                <div class="form-field">
+                    <label>Connected Google Account Email *</label>
+                    <input type="email" id="addAccEmail" class="form-input-element" placeholder="user@gmail.com" required>
+                </div>
+                <div class="form-field">
+                    <label>Google Master Token (aas_et/...) *</label>
+                    <textarea id="addAccToken" class="form-input-element" style="height:76px; font-family:'JetBrains Mono'; font-size:11.5px; resize:vertical;" placeholder="aas_et/AKxxxx..." required></textarea>
+                    <span style="font-size:10.5px; color:var(--text-muted); margin-top:3px;">ইউজারের Master Token দিলে তার জন্য ৬-ডিজিট সিঙ্ক কোড তৈরি হয়ে Cloudflare D1-এ সেভ হবে।</span>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
+                    <button type="button" class="btn-inspect-action" onclick="closeAddUserModal()">Cancel</button>
+                    <button type="submit" class="btn-sync-protocol" id="btnSubmitAddUser">
+                        <span>⚡ Generate Code &amp; Register Account</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ================= USER DETAIL INSPECTOR MODAL ================= -->
+<div id="userDetailModal" class="modal-overlay hidden">
+    <div class="inspector-panel-card" style="max-width: 560px;">
+        <div class="inspector-top-row">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <div style="width:44px; height:44px; border-radius:var(--radius-sm); background:linear-gradient(135deg, #10b981, #06b6d4); display:flex; align-items:center; justify-content:center; color:#fff; font-size:18px; font-weight:800; border:1px solid var(--border-color);">
+                    👤
+                </div>
+                <div>
+                    <h3 id="modalUserDisplay" style="font-size:16px; font-weight:800; color:var(--text-primary);">User Display Name</h3>
+                    <span id="modalUserUid" style="font-size:11px; font-weight:700; color:var(--accent-cyan); font-family:'JetBrains Mono';">UID-000000</span>
+                </div>
+            </div>
+            <button style="background:var(--bg-card); border:1px solid var(--border-color); color:var(--text-primary); width:32px; height:32px; border-radius:var(--radius-sm); cursor:pointer;" onclick="closeUserDetailModal()">✕</button>
+        </div>
+        <div style="padding: 24px; display:flex; flex-direction:column; gap:16px;">
+            <!-- 6-Digit Pair Code Banner -->
+            <div style="background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:16px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+                <div>
+                    <span style="font-size:10.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">6-Digit Pair Sync Code</span>
+                    <div id="modalUserCode" style="font-size:24px; font-weight:900; color:var(--accent-cyan); font-family:'JetBrains Mono'; letter-spacing:2px; margin-top:2px;">------</div>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn-inspect-action" style="padding:8px 14px; font-size:12px;" onclick="copyModalField('modalUserCode', '6-Digit Code')">📋 Copy Code</button>
+                    <button class="btn-sync-protocol" style="padding:8px 14px; font-size:12px;" onclick="pairAccountDirectFromModal()">⚡ Pair This Account</button>
+                </div>
+            </div>
+
+            <!-- Google Email -->
+            <div class="form-field">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                    <label style="margin-bottom:0;">Connected Google Account Email</label>
+                    <button type="button" class="btn-inspect-action" style="padding:2px 8px; font-size:10px;" onclick="copyModalField('modalUserEmail', 'Email')">📋 Copy Email</button>
+                </div>
+                <div id="modalUserEmail" class="form-input-element" style="font-family:'JetBrains Mono'; font-size:12.5px; background:var(--bg-card-subtle);">user@gmail.com</div>
+            </div>
+
+            <!-- Master Token with Full View and Copy -->
+            <div class="form-field">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                    <label style="margin-bottom:0;">Google Master Token (Full)</label>
+                    <button type="button" class="btn-inspect-action" style="padding:2px 8px; font-size:10px;" onclick="copyModalToken()">📋 Copy Token</button>
+                </div>
+                <textarea id="modalUserToken" class="form-input-element" style="height:80px; font-family:'JetBrains Mono'; font-size:11px; resize:vertical; background:var(--bg-card-subtle);" readonly></textarea>
+            </div>
+
+            <!-- Account Status & Registration -->
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <div style="padding:10px; background:var(--bg-card-subtle); border-radius:var(--radius-sm); border:1px solid var(--border-color);">
+                    <span style="font-size:10px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Account Status</span>
+                    <div id="modalUserStatus" style="margin-top:4px;">
+                        <span class="badge-status active">Active</span>
+                    </div>
+                </div>
+                <div style="padding:10px; background:var(--bg-card-subtle); border-radius:var(--radius-sm); border:1px solid var(--border-color);">
+                    <span style="font-size:10px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Synced Node Date</span>
+                    <div id="modalUserCreated" style="font-size:12px; font-weight:700; color:var(--text-primary); margin-top:4px;">Active</div>
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
+                <button type="button" class="btn-inspect-action" onclick="closeUserDetailModal()">Close</button>
             </div>
         </div>
     </div>
@@ -2509,6 +2679,12 @@
     }
 
     // ================= USERS & SYNCED ACCOUNTS =================
+    let allUsersList = [];
+    let filteredUsersList = [];
+    let currentUserPage = 1;
+    const USERS_PER_PAGE = 10;
+    let selectedUserDetail = null;
+
     async function loadUsersList() {
         const tbody = document.getElementById("usersTableBody");
         tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px;"><div class="spinner" style="margin:0 auto 8px; border-top-color:var(--accent-green);"></div>Querying Cloudflare D1 accounts...</td></tr>`;
@@ -2516,52 +2692,257 @@
         try {
             const res = await fetch(`${API_BASE}/api/admin/users`);
             const data = await res.json();
-            if (data.ok) {
-                renderUsersTable(data.users);
+            if (data.ok && Array.isArray(data.users)) {
+                // Filter only accounts with at least 1 valid email
+                allUsersList = data.users.filter(u => u && u.email && u.email.trim() !== "");
+                applyUserFilterAndRender();
             } else {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:#ef4444;">${data.error}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:#ef4444;">${data.error || "Failed to load users."}</td></tr>`;
             }
         } catch (e) {
             tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:#ef4444;">Failed to load accounts from Cloudflare D1.</td></tr>`;
         }
     }
 
-    function renderUsersTable(users) {
+    function handleUserSearch() {
+        const q = (document.getElementById("userSearchInput")?.value || "").toLowerCase().trim();
+        if (!q) {
+            filteredUsersList = [...allUsersList];
+        } else {
+            filteredUsersList = allUsersList.filter(u => {
+                const uid = (u.uid || "").toLowerCase();
+                const disp = (u.display_name || "").toLowerCase();
+                const em = (u.email || "").toLowerCase();
+                const code = (u.sync_code || "").toLowerCase();
+                return uid.includes(q) || disp.includes(q) || em.includes(q) || code.includes(q);
+            });
+        }
+        currentUserPage = 1;
+        renderUsersTable();
+    }
+
+    function applyUserFilterAndRender() {
+        const q = (document.getElementById("userSearchInput")?.value || "").toLowerCase().trim();
+        if (!q) {
+            filteredUsersList = [...allUsersList];
+        } else {
+            filteredUsersList = allUsersList.filter(u => {
+                const uid = (u.uid || "").toLowerCase();
+                const disp = (u.display_name || "").toLowerCase();
+                const em = (u.email || "").toLowerCase();
+                const code = (u.sync_code || "").toLowerCase();
+                return uid.includes(q) || disp.includes(q) || em.includes(q) || code.includes(q);
+            });
+        }
+        renderUsersTable();
+    }
+
+    function changeUserPage(delta) {
+        const maxPages = Math.ceil(filteredUsersList.length / USERS_PER_PAGE) || 1;
+        const newPage = currentUserPage + delta;
+        if (newPage >= 1 && newPage <= maxPages) {
+            currentUserPage = newPage;
+            renderUsersTable();
+        }
+    }
+
+    function renderUsersTable() {
         const tbody = document.getElementById("usersTableBody");
         tbody.innerHTML = "";
 
-        if (users.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);">No users or synced accounts registered yet.</td></tr>`;
+        const total = filteredUsersList.length;
+        const maxPages = Math.ceil(total / USERS_PER_PAGE) || 1;
+        if (currentUserPage > maxPages) currentUserPage = maxPages;
+        if (currentUserPage < 1) currentUserPage = 1;
+
+        const startIdx = (currentUserPage - 1) * USERS_PER_PAGE;
+        const endIdx = Math.min(startIdx + USERS_PER_PAGE, total);
+        const pageUsers = filteredUsersList.slice(startIdx, endIdx);
+
+        // Update pagination UI
+        const pageInfo = document.getElementById("userPageInfo");
+        const pageIndicator = document.getElementById("userCurrentPage");
+        const btnPrev = document.getElementById("btnUserPrev");
+        const btnNext = document.getElementById("btnUserNext");
+
+        if (pageInfo) {
+            pageInfo.innerText = total === 0 ? "Showing 0 accounts" : `Showing ${startIdx + 1} - ${endIdx} of ${total} accounts`;
+        }
+        if (pageIndicator) {
+            pageIndicator.innerText = `Page ${currentUserPage} / ${maxPages}`;
+        }
+        if (btnPrev) btnPrev.disabled = (currentUserPage <= 1);
+        if (btnNext) btnNext.disabled = (currentUserPage >= maxPages);
+
+        if (pageUsers.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);">No matching registered accounts found.</td></tr>`;
             return;
         }
 
-        users.forEach(u => {
+        pageUsers.forEach((u, i) => {
+            const actualIndex = startIdx + i;
             const tr = document.createElement("tr");
             const banBtn = u.is_banned
-                ? `<button class="btn-ban-toggle unban" onclick="toggleUserBan('${u.email}')">Unban User</button>`
-                : `<button class="btn-ban-toggle" onclick="toggleUserBan('${u.email}')">Suspend / Ban</button>`;
+                ? `<button class="btn-ban-toggle unban" onclick="toggleUserBan('${u.email}')">Unban</button>`
+                : `<button class="btn-ban-toggle" onclick="toggleUserBan('${u.email}')">Ban</button>`;
+
+            // Safely sanitize token for onclick string
+            const safeToken = (u.master_token || u.token_masked || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
 
             tr.innerHTML = `
                 <td>
-                    <strong style="color:var(--text-primary); display:block;">${u.display_name}</strong>
-                    <span style="font-size:10.5px; color:var(--text-muted);">${u.created_at}</span>
+                    <div class="user-clickable-cell" onclick="openUserDetailModal(${actualIndex})" title="Click to inspect user account">
+                        <strong style="color:var(--text-primary); display:block; font-size:13px;">${u.display_name}</strong>
+                        <span style="font-size:10.5px; font-family:'JetBrains Mono'; color:var(--accent-cyan);">${u.uid}</span>
+                    </div>
                 </td>
                 <td>
                     <span style="font-family:'JetBrains Mono'; font-size:12px;">${u.email}</span>
+                    <button class="btn-copy-mini" title="Copy Email" onclick="copyTextToClipboard('${u.email}', 'Email')">📋</button>
                 </td>
                 <td>
-                    <span style="font-family:'JetBrains Mono'; font-weight:800; color:var(--accent-cyan); background:var(--bg-card-subtle); padding:2px 8px; border-radius:4px; border:1px solid var(--border-color);">${u.sync_code}</span>
+                    <span style="font-family:'JetBrains Mono'; font-weight:800; color:var(--accent-cyan); background:var(--bg-card-subtle); padding:2px 8px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">${u.sync_code}</span>
+                    <button class="btn-copy-mini" title="Copy 6-Digit Code" onclick="copyTextToClipboard('${u.sync_code}', '6-Digit Code')">📋</button>
                 </td>
                 <td>
-                    <!-- Masked token preview -->
-                    <span class="stealth-blur" style="font-family:'JetBrains Mono'; font-size:10.5px; color:var(--text-muted);" title="Hover to view token snippet">${u.token_masked}</span>
+                    <span class="stealth-blur" style="font-family:'JetBrains Mono'; font-size:10.5px; color:var(--text-muted);" title="Masked Token">${u.token_masked}</span>
+                    <button class="btn-copy-mini" title="Copy Full Token" onclick="copyTextToClipboard('${safeToken}', 'Master Token')">📋</button>
                 </td>
                 <td>
                     <span class="badge-status ${u.is_banned ? 'banned' : 'active'}">${u.status}</span>
                 </td>
-                <td>${banBtn}</td>
+                <td>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <button class="btn-inspect-action" style="padding:4px 9px; font-size:11px;" onclick="openUserDetailModal(${actualIndex})">🔍 Details</button>
+                        ${banBtn}
+                    </div>
+                </td>
             `;
             tbody.appendChild(tr);
+        });
+    }
+
+    // Modal Add User
+    function openAddUserModal() {
+        document.getElementById("addAccUid").value = "";
+        document.getElementById("addAccDisplay").value = "";
+        document.getElementById("addAccEmail").value = "";
+        document.getElementById("addAccToken").value = "";
+        document.getElementById("adminAddUserModal").classList.remove("hidden");
+    }
+
+    function closeAddUserModal() {
+        document.getElementById("adminAddUserModal").classList.add("hidden");
+    }
+
+    async function submitAdminAddUser(event) {
+        event.preventDefault();
+        const btn = document.getElementById("btnSubmitAddUser");
+        const uid = document.getElementById("addAccUid").value.trim();
+        const display_name = document.getElementById("addAccDisplay").value.trim();
+        const email = document.getElementById("addAccEmail").value.trim();
+        const master_token = document.getElementById("addAccToken").value.trim();
+
+        if (!email || !master_token) {
+            showToast("Email and Master Token are required!", "error");
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = `<span>⏳ Registering Account...</span>`;
+
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/users/add`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ uid, display_name, email, master_token })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                showToast(`User registered! 6-digit code: ${data.code}`, "success");
+                closeAddUserModal();
+                loadUsersList();
+            } else {
+                showToast(data.error || "Failed to add user account.", "error");
+            }
+        } catch (e) {
+            showToast("Network error registering account.", "error");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = `<span>⚡ Generate Code &amp; Register Account</span>`;
+        }
+    }
+
+    // Modal User Detail
+    function openUserDetailModal(index) {
+        const u = filteredUsersList[index];
+        if (!u) return;
+        selectedUserDetail = u;
+
+        document.getElementById("modalUserDisplay").innerText = u.display_name || "User";
+        document.getElementById("modalUserUid").innerText = u.uid || "UID-N/A";
+        document.getElementById("modalUserCode").innerText = u.sync_code || "------";
+        document.getElementById("modalUserEmail").innerText = u.email || "";
+        document.getElementById("modalUserToken").value = u.master_token || u.token_masked || "";
+        document.getElementById("modalUserCreated").innerText = u.created_at || "Active";
+
+        const statusContainer = document.getElementById("modalUserStatus");
+        statusContainer.innerHTML = `<span class="badge-status ${u.is_banned ? 'banned' : 'active'}">${u.status}</span>`;
+
+        document.getElementById("userDetailModal").classList.remove("hidden");
+    }
+
+    function closeUserDetailModal() {
+        document.getElementById("userDetailModal").classList.add("hidden");
+        selectedUserDetail = null;
+    }
+
+    function copyModalField(elementId, label) {
+        const el = document.getElementById(elementId);
+        const txt = el ? (el.innerText || el.value || "").trim() : "";
+        copyTextToClipboard(txt, label);
+    }
+
+    function copyModalToken() {
+        const txt = document.getElementById("modalUserToken")?.value || "";
+        copyTextToClipboard(txt, "Master Token");
+    }
+
+    function pairAccountDirectFromModal() {
+        if (!selectedUserDetail || !selectedUserDetail.sync_code) return;
+        const code = selectedUserDetail.sync_code;
+        closeUserDetailModal();
+
+        const pairInput = document.getElementById("quickPairInput");
+        if (pairInput) {
+            pairInput.value = code;
+            switchAdminTab("games");
+            connectWith6DigitCode();
+            showToast(`Pairing node with code ${code}...`, "info");
+        }
+    }
+
+    function copyTextToClipboard(text, label) {
+        if (!text) {
+            showToast("Nothing to copy!", "error");
+            return;
+        }
+        navigator.clipboard.writeText(text).then(() => {
+            showToast(`Copied ${label} to clipboard!`, "success");
+        }).catch(() => {
+            const ta = document.createElement("textarea");
+            ta.value = text;
+            ta.style.position = "fixed";
+            ta.style.left = "-9999px";
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+                document.execCommand("copy");
+                showToast(`Copied ${label} to clipboard!`, "success");
+            } catch (err) {
+                showToast("Failed to copy", "error");
+            }
+            document.body.removeChild(ta);
         });
     }
 

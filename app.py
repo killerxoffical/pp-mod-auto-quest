@@ -861,21 +861,28 @@ def get_admin_users():
                 "master_token": tok
             })
 
-    # Build structured list
+    # Build structured list (Only accounts that have at least 1 email/token)
     user_list = []
     for acc in accounts:
-        em = acc.get("email", "")
-        code = acc.get("code", "")
+        em = acc.get("email", "").strip()
+        if not em:
+            continue
+        code = str(acc.get("code", "")).strip() or f"{abs(hash(em)) % 900000 + 100000}"
         is_banned = em.lower() in banned
         tok = acc.get("master_token") or ""
         tok_preview = f"{tok[:12]}...{tok[-8:]}" if tok else "aas_et/CloudStored"
+        uid = acc.get("uid") or f"UID-{abs(hash(em)) % 900000 + 100000}"
+        disp = acc.get("display_name") or em.split("@")[0].capitalize()
+
         user_list.append({
+            "uid": uid,
+            "display_name": disp,
             "email": em,
-            "display_name": em.split("@")[0].capitalize(),
             "sync_code": code,
+            "master_token": tok,
+            "token_masked": tok_preview,
             "status": "Banned" if is_banned else "Active",
             "is_banned": is_banned,
-            "token_masked": tok_preview,
             "created_at": acc.get("createdAt", "Active")
         })
 
@@ -884,6 +891,68 @@ def get_admin_users():
         "total_users": len(user_list),
         "banned_count": len([u for u in user_list if u["is_banned"]]),
         "users": user_list
+    })
+
+@app.route("/api/admin/users/add", methods=["POST"])
+def admin_add_user_account():
+    """
+    Allows Admin to manually register a user or add a Google account with email & token.
+    Generates a 6-digit sync code and registers it to Cloudflare D1 and local sync codes!
+    """
+    data = request.get_json() or {}
+    uid = str(data.get("uid", "")).strip()
+    display_name = str(data.get("display_name", "")).strip()
+    email = str(data.get("email", "")).strip().lower()
+    master_token = str(data.get("master_token", "")).strip()
+
+    if not email:
+        return jsonify({"ok": False, "error": "Email is required"}), 400
+    if not master_token:
+        return jsonify({"ok": False, "error": "Master token is required"}), 400
+
+    if not uid:
+        uid = f"UID-{abs(hash(email)) % 900000 + 100000}"
+    if not display_name:
+        display_name = email.split("@")[0].capitalize()
+
+    # Generate unique 6-digit pairing code
+    code = str(random.randint(100000, 999999))
+    while code in SYNC_CODES:
+        code = str(random.randint(100000, 999999))
+
+    # Save to local SYNC_CODES
+    SYNC_CODES[code] = {
+        "email": email,
+        "master_token": master_token,
+        "android_id": generate_android_id(email),
+        "created_at": time.time(),
+        "uid": uid,
+        "display_name": display_name
+    }
+
+    # Save to known tokens
+    save_known_token(email, master_token)
+
+    # Save to Cloudflare D1
+    try:
+        requests.post("https://ppmod-api.tredarskvt.workers.dev/api/sync/save", json={
+            "email": email,
+            "master_token": master_token,
+            "code": code,
+            "android_id": SYNC_CODES[code]["android_id"],
+            "uid": uid,
+            "display_name": display_name
+        }, timeout=5)
+    except Exception:
+        pass
+
+    return jsonify({
+        "ok": True,
+        "code": code,
+        "uid": uid,
+        "display_name": display_name,
+        "email": email,
+        "message": f"Account for {email} successfully added with 6-digit code: {code}"
     })
 
 @app.route("/api/admin/users/ban", methods=["POST"])
