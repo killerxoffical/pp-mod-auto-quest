@@ -99,6 +99,27 @@ def list_achievement_definitions(access_token: str) -> dict:
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
+def reveal_achievement(access_token: str, achievement_id: str) -> dict:
+    """
+    Reveal a hidden achievement in Google Play Games.
+    POST https://games.googleapis.com/games/v1/achievements/{achievementId}/reveal
+    """
+    clean_id = achievement_id.strip()
+    url = f"{GAMES_API_BASE}/achievements/{clean_id}/reveal"
+    try:
+        res = requests.post(url, headers=get_headers(access_token), json={}, timeout=10)
+        if res.status_code == 200:
+            data = res.json()
+            return {
+                "ok": True,
+                "achievement_id": clean_id,
+                "current_state": data.get("currentState"),
+                "raw": data
+            }
+        return {"ok": False, "achievement_id": clean_id, "status_code": res.status_code, "error": res.text}
+    except Exception as e:
+        return {"ok": False, "achievement_id": clean_id, "error": str(e)}
+
 def unlock_achievement(access_token: str, achievement_id: str) -> dict:
     """
     Unlock a single achievement in Google Play Games.

@@ -1216,12 +1216,14 @@
         </div>
 
         <!-- Games Catalog Section -->
-        <div class="section-header">
+        <div class="section-header" style="flex-wrap: wrap; gap: 10px; align-items: center;">
             <h3>
                 <span>🎯 এচিভমেন্ট ও কোয়েস্ট আনলকার</span>
                 <span id="gamesCountBadge" class="badge-count">৮টি গেম</span>
             </h3>
-            <span style="font-size:11px; color:var(--text-muted); font-weight:600;">১-ক্লিকে লাইভ XP</span>
+            <button id="btnUnlockAllGames" class="btn-unlock" style="padding: 6px 14px; font-size: 12px; background: linear-gradient(135deg, #10b981 0%, #059669 100%);" onclick="unlockAllGames()">
+                <span>🚀 সকল গেম একসাথে আনলক</span>
+            </button>
         </div>
 
         <div id="gamesGrid" class="games-grid">
@@ -1971,22 +1973,27 @@
                         <p>${g.desc}</p>
                     </div>
                 </div>
-                <button class="btn-unlock" id="btn_unlock_${g.id}" onclick="unlockGame('${g.id}')">
-                    <span>⚡ আনলক</span>
+                <button class="btn-unlock" id="btn_unlock_${g.id}" onclick="unlockGame('${g.id}', 'all')">
+                    <span>⚡ সব আনলক</span>
                 </button>
             `;
             grid.appendChild(card);
         });
     }
 
-    // Unlock Game Achievements
-    async function unlockGame(gameId) {
-        if (!currentSession) return;
+    // Unlock Game Achievements (Unlocks all achievements for the game)
+    async function unlockGame(gameId, count = "all") {
+        if (!currentSession) {
+            showToast("⚠️ অনুগ্রহ করে প্রথমে গুগল একাউন্টে লগইন বা টোকেন সিঙ্ক করুন।", "error");
+            return;
+        }
         const btn = document.getElementById(`btn_unlock_${gameId}`);
-        btn.disabled = true;
-        btn.innerHTML = `<div class="spinner"></div>`;
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = `<div class="spinner"></div>`;
+        }
 
-        showToast("⏳ গুগলে আনলক রিকোয়েস্ট পাঠানো হচ্ছে...", "info");
+        showToast("⏳ গুগলে সব কোয়েস্ট ও এচিভমেন্ট আনলক রিকোয়েস্ট পাঠানো হচ্ছে...", "info");
 
         try {
             const res = await fetch(`${API_BASE}/api/unlock`, {
@@ -1998,7 +2005,7 @@
                     access_token: currentSession.access_token,
                     android_id: currentSession.android_id,
                     game_id: gameId,
-                    count: 5
+                    count: count
                 })
             });
             const data = await res.json();
@@ -2006,9 +2013,9 @@
             if (data.ok) {
                 if (data.newly_unlocked_count > 0) {
                     triggerCelebration();
-                    showToast(`🎉 সফল! ${data.game_title}-এ ${data.newly_unlocked_count}টি এচিভমেন্ট আনলক হয়েছে (+${data.earned_xp.toLocaleString()} XP)!`, "success");
+                    showToast(`🎉 সফল! ${data.game_title}-এ সব কোয়েস্ট ও ${data.newly_unlocked_count}টি এচিভমেন্ট আনলক হয়েছে (+${data.earned_xp.toLocaleString()} XP)!`, "success");
                 } else {
-                    showToast(data.message || "সব এচিভমেন্ট আগেই আনলক ছিল।", "info");
+                    showToast(data.message || "সব কোয়েস্ট ও এচিভমেন্ট আগেই সম্পূর্ণ আনলক করা ছিল।", "info");
                 }
 
                 if (data.profile) {
@@ -2022,8 +2029,56 @@
         } catch (e) {
             showToast("কানেকশন এরর। আবার চেষ্টা করুন।", "error");
         } finally {
-            btn.disabled = false;
-            btn.innerHTML = `<span>⚡ আনলক</span>`;
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `<span>⚡ সব আনলক</span>`;
+            }
+        }
+    }
+
+    // Unlock All Games Simultaneously
+    async function unlockAllGames() {
+        if (!currentSession) {
+            showToast("⚠️ অনুগ্রহ করে প্রথমে গুগল একাউন্টে লগইন বা টোকেন সিঙ্ক করুন।", "error");
+            return;
+        }
+        const btn = document.getElementById("btnUnlockAllGames");
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = `<div class="spinner" style="display:inline-block; vertical-align:middle; width:14px; height:14px; margin-right:6px;"></div> আনলক হচ্ছে...`;
+        }
+
+        showToast("🚀 সকল ৮টি গেমের কোয়েস্ট ও এচিভমেন্ট একসাথে আনলক শুরু হয়েছে...", "info");
+
+        try {
+            const res = await fetch(`${API_BASE}/api/unlock/all`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    email: currentSession.email,
+                    master_token: currentSession.master_token,
+                    android_id: currentSession.android_id
+                })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                triggerCelebration();
+                showToast(`🎉 মেগা সাকসেস! ৮টি গেমের মোট ${data.total_unlocked}টি এচিভমেন্ট আনলক হয়েছে (+${data.total_xp.toLocaleString()} XP)!`, "success");
+                if (data.profile) {
+                    updateProfileUI(data.profile, currentSession.email);
+                    currentSession.profile = data.profile;
+                    saveAccountToStorage(currentSession);
+                }
+            } else {
+                showToast(data.error || "আনলক সম্পন্ন করা যায়নি।", "error");
+            }
+        } catch(e) {
+            showToast("কানেকশন এরর। আবার চেষ্টা করুন।", "error");
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `<span>🚀 সকল গেম একসাথে আনলক</span>`;
+            }
         }
     }
 

@@ -31,7 +31,7 @@ except ImportError:
     CHROME_AVAILABLE = False
 
 from config import GAMES_API_BASE, USER_AGENT, GOOGLE_CLIENT_SIG, PLAY_GAMES_PACKAGE
-from engine import get_player_profile, unlock_achievement, set_achievement_steps
+from engine import get_player_profile, unlock_achievement, set_achievement_steps, reveal_achievement
 from games_db import SUPPORTED_GAMES
 from auth import get_games_oauth_token, generate_android_id
 
@@ -643,8 +643,14 @@ def execute_unlock_for_chat(chat_id, edit_message_id=None):
             ach_type = ach.get("achievementType", "STANDARD")
             total_steps = ach.get("totalSteps", 1)
 
+            reveal_achievement(token, a_id)
+
             if ach_type == "INCREMENTAL" and total_steps:
                 u_res = set_achievement_steps(token, a_id, total_steps)
+                if not u_res.get("ok") or not u_res.get("newly_unlocked"):
+                    u_res2 = unlock_achievement(token, a_id)
+                    if u_res2.get("ok"):
+                        u_res = u_res2
             else:
                 u_res = unlock_achievement(token, a_id)
 
@@ -652,7 +658,7 @@ def execute_unlock_for_chat(chat_id, edit_message_id=None):
                 game_unlocked += 1
                 game_xp += xp
 
-            time.sleep(0.25)
+            time.sleep(0.12)
 
         total_unlocked += game_unlocked
         total_xp_earned += game_xp
