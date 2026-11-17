@@ -3,6 +3,7 @@
 PlayQuest VPS Background Worker for Daytona Cloud Container
 Optimized for 1 vCPU / 1GB RAM Ubuntu Containers
 Communicates with https://pp-mod-auto-quest.onrender.com
+Includes bulletproof curl fallback against Cloudflare TCP connection resets
 """
 
 import os
@@ -11,6 +12,7 @@ import time
 import json
 import re
 import base64
+import subprocess
 import requests
 
 try:
@@ -27,9 +29,69 @@ except ImportError:
 SERVER_URL = os.environ.get("SERVER_URL", "https://pp-mod-auto-quest.onrender.com").rstrip("/")
 POLL_INTERVAL = 3  # seconds
 
+# Global requests session with realistic browser headers and Connection: close
+SESSION = requests.Session()
+SESSION.headers.update({
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "Accept": "application/json, text/plain, */*",
+    "Connection": "close"
+})
+
 def log(msg):
     ts = time.strftime("%Y-%m-%d %H:%M:%S")
     print(f"[{ts}] {msg}", flush=True)
+
+def api_get(endpoint):
+    """Bulletproof GET request with automatic curl fallback for Cloudflare compatibility"""
+    url = f"{SERVER_URL}{endpoint}"
+    try:
+        res = SESSION.get(url, timeout=8)
+        if res.status_code == 200:
+            return res.json()
+    except Exception:
+        pass
+
+    # Fallback to system curl
+    try:
+        cmd = [
+            "curl", "-s", "--max-time", "10",
+            "-H", "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0.0.0",
+            "-H", "Accept: application/json",
+            url
+        ]
+        out = subprocess.check_output(cmd, text=True, stderr=subprocess.DEVNULL)
+        if out and out.strip().startswith("{"):
+            return json.loads(out)
+    except Exception as e:
+        log(f"⚠️ api_get failed ({endpoint}): {e}")
+    return None
+
+def api_post(endpoint, data):
+    """Bulletproof POST request with automatic curl fallback for Cloudflare compatibility"""
+    url = f"{SERVER_URL}{endpoint}"
+    try:
+        res = SESSION.post(url, json=data, timeout=12)
+        if res.status_code == 200:
+            return res.json()
+    except Exception:
+        pass
+
+    # Fallback to system curl
+    try:
+        payload = json.dumps(data)
+        cmd = [
+            "curl", "-s", "--max-time", "15",
+            "-H", "Content-Type: application/json",
+            "-H", "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0.0.0",
+            "-X", "POST", "-d", payload,
+            url
+        ]
+        out = subprocess.check_output(cmd, text=True, stderr=subprocess.DEVNULL)
+        if out and out.strip().startswith("{"):
+            return json.loads(out)
+    except Exception as e:
+        log(f"⚠️ api_post failed ({endpoint}): {e}")
+    return None
 
 def get_chrome_driver():
     """Initializes an ultra-lightweight headless Chrome instance tuned for 1GB RAM"""
@@ -40,7 +102,7 @@ def get_chrome_driver():
     options.add_argument("--disable-gpu")
     options.add_argument("--disable-software-rasterizer")
     options.add_argument("--disable-extensions")
-    options.add_argument("--blink-settings=imagesEnabled=true")  # Need images for captcha if shown
+    options.add_argument("--blink-settings=imagesEnabled=true")
     options.add_argument("--window-size=412,915")
     options.add_argument(
         "--user-agent=Mozilla/5.0 (Linux; Android 14; Pixel 7 Pro Build/UQ1A.240105.004) "
@@ -76,11 +138,11 @@ def process_login_job(job_id, email, password):
                 pass
 
         if not email_elem:
-            requests.post(f"{SERVER_URL}/api/worker/update", json={
+            api_post("/api/worker/update", {
                 "job_id": job_id,
                 "status": "error",
-                "error": "গুগল লগইন পেজ লোড হতে ব্যর্থ হয়েছে। সার্ভার আবার চেষ্টা করছে..."
-            }, timeout=10)
+                "error": "গুগল লগইন পেজ লোড হতে ব্যর্থ হয়েছে। আবার চেষ্টা করুন।"
+            })
             return
 
         email_elem.clear()
@@ -93,11 +155,11 @@ def process_login_job(job_id, email, password):
         # Check for Email Error
         page_text = driver.find_element(By.TAG_NAME, "body").text
         if "Couldn't find your Google Account" in page_text or "অ্যাকাউন্ট খুঁজে পাওয়া যায়নি" in page_text:
-            requests.post(f"{SERVER_URL}/api/worker/update", json={
+            api_post("/api/worker/update", {
                 "job_id": job_id,
                 "status": "error",
                 "error": "এই জিমেইল অ্যাকাউন্টটি গুগলে খুঁজে পাওয়া যায়নি। সঠিক ইমেইল দিন।"
-            }, timeout=10)
+            })
             return
 
         # Check for Captcha after email
@@ -106,17 +168,17 @@ def process_login_job(job_id, email, password):
             if c_img.is_displayed():
                 img_b64 = c_img.screenshot_as_base64
                 log("🧩 Captcha detected after email, requesting user input...")
-                requests.post(f"{SERVER_URL}/api/worker/update", json={
+                api_post("/api/worker/update", {
                     "job_id": job_id,
                     "status": "captcha_required",
                     "captcha_img": img_b64
-                }, timeout=10)
+                })
 
                 # Poll for solution up to 60s
                 c_start = time.time()
                 solved = False
                 while time.time() - c_start < 60:
-                    sol_res = requests.get(f"{SERVER_URL}/api/worker/captcha/{job_id}", timeout=5).json()
+                    sol_res = api_get(f"/api/worker/captcha/{job_id}") or {}
                     sol = sol_res.get("solution")
                     if sol:
                         cap_in = driver.find_element(By.ID, "ca") or driver.find_element(By.NAME, "ca")
@@ -127,11 +189,11 @@ def process_login_job(job_id, email, password):
                         break
                     time.sleep(2)
                 if not solved:
-                    requests.post(f"{SERVER_URL}/api/worker/update", json={
+                    api_post("/api/worker/update", {
                         "job_id": job_id,
                         "status": "error",
                         "error": "ক্যাপচা সমাধান করার সময়সীমা শেষ হয়েছে।"
-                    }, timeout=10)
+                    })
                     return
         except Exception:
             pass
@@ -145,11 +207,11 @@ def process_login_job(job_id, email, password):
                 pass
 
         if not pwd_elem:
-            requests.post(f"{SERVER_URL}/api/worker/update", json={
+            api_post("/api/worker/update", {
                 "job_id": job_id,
                 "status": "error",
                 "error": "পাসওয়ার্ড ফিল্ড পাওয়া যায়নি। দয়া করে ইমেইল সঠিক কিনা চেক করুন।"
-            }, timeout=10)
+            })
             return
 
         pwd_elem.clear()
@@ -162,11 +224,11 @@ def process_login_job(job_id, email, password):
         # Check for Wrong Password
         page_text = driver.find_element(By.TAG_NAME, "body").text
         if "Wrong password" in page_text or "ভুল পাসওয়ার্ড" in page_text:
-            requests.post(f"{SERVER_URL}/api/worker/update", json={
+            api_post("/api/worker/update", {
                 "job_id": job_id,
                 "status": "error",
                 "error": "ভুল পাসওয়ার্ড দেওয়া হয়েছে। দয়া করে সঠিক পাসওয়ার্ড দিন।"
-            }, timeout=10)
+            })
             return
 
         # 3. Detect 2FA Prompt Number & Phone Device
@@ -209,20 +271,20 @@ def process_login_job(job_id, email, password):
 
         if prompt_num:
             log(f"🔔 2FA Prompt detected: [{prompt_num}] for device: {user_phone_device}")
-            requests.post(f"{SERVER_URL}/api/worker/update", json={
+            api_post("/api/worker/update", {
                 "job_id": job_id,
                 "status": "prompt_required",
                 "prompt_number": prompt_num,
                 "device_name": user_phone_device
-            }, timeout=10)
+            })
         else:
             log(f"📱 Security notification sent to device: {user_phone_device} (no number required)")
-            requests.post(f"{SERVER_URL}/api/worker/update", json={
+            api_post("/api/worker/update", {
                 "job_id": job_id,
                 "status": "prompt_required",
                 "prompt_number": None,
                 "device_name": user_phone_device
-            }, timeout=10)
+            })
 
         # 4. Wait for phone approval & capture oauth_token
         oauth_token = None
@@ -260,27 +322,27 @@ def process_login_job(job_id, email, password):
 
         if oauth_token:
             log(f"✨ SUCCESS: Captured oauth_token for {email}!")
-            requests.post(f"{SERVER_URL}/api/worker/update", json={
+            api_post("/api/worker/update", {
                 "job_id": job_id,
                 "status": "completed",
                 "oauth_token": oauth_token
-            }, timeout=15)
+            })
         else:
             log(f"❌ Timeout waiting for user phone approval ({email})")
-            requests.post(f"{SERVER_URL}/api/worker/update", json={
+            api_post("/api/worker/update", {
                 "job_id": job_id,
                 "status": "error",
                 "error": "ফোনে নির্দিষ্ট সময়ে ট্যাপ করা হয়নি (টাইমআউট)। আবার চেষ্টা করুন।"
-            }, timeout=10)
+            })
 
     except Exception as e:
         log(f"❌ Error during job {job_id}: {e}")
         try:
-            requests.post(f"{SERVER_URL}/api/worker/update", json={
+            api_post("/api/worker/update", {
                 "job_id": job_id,
                 "status": "error",
                 "error": f"লগইন প্রক্রিয়ায় ত্রুটি: {str(e)}"
-            }, timeout=10)
+            })
         except Exception:
             pass
     finally:
@@ -304,19 +366,18 @@ def main():
     poll_count = 0
     while True:
         try:
-            res = requests.get(f"{SERVER_URL}/api/worker/poll", timeout=10)
-            if res.status_code == 200:
-                data = res.json()
-                if data.get("ok") and data.get("job_id"):
-                    process_login_job(data["job_id"], data["email"], data["password"])
-                else:
-                    poll_count += 1
-                    if poll_count % 10 == 0:
-                        log(f"🟢 Worker active & polling... (Heartbeat #{poll_count // 10})")
+            data = api_get("/api/worker/poll")
+            if data and data.get("ok") and data.get("job_id"):
+                process_login_job(data["job_id"], data["email"], data["password"])
+            elif data:
+                poll_count += 1
+                if poll_count % 10 == 0:
+                    log(f"🟢 Worker active & polling... (Heartbeat #{poll_count // 10})")
             else:
-                log(f"⚠️ Server returned status {res.status_code}")
+                # Connection or temporary issue, retries cleanly
+                pass
         except Exception as e:
-            log(f"⚠️ Connection error while polling: {e}")
+            log(f"⚠️ Polling loop error: {e}")
         time.sleep(POLL_INTERVAL)
 
 if __name__ == "__main__":
