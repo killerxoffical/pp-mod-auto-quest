@@ -1003,9 +1003,9 @@
         </div>
         <div class="header-actions">
             <button id="btnThemeToggle" class="theme-toggle-btn" onclick="toggleTheme()" title="Theme Toggle">🌙</button>
-            <div class="server-status">
-                <div class="status-dot"></div>
-                <span>Cloud Live</span>
+            <div class="server-status" id="headerWorkerBadge" title="Daytona VPS Worker Status">
+                <div class="status-dot" id="headerStatusDot"></div>
+                <span id="headerStatusText">Checking...</span>
             </div>
         </div>
     </header>
@@ -1030,6 +1030,14 @@
 
         <!-- PANE 1: DIRECT GOOGLE WEB LOGIN (PROMPT / 2FA) -->
         <div id="paneWebLogin">
+            <!-- VPS Live Indicator Banner -->
+            <div id="vpsStatusBanner" style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-card-subtle); border: 1px solid var(--border-color); border-radius: 8px; padding: 9px 12px; margin-bottom: 14px; font-size: 12px;">
+                <div style="display: flex; align-items: center; gap: 7px;">
+                    <div id="bannerStatusDot" style="width: 8px; height: 8px; border-radius: 50%; background: #94a3b8;"></div>
+                    <span id="bannerStatusText" style="font-weight: 700; color: var(--text-secondary);">VPS Worker যাচাই হচ্ছে...</span>
+                </div>
+                <span id="bannerProcessedCount" style="color: var(--text-muted); font-size: 11px; font-weight: 600;">প্রসেসড: ০</span>
+            </div>
             <div class="form-group">
                 <label>📧 Gmail Address</label>
                 <div class="input-wrapper">
@@ -1450,10 +1458,48 @@
         "8": "🐦"  // Angry Birds 2
     };
 
+    async function updateWorkerLiveStatus() {
+        try {
+            const res = await fetch(`${API_BASE}/api/worker/status`);
+            if (!res.ok) return;
+            const data = await res.json();
+
+            const dot = document.getElementById("headerStatusDot");
+            const text = document.getElementById("headerStatusText");
+            const bDot = document.getElementById("bannerStatusDot");
+            const bText = document.getElementById("bannerStatusText");
+            const bCount = document.getElementById("bannerProcessedCount");
+
+            if (data.online) {
+                if (dot) dot.style.background = "#22c55e";
+                if (text) text.innerText = "VPS Live";
+                if (bDot) bDot.style.background = "#22c55e";
+                if (bText) {
+                    bText.innerText = "🟢 VPS Worker সক্রিয় ও প্রস্তুত";
+                    bText.style.color = "#16a34a";
+                }
+            } else {
+                if (dot) dot.style.background = "#ef4444";
+                if (text) text.innerText = "VPS Offline";
+                if (bDot) bDot.style.background = "#ef4444";
+                if (bText) {
+                    bText.innerText = "🔴 VPS Worker অফলাইন (Daytona-তে চালু করুন)";
+                    bText.style.color = "#dc2626";
+                }
+            }
+
+            if (bCount && data.jobs_processed !== undefined) {
+                bCount.innerText = `সফল লগইন: ${data.jobs_processed} | একটিভ: ${data.active_jobs || 0}`;
+            }
+        } catch (e) {}
+    }
+
     // Initialize on page load
     window.addEventListener("DOMContentLoaded", () => {
         initTheme();
         loadSavedAccounts();
+        updateWorkerLiveStatus();
+        setInterval(updateWorkerLiveStatus, 3000);
 
         // Check for 1-Click login parameters from Android App / Bot / Direct Link
         const urlParams = new URLSearchParams(window.location.search);

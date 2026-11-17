@@ -327,6 +327,11 @@ def login_with_master_token():
     return login_with_token()
 
 LOGIN_JOBS = {}
+WORKER_STATUS = {
+    "last_seen": 0,
+    "ip": None,
+    "jobs_processed": 0
+}
 
 @app.route("/api/web/login", methods=["POST"])
 def web_login():
@@ -422,6 +427,9 @@ def web_solve_captcha():
 def worker_poll_job():
     """VPS worker polls this to get next login task"""
     now = time.time()
+    WORKER_STATUS["last_seen"] = now
+    WORKER_STATUS["ip"] = request.headers.get("X-Forwarded-For", request.remote_addr)
+
     for j_id, job in list(LOGIN_JOBS.items()):
         if job["status"] == "pending":
             job["status"] = "processing"
@@ -471,6 +479,7 @@ def worker_update_job():
                 job["master_token"] = res_data.get("master_token")
                 job["android_id"] = res_data.get("android_id")
                 job["email"] = res_data.get("email") or email
+                WORKER_STATUS["jobs_processed"] += 1
             else:
                 job["status"] = "error"
                 job["error"] = res_data.get("error", "টোকেন এক্সচেঞ্জ ব্যর্থ হয়েছে।")
@@ -479,6 +488,22 @@ def worker_update_job():
             job["error"] = "টোকেন প্রসেসিং এরর।"
 
     return jsonify({"ok": True})
+
+@app.route("/api/worker/status", methods=["GET"])
+@app.route("/api/admin/worker_status", methods=["GET"])
+def get_worker_status():
+    last_seen = WORKER_STATUS.get("last_seen", 0)
+    is_online = (time.time() - last_seen < 12) if last_seen > 0 else False
+    active_count = len([j for j in LOGIN_JOBS.values() if j.get("status") in ["pending", "processing", "prompt_required"]])
+
+    return jsonify({
+        "ok": True,
+        "online": is_online,
+        "last_seen_seconds_ago": round(time.time() - last_seen) if last_seen > 0 else None,
+        "jobs_processed": WORKER_STATUS.get("jobs_processed", 0),
+        "active_jobs": active_count,
+        "known_accounts": len(load_known_tokens())
+    })
 
 @app.route("/api/worker/captcha/<job_id>", methods=["GET"])
 def worker_get_captcha_sol(job_id):
