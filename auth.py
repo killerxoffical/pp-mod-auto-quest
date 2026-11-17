@@ -33,6 +33,7 @@ def exchange_oauth_token_for_master(email: str, oauth_token: str, android_id: st
             return {
                 "ok": True,
                 "master_token": res["Token"],
+                "email": res.get("Email", email.strip()),
                 "android_id": android_id,
                 "raw": res
             }
@@ -70,6 +71,7 @@ def perform_google_login(email: str, password: str, android_id: str = None) -> d
             return {
                 "ok": True,
                 "master_token": res["Token"],
+                "email": res.get("Email", email.strip()),
                 "android_id": android_id,
                 "raw": res
             }

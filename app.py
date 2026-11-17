@@ -222,15 +222,25 @@ def login_with_token():
     android_id = data.get("android_id", "").strip() or generate_android_id()
 
     # Check if already a master token
-    if token_str.startswith("aas_et/"):
+    if token_str.startswith("aas_et/") or token_str.startswith("oauth2rt_1/"):
         master_token = token_str
     else:
-        # Strip oauth_token= prefix if pasted with cookie name
-        clean_tok = token_str.replace("oauth_token=", "").strip()
+        # Strip oauth_token= prefix if pasted with cookie name or URL
+        clean_tok = token_str
+        if "oauth_token=" in clean_tok:
+            import re
+            m = re.search(r'oauth_token=([a-zA-Z0-9_\-]+)', clean_tok)
+            if m:
+                clean_tok = m.group(1)
+            else:
+                clean_tok = clean_tok.replace("oauth_token=", "").strip()
+        
         ex_res = exchange_oauth_token_for_master(email, clean_tok, android_id)
         if not ex_res.get("ok"):
             return jsonify({"ok": False, "error": f"গুগল টোকেন এক্সচেঞ্জ ব্যর্থ: {ex_res.get('error')}"}), 401
         master_token = ex_res["master_token"]
+        if ex_res.get("email") and not email:
+            email = ex_res["email"]
 
     # Google Play Games token
     tok_res = get_games_oauth_token(email, master_token, android_id)

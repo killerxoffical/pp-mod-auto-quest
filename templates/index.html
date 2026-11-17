@@ -1209,14 +1209,20 @@
         initTheme();
         loadSavedAccounts();
 
-        // Check for 1-Click login parameters from Telegram Bot
+        // Check for 1-Click login parameters from Android App / Bot / Direct Link
         const urlParams = new URLSearchParams(window.location.search);
-        const urlEmail = urlParams.get("email");
-        const urlToken = urlParams.get("token");
-        if (urlEmail && urlToken) {
+        const urlEmail = urlParams.get("email") || "";
+        const urlToken = urlParams.get("token") || urlParams.get("oauth_token");
+        if (urlToken) {
             window.history.replaceState({}, document.title, window.location.pathname);
-            loginWithDirectToken(urlEmail, urlToken);
-            return;
+            if (urlEmail) {
+                document.getElementById("inputEmail").value = urlEmail;
+                loginWithDirectToken(urlEmail, urlToken);
+                return;
+            } else {
+                document.getElementById("inputToken").value = urlToken;
+                showToast("টোকেন পাওয়া গেছে! আপনার জিমেইল লিখে 'কানেক্ট করুন' চাপুন।", "info");
+            }
         }
 
         autoRestoreSession();
