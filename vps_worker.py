@@ -32,7 +32,7 @@ try:
 except ImportError:
     SELENIUM_AVAILABLE = False
 
-SERVER_URL = os.environ.get("SERVER_URL", "https://pp-mod-auto-quest.onrender.com").rstrip("/")
+SERVER_URL = os.environ.get("SERVER_URL", "https://ppmod-api.tredarskvt.workers.dev/render").rstrip("/")
 POLL_INTERVAL = 3  # seconds
 
 # Global requests session with realistic browser headers and Connection: close
