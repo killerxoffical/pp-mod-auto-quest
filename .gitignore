@@ -9,3 +9,6 @@ venv/
 env/
 .pytest_cache/
 .DS_Store
+android_app/bin/
+android_app/*.idsig
+
