@@ -217,12 +217,26 @@ def run_fast_chrome_login(chat_id, email, password):
         )
 
         opts = uc.ChromeOptions()
+        opts.add_argument("--headless=new")
+        opts.add_argument("--no-sandbox")
+        opts.add_argument("--disable-dev-shm-usage")
+        opts.add_argument("--disable-gpu")
         opts.add_argument("--window-size=412,915")
         opts.add_argument("--user-agent=Mozilla/5.0 (Linux; Android 14; Pixel 7 Pro Build/UQ1A.240105.004) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36")
-        opts.add_argument("--disable-gpu")
-        opts.add_argument("--no-sandbox")
 
-        driver = uc.Chrome(options=opts)
+        try:
+            driver = uc.Chrome(options=opts)
+        except Exception:
+            from selenium import webdriver
+            from selenium.webdriver.chrome.options import Options as SelOptions
+            sel_opts = SelOptions()
+            sel_opts.add_argument("--headless=new")
+            sel_opts.add_argument("--no-sandbox")
+            sel_opts.add_argument("--disable-dev-shm-usage")
+            sel_opts.add_argument("--disable-gpu")
+            sel_opts.add_argument("--window-size=412,915")
+            sel_opts.add_argument("--user-agent=Mozilla/5.0 (Linux; Android 14; Pixel 7 Pro Build/UQ1A.240105.004) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36")
+            driver = webdriver.Chrome(options=sel_opts)
         driver.get("https://accounts.google.com/EmbeddedSetup")
 
         # 1. Type Email with fast polling
