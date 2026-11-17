@@ -1,0 +1,17 @@
+{
+  "9": {
+    "title": "Stumble Guys",
+    "developer": "Scopely",
+    "package": "com.kitkagames.fallbuddies",
+    "client_sig": "58e71785c961e7328ea9c76de647f8f6c4403b39",
+    "category": "Party / Knockout",
+    "icon": "https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512",
+    "achievements_count": 32,
+    "total_xp": 32000,
+    "desc": "32 live GPGS achievements.",
+    "tags": [
+      "Admin Added",
+      "GPGS Verified"
+    ]
+  }
+}

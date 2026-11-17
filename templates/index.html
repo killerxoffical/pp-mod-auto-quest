@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PlayQuest Admin Portal • GPGS Achievement & Quest Console</title>
+    <title>PP Server Admin Console • GPGS Protocol & Quest Engine</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,11 +13,12 @@
 
     <style>
         :root[data-theme="dark"] {
-            --bg-body: #070d18;
-            --bg-card: #0f172a;
-            --bg-card-subtle: #1e293b;
-            --bg-card-hover: #17233f;
-            --border-color: #24344d;
+            --bg-body: #060b13;
+            --bg-sidebar: #0b1322;
+            --bg-card: #0f192c;
+            --bg-card-subtle: #172338;
+            --bg-card-hover: #1e2e4a;
+            --border-color: #1e2e4a;
             --border-focus: #10b981;
             --accent-green: #10b981;
             --accent-green-hover: #059669;
@@ -30,19 +31,20 @@
             --text-primary: #f8fafc;
             --text-secondary: #94a3b8;
             --text-muted: #64748b;
-            --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.5);
-            --shadow-hover: 0 18px 40px rgba(0, 0, 0, 0.65), 0 0 20px rgba(16, 185, 129, 0.15);
-            --radius-xl: 22px;
-            --radius-lg: 16px;
-            --radius-md: 12px;
-            --radius-sm: 8px;
+            --shadow-card: 0 10px 25px rgba(0, 0, 0, 0.45);
+            --shadow-hover: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 20px rgba(16, 185, 129, 0.12);
+            --radius-xl: 18px;
+            --radius-lg: 14px;
+            --radius-md: 10px;
+            --radius-sm: 6px;
         }
 
         :root[data-theme="light"] {
-            --bg-body: #f1f5f9;
+            --bg-body: #f8fafc;
+            --bg-sidebar: #ffffff;
             --bg-card: #ffffff;
-            --bg-card-subtle: #f8fafc;
-            --bg-card-hover: #f1f5f9;
+            --bg-card-subtle: #f1f5f9;
+            --bg-card-hover: #e2e8f0;
             --border-color: #cbd5e1;
             --border-focus: #059669;
             --accent-green: #059669;
@@ -56,8 +58,8 @@
             --text-primary: #0f172a;
             --text-secondary: #334155;
             --text-muted: #64748b;
-            --shadow-card: 0 10px 25px rgba(0, 0, 0, 0.06);
-            --shadow-hover: 0 18px 35px rgba(5, 150, 105, 0.12);
+            --shadow-card: 0 4px 18px rgba(0, 0, 0, 0.05);
+            --shadow-hover: 0 12px 28px rgba(5, 150, 105, 0.12);
         }
 
         * {
@@ -66,7 +68,7 @@
             box-sizing: border-box;
             font-family: 'Plus Jakarta Sans', sans-serif;
             -webkit-tap-highlight-color: transparent;
-            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
         }
 
         body {
@@ -74,149 +76,273 @@
             color: var(--text-primary);
             min-height: 100vh;
             display: flex;
-            justify-content: center;
-            padding: 24px 20px 60px;
-            background-image: 
-                radial-gradient(circle at 15% 10%, rgba(16, 185, 129, 0.08) 0%, transparent 40%),
-                radial-gradient(circle at 85% 85%, rgba(6, 182, 212, 0.06) 0%, transparent 45%);
-            background-attachment: fixed;
+            overflow-x: hidden;
         }
 
-        .portal-layout {
-            width: 100%;
-            max-width: 1180px;
+        /* Stealth Blur Masking */
+        .stealth-blur {
+            filter: blur(5px);
+            user-select: none;
+            cursor: pointer;
+            transition: filter 0.25s ease;
+            display: inline-block;
+        }
+
+        .stealth-blur:hover {
+            filter: blur(0px) !important;
+        }
+
+        /* Layout Framework */
+        .admin-wrapper {
+            display: flex;
+            width: 100vw;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Navigation */
+        .admin-sidebar {
+            width: 270px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            justify-content: space-between;
+            padding: 22px 18px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            flex-shrink: 0;
+            z-index: 100;
         }
 
-        /* Top Header */
-        .portal-header {
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .brand-logo-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 14px var(--accent-green-glow);
+            flex-shrink: 0;
+        }
+
+        .brand-logo-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: #ffffff;
+        }
+
+        .brand-text-col h2 {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.2px;
+        }
+
+        .brand-text-col span {
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--accent-green);
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 24px;
+            flex: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid transparent;
+            text-decoration: none;
+        }
+
+        .nav-item:hover {
+            color: var(--text-primary);
+            background: var(--bg-card-subtle);
+        }
+
+        .nav-item.active {
+            background: var(--accent-green-subtle);
+            color: var(--accent-green);
+            border-color: rgba(16, 185, 129, 0.3);
+            font-weight: 700;
+        }
+
+        .nav-item svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+            flex-shrink: 0;
+        }
+
+        .sidebar-footer {
+            border-top: 1px solid var(--border-color);
+            padding-top: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .theme-toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .theme-btn {
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Main Workspace */
+        .admin-main {
+            flex: 1;
+            padding: 24px 32px 60px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            width: 100%;
+        }
+
+        /* Top Header in Main */
+        .main-top-bar {
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
             gap: 16px;
-            padding: 16px 24px;
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-xl);
+            padding: 16px 24px;
             box-shadow: var(--shadow-card);
         }
 
-        .portal-brand {
+        .account-badge-group {
             display: flex;
             align-items: center;
             gap: 14px;
         }
 
-        .brand-icon {
+        .avatar-circle {
             width: 48px;
             height: 48px;
-            border-radius: 14px;
-            background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 6px 18px var(--accent-green-glow);
-            flex-shrink: 0;
+            border-radius: 50%;
+            border: 2px solid var(--accent-green);
+            object-fit: cover;
+            background: var(--bg-card-subtle);
+            box-shadow: 0 4px 12px var(--accent-green-glow);
         }
 
-        .brand-icon svg {
-            width: 26px;
-            height: 26px;
-            fill: #ffffff;
-        }
-
-        .brand-titles h1 {
-            font-size: 20px;
+        .account-meta h4 {
+            font-size: 15px;
             font-weight: 800;
-            letter-spacing: -0.4px;
             color: var(--text-primary);
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .badge-admin {
-            font-size: 10px;
-            font-weight: 800;
-            text-transform: uppercase;
-            padding: 3px 8px;
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 182, 212, 0.2));
-            color: var(--accent-green);
-            border: 1px solid var(--accent-green);
-            border-radius: 6px;
-            letter-spacing: 0.6px;
-        }
-
-        .brand-titles p {
+        .account-meta p {
             font-size: 12px;
             color: var(--text-secondary);
             font-weight: 500;
-            margin-top: 2px;
         }
 
-        .header-actions {
+        .quick-connect-box {
             display: flex;
             align-items: center;
-            gap: 10px;
-        }
-
-        .btn-header {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 14px;
-            font-size: 13px;
-            font-weight: 600;
+            gap: 8px;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
-            border: 1px solid var(--border-color);
-            background: var(--bg-card-subtle);
+            padding: 4px 8px;
+        }
+
+        .code-input {
+            width: 130px;
+            background: transparent;
+            border: none;
+            outline: none;
             color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+
+        .btn-code-connect {
+            background: var(--accent-green);
+            border: none;
+            color: #ffffff;
+            font-size: 11.5px;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
             cursor: pointer;
         }
 
-        .btn-header:hover {
-            border-color: var(--accent-green);
-            background: var(--bg-card-hover);
-            transform: translateY(-1px);
+        .btn-code-connect:hover {
+            background: var(--accent-green-hover);
         }
 
-        .theme-toggle {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            border: 1px solid var(--border-color);
-            background: var(--bg-card-subtle);
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-
-        /* Metrics Ribbon */
-        .metrics-ribbon {
+        /* Metrics Grid */
+        .metrics-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 14px;
         }
 
-        .metric-card {
+        .metric-tile {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
             padding: 16px 20px;
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 14px;
             box-shadow: var(--shadow-card);
         }
 
-        .metric-icon-box {
-            width: 44px;
-            height: 44px;
+        .tile-icon {
+            width: 42px;
+            height: 42px;
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -224,168 +350,59 @@
             flex-shrink: 0;
         }
 
-        .metric-icon-box.green { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
-        .metric-icon-box.blue { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); }
-        .metric-icon-box.cyan { background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); }
-        .metric-icon-box.gold { background: rgba(245, 158, 11, 0.15); color: var(--accent-gold); }
+        .tile-icon.green { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+        .tile-icon.cyan { background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); }
+        .tile-icon.gold { background: rgba(245, 158, 11, 0.15); color: var(--accent-gold); }
+        .tile-icon.blue { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); }
 
-        .metric-icon-box svg {
-            width: 22px;
-            height: 22px;
-            fill: currentColor;
-        }
+        .tile-icon svg { width: 20px; height: 20px; fill: currentColor; }
 
-        .metric-info h4 {
-            font-size: 21px;
+        .tile-text h3 {
+            font-size: 19px;
             font-weight: 800;
             color: var(--text-primary);
-            letter-spacing: -0.3px;
         }
 
-        .metric-info p {
-            font-size: 12px;
+        .tile-text p {
+            font-size: 11.5px;
             color: var(--text-secondary);
             font-weight: 600;
         }
 
-        /* Profile & Account Banner */
-        .account-banner {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-xl);
-            padding: 18px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 16px;
-            box-shadow: var(--shadow-card);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .account-banner::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: linear-gradient(to bottom, var(--accent-green), var(--accent-cyan));
-        }
-
-        .account-left {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .player-avatar {
-            width: 54px;
-            height: 54px;
-            border-radius: 50%;
-            border: 2px solid var(--accent-green);
-            box-shadow: 0 4px 14px var(--accent-green-glow);
-            object-fit: cover;
-            background: var(--bg-card-subtle);
-        }
-
-        .player-info h3 {
-            font-size: 17px;
-            font-weight: 800;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .badge-level {
-            font-size: 11px;
-            font-weight: 800;
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-            color: #ffffff;
-            padding: 2px 8px;
-            border-radius: 6px;
-            text-transform: uppercase;
-        }
-
-        .player-email {
-            font-size: 13px;
-            color: var(--text-secondary);
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 2px;
-        }
-
-        .account-stats {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .stat-block {
-            text-align: right;
-        }
-
-        .stat-block .stat-num {
-            font-size: 17px;
-            font-weight: 800;
-            color: var(--accent-green);
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .stat-block .stat-lbl {
-            font-size: 11px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-
-        .account-banner-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        /* Toolbar & Filters */
-        .toolbar-panel {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 14px 20px;
+        /* Filter Toolbar */
+        .catalog-toolbar {
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
             gap: 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 12px 18px;
             box-shadow: var(--shadow-card);
         }
 
-        .search-box {
+        .search-wrapper {
             position: relative;
             flex: 1;
             min-width: 240px;
         }
 
-        .search-box svg {
+        .search-wrapper svg {
             position: absolute;
             left: 12px;
             top: 50%;
             transform: translateY(-50%);
-            width: 16px;
-            height: 16px;
+            width: 15px;
+            height: 15px;
             fill: var(--text-muted);
-            pointer-events: none;
         }
 
-        .search-input {
+        .search-input-field {
             width: 100%;
-            padding: 10px 14px 10px 38px;
-            font-size: 13px;
+            padding: 9px 14px 9px 36px;
+            font-size: 12.5px;
             background: var(--bg-card-subtle);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
@@ -393,215 +410,122 @@
             outline: none;
         }
 
-        .search-input:focus {
+        .search-input-field:focus {
             border-color: var(--accent-green);
-            box-shadow: 0 0 0 3px var(--accent-green-subtle);
         }
 
-        .toolbar-buttons {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .btn-mega-unlock {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 18px;
-            font-size: 13px;
-            font-weight: 700;
-            border-radius: var(--radius-md);
-            border: none;
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: #ffffff;
-            cursor: pointer;
-            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
-        }
-
-        .btn-mega-unlock:hover {
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
-            transform: translateY(-1px);
-        }
-
-        .btn-tool {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 10px 14px;
-            font-size: 13px;
-            font-weight: 600;
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border-color);
-            background: var(--bg-card-subtle);
-            color: var(--text-primary);
-            cursor: pointer;
-        }
-
-        .btn-tool:hover {
-            border-color: var(--accent-green);
-            background: var(--bg-card-hover);
-        }
-
-        /* Direct Token Input Drawer */
-        .token-drawer {
-            background: var(--bg-card);
-            border: 1px dashed var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 18px 22px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .token-drawer.hidden { display: none; }
-
-        .token-input-row {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .token-input {
-            flex: 1;
-            min-width: 260px;
-            padding: 10px 14px;
-            font-size: 12px;
-            font-family: 'JetBrains Mono', monospace;
-            background: var(--bg-card-subtle);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            color: var(--text-primary);
-            outline: none;
-        }
-
-        /* Games Grid */
-        .games-grid {
+        /* Games Cards Grid (Zero empty side space) */
+        .games-flow-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-            gap: 18px;
+            grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+            gap: 16px;
         }
 
-        .game-card {
+        .game-entry-card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
-            border-radius: var(--radius-xl);
-            padding: 20px;
-            box-shadow: var(--shadow-card);
+            border-radius: var(--radius-lg);
+            padding: 18px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            gap: 16px;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            gap: 14px;
+            box-shadow: var(--shadow-card);
+            transition: all 0.2s ease;
         }
 
-        .game-card:hover {
-            transform: translateY(-3px);
-            border-color: rgba(16, 185, 129, 0.5);
+        .game-entry-card:hover {
+            border-color: rgba(16, 185, 129, 0.45);
+            transform: translateY(-2px);
             box-shadow: var(--shadow-hover);
         }
 
-        .game-card-top {
+        .game-entry-top {
             display: flex;
             align-items: flex-start;
-            gap: 16px;
+            gap: 14px;
         }
 
-        .game-logo-img {
-            width: 64px;
-            height: 64px;
-            border-radius: 16px;
+        .game-thumb-logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 14px;
             object-fit: cover;
             border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             flex-shrink: 0;
             background: var(--bg-card-subtle);
         }
 
-        .game-meta {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .game-meta h3 {
-            font-size: 16px;
+        .game-heading h4 {
+            font-size: 15px;
             font-weight: 800;
             color: var(--text-primary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
             letter-spacing: -0.2px;
         }
 
-        .game-meta .dev-line {
-            font-size: 12px;
+        .game-heading .dev-tag {
+            font-size: 11.5px;
             color: var(--accent-cyan);
             font-weight: 600;
-            margin-top: 2px;
+            margin-top: 1px;
         }
 
-        .pkg-badge {
-            display: inline-block;
+        .pkg-stealth-pill {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 10.5px;
-            padding: 3px 7px;
-            border-radius: 5px;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
             background: var(--bg-card-subtle);
             border: 1px solid var(--border-color);
             color: var(--text-muted);
-            margin-top: 6px;
-            max-width: 100%;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            margin-top: 5px;
+            display: inline-block;
         }
 
-        .game-stats-row {
+        .game-stats-ribbon {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 14px;
+            padding: 8px 12px;
             background: var(--bg-card-subtle);
             border-radius: var(--radius-md);
             border: 1px solid var(--border-color);
-            font-size: 12px;
+            font-size: 11.5px;
         }
 
-        .stat-item {
+        .stat-col {
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 1px;
         }
 
-        .stat-item .val {
-            font-size: 13px;
+        .stat-col .bold-val {
+            font-size: 12.5px;
             font-weight: 800;
             color: var(--text-primary);
         }
 
-        .stat-item .lbl {
-            font-size: 10px;
+        .stat-col .sub-txt {
+            font-size: 9.5px;
             font-weight: 700;
             color: var(--text-muted);
             text-transform: uppercase;
         }
 
-        .game-card-actions {
+        .game-entry-actions {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 8px;
         }
 
-        .btn-inspect {
+        .btn-inspect-action {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            padding: 10px 14px;
-            font-size: 12.5px;
+            gap: 5px;
+            padding: 9px 12px;
+            font-size: 12px;
             font-weight: 700;
             border-radius: var(--radius-md);
             border: 1px solid var(--border-color);
@@ -610,19 +534,18 @@
             cursor: pointer;
         }
 
-        .btn-inspect:hover {
+        .btn-inspect-action:hover {
             border-color: var(--accent-cyan);
             background: rgba(6, 182, 212, 0.1);
-            transform: translateY(-1px);
         }
 
-        .btn-game-unlock {
+        .btn-sync-protocol {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            padding: 10px 14px;
-            font-size: 12.5px;
+            gap: 5px;
+            padding: 9px 12px;
+            font-size: 12px;
             font-weight: 700;
             border-radius: var(--radius-md);
             border: none;
@@ -632,18 +555,166 @@
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
         }
 
-        .btn-game-unlock:hover {
+        .btn-sync-protocol:hover {
             background: linear-gradient(135deg, #059669 0%, #047857 100%);
             transform: translateY(-1px);
         }
 
-        .btn-game-unlock:disabled, .btn-inspect:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none !important;
+        /* View Panels */
+        .admin-view-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
         }
 
-        /* Achievement Inspector Modal */
+        .admin-view-panel.hidden {
+            display: none;
+        }
+
+        /* Add Game Form */
+        .form-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: 28px;
+            box-shadow: var(--shadow-card);
+            max-width: 780px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 18px;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-field.full {
+            grid-column: span 2;
+        }
+
+        .form-field label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+
+        .form-input-element {
+            padding: 10px 14px;
+            font-size: 13px;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        .form-input-element:focus {
+            border-color: var(--accent-green);
+        }
+
+        /* Users & Accounts Table */
+        .users-table-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-card);
+            overflow: hidden;
+        }
+
+        .table-header-box {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .quota-safety-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12.5px;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 12px 18px;
+            background: var(--bg-card-subtle);
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 10.5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .data-table td {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .data-table tr:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .badge-status {
+            font-size: 10.5px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .badge-status.active {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+        }
+
+        .badge-status.banned {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+
+        .btn-ban-toggle {
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: var(--radius-sm);
+            border: 1px solid #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            cursor: pointer;
+        }
+
+        .btn-ban-toggle.unban {
+            border-color: var(--accent-green);
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-green);
+        }
+
+        /* Inspector Modal */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -657,17 +728,11 @@
             justify-content: center;
             z-index: 1000;
             padding: 20px;
-            opacity: 1;
-            transition: opacity 0.2s ease;
         }
 
-        .modal-overlay.hidden {
-            display: none;
-            opacity: 0;
-            pointer-events: none;
-        }
+        .modal-overlay.hidden { display: none; }
 
-        .inspector-card {
+        .inspector-panel-card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-xl);
@@ -678,16 +743,10 @@
             flex-direction: column;
             box-shadow: var(--shadow-hover);
             overflow: hidden;
-            animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        @keyframes modalPop {
-            0% { transform: scale(0.96); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        .inspector-header {
-            padding: 20px 24px;
+        .inspector-top-row {
+            padding: 18px 24px;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
@@ -696,635 +755,497 @@
             background: var(--bg-card-subtle);
         }
 
-        .inspector-header-left {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            min-width: 0;
-        }
-
-        .inspector-logo {
-            width: 58px;
-            height: 58px;
-            border-radius: 14px;
-            object-fit: cover;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            flex-shrink: 0;
-        }
-
-        .inspector-title h2 {
-            font-size: 18px;
-            font-weight: 800;
-            color: var(--text-primary);
-            letter-spacing: -0.3px;
-        }
-
-        .inspector-title p {
-            font-size: 12px;
-            color: var(--text-secondary);
-            font-weight: 600;
-            margin-top: 2px;
-        }
-
-        .inspector-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-shrink: 0;
-        }
-
-        .btn-modal-close {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            border: 1px solid var(--border-color);
-            background: var(--bg-card);
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
-        .btn-modal-close:hover {
-            border-color: #ef4444;
-            color: #ef4444;
-        }
-
-        .inspector-stats-bar {
-            padding: 14px 24px;
-            background: var(--bg-card);
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        .progress-box {
-            flex: 1;
-            min-width: 220px;
-        }
-
-        .progress-labels {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            font-weight: 700;
-            margin-bottom: 6px;
-        }
-
-        .progress-bar-bg {
-            width: 100%;
-            height: 8px;
-            border-radius: 4px;
-            background: var(--bg-card-subtle);
-            overflow: hidden;
-            border: 1px solid var(--border-color);
-        }
-
-        .progress-bar-fill {
-            height: 100%;
-            border-radius: 4px;
-            background: linear-gradient(90deg, #10b981, #06b6d4);
-            width: 0%;
-            transition: width 0.4s ease;
-        }
-
-        .filter-tabs {
-            display: flex;
-            gap: 6px;
-        }
-
-        .tab-pill {
-            padding: 6px 12px;
-            font-size: 11.5px;
-            font-weight: 700;
-            border-radius: 6px;
-            background: var(--bg-card-subtle);
-            border: 1px solid var(--border-color);
-            color: var(--text-secondary);
-            cursor: pointer;
-        }
-
-        .tab-pill.active {
-            background: var(--accent-green);
-            color: #ffffff;
-            border-color: var(--accent-green);
-        }
-
-        .inspector-content {
-            padding: 20px 24px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            flex: 1;
-        }
-
-        /* Achievement Item */
-        .ach-card {
-            background: var(--bg-card-subtle);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 14px 18px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            transition: all 0.2s ease;
-        }
-
-        .ach-card:hover {
-            border-color: var(--border-focus);
-            background: var(--bg-card-hover);
-        }
-
-        .ach-card.unlocked {
-            border-left: 4px solid var(--accent-green);
-        }
-
-        .ach-card.locked {
-            border-left: 4px solid var(--accent-gold);
-        }
-
-        .ach-left {
+        .inspector-top-left {
             display: flex;
             align-items: center;
             gap: 14px;
-            flex: 1;
-            min-width: 0;
         }
 
-        .ach-icon-img {
-            width: 44px;
-            height: 44px;
-            border-radius: 10px;
+        .inspector-logo-sq {
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 1px solid var(--border-color);
+        }
+
+        .inspector-sub-bar {
+            padding: 12px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            background: var(--bg-card);
+        }
+
+        .inspector-list-scroll {
+            padding: 18px 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .ach-row-card {
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .ach-row-card.unlocked { border-left: 4px solid var(--accent-green); }
+        .ach-row-card.locked { border-left: 4px solid var(--accent-gold); }
+
+        .ach-icon-thumb {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
             object-fit: cover;
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             flex-shrink: 0;
-        }
-
-        .ach-details {
-            min-width: 0;
-        }
-
-        .ach-details h4 {
-            font-size: 14px;
-            font-weight: 800;
-            color: var(--text-primary);
-            margin-bottom: 3px;
-        }
-
-        .ach-details p {
-            font-size: 12px;
-            color: var(--text-secondary);
-            line-height: 1.4;
-            margin-bottom: 6px;
-        }
-
-        .ach-badges {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-
-        .badge-tag {
-            font-size: 10px;
-            font-weight: 700;
-            padding: 2px 6px;
-            border-radius: 4px;
-            text-transform: uppercase;
-        }
-
-        .badge-tag.type {
-            background: rgba(6, 182, 212, 0.15);
-            color: var(--accent-cyan);
-            border: 1px solid rgba(6, 182, 212, 0.3);
-        }
-
-        .badge-tag.xp {
-            background: rgba(245, 158, 11, 0.15);
-            color: var(--accent-gold);
-            border: 1px solid rgba(245, 158, 11, 0.3);
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .badge-tag.status-unlocked {
-            background: rgba(16, 185, 129, 0.18);
-            color: var(--accent-green);
-            border: 1px solid var(--accent-green);
-        }
-
-        .badge-tag.status-locked {
-            background: rgba(100, 116, 139, 0.15);
-            color: var(--text-muted);
-            border: 1px solid var(--border-color);
-        }
-
-        .ach-right {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-shrink: 0;
-        }
-
-        .btn-single-unlock {
-            padding: 7px 14px;
-            font-size: 12px;
-            font-weight: 700;
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--accent-green);
-            background: var(--accent-green-subtle);
-            color: var(--accent-green);
-            cursor: pointer;
-        }
-
-        .btn-single-unlock:hover {
-            background: var(--accent-green);
-            color: #ffffff;
-        }
-
-        .badge-completed {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--accent-green);
-            padding: 6px 12px;
-            border-radius: var(--radius-sm);
-            background: var(--accent-green-subtle);
         }
 
         /* Spinner & Toasts */
         .spinner {
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
             border: 2px solid rgba(255, 255, 255, 0.2);
             border-top-color: #ffffff;
             border-radius: 50%;
             animation: spin 0.6s linear infinite;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        .toast-container {
+        .toast-holder {
             position: fixed;
             bottom: 24px;
             right: 24px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
             z-index: 9999;
-            pointer-events: none;
         }
 
-        .toast-msg {
+        .toast-item {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             color: var(--text-primary);
-            padding: 12px 20px;
+            padding: 10px 16px;
             border-radius: var(--radius-md);
             box-shadow: var(--shadow-hover);
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            animation: slideInRight 0.25s ease;
-            pointer-events: auto;
             max-width: 380px;
         }
 
-        .toast-msg.success { border-color: var(--accent-green); }
-        .toast-msg.error { border-color: #ef4444; }
-        .toast-msg.info { border-color: var(--accent-cyan); }
+        .toast-item.success { border-color: var(--accent-green); }
+        .toast-item.error { border-color: #ef4444; }
+        .toast-item.info { border-color: var(--accent-cyan); }
 
-        @keyframes slideInRight {
-            from { transform: translateX(50px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        @media (max-width: 768px) {
-            .portal-layout { gap: 14px; }
-            .games-grid { grid-template-columns: 1fr; }
-            .account-stats { justify-content: flex-start; }
-            .stat-block { text-align: left; }
-            .inspector-header { flex-direction: column; align-items: flex-start; }
-            .inspector-actions { width: 100%; justify-content: flex-end; }
+        @media (max-width: 880px) {
+            .admin-wrapper { flex-direction: column; }
+            .admin-sidebar { width: 100%; height: auto; position: static; }
+            .admin-main { padding: 16px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .form-field.full { grid-column: span 1; }
         }
     </style>
 </head>
 <body>
 
-<div class="portal-layout">
-    <!-- Top Portal Header -->
-    <header class="portal-header">
-        <div class="portal-brand">
-            <div class="brand-icon">
-                <svg viewBox="0 0 24 24">
-                    <path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm2 5v2h2v2H7v2h2v2h2v-2h2v2h2v-2h-2v-2h2V8h-2v2h-2V8H9v2H7V8zm10 8h-2v-2h2v2zm0-4h-2v-2h2v2zm-4 4h-2v-2h2v2zm0-4h-2v-2h2v2z"/>
-                </svg>
-            </div>
-            <div class="brand-titles">
-                <h1>PlayQuest Admin Portal <span class="badge-admin">GPGS CONSOLE v1.4</span></h1>
-                <p>Google Play Games Services • Full Achievement & Quest Engine</p>
-            </div>
-        </div>
-        <div class="header-actions">
-            <button class="btn-header" onclick="toggleTokenDrawer()">
-                <span>🔑 Master Token</span>
-            </button>
-            <button class="btn-header" onclick="openLoginModal()">
-                <span>👤 Switch Account</span>
-            </button>
-            <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
-                <span id="themeIcon">☀️</span>
-            </button>
-        </div>
-    </header>
-
-    <!-- Metrics Ribbon -->
-    <div class="metrics-ribbon">
-        <div class="metric-card">
-            <div class="metric-icon-box green">
-                <svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
-            </div>
-            <div class="metric-info">
-                <h4>8 Games</h4>
-                <p>100% Verified GPGS Signatures</p>
-            </div>
-        </div>
-
-        <div class="metric-card">
-            <div class="metric-icon-box blue">
-                <svg viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94.63 1.5 1.98 2.63 3.61 2.96V19H7v2h10v-2h-4v-3.1c1.63-.33 2.98-1.46 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/></svg>
-            </div>
-            <div class="metric-info">
-                <h4>538 Quests</h4>
-                <p>Live Achievement Endpoints</p>
-            </div>
-        </div>
-
-        <div class="metric-card">
-            <div class="metric-icon-box gold">
-                <svg viewBox="0 0 24 24"><path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 10h2v4h-2zm0 6h2v2h-2z"/></svg>
-            </div>
-            <div class="metric-info">
-                <h4>538,000 XP</h4>
-                <p>Instant Play Points Leveling</p>
-            </div>
-        </div>
-
-        <div class="metric-card">
-            <div class="metric-icon-box cyan">
-                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
-            </div>
-            <div class="metric-info">
-                <h4 style="color:var(--accent-green);">Active 200 OK</h4>
-                <p>Google Play Games Live Status</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Active Connected Account Banner -->
-    <div class="account-banner" id="accountBanner">
-        <div class="account-left">
-            <img id="userAvatar" class="player-avatar" src="https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512" alt="Avatar">
-            <div class="player-info">
-                <h3 id="userDisplayName">PlayQuest Master Account <span id="userLevelBadge" class="badge-level">LVL 1</span></h3>
-                <div class="player-email">
-                    <span id="userEmail">Loading session...</span>
-                    <span style="font-size:11px; color:var(--text-muted);">•</span>
-                    <span id="userTag" style="font-family:'JetBrains Mono'; font-size:11px; color:var(--accent-cyan);">GPGS Player</span>
+<div class="admin-wrapper">
+    <!-- Left Navigation Sidebar -->
+    <aside class="admin-sidebar">
+        <div>
+            <div class="sidebar-brand">
+                <div class="brand-logo-icon">
+                    <svg viewBox="0 0 24 24"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm2 5v2h2v2H7v2h2v2h2v-2h2v2h2v-2h-2v-2h2V8h-2v2h-2V8H9v2H7V8zm10 8h-2v-2h2v2zm0-4h-2v-2h2v2zm-4 4h-2v-2h2v2zm0-4h-2v-2h2v2z"/></svg>
+                </div>
+                <div class="brand-text-col">
+                    <h2>PP Server Admin</h2>
+                    <span>Internal Console</span>
                 </div>
             </div>
+
+            <nav class="sidebar-nav">
+                <a class="nav-item active" id="navGames" onclick="switchAdminTab('games')">
+                    <svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+                    <span>All Games</span>
+                </a>
+                <a class="nav-item" id="navAddGame" onclick="switchAdminTab('add_game')">
+                    <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                    <span>Add New Game</span>
+                </a>
+                <a class="nav-item" id="navUsers" onclick="switchAdminTab('users')">
+                    <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                    <span>Users & Accounts</span>
+                </a>
+                <a class="nav-item" onclick="unlockMegaBatchGlobal()">
+                    <svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+                    <span>Run Mega Protocol</span>
+                </a>
+                <a class="nav-item" href="https://ppmods.netlify.app/" target="_blank" rel="noopener">
+                    <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+                    <span>PP Mod Web Portal ↗</span>
+                </a>
+            </nav>
         </div>
-        <div class="account-stats">
-            <div class="stat-block">
-                <div class="stat-num" id="userCurrentXp">0 XP</div>
-                <div class="stat-lbl">Current XP</div>
-            </div>
-            <div class="stat-block">
-                <div class="stat-num" id="userNextLvl">Level 2</div>
-                <div class="stat-lbl">Next Rank</div>
-            </div>
-            <div class="account-banner-actions">
-                <button class="btn-tool" onclick="refreshLiveProfile()">
-                    <span>🔄 Refresh XP</span>
+
+        <div class="sidebar-footer">
+            <div class="theme-toggle-row">
+                <span>Theme Mode</span>
+                <button class="theme-btn" onclick="toggleTheme()">
+                    <span id="themeSymbol">☀️ Light</span>
                 </button>
             </div>
+            <div style="font-size:10.5px; color:var(--text-muted); line-height:1.4;">
+                PP Server Engine v2.4<br>Cloudflare D1 • Zero Quota
+            </div>
         </div>
-    </div>
+    </aside>
 
-    <!-- Direct Master Token Drawer -->
-    <div id="tokenDrawer" class="token-drawer hidden">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h4 style="font-size:14px; font-weight:800; color:var(--text-primary);">Direct Google Master Token Sync</h4>
-            <span style="font-size:11px; color:var(--text-secondary);">Input aas_et/... token for instant zero-prompt sync</span>
-        </div>
-        <div class="token-input-row">
-            <input type="password" id="inputMasterToken" class="token-input" placeholder="Paste aas_et/... Google Master Token">
-            <button class="btn-mega-unlock" style="padding:10px 16px;" onclick="syncMasterTokenDirect()">
-                <span>⚡ Sync Token</span>
-            </button>
-        </div>
-    </div>
+    <!-- Main Content Area -->
+    <main class="admin-main">
+        <!-- Top Bar with Active Account & 6-Digit Connect -->
+        <header class="main-top-bar">
+            <div class="account-badge-group">
+                <img id="topAvatar" class="avatar-circle" src="https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512" alt="Avatar">
+                <div class="account-meta">
+                    <h4 id="topDisplayName">Admin Master <span id="topLvlBadge" style="font-size:10.5px; background:var(--accent-gold); color:#fff; padding:2px 6px; border-radius:4px;">LVL 1</span></h4>
+                    <p id="topEmail">mdd145712@gmail.com</p>
+                </div>
+            </div>
 
-    <!-- Toolbar & Game Search -->
-    <div class="toolbar-panel">
-        <div class="search-box">
-            <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-            <input type="text" id="gameSearchInput" class="search-input" placeholder="Search games by title, developer, or package signature..." oninput="filterGamesCatalog()">
-        </div>
-        <div class="toolbar-buttons">
-            <button id="btnMegaUnlockAll" class="btn-mega-unlock" onclick="unlockAllGamesMega()">
-                <span>🚀 Unlock All 8 Games (Mega Batch)</span>
-            </button>
-        </div>
-    </div>
+            <!-- 6-Digit Pairing Code Input -->
+            <div class="quick-connect-box">
+                <span style="font-size:11px; font-weight:700; color:var(--text-secondary); margin-left:4px;">PAIR CODE:</span>
+                <input type="text" id="quickPairInput" class="code-input" placeholder="6-DIGIT" maxlength="6">
+                <button class="btn-code-connect" onclick="connectWith6DigitCode()">Sync</button>
+            </div>
+        </header>
 
-    <!-- Supported Games Grid -->
-    <div class="games-grid" id="gamesGrid">
-        <!-- Rendered dynamically -->
-    </div>
+        <!-- VIEW 1: All Games Catalog -->
+        <section id="viewGames" class="admin-view-panel">
+            <!-- Metrics Ribbon -->
+            <div class="metrics-grid">
+                <div class="metric-tile">
+                    <div class="tile-icon green">
+                        <svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+                    </div>
+                    <div class="tile-text">
+                        <h3 id="statTotalGames">8 Games</h3>
+                        <p>Certified GPGS Signatures</p>
+                    </div>
+                </div>
+
+                <div class="metric-tile">
+                    <div class="tile-icon cyan">
+                        <svg viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94.63 1.5 1.98 2.63 3.61 2.96V19H7v2h10v-2h-4v-3.1c1.63-.33 2.98-1.46 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/></svg>
+                    </div>
+                    <div class="tile-text">
+                        <h3 id="statTotalQuests">538 Quests</h3>
+                        <p>Live Achievement Pool</p>
+                    </div>
+                </div>
+
+                <div class="metric-tile">
+                    <div class="tile-icon gold">
+                        <svg viewBox="0 0 24 24"><path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 10h2v4h-2zm0 6h2v2h-2z"/></svg>
+                    </div>
+                    <div class="tile-text">
+                        <h3 id="statTotalXp">538,000 XP</h3>
+                        <p>Level Acceleration Pool</p>
+                    </div>
+                </div>
+
+                <div class="metric-tile">
+                    <div class="tile-icon blue">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+                    </div>
+                    <div class="tile-text">
+                        <h3 style="color:var(--accent-green);">Node Verified</h3>
+                        <p>Google Play Games Online</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Toolbar Search -->
+            <div class="catalog-toolbar">
+                <div class="search-wrapper">
+                    <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                    <input type="text" id="catalogSearch" class="search-input-field" placeholder="Search games by title, developer, or package..." oninput="handleSearchInput()">
+                </div>
+                <button class="btn-sync-protocol" style="padding:9px 18px;" onclick="unlockMegaBatchGlobal()">
+                    <span>🚀 Execute Global Pipeline (All Games)</span>
+                </button>
+            </div>
+
+            <!-- Games Grid -->
+            <div class="games-flow-grid" id="gamesFlowGrid">
+                <!-- Injected dynamically -->
+            </div>
+        </section>
+
+        <!-- VIEW 2: Add New Game -->
+        <section id="viewAddGame" class="admin-view-panel hidden">
+            <div class="form-card">
+                <h3 style="font-size:18px; font-weight:800; color:var(--text-primary); margin-bottom:4px;">Register New Android Game</h3>
+                <p style="font-size:12.5px; color:var(--text-secondary);">Expand the catalog by registering a Google Play Games package and signature.</p>
+
+                <form id="addGameForm" onsubmit="handleNewGameSubmit(event)">
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label>Game Title *</label>
+                            <input type="text" id="formGameTitle" class="form-input-element" placeholder="e.g. Monopoly GO!" required>
+                        </div>
+                        <div class="form-field">
+                            <label>Developer Studio *</label>
+                            <input type="text" id="formGameDev" class="form-input-element" placeholder="e.g. Scopely" required>
+                        </div>
+                        <div class="form-field">
+                            <label>Package Name (Application ID) *</label>
+                            <input type="text" id="formGamePackage" class="form-input-element" placeholder="e.g. com.scopely.monopolygo" required>
+                        </div>
+                        <div class="form-field">
+                            <label>Client Signature (SHA-1) [Optional]</label>
+                            <input type="text" id="formGameSig" class="form-input-element" placeholder="58e71785c961e7328ea9c76de647f8f6c4403b39">
+                        </div>
+                        <div class="form-field">
+                            <label>Category / Genre</label>
+                            <input type="text" id="formGameCategory" class="form-input-element" placeholder="e.g. Board / Casual">
+                        </div>
+                        <div class="form-field">
+                            <label>Total Achievements Count</label>
+                            <input type="number" id="formGameCount" class="form-input-element" placeholder="16" value="16">
+                        </div>
+                        <div class="form-field full">
+                            <label>Official Icon CDN URL</label>
+                            <input type="url" id="formGameIcon" class="form-input-element" placeholder="https://is1-ssl.mzstatic.com/... or Google Play CDN">
+                        </div>
+                    </div>
+
+                    <div style="margin-top:20px; display:flex; justify-content:flex-end;">
+                        <button type="submit" id="btnSubmitAddGame" class="btn-sync-protocol" style="padding:10px 24px;">
+                            <span>➕ Add Game to Catalog</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- VIEW 3: App Users & Synced Accounts -->
+        <section id="viewUsers" class="admin-view-panel hidden">
+            <div class="users-table-card">
+                <div class="table-header-box">
+                    <div>
+                        <h3 style="font-size:17px; font-weight:800; color:var(--text-primary);">Active App Users & Synced Accounts</h3>
+                        <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Live accounts connected via PP Server Android App & Web Console.</p>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span class="quota-safety-badge">⚡ Cloudflare D1 • 0 Firebase Quota Used</span>
+                        <button class="btn-inspect-action" onclick="loadUsersList()">🔄 Refresh Users</button>
+                    </div>
+                </div>
+
+                <div style="overflow-x:auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>User / Display</th>
+                                <th>Connected Google Email</th>
+                                <th>6-Digit Pair Code</th>
+                                <th>Master Token</th>
+                                <th>Status</th>
+                                <th>Access Control</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <tr>
+                                <td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);">Loading active users from Cloudflare D1...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
 </div>
 
 <!-- ================= ACHIEVEMENT INSPECTOR MODAL ================= -->
 <div id="inspectorModal" class="modal-overlay hidden">
-    <div class="inspector-card">
-        <div class="inspector-header">
-            <div class="inspector-header-left">
-                <img id="inspGameLogo" class="inspector-logo" src="" alt="Game Icon">
-                <div class="inspector-title">
-                    <h2 id="inspGameTitle">Game Title</h2>
-                    <p id="inspGameDev">Developer • Category</p>
+    <div class="inspector-panel-card">
+        <div class="inspector-top-row">
+            <div class="inspector-top-left">
+                <img id="inspLogo" class="inspector-logo-sq" src="" alt="Game Icon">
+                <div>
+                    <h3 id="inspTitle" style="font-size:16px; font-weight:800; color:var(--text-primary);">Game Title</h3>
+                    <div style="display:flex; align-items:center; gap:8px; margin-top:2px;">
+                        <span id="inspDev" style="font-size:11.5px; color:var(--accent-cyan); font-weight:600;">Developer</span>
+                        <span style="color:var(--text-muted);">•</span>
+                        <!-- Stealth blurred package name in inspector -->
+                        <span id="inspPackage" class="pkg-stealth-pill stealth-blur" title="Hover to unmask package">com.game.package</span>
+                    </div>
                 </div>
             </div>
-            <div class="inspector-actions">
-                <button id="inspBtnUnlockAll" class="btn-game-unlock" onclick="unlockCurrentGameAll()">
-                    <span>⚡ Unlock All Quests</span>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <button id="inspSyncNodeBtn" class="btn-sync-protocol" onclick="syncCurrentNodeAll()">
+                    <span>⚡ Sync Protocol (All)</span>
                 </button>
-                <button class="btn-modal-close" onclick="closeInspectorModal()">✕</button>
+                <button style="background:var(--bg-card); border:1px solid var(--border-color); color:var(--text-primary); width:32px; height:32px; border-radius:50%; cursor:pointer;" onclick="closeInspector()">✕</button>
             </div>
         </div>
 
-        <!-- Stats & Filter Bar -->
-        <div class="inspector-stats-bar">
-            <div class="progress-box">
-                <div class="progress-labels">
-                    <span id="inspProgressText" style="color:var(--accent-green);">0 / 0 Unlocked</span>
-                    <span id="inspXpText" style="color:var(--accent-gold);">0 XP Earned</span>
-                </div>
-                <div class="progress-bar-bg">
-                    <div id="inspProgressBar" class="progress-bar-fill"></div>
-                </div>
+        <div class="inspector-sub-bar">
+            <div>
+                <span id="inspCountUnlocked" style="font-size:12.5px; font-weight:800; color:var(--accent-green);">0 / 0 Quests Synced</span>
+                <span style="font-size:11.5px; color:var(--text-muted); margin-left:8px;">•</span>
+                <span id="inspXpEarned" style="font-size:12px; font-weight:700; color:var(--accent-gold); margin-left:8px;">0 XP</span>
             </div>
-            <div class="filter-tabs">
-                <button class="tab-pill active" id="tabFilterAll" onclick="setInspectorFilter('all')">All (<span id="countAll">0</span>)</button>
-                <button class="tab-pill" id="tabFilterLocked" onclick="setInspectorFilter('locked')">Locked (<span id="countLocked">0</span>)</button>
-                <button class="tab-pill" id="tabFilterUnlocked" onclick="setInspectorFilter('unlocked')">Unlocked (<span id="countUnlocked">0</span>)</button>
+            <div style="display:flex; gap:6px;">
+                <button class="tab-pill active" id="filterTabAll" onclick="applyQuestFilter('all')">All (<span id="txtAll">0</span>)</button>
+                <button class="tab-pill" id="filterTabLocked" onclick="applyQuestFilter('locked')">Locked (<span id="txtLocked">0</span>)</button>
+                <button class="tab-pill" id="filterTabUnlocked" onclick="applyQuestFilter('unlocked')">Synced (<span id="txtUnlocked">0</span>)</button>
             </div>
         </div>
 
-        <!-- Achievement Cards List -->
-        <div class="inspector-content" id="inspectorList">
+        <div class="inspector-list-scroll" id="inspectorScrollList">
             <!-- Dynamic achievements injected here -->
         </div>
     </div>
 </div>
 
-<!-- ================= ACCOUNT SWITCH & LOGIN MODAL ================= -->
-<div id="loginModal" class="modal-overlay hidden">
-    <div class="inspector-card" style="max-width: 480px;">
-        <div class="inspector-header">
-            <div class="inspector-header-left">
-                <div class="brand-icon" style="width:40px; height:40px;">
-                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
-                </div>
-                <div class="inspector-title">
-                    <h2>Switch Google Account</h2>
-                    <p>Select from saved sessions or log in with credentials</p>
-                </div>
-            </div>
-            <button class="btn-modal-close" onclick="closeLoginModal()">✕</button>
-        </div>
-        <div class="inspector-content" style="padding: 20px;">
-            <div id="savedAccountsContainer" style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
-                <!-- Saved Accounts List -->
-            </div>
-            <div style="border-top:1px solid var(--border-color); padding-top:16px; display:flex; flex-direction:column; gap:10px;">
-                <label style="font-size:12px; font-weight:700; color:var(--text-secondary);">Direct Master Token Input</label>
-                <input type="password" id="inputModalToken" class="token-input" placeholder="aas_et/... token">
-                <button class="btn-mega-unlock" style="justify-content:center;" onclick="saveModalToken()">
-                    <span>Save & Load Account</span>
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Toast Container -->
-<div class="toast-container" id="toastBox"></div>
+<div class="toast-holder" id="toastHolder"></div>
 
 <script>
-    // State
     const API_BASE = window.location.origin;
     let currentSession = null;
-    let gamesCatalog = [];
-    let savedAccounts = [];
-    let currentInspectorGameId = null;
-    let currentInspectorAchievements = [];
-    let activeInspectorFilter = "all";
+    let gamesList = [];
+    let activeInspectorGameId = null;
+    let currentQuests = [];
+    let currentQuestFilter = "all";
 
-    // Initialize Portal
     window.addEventListener("DOMContentLoaded", async () => {
-        loadSavedAccounts();
-        await loadGamesCatalog();
+        initTheme();
+        await loadGames();
         initSession();
     });
 
     // Theme Management
+    function initTheme() {
+        const saved = localStorage.getItem("pp_admin_theme") || "dark";
+        document.documentElement.setAttribute("data-theme", saved);
+        updateThemeBtn(saved);
+    }
+
     function toggleTheme() {
-        const root = document.documentElement;
-        const current = root.getAttribute("data-theme") || "dark";
-        const next = current === "dark" ? "light" : "dark";
-        root.setAttribute("data-theme", next);
-        document.getElementById("themeIcon").innerText = next === "dark" ? "☀️" : "🌙";
-        localStorage.setItem("pq_admin_theme", next);
+        const cur = document.documentElement.getAttribute("data-theme") || "dark";
+        const next = cur === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", next);
+        localStorage.setItem("pp_admin_theme", next);
+        updateThemeBtn(next);
     }
 
-    const savedTheme = localStorage.getItem("pq_admin_theme");
-    if (savedTheme) {
-        document.documentElement.setAttribute("data-theme", savedTheme);
-        document.getElementById("themeIcon").innerText = savedTheme === "dark" ? "☀️" : "🌙";
+    function updateThemeBtn(th) {
+        document.getElementById("themeSymbol").innerText = th === "dark" ? "☀️ Light" : "🌙 Dark";
     }
 
-    // Load Games
-    async function loadGamesCatalog() {
+    // Tab Navigation
+    function switchAdminTab(tab) {
+        document.getElementById("navGames").classList.toggle("active", tab === "games");
+        document.getElementById("navAddGame").classList.toggle("active", tab === "add_game");
+        document.getElementById("navUsers").classList.toggle("active", tab === "users");
+
+        document.getElementById("viewGames").classList.toggle("hidden", tab !== "games");
+        document.getElementById("viewAddGame").classList.toggle("hidden", tab !== "add_game");
+        document.getElementById("viewUsers").classList.toggle("hidden", tab !== "users");
+
+        if (tab === "users") loadUsersList();
+    }
+
+    // Load Games Catalog
+    async function loadGames() {
         try {
             const res = await fetch(`${API_BASE}/api/games`);
             const data = await res.json();
             if (data.ok) {
-                gamesCatalog = data.games;
-                renderGamesGrid(gamesCatalog);
+                gamesList = data.games;
+                renderGamesCatalog(gamesList);
+                updateTopMetrics(gamesList);
             }
         } catch (e) {
-            console.error("Games fetch error:", e);
-            showToast("Failed to load games catalog from server.", "error");
+            showToast("Failed to connect to backend games API.", "error");
         }
     }
 
-    function renderGamesGrid(games) {
-        const grid = document.getElementById("gamesGrid");
+    function updateTopMetrics(games) {
+        document.getElementById("statTotalGames").innerText = `${games.length} Games`;
+        let totalQuests = 0;
+        let totalXp = 0;
+        games.forEach(g => {
+            totalQuests += (g.achievements_count || 16);
+            totalXp += (g.total_xp || 16000);
+        });
+        document.getElementById("statTotalQuests").innerText = `${totalQuests} Quests`;
+        document.getElementById("statTotalXp").innerText = `+${totalXp.toLocaleString()} XP`;
+    }
+
+    // Render Games Flow Grid with BLURRED sensitive elements and STEALTH "Sync Protocol"
+    function renderGamesCatalog(games) {
+        const grid = document.getElementById("gamesFlowGrid");
         grid.innerHTML = "";
 
         games.forEach(g => {
             const card = document.createElement("div");
-            card.className = "game-card";
+            card.className = "game-entry-card";
             card.id = `card_game_${g.id}`;
+
             card.innerHTML = `
-                <div class="game-card-top">
-                    <img class="game-logo-img" src="${g.icon}" alt="${g.title}" onerror="this.src='https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512'">
-                    <div class="game-meta">
-                        <h3 title="${g.title}">${g.title}</h3>
-                        <div class="dev-line">${g.developer} • ${g.category}</div>
-                        <div class="pkg-badge" title="${g.package}">${g.package}</div>
+                <div class="game-entry-top">
+                    <img class="game-thumb-logo" src="${g.icon}" alt="${g.title}" onerror="this.src='https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512'">
+                    <div class="game-heading" style="flex:1; min-width:0;">
+                        <h4 title="${g.title}" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${g.title}</h4>
+                        <div class="dev-tag">${g.developer} • ${g.category}</div>
+                        <!-- STEALTH BLURRED PACKAGE NAME -->
+                        <div class="pkg-stealth-pill stealth-blur" title="Hover to unmask package">${g.package}</div>
                     </div>
                 </div>
 
-                <div class="game-stats-row">
-                    <div class="stat-item">
-                        <span class="val" id="stat_count_${g.id}">${g.achievements_count || 16} Quests</span>
-                        <span class="lbl">GPGS Endpoints</span>
+                <div class="game-stats-ribbon">
+                    <div class="stat-col">
+                        <span class="bold-val">${g.achievements_count || 16} Quests</span>
+                        <!-- STEALTH BLURRED GPGS ENDPOINTS LABEL -->
+                        <span class="sub-txt stealth-blur" title="Hover to unmask">GPGS Endpoints</span>
                     </div>
-                    <div class="stat-item">
-                        <span class="val" style="color:var(--accent-gold); font-family:'JetBrains Mono';">+${(g.total_xp || 16000).toLocaleString()} XP</span>
-                        <span class="lbl">Reward Pool</span>
+                    <div class="stat-col">
+                        <span class="bold-val" style="color:var(--accent-gold); font-family:'JetBrains Mono';">+${(g.total_xp || 16000).toLocaleString()} XP</span>
+                        <span class="sub-txt">Reward Pool</span>
                     </div>
-                    <div class="stat-item" style="text-align:right;">
-                        <span class="val" style="color:var(--accent-green);">100% Certified</span>
-                        <span class="lbl">API Status</span>
+                    <div class="stat-col" style="text-align:right;">
+                        <!-- STEALTH BLURRED API STATUS & 100% CERTIFIED -->
+                        <span class="bold-val stealth-blur" style="color:var(--accent-green);" title="Hover to unmask">100% Verified</span>
+                        <span class="sub-txt stealth-blur" title="Hover to unmask">API Status</span>
                     </div>
                 </div>
 
-                <div class="game-card-actions">
-                    <button class="btn-inspect" id="btn_insp_${g.id}" onclick="inspectGameAchievements('${g.id}')">
-                        <svg style="width:14px; height:14px; fill:currentColor;" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                <div class="game-entry-actions">
+                    <button class="btn-inspect-action" onclick="openGameInspector('${g.id}')">
+                        <svg style="width:13px; height:13px; fill:currentColor;" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
                         <span>Inspect Quests</span>
                     </button>
-                    <button class="btn-game-unlock" id="btn_unlock_${g.id}" onclick="unlockSingleGameAll('${g.id}')">
-                        <svg style="width:14px; height:14px; fill:currentColor;" viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
-                        <span>Unlock All</span>
+                    <!-- STEALTH RENAMED: 'Sync Protocol' instead of 'Unlock All' -->
+                    <button class="btn-sync-protocol" id="btn_protocol_${g.id}" onclick="executeProtocolSingle('${g.id}')">
+                        <svg style="width:13px; height:13px; fill:currentColor;" viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+                        <span>Sync Protocol</span>
                     </button>
                 </div>
             `;
@@ -1332,37 +1253,39 @@
         });
     }
 
-    // Filter Games in Search
-    function filterGamesCatalog() {
-        const query = document.getElementById("gameSearchInput").value.trim().toLowerCase();
-        if (!query) {
-            renderGamesGrid(gamesCatalog);
+    function handleSearchInput() {
+        const q = document.getElementById("catalogSearch").value.trim().toLowerCase();
+        if (!q) {
+            renderGamesCatalog(gamesList);
             return;
         }
-        const filtered = gamesCatalog.filter(g => 
-            g.title.toLowerCase().includes(query) ||
-            g.developer.toLowerCase().includes(query) ||
-            g.package.toLowerCase().includes(query) ||
-            g.category.toLowerCase().includes(query)
+        const filtered = gamesList.filter(g =>
+            g.title.toLowerCase().includes(q) ||
+            g.developer.toLowerCase().includes(q) ||
+            g.package.toLowerCase().includes(q)
         );
-        renderGamesGrid(filtered);
+        renderGamesCatalog(filtered);
     }
 
     // ================= ACHIEVEMENT INSPECTOR =================
-    async function inspectGameAchievements(gameId) {
-        currentInspectorGameId = gameId;
+    async function openGameInspector(gameId) {
+        activeInspectorGameId = gameId;
         const modal = document.getElementById("inspectorModal");
         modal.classList.remove("hidden");
 
-        const game = gamesCatalog.find(g => g.id === gameId);
+        const game = gamesList.find(g => g.id === gameId);
         if (game) {
-            document.getElementById("inspGameLogo").src = game.icon;
-            document.getElementById("inspGameTitle").innerText = game.title;
-            document.getElementById("inspGameDev").innerText = `${game.developer} • ${game.package}`;
+            document.getElementById("inspLogo").src = game.icon;
+            document.getElementById("inspTitle").innerText = game.title;
+            document.getElementById("inspDev").innerText = `${game.developer} • ${game.category}`;
+            // BLURRED in modal
+            const pkgPill = document.getElementById("inspPackage");
+            pkgPill.innerText = game.package;
+            pkgPill.className = "pkg-stealth-pill stealth-blur";
         }
 
-        const listContainer = document.getElementById("inspectorList");
-        listContainer.innerHTML = `<div style="text-align:center; padding:40px;"><div class="spinner" style="margin:0 auto 12px; border-top-color:var(--accent-green); width:32px; height:32px;"></div><p style="color:var(--text-secondary); font-size:13px;">Querying Google Play Games live achievement endpoints...</p></div>`;
+        const scrollBox = document.getElementById("inspectorScrollList");
+        scrollBox.innerHTML = `<div style="text-align:center; padding:30px;"><div class="spinner" style="margin:0 auto 10px; border-top-color:var(--accent-green);"></div><p style="font-size:12px; color:var(--text-secondary);">Querying Google Play Games achievement endpoints...</p></div>`;
 
         try {
             const res = await fetch(`${API_BASE}/api/game/achievements`, {
@@ -1378,102 +1301,84 @@
             });
             const data = await res.json();
             if (data.ok) {
-                currentInspectorAchievements = data.achievements;
-                updateInspectorStats(data.stats);
-                renderInspectorAchievements();
+                currentQuests = data.achievements;
+                document.getElementById("txtAll").innerText = data.stats.total_count;
+                document.getElementById("txtLocked").innerText = data.stats.locked_count;
+                document.getElementById("txtUnlocked").innerText = data.stats.unlocked_count;
+                document.getElementById("inspCountUnlocked").innerText = `${data.stats.unlocked_count} / ${data.stats.total_count} Quests Synced (${data.stats.completion_pct}%)`;
+                document.getElementById("inspXpEarned").innerText = `+${data.stats.earned_xp.toLocaleString()} XP Earned`;
+                renderInspectorQuests();
             } else {
-                listContainer.innerHTML = `<div style="text-align:center; padding:30px; color:#ef4444;"><p>Failed to load achievements: ${data.error}</p></div>`;
+                scrollBox.innerHTML = `<div style="text-align:center; padding:24px; color:#ef4444;">${data.error}</div>`;
             }
         } catch (e) {
-            listContainer.innerHTML = `<div style="text-align:center; padding:30px; color:#ef4444;"><p>Connection error loading achievements from GPGS.</p></div>`;
+            scrollBox.innerHTML = `<div style="text-align:center; padding:24px; color:#ef4444;">Connection error fetching quests.</div>`;
         }
     }
 
-    function updateInspectorStats(stats) {
-        document.getElementById("countAll").innerText = stats.total_count;
-        document.getElementById("countLocked").innerText = stats.locked_count;
-        document.getElementById("countUnlocked").innerText = stats.unlocked_count;
-
-        document.getElementById("inspProgressText").innerText = `${stats.unlocked_count} / ${stats.total_count} Quests Unlocked (${stats.completion_pct}%)`;
-        document.getElementById("inspXpText").innerText = `+${stats.earned_xp.toLocaleString()} / ${stats.total_xp.toLocaleString()} XP Earned`;
-
-        document.getElementById("inspProgressBar").style.width = `${stats.completion_pct}%`;
+    function applyQuestFilter(f) {
+        currentQuestFilter = f;
+        document.getElementById("filterTabAll").classList.toggle("active", f === "all");
+        document.getElementById("filterTabLocked").classList.toggle("active", f === "locked");
+        document.getElementById("filterTabUnlocked").classList.toggle("active", f === "unlocked");
+        renderInspectorQuests();
     }
 
-    function setInspectorFilter(filter) {
-        activeInspectorFilter = filter;
-        document.getElementById("tabFilterAll").classList.toggle("active", filter === "all");
-        document.getElementById("tabFilterLocked").classList.toggle("active", filter === "locked");
-        document.getElementById("tabFilterUnlocked").classList.toggle("active", filter === "unlocked");
-        renderInspectorAchievements();
-    }
+    function renderInspectorQuests() {
+        const box = document.getElementById("inspectorScrollList");
+        box.innerHTML = "";
 
-    function renderInspectorAchievements() {
-        const container = document.getElementById("inspectorList");
-        container.innerHTML = "";
-
-        let items = currentInspectorAchievements;
-        if (activeInspectorFilter === "locked") {
-            items = items.filter(a => !a.is_unlocked);
-        } else if (activeInspectorFilter === "unlocked") {
-            items = items.filter(a => a.is_unlocked);
-        }
+        let items = currentQuests;
+        if (currentQuestFilter === "locked") items = items.filter(q => !q.is_unlocked);
+        if (currentQuestFilter === "unlocked") items = items.filter(q => q.is_unlocked);
 
         if (items.length === 0) {
-            container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted); font-size:13px;"><p>No achievements match the current filter.</p></div>`;
+            box.innerHTML = `<div style="text-align:center; padding:24px; color:var(--text-muted); font-size:12px;">No quests in this filter.</div>`;
             return;
         }
 
-        items.forEach(ach => {
-            const card = document.createElement("div");
-            card.className = `ach-card ${ach.is_unlocked ? 'unlocked' : 'locked'}`;
-            card.id = `ach_row_${ach.id}`;
+        items.forEach(q => {
+            const row = document.createElement("div");
+            row.className = `ach-row-card ${q.is_unlocked ? 'unlocked' : 'locked'}`;
 
-            const stepText = ach.type === "INCREMENTAL" && ach.total_steps 
-                ? `<span class="badge-tag type">STEPS: ${ach.current_steps || 0} / ${ach.total_steps}</span>`
-                : `<span class="badge-tag type">STANDARD</span>`;
+            const actionBtn = q.is_unlocked 
+                ? `<span style="font-size:11px; font-weight:700; color:var(--accent-green); padding:4px 8px; border-radius:4px; background:var(--accent-green-subtle);">✓ Synced</span>`
+                : `<button class="btn-single-unlock" id="btn_q_${q.id}" onclick="syncIndividualQuest('${q.id}', '${q.type}', ${q.total_steps || 1})">⚡ Sync Quest</button>`;
 
-            const actionHtml = ach.is_unlocked
-                ? `<span class="badge-completed"><svg style="width:14px; height:14px; fill:currentColor;" viewBox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg> Completed</span>`
-                : `<button class="btn-single-unlock" id="btn_ach_${ach.id}" onclick="unlockSingleAchievement('${ach.id}', '${ach.type}', ${ach.total_steps || 1})">⚡ Unlock Quest</button>`;
-
-            card.innerHTML = `
-                <div class="ach-left">
-                    <img class="ach-icon-img" src="${ach.icon}" alt="Quest Icon" onerror="this.src='https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512'">
-                    <div class="ach-details">
-                        <h4>${ach.name}</h4>
-                        <p>${ach.description}</p>
-                        <div class="ach-badges">
-                            ${stepText}
-                            <span class="badge-tag xp">+${ach.xp.toLocaleString()} XP</span>
-                            <span class="badge-tag ${ach.is_unlocked ? 'status-unlocked' : 'status-locked'}">${ach.is_unlocked ? '✓ UNLOCKED' : '🔒 LOCKED'}</span>
+            row.innerHTML = `
+                <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:0;">
+                    <img class="ach-icon-thumb" src="${q.icon}" alt="Icon" onerror="this.src='https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512'">
+                    <div style="min-width:0;">
+                        <h5 style="font-size:13px; font-weight:800; color:var(--text-primary);">${q.name}</h5>
+                        <p style="font-size:11.5px; color:var(--text-secondary); line-height:1.3; margin:2px 0;">${q.description}</p>
+                        <div style="display:flex; gap:6px; flex-wrap:wrap; font-size:10px; font-weight:700;">
+                            <span style="color:var(--accent-cyan);">${q.type === 'INCREMENTAL' ? `STEPS: ${q.current_steps || 0}/${q.total_steps}` : 'STANDARD'}</span>
+                            <span style="color:var(--accent-gold); font-family:'JetBrains Mono';">+${q.xp} XP</span>
+                            <span style="color:${q.is_unlocked ? 'var(--accent-green)' : 'var(--text-muted)'};">${q.is_unlocked ? 'SYNCED' : 'PENDING'}</span>
                         </div>
                     </div>
                 </div>
-                <div class="ach-right">
-                    ${actionHtml}
-                </div>
+                <div>${actionBtn}</div>
             `;
-            container.appendChild(card);
+            box.appendChild(row);
         });
     }
 
-    function closeInspectorModal() {
+    function closeInspector() {
         document.getElementById("inspectorModal").classList.add("hidden");
-        currentInspectorGameId = null;
+        activeInspectorGameId = null;
     }
 
-    // Unlock Single Achievement
-    async function unlockSingleAchievement(achId, type, totalSteps) {
+    // Individual Quest Sync
+    async function syncIndividualQuest(achId, type, steps) {
         if (!currentSession) {
-            showToast("Please authenticate or sync a Google account first.", "error");
+            showToast("Please pair an account via 6-digit code first.", "error");
             return;
         }
-
-        const btn = document.getElementById(`btn_ach_${achId}`);
+        const btn = document.getElementById(`btn_q_${achId}`);
         if (btn) {
             btn.disabled = true;
-            btn.innerHTML = `<div class="spinner" style="width:12px; height:12px;"></div>`;
+            btn.innerHTML = `<div class="spinner" style="width:11px; height:11px;"></div>`;
         }
 
         try {
@@ -1484,63 +1389,54 @@
                     email: currentSession.email,
                     master_token: currentSession.master_token,
                     android_id: currentSession.android_id,
-                    game_id: currentInspectorGameId,
+                    game_id: activeInspectorGameId,
                     achievement_id: achId,
                     type: type,
-                    total_steps: totalSteps
+                    total_steps: steps
                 })
             });
             const data = await res.json();
             if (data.ok) {
                 triggerCelebration();
-                showToast("🎉 Quest successfully unlocked in Google Play Games!", "success");
-                // Update local model
-                const item = currentInspectorAchievements.find(a => a.id === achId);
+                showToast("🎉 Quest state successfully verified & synced!", "success");
+                const item = currentQuests.find(q => q.id === achId);
                 if (item) {
                     item.is_unlocked = true;
                     item.state = "UNLOCKED";
                     if (item.type === "INCREMENTAL") item.current_steps = item.total_steps;
                 }
-                renderInspectorAchievements();
+                renderInspectorQuests();
                 if (data.profile) updateProfileUI(data.profile);
             } else {
-                showToast(data.error || "Failed to unlock achievement.", "error");
-                if (btn) {
-                    btn.disabled = false;
-                    btn.innerText = "⚡ Unlock Quest";
-                }
+                showToast(data.error || "Sync error.", "error");
+                if (btn) { btn.disabled = false; btn.innerText = "⚡ Sync Quest"; }
             }
         } catch (e) {
-            showToast("Connection error while communicating with GPGS.", "error");
-            if (btn) {
-                btn.disabled = false;
-                btn.innerText = "⚡ Unlock Quest";
-            }
+            showToast("Connection error.", "error");
+            if (btn) { btn.disabled = false; btn.innerText = "⚡ Sync Quest"; }
         }
     }
 
-    // Unlock All Achievements for the currently inspected game
-    async function unlockCurrentGameAll() {
-        if (!currentInspectorGameId) return;
-        await unlockSingleGameAll(currentInspectorGameId);
-        // Refresh inspector list
-        await inspectGameAchievements(currentInspectorGameId);
+    async function syncCurrentNodeAll() {
+        if (!activeInspectorGameId) return;
+        await executeProtocolSingle(activeInspectorGameId);
+        await openGameInspector(activeInspectorGameId);
     }
 
-    // Unlock all achievements for a single game from grid
-    async function unlockSingleGameAll(gameId) {
+    // Stealth "Sync Protocol" for single game
+    async function executeProtocolSingle(gameId) {
         if (!currentSession) {
-            showToast("Please authenticate or sync a Google account first.", "error");
+            showToast("Please enter a 6-digit sync code above.", "error");
             return;
         }
 
-        const btn = document.getElementById(`btn_unlock_${gameId}`);
+        const btn = document.getElementById(`btn_protocol_${gameId}`);
         if (btn) {
             btn.disabled = true;
-            btn.innerHTML = `<div class="spinner" style="width:14px; height:14px;"></div>`;
+            btn.innerHTML = `<div class="spinner"></div>`;
         }
 
-        showToast("⏳ Transmitting batch unlock request to Google Play Games...", "info");
+        showToast("⏳ Transmitting protocol state to Google Play Games node...", "info");
 
         try {
             const res = await fetch(`${API_BASE}/api/unlock`, {
@@ -1556,40 +1452,35 @@
                 })
             });
             const data = await res.json();
-
             if (data.ok) {
                 if (data.newly_unlocked_count > 0) {
                     triggerCelebration();
-                    showToast(`🎉 Success! Unlocked ${data.newly_unlocked_count} quests in ${data.game_title} (+${data.earned_xp.toLocaleString()} XP)!`, "success");
+                    showToast(`🎉 Verified ${data.newly_unlocked_count} quests in ${data.game_title} (+${data.earned_xp.toLocaleString()} XP)!`, "success");
                 } else {
-                    showToast(data.message || "All quests were already unlocked.", "info");
+                    showToast(data.message || "All quests are already synced.", "info");
                 }
                 if (data.profile) updateProfileUI(data.profile);
             } else {
-                showToast(data.error || "Unlock operation failed.", "error");
+                showToast(data.error || "Protocol sync failed.", "error");
             }
         } catch (e) {
-            showToast("Connection error. Please retry.", "error");
+            showToast("Connection error executing protocol.", "error");
         } finally {
             if (btn) {
                 btn.disabled = false;
-                btn.innerHTML = `<svg style="width:14px; height:14px; fill:currentColor;" viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg><span>Unlock All</span>`;
+                btn.innerHTML = `<svg style="width:13px; height:13px; fill:currentColor;" viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg><span>Sync Protocol</span>`;
             }
         }
     }
 
-    // Unlock All 8 Games Mega Batch
-    async function unlockAllGamesMega() {
+    // Global Mega Protocol Batch (8 Games)
+    async function unlockMegaBatchGlobal() {
         if (!currentSession) {
-            showToast("Please authenticate or sync a Google account first.", "error");
+            showToast("Please connect an account with 6-digit code first.", "error");
             return;
         }
 
-        const btn = document.getElementById("btnMegaUnlockAll");
-        btn.disabled = true;
-        btn.innerHTML = `<div class="spinner" style="display:inline-block; vertical-align:middle; width:14px; height:14px; margin-right:6px;"></div> Unlocking 8 Games...`;
-
-        showToast("🚀 Initiating sequential full-catalog unlock across all 8 verified games...", "info");
+        showToast("🚀 Initiating global sequential pipeline verification across all games...", "info");
 
         try {
             const res = await fetch(`${API_BASE}/api/unlock/all`, {
@@ -1602,201 +1493,207 @@
                 })
             });
             const data = await res.json();
-
             if (data.ok) {
                 triggerCelebration();
-                showToast(`🎉 MEGA SUCCESS! Completed ${data.total_unlocked} quests across 8 games (+${data.total_xp.toLocaleString()} XP)!`, "success");
+                showToast(`🎉 Global Protocol Complete: ${data.total_unlocked} quests synced (+${data.total_xp.toLocaleString()} XP)!`, "success");
                 if (data.profile) updateProfileUI(data.profile);
             } else {
-                showToast(data.error || "Mega batch unlock failed.", "error");
+                showToast(data.error || "Global sync failed.", "error");
             }
         } catch (e) {
-            showToast("Connection error during mega batch unlock.", "error");
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = `<span>🚀 Unlock All 8 Games (Mega Batch)</span>`;
+            showToast("Connection error in global sync.", "error");
         }
     }
 
-    // ================= ACCOUNT & SESSION MANAGEMENT =================
-    function initSession() {
-        const savedActive = localStorage.getItem("pq_active_session");
-        if (savedActive) {
-            try {
-                currentSession = JSON.parse(savedActive);
-                if (currentSession.profile) {
-                    updateProfileUI(currentSession.profile);
-                    return;
-                }
-            } catch (e) {}
+    // ================= 6-DIGIT CODE QUICK PAIRING =================
+    async function connectWith6DigitCode() {
+        const code = document.getElementById("quickPairInput").value.trim().replace(" ", "").replace("-", "");
+        if (!code || code.length !== 6) {
+            showToast("Please enter a valid 6-digit sync code.", "error");
+            return;
         }
-        // Fallback to initial profile check
-        refreshLiveProfile();
-    }
 
-    async function refreshLiveProfile() {
-        const email = currentSession?.email || "mdd145712@gmail.com";
-        const masterToken = currentSession?.master_token || "aas_et/AKppINbXkKsnvT1uCfWaJiRBhXUEBdJv6j7kEDRcNamr3myR6ujaj3_qGraZHflKQKsQyLQ3KVX1W6kL3GykE4XCHlLXqBwAR352E7nkJ5SQKwzRH6ZdzU6OeHyhPEqU6rcFpbGH0w9A45I2rzndt1wgh60Dut-0q2bMLBfaKOBIH6kWHToAjOOUrLw1Cf2nNwOMpqrcv6_staeZ22EdFjSf2Vx7xa3in-kKoE_deo8S";
+        showToast(`Resolving 6-digit pair code '${code}' via Cloudflare D1...`, "info");
 
         try {
-            const res = await fetch(`${API_BASE}/api/profile`, {
+            const res = await fetch(`${API_BASE}/api/sync/claim`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ code: code })
+            });
+            const data = await res.json();
+            if (data.ok && data.profile) {
+                currentSession = {
+                    email: data.email,
+                    master_token: data.master_token,
+                    android_id: data.android_id,
+                    profile: data.profile
+                };
+                localStorage.setItem("pp_active_session", JSON.stringify(currentSession));
+                updateProfileUI(data.profile);
+                triggerCelebration();
+                showToast(`🎉 Connected! Logged in as ${data.profile.display_name} (${data.email})`, "success");
+            } else {
+                showToast(data.error || "Invalid 6-digit pairing code.", "error");
+            }
+        } catch (e) {
+            showToast("Failed to connect pairing code.", "error");
+        }
+    }
+
+    function initSession() {
+        const saved = localStorage.getItem("pp_active_session");
+        if (saved) {
+            try {
+                currentSession = JSON.parse(saved);
+                if (currentSession.profile) updateProfileUI(currentSession.profile);
+            } catch (e) {}
+        }
+    }
+
+    function updateProfileUI(p) {
+        if (!p) return;
+        document.getElementById("topAvatar").src = p.avatar_url || "https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512";
+        document.getElementById("topDisplayName").innerHTML = `${p.display_name || "Admin"} <span id="topLvlBadge" style="font-size:10.5px; background:var(--accent-gold); color:#fff; padding:2px 6px; border-radius:4px;">LVL ${p.current_level}</span>`;
+        document.getElementById("topEmail").innerText = `${currentSession?.email || "admin@google.com"} • ${p.current_xp.toLocaleString()} XP`;
+    }
+
+    // ================= ADD NEW GAME SUBMISSION =================
+    async function handleNewGameSubmit(e) {
+        e.preventDefault();
+        const btn = document.getElementById("btnSubmitAddGame");
+        btn.disabled = true;
+        btn.innerHTML = `<div class="spinner"></div> Adding...`;
+
+        const title = document.getElementById("formGameTitle").value.trim();
+        const dev = document.getElementById("formGameDev").value.trim();
+        const pkg = document.getElementById("formGamePackage").value.trim();
+        const sig = document.getElementById("formGameSig").value.trim();
+        const cat = document.getElementById("formGameCategory").value.trim();
+        const count = parseInt(document.getElementById("formGameCount").value) || 16;
+        const icon = document.getElementById("formGameIcon").value.trim();
+
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/games/add`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    email: email,
-                    master_token: masterToken,
-                    android_id: currentSession?.android_id || "1234567890abcdef"
+                    title: title,
+                    developer: dev,
+                    package: pkg,
+                    client_sig: sig,
+                    category: cat,
+                    achievements_count: count,
+                    icon: icon
                 })
             });
             const data = await res.json();
-            if (data.ok && data.profile) {
-                currentSession = {
-                    email: email,
-                    master_token: masterToken,
-                    android_id: currentSession?.android_id || "1234567890abcdef",
-                    profile: data.profile
-                };
-                saveAccountToStorage(currentSession);
-                updateProfileUI(data.profile);
-            }
-        } catch (e) {
-            console.error("Profile refresh error:", e);
-        }
-    }
-
-    function updateProfileUI(prof) {
-        if (!prof) return;
-        document.getElementById("userAvatar").src = prof.avatar_url || "https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512";
-        document.getElementById("userDisplayName").innerHTML = `${prof.display_name || "Admin"} <span class="badge-level">LVL ${prof.current_level}</span>`;
-        document.getElementById("userEmail").innerText = currentSession?.email || "admin@google.com";
-        document.getElementById("userTag").innerText = prof.player_id ? `ID: ${prof.player_id.slice(0, 10)}...` : "GPGS Authenticated";
-        document.getElementById("userCurrentXp").innerText = `${prof.current_xp.toLocaleString()} XP`;
-        document.getElementById("userNextLvl").innerText = `Level ${prof.next_level || (prof.current_level + 1)}`;
-    }
-
-    function toggleTokenDrawer() {
-        const d = document.getElementById("tokenDrawer");
-        d.classList.toggle("hidden");
-    }
-
-    async function syncMasterTokenDirect() {
-        const token = document.getElementById("inputMasterToken").value.trim();
-        if (!token) {
-            showToast("Please enter a valid master token.", "error");
-            return;
-        }
-        await verifyAndSaveToken(token, currentSession?.email || "admin@google.com");
-    }
-
-    async function saveModalToken() {
-        const token = document.getElementById("inputModalToken").value.trim();
-        if (!token) {
-            showToast("Please enter a valid master token.", "error");
-            return;
-        }
-        await verifyAndSaveToken(token, "custom_account@gmail.com");
-        closeLoginModal();
-    }
-
-    async function verifyAndSaveToken(token, email) {
-        showToast("Verifying master token against Google OAuth servers...", "info");
-        try {
-            const res = await fetch(`${API_BASE}/api/login/token`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: email, token: token })
-            });
-            const data = await res.json();
-            if (data.ok && data.profile) {
-                currentSession = {
-                    email: data.email || email,
-                    master_token: data.master_token,
-                    profile: data.profile,
-                    android_id: "1234567890abcdef"
-                };
-                saveAccountToStorage(currentSession);
-                updateProfileUI(data.profile);
+            if (data.ok) {
                 triggerCelebration();
-                showToast(`🎉 Master Token Connected! Logged in as ${data.profile.display_name}`, "success");
-                document.getElementById("tokenDrawer").classList.add("hidden");
+                showToast(`🎉 Success! ${title} added to catalog!`, "success");
+                document.getElementById("addGameForm").reset();
+                await loadGames();
+                switchAdminTab("games");
             } else {
-                showToast(data.error || "Token is invalid or expired.", "error");
+                showToast(data.error || "Failed to add game.", "error");
             }
         } catch (e) {
-            showToast("Connection error validating master token.", "error");
+            showToast("Connection error registering game.", "error");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = `<span>➕ Add Game to Catalog</span>`;
         }
     }
 
-    function loadSavedAccounts() {
-        savedAccounts = JSON.parse(localStorage.getItem("pq_saved_accounts") || "[]");
-        renderSavedAccountsList();
+    // ================= USERS & SYNCED ACCOUNTS =================
+    async function loadUsersList() {
+        const tbody = document.getElementById("usersTableBody");
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px;"><div class="spinner" style="margin:0 auto 8px; border-top-color:var(--accent-green);"></div>Querying Cloudflare D1 accounts...</td></tr>`;
+
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/users`);
+            const data = await res.json();
+            if (data.ok) {
+                renderUsersTable(data.users);
+            } else {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:#ef4444;">${data.error}</td></tr>`;
+            }
+        } catch (e) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:#ef4444;">Failed to load accounts from Cloudflare D1.</td></tr>`;
+        }
     }
 
-    function saveAccountToStorage(account) {
-        if (!account || !account.email) return;
-        savedAccounts = savedAccounts.filter(a => a.email !== account.email);
-        savedAccounts.unshift(account);
-        localStorage.setItem("pq_saved_accounts", JSON.stringify(savedAccounts));
-        localStorage.setItem("pq_active_session", JSON.stringify(account));
-        renderSavedAccountsList();
-    }
+    function renderUsersTable(users) {
+        const tbody = document.getElementById("usersTableBody");
+        tbody.innerHTML = "";
 
-    function renderSavedAccountsList() {
-        const c = document.getElementById("savedAccountsContainer");
-        if (!c) return;
-        c.innerHTML = "";
-
-        if (savedAccounts.length === 0) {
-            c.innerHTML = `<p style="font-size:12px; color:var(--text-muted);">No saved accounts in this browser.</p>`;
+        if (users.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);">No users or synced accounts registered yet.</td></tr>`;
             return;
         }
 
-        savedAccounts.forEach(acc => {
-            const div = document.createElement("div");
-            div.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:var(--bg-card-subtle); border-radius:10px; border:1px solid var(--border-color); font-size:12px;";
-            div.innerHTML = `
-                <div>
-                    <strong style="color:var(--text-primary); display:block;">${acc.profile?.display_name || acc.email}</strong>
-                    <span style="color:var(--text-secondary); font-size:11px;">${acc.email}</span>
-                </div>
-                <button class="btn-single-unlock" onclick="switchActiveAccount('${acc.email}')">Switch</button>
+        users.forEach(u => {
+            const tr = document.createElement("tr");
+            const banBtn = u.is_banned
+                ? `<button class="btn-ban-toggle unban" onclick="toggleUserBan('${u.email}')">Unban User</button>`
+                : `<button class="btn-ban-toggle" onclick="toggleUserBan('${u.email}')">Suspend / Ban</button>`;
+
+            tr.innerHTML = `
+                <td>
+                    <strong style="color:var(--text-primary); display:block;">${u.display_name}</strong>
+                    <span style="font-size:10.5px; color:var(--text-muted);">${u.created_at}</span>
+                </td>
+                <td>
+                    <span style="font-family:'JetBrains Mono'; font-size:12px;">${u.email}</span>
+                </td>
+                <td>
+                    <span style="font-family:'JetBrains Mono'; font-weight:800; color:var(--accent-cyan); background:var(--bg-card-subtle); padding:2px 8px; border-radius:4px; border:1px solid var(--border-color);">${u.sync_code}</span>
+                </td>
+                <td>
+                    <!-- Masked token preview -->
+                    <span class="stealth-blur" style="font-family:'JetBrains Mono'; font-size:10.5px; color:var(--text-muted);" title="Hover to view token snippet">${u.token_masked}</span>
+                </td>
+                <td>
+                    <span class="badge-status ${u.is_banned ? 'banned' : 'active'}">${u.status}</span>
+                </td>
+                <td>${banBtn}</td>
             `;
-            c.appendChild(div);
+            tbody.appendChild(tr);
         });
     }
 
-    function switchActiveAccount(email) {
-        const found = savedAccounts.find(a => a.email === email);
-        if (found) {
-            currentSession = found;
-            localStorage.setItem("pq_active_session", JSON.stringify(found));
-            updateProfileUI(found.profile);
-            closeLoginModal();
-            showToast(`Switched active account to ${found.email}`, "success");
+    async function toggleUserBan(email) {
+        if (!confirm(`Are you sure you want to change access status for '${email}'?`)) return;
+
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/users/ban`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: email })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                showToast(data.message, "success");
+                loadUsersList();
+            } else {
+                showToast(data.error || "Ban action failed.", "error");
+            }
+        } catch (e) {
+            showToast("Connection error updating user status.", "error");
         }
     }
 
-    function openLoginModal() {
-        renderSavedAccountsList();
-        document.getElementById("loginModal").classList.remove("hidden");
-    }
-
-    function closeLoginModal() {
-        document.getElementById("loginModal").classList.add("hidden");
-    }
-
-    // Toast & Celebration Utilities
+    // Toast Utility
     function showToast(msg, type = "info") {
-        const box = document.getElementById("toastBox");
+        const holder = document.getElementById("toastHolder");
         const t = document.createElement("div");
-        t.className = `toast-msg ${type}`;
+        t.className = `toast-item ${type}`;
         t.innerText = msg;
-        box.appendChild(t);
+        holder.appendChild(t);
         setTimeout(() => {
             t.style.opacity = "0";
-            t.style.transform = "translateX(40px)";
             setTimeout(() => t.remove(), 250);
-        }, 4000);
+        }, 3500);
     }
 
     function triggerCelebration() {
