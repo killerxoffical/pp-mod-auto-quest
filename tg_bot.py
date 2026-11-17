@@ -305,46 +305,82 @@ def run_fast_chrome_login(chat_id, email, password):
         except Exception:
             pass
 
-        # 4. Fast Prompt Number Detection
+        # 4. Fast & Accurate 2FA Prompt Detection
         prompt_num = None
+        user_phone_device = "আপনার ফোনে"
         for _ in range(25):  # 25 * 0.3s = 7.5s max
             body = driver.find_element(By.TAG_NAME, "body").text
+            
+            # Detect device name dynamically from Google's page
+            dev_m = re.search(r'notification to your\s+([A-Za-z0-9\s\-]+?)(?:\.|\n|\r)', body, re.IGNORECASE)
+            if dev_m:
+                user_phone_device = f"আপনার {dev_m.group(1).strip()} ফোনে"
+
             m = re.search(r'tap\s+(\d{1,3})\s+on\s+your\s+phone', body, re.IGNORECASE)
             if m:
                 prompt_num = m.group(1)
                 break
+            
             samps = driver.find_elements(By.TAG_NAME, "samp")
             for s in samps:
                 st = s.text.strip()
-                if st.isdigit() and len(st) <= 3:
+                if st.isdigit() and 1 <= len(st) <= 3:
                     prompt_num = st
                     break
             if prompt_num:
                 break
+            
+            try:
+                elems = driver.find_elements(By.CSS_SELECTOR, "[data-prompt-number]")
+                for el in elems:
+                    val = el.get_attribute("data-prompt-number")
+                    if val and val.isdigit():
+                        prompt_num = val
+                        break
+            except Exception:
+                pass
+            if prompt_num:
+                break
+
             time.sleep(0.3)
 
-        if not prompt_num:
-            body = driver.find_element(By.TAG_NAME, "body").text
-            nums = re.findall(r'\b\d{2}\b', body)
-            if nums:
-                prompt_num = nums[0]
+        # Check if Google asked for SMS verification or Authenticator PIN
+        pin_inputs = driver.find_elements(By.CSS_SELECTOR, "input[name='Pin'], input[name='totpPin'], input[id='idvPin']")
+        if pin_inputs:
+            bot.edit_message_text(
+                "📩 <b>গুগল সিকিউরিটি কোড প্রয়োজন!</b>\n\n"
+                f"📱 {user_phone_device} এসএমএস বা গুগল অথেনটিকেটর কোড পাঠানো হয়েছে।\n"
+                "✍️ ৬-সংখ্যার কোডটি চ্যাটে লিখে পাঠান:\n\n"
+                "⏱️ <i>৬০ সেকেন্ড অপেক্ষা করা হচ্ছে...</i>",
+                chat_id,
+                status_msg.message_id
+            )
+            try:
+                pin_code = captcha_q.get(timeout=60)
+                pin_inputs[0].send_keys(pin_code)
+                pin_inputs[0].send_keys(Keys.ENTER)
+                time.sleep(3)
+            except Exception:
+                bot.send_message(chat_id, "❌ কোড ইনপুট টাইমআউট হয়েছে।")
+                return
 
         # Send Prompt Instruction to User (Strict Telegram HTML format, NO <br> or <font>)
-        if prompt_num:
+        elif prompt_num:
             prompt_text = (
                 f"🔔 <b>Google Security ভেরিফিকেশন!</b>\n\n"
-                f"📱 <b>আপনার ফোনে (Infinix HOT 10S / Redmi 13C) নোটিফিকেশন পাঠানো হয়েছে!</b>\n"
-                f"ডিভাইস: <b>Pixel 7 Pro (United States)</b>\n\n"
-                f"👉 প্রথমে নোটিফিকেশনে <b>\"Yes, it's me\"</b> চাপুন\n"
-                f"👉 এরপর নিচের সংখ্যাটিতে ট্যাপ করুন:\n\n"
+                f"📱 <b>{user_phone_device} নোটিফিকেশন পাঠানো হয়েছে!</b>\n"
+                f"ডিভাইস এমুলেশন: <b>Pixel 7 Pro (United States)</b>\n\n"
+                f"👉 প্রথমে নোটিফিকেশনে <b>\"Yes, it's me\"</b> বা <b>\"হ্যাঁ, এটা আমি\"</b> চাপুন\n"
+                f"👉 এরপর স্ক্রিনে নিচের সংখ্যাটিতে ট্যাপ করুন:\n\n"
                 f"👉👉👉 [ <b>{prompt_num}</b> ] 👈👈👈\n\n"
                 f"⏱️ <i>৬০ সেকেন্ড অপেক্ষা করা হচ্ছে, ট্যাপ করলেই সাথে সাথে অটো লগইন হয়ে যাবে...</i>"
             )
             bot.edit_message_text(prompt_text, chat_id, status_msg.message_id)
         else:
             bot.edit_message_text(
-                "📱 <b>আপনার ফোনে গুগল সিকিউরিটি নোটিফিকেশন গেছে!</b>\n\n"
-                "মোবাইলের নোটিফিকেশনে <b>'Yes, it's me'</b> চেপে পারমিশন দিন...",
+                f"📱 <b>{user_phone_device} গুগল সিকিউরিটি নোটিফিকেশন গেছে!</b>\n\n"
+                "মোবাইলের নোটিফিকেশনে <b>'Yes, it's me'</b> বা <b>'হ্যাঁ, এটা আমি'</b> চেপে পারমিশন দিন...\n\n"
+                "⏱️ <i>৬০ সেকেন্ড অপেক্ষা করা হচ্ছে, ট্যাপ করলেই সাথে সাথে অটো লগইন হয়ে যাবে...</i>",
                 chat_id,
                 status_msg.message_id
             )
