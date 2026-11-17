@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -39,6 +41,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private LinearLayout layoutEmptyState;
     private LinearLayout accountsContainer;
     private Button btnAddAccount;
+    private Button btnPpModPortal;
     private ImageButton btnRefreshDashboard;
 
     // Views - Login
@@ -82,6 +85,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         layoutEmptyState = (LinearLayout) findViewById(R.id.layoutEmptyState);
         accountsContainer = (LinearLayout) findViewById(R.id.accountsContainer);
         btnAddAccount = (Button) findViewById(R.id.btnAddAccount);
+        btnPpModPortal = (Button) findViewById(R.id.btnPpModPortal);
         btnRefreshDashboard = (ImageButton) findViewById(R.id.btnRefreshDashboard);
 
         webProgressBar = (ProgressBar) findViewById(R.id.webProgressBar);
@@ -98,6 +102,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         // Click Listeners
         btnAddAccount.setOnClickListener(this);
+        if (btnPpModPortal != null) {
+            btnPpModPortal.setOnClickListener(this);
+        }
         btnRefreshDashboard.setOnClickListener(this);
         btnNavBack.setOnClickListener(this);
         btnNavReload.setOnClickListener(this);
@@ -365,6 +372,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
         int id = v.getId();
         if (id == R.id.btnAddAccount) {
             openLoginScreen();
+        } else if (id == R.id.btnPpModPortal) {
+            try {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://ppmods.netlify.app/"));
+                startActivity(browserIntent);
+            } catch (Exception e) {
+                Toast.makeText(this, "Could not open browser: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
         } else if (id == R.id.btnRefreshDashboard) {
             renderDashboardAccounts();
             Toast.makeText(this, "Accounts refreshed", Toast.LENGTH_SHORT).show();

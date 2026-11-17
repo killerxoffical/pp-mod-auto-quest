@@ -749,6 +749,80 @@ def add_new_game():
         "message": f"'{title}' has been successfully added to Games Catalog!"
     })
 
+@app.route("/api/admin/games/scan", methods=["GET"])
+def scan_game_metadata():
+    """
+    Auto-fetches game title, developer studio, category, and 512px icon URL
+    by game name or package name.
+    """
+    q = request.args.get("query", "").strip()
+    if not q:
+        return jsonify({"ok": False, "error": "Query is required"}), 400
+
+    clean_q = q.replace("com.", "").replace(".", " ").strip()
+    try:
+        url = "https://itunes.apple.com/search?term=" + requests.utils.quote(clean_q) + "&entity=software&limit=1"
+        r = requests.get(url, timeout=6)
+        res = r.json().get("results", [])
+        if res:
+            item = res[0]
+            icon = item.get("artworkUrl512") or item.get("artworkUrl100") or ""
+            return jsonify({
+                "ok": True,
+                "title": item.get("trackName"),
+                "developer": item.get("artistName"),
+                "category": item.get("primaryGenreName", "Games"),
+                "icon": icon,
+                "package": q if "com." in q else f"com.{clean_q.replace(' ', '').lower()}",
+                "achievements_count": 16,
+                "total_xp": 16000
+            })
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+    return jsonify({"ok": False, "error": f"No game metadata found for '{q}'."}), 404
+
+@app.route("/api/admin/games/edit", methods=["POST"])
+def edit_game_metadata():
+    """
+    Allows Admin to edit logo URL, title, developer, or quests count for any game.
+    """
+    data = request.get_json() or {}
+    game_id = str(data.get("game_id", "")).strip()
+    if not game_id:
+        return jsonify({"ok": False, "error": "Game ID is required."}), 400
+
+    merged = get_merged_games()
+    if game_id not in merged:
+        return jsonify({"ok": False, "error": "Game not found."}), 404
+
+    target = dict(merged[game_id])
+    if "title" in data and data["title"].strip():
+        target["title"] = data["title"].strip()
+    if "developer" in data and data["developer"].strip():
+        target["developer"] = data["developer"].strip()
+    if "category" in data and data["category"].strip():
+        target["category"] = data["category"].strip()
+    if "icon" in data and data["icon"].strip():
+        target["icon"] = data["icon"].strip()
+    if "package" in data and data["package"].strip():
+        target["package"] = data["package"].strip()
+    if "achievements_count" in data:
+        try:
+            cnt = int(data["achievements_count"])
+            target["achievements_count"] = cnt
+            target["total_xp"] = cnt * 1000
+        except Exception:
+            pass
+
+    save_custom_game(game_id, target)
+    return jsonify({
+        "ok": True,
+        "game_id": game_id,
+        "game": target,
+        "message": f"Updated metadata and logo for '{target['title']}'!"
+    })
+
 @app.route("/api/admin/users", methods=["GET"])
 def get_admin_users():
     """

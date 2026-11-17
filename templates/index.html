@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -12,6 +12,33 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <style>
+        :root[data-theme="light"] {
+            --bg-body: #f4f6fa;
+            --bg-sidebar: #ffffff;
+            --bg-card: #ffffff;
+            --bg-card-subtle: #f8fafc;
+            --bg-card-hover: #f1f5f9;
+            --border-color: #e2e8f0;
+            --border-focus: #059669;
+            --accent-green: #059669;
+            --accent-green-hover: #047857;
+            --accent-green-subtle: rgba(5, 150, 105, 0.08);
+            --accent-green-glow: rgba(5, 150, 105, 0.2);
+            --accent-cyan: #0284c7;
+            --accent-blue: #2563eb;
+            --accent-purple: #7c3aed;
+            --accent-gold: #d97706;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+            --shadow-hover: 0 10px 24px rgba(5, 150, 105, 0.12);
+            --radius-xl: 18px;
+            --radius-lg: 14px;
+            --radius-md: 10px;
+            --radius-sm: 6px;
+        }
+
         :root[data-theme="dark"] {
             --bg-body: #060b13;
             --bg-sidebar: #0b1322;
@@ -33,33 +60,6 @@
             --text-muted: #64748b;
             --shadow-card: 0 10px 25px rgba(0, 0, 0, 0.45);
             --shadow-hover: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 20px rgba(16, 185, 129, 0.12);
-            --radius-xl: 18px;
-            --radius-lg: 14px;
-            --radius-md: 10px;
-            --radius-sm: 6px;
-        }
-
-        :root[data-theme="light"] {
-            --bg-body: #f8fafc;
-            --bg-sidebar: #ffffff;
-            --bg-card: #ffffff;
-            --bg-card-subtle: #f1f5f9;
-            --bg-card-hover: #e2e8f0;
-            --border-color: #cbd5e1;
-            --border-focus: #059669;
-            --accent-green: #059669;
-            --accent-green-hover: #047857;
-            --accent-green-subtle: rgba(5, 150, 105, 0.1);
-            --accent-green-glow: rgba(5, 150, 105, 0.2);
-            --accent-cyan: #0891b2;
-            --accent-blue: #2563eb;
-            --accent-purple: #7c3aed;
-            --accent-gold: #d97706;
-            --text-primary: #0f172a;
-            --text-secondary: #334155;
-            --text-muted: #64748b;
-            --shadow-card: 0 4px 18px rgba(0, 0, 0, 0.05);
-            --shadow-hover: 0 12px 28px rgba(5, 150, 105, 0.12);
         }
 
         * {
@@ -186,7 +186,7 @@
         .nav-item.active {
             background: var(--accent-green-subtle);
             color: var(--accent-green);
-            border-color: rgba(16, 185, 129, 0.3);
+            border-color: rgba(5, 150, 105, 0.25);
             font-weight: 700;
         }
 
@@ -256,54 +256,163 @@
         .account-badge-group {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 16px;
+            flex: 1;
+            min-width: 280px;
         }
 
         .avatar-circle {
-            width: 48px;
-            height: 48px;
+            width: 52px;
+            height: 52px;
             border-radius: 50%;
             border: 2px solid var(--accent-green);
             object-fit: cover;
             background: var(--bg-card-subtle);
             box-shadow: 0 4px 12px var(--accent-green-glow);
+            flex-shrink: 0;
         }
 
-        .account-meta h4 {
+        .account-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .account-meta-top {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .account-meta-top h4 {
             font-size: 15px;
             font-weight: 800;
             color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
-        .account-meta p {
-            font-size: 12px;
-            color: var(--text-secondary);
-            font-weight: 500;
+        .badge-lvl-pill {
+            font-size: 10px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #ffffff;
+            padding: 2px 7px;
+            border-radius: 4px;
+            text-transform: uppercase;
         }
 
-        .quick-connect-box {
+        /* Google Play Games Style Level Progress Bar */
+        .play-level-progress-box {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            max-width: 320px;
+            width: 100%;
+        }
+
+        .progress-stat-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .play-progress-track {
+            width: 100%;
+            height: 7px;
+            background: var(--bg-card-hover);
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .play-progress-fill {
+            height: 100%;
+            width: 45%;
+            background: linear-gradient(90deg, #10b981, #06b6d4);
+            border-radius: 4px;
+            transition: width 0.4s ease;
+        }
+
+        /* Stealth Decoy Pair Code Cover */
+        .stealth-pair-container {
+            position: relative;
+            min-width: 210px;
+            height: 42px;
+            perspective: 800px;
+        }
+
+        .pair-decoy-cover {
+            position: absolute;
+            inset: 0;
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 8px 14px;
             background: var(--bg-card-subtle);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+        }
+
+        .pair-decoy-cover:hover {
+            border-color: var(--accent-cyan);
+            background: rgba(2, 132, 199, 0.05);
+        }
+
+        .pair-decoy-cover.flipped {
+            transform: rotateX(90deg);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .decoy-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 8px #10b981;
+            flex-shrink: 0;
+        }
+
+        .pair-active-input-box {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-card);
+            border: 1px solid var(--accent-green);
+            border-radius: var(--radius-md);
             padding: 4px 8px;
+            box-shadow: 0 0 12px var(--accent-green-glow);
+            transform: rotateX(-90deg);
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+        }
+
+        .pair-active-input-box.unflipped {
+            transform: rotateX(0deg);
+            opacity: 1;
+            pointer-events: auto;
         }
 
         .code-input {
-            width: 130px;
+            width: 90px;
             background: transparent;
             border: none;
             outline: none;
             color: var(--text-primary);
             font-family: 'JetBrains Mono', monospace;
             font-size: 13px;
-            font-weight: 700;
-            letter-spacing: 1px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
             text-align: center;
         }
 
@@ -318,8 +427,13 @@
             cursor: pointer;
         }
 
-        .btn-code-connect:hover {
-            background: var(--accent-green-hover);
+        .btn-code-close {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 13px;
+            cursor: pointer;
+            padding: 0 4px;
         }
 
         /* Metrics Grid */
@@ -350,10 +464,10 @@
             flex-shrink: 0;
         }
 
-        .tile-icon.green { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
-        .tile-icon.cyan { background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); }
-        .tile-icon.gold { background: rgba(245, 158, 11, 0.15); color: var(--accent-gold); }
-        .tile-icon.blue { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); }
+        .tile-icon.green { background: rgba(5, 150, 105, 0.12); color: var(--accent-green); }
+        .tile-icon.cyan { background: rgba(2, 132, 199, 0.12); color: var(--accent-cyan); }
+        .tile-icon.gold { background: rgba(217, 119, 6, 0.12); color: var(--accent-gold); }
+        .tile-icon.blue { background: rgba(37, 99, 235, 0.12); color: var(--accent-blue); }
 
         .tile-icon svg { width: 20px; height: 20px; fill: currentColor; }
 
@@ -386,7 +500,7 @@
         .search-wrapper {
             position: relative;
             flex: 1;
-            min-width: 240px;
+            min-width: 260px;
         }
 
         .search-wrapper svg {
@@ -432,10 +546,11 @@
             gap: 14px;
             box-shadow: var(--shadow-card);
             transition: all 0.2s ease;
+            position: relative;
         }
 
         .game-entry-card:hover {
-            border-color: rgba(16, 185, 129, 0.45);
+            border-color: rgba(5, 150, 105, 0.4);
             transform: translateY(-2px);
             box-shadow: var(--shadow-hover);
         }
@@ -451,8 +566,8 @@
             height: 60px;
             border-radius: 14px;
             object-fit: cover;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
             flex-shrink: 0;
             background: var(--bg-card-subtle);
         }
@@ -481,6 +596,28 @@
             color: var(--text-muted);
             margin-top: 5px;
             display: inline-block;
+        }
+
+        .btn-card-edit {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-card-edit:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
         }
 
         .game-stats-ribbon {
@@ -515,7 +652,7 @@
 
         .game-entry-actions {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1.2fr;
             gap: 8px;
         }
 
@@ -536,7 +673,7 @@
 
         .btn-inspect-action:hover {
             border-color: var(--accent-cyan);
-            background: rgba(6, 182, 212, 0.1);
+            background: rgba(2, 132, 199, 0.08);
         }
 
         .btn-sync-protocol {
@@ -549,14 +686,14 @@
             font-weight: 700;
             border-radius: var(--radius-md);
             border: none;
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
             color: #ffffff;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+            box-shadow: 0 4px 10px rgba(5, 150, 105, 0.2);
         }
 
         .btn-sync-protocol:hover {
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            background: linear-gradient(135deg, #047857 0%, #065f46 100%);
             transform: translateY(-1px);
         }
 
@@ -571,21 +708,57 @@
             display: none;
         }
 
-        /* Add Game Form */
+        /* Add Game Form & Auto-Scanner */
         .form-card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-xl);
             padding: 28px;
             box-shadow: var(--shadow-card);
-            max-width: 780px;
+            max-width: 820px;
+        }
+
+        .auto-scanner-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .scan-input {
+            flex: 1;
+            padding: 10px 14px;
+            font-size: 13px;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        .scan-input:focus {
+            border-color: var(--accent-cyan);
+        }
+
+        .btn-auto-scan {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            border: none;
+            color: #ffffff;
+            font-size: 12.5px;
+            font-weight: 700;
+            padding: 10px 18px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 16px;
-            margin-top: 18px;
         }
 
         .form-field {
@@ -645,7 +818,7 @@
             font-weight: 700;
             padding: 4px 10px;
             border-radius: 6px;
-            background: rgba(16, 185, 129, 0.12);
+            background: rgba(5, 150, 105, 0.1);
             color: var(--accent-green);
             border: 1px solid var(--accent-green);
         }
@@ -686,13 +859,13 @@
         }
 
         .badge-status.active {
-            background: rgba(16, 185, 129, 0.15);
+            background: rgba(5, 150, 105, 0.12);
             color: var(--accent-green);
             border: 1px solid var(--accent-green);
         }
 
         .badge-status.banned {
-            background: rgba(239, 68, 68, 0.15);
+            background: rgba(239, 68, 68, 0.12);
             color: #ef4444;
             border: 1px solid #ef4444;
         }
@@ -703,26 +876,26 @@
             font-weight: 700;
             border-radius: var(--radius-sm);
             border: 1px solid #ef4444;
-            background: rgba(239, 68, 68, 0.1);
+            background: rgba(239, 68, 68, 0.08);
             color: #ef4444;
             cursor: pointer;
         }
 
         .btn-ban-toggle.unban {
             border-color: var(--accent-green);
-            background: rgba(16, 185, 129, 0.1);
+            background: rgba(5, 150, 105, 0.08);
             color: var(--accent-green);
         }
 
-        /* Inspector Modal */
+        /* Modals: Inspector & Edit Game */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(6px);
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(5px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -737,11 +910,11 @@
             border: 1px solid var(--border-color);
             border-radius: var(--radius-xl);
             width: 100%;
-            max-width: 860px;
+            max-width: 880px;
             max-height: 90vh;
             display: flex;
             flex-direction: column;
-            box-shadow: var(--shadow-hover);
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.15);
             overflow: hidden;
         }
 
@@ -769,6 +942,7 @@
             border: 1px solid var(--border-color);
         }
 
+        /* Segmented Box Buttons in Inspector */
         .inspector-sub-bar {
             padding: 12px 24px;
             border-bottom: 1px solid var(--border-color);
@@ -778,6 +952,48 @@
             flex-wrap: wrap;
             gap: 12px;
             background: var(--bg-card);
+        }
+
+        .segmented-filter-box {
+            display: flex;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 3px;
+            gap: 4px;
+        }
+
+        .seg-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 7px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+
+        .seg-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .seg-btn.active {
+            background: var(--bg-card);
+            color: var(--accent-green);
+            border-color: rgba(5, 150, 105, 0.3);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .seg-pill {
+            font-size: 10px;
+            padding: 1px 6px;
+            border-radius: 4px;
+            background: var(--bg-card-hover);
         }
 
         .inspector-list-scroll {
@@ -817,8 +1033,8 @@
         .spinner {
             width: 16px;
             height: 16px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-top-color: #ffffff;
+            border: 2px solid rgba(0, 0, 0, 0.15);
+            border-top-color: var(--accent-green);
             border-radius: 50%;
             animation: spin 0.6s linear infinite;
         }
@@ -841,7 +1057,7 @@
             color: var(--text-primary);
             padding: 10px 16px;
             border-radius: var(--radius-md);
-            box-shadow: var(--shadow-hover);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
             font-size: 12.5px;
             font-weight: 600;
             max-width: 380px;
@@ -904,7 +1120,7 @@
             <div class="theme-toggle-row">
                 <span>Theme Mode</span>
                 <button class="theme-btn" onclick="toggleTheme()">
-                    <span id="themeSymbol">☀️ Light</span>
+                    <span id="themeSymbol">🌙 Dark</span>
                 </button>
             </div>
             <div style="font-size:10.5px; color:var(--text-muted); line-height:1.4;">
@@ -915,21 +1131,53 @@
 
     <!-- Main Content Area -->
     <main class="admin-main">
-        <!-- Top Bar with Active Account & 6-Digit Connect -->
+        <!-- Top Bar with Play Games Style Level Progress Bar, XP Icon & Stealth Cover -->
         <header class="main-top-bar">
             <div class="account-badge-group">
                 <img id="topAvatar" class="avatar-circle" src="https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512" alt="Avatar">
+                
                 <div class="account-meta">
-                    <h4 id="topDisplayName">Admin Master <span id="topLvlBadge" style="font-size:10.5px; background:var(--accent-gold); color:#fff; padding:2px 6px; border-radius:4px;">LVL 1</span></h4>
-                    <p id="topEmail">mdd145712@gmail.com</p>
+                    <div class="account-meta-top">
+                        <h4 id="topDisplayName">Admin Master</h4>
+                        <span id="topLvlBadge" class="badge-lvl-pill">LVL 1</span>
+                        <!-- Stealth Blurred Email -->
+                        <span id="topEmail" class="stealth-blur" style="font-size:11.5px; color:var(--text-muted);" title="Hover to view email">mdd145712@gmail.com</span>
+                    </div>
+
+                    <!-- Authentic Google Play Games Style Level Progress Bar -->
+                    <div class="play-level-progress-box">
+                        <div class="progress-stat-row">
+                            <span id="txtLevelProgress" style="color:var(--accent-green); display:flex; align-items:center; gap:4px;">
+                                <svg style="width:12px; height:12px; fill:var(--accent-gold);" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                <span id="topXpText">0 / 10,000 XP</span>
+                            </span>
+                            <span id="txtProgressPct" style="color:var(--text-muted);">0%</span>
+                        </div>
+                        <div class="play-progress-track">
+                            <div id="playProgressBar" class="play-progress-fill"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- 6-Digit Pairing Code Input -->
-            <div class="quick-connect-box">
-                <span style="font-size:11px; font-weight:700; color:var(--text-secondary); margin-left:4px;">PAIR CODE:</span>
-                <input type="text" id="quickPairInput" class="code-input" placeholder="6-DIGIT" maxlength="6">
-                <button class="btn-code-connect" onclick="connectWith6DigitCode()">Sync</button>
+            <!-- Stealth Decoy Cover for Pair Code -->
+            <div class="stealth-pair-container">
+                <!-- Cover State: Appears like normal server cloud node -->
+                <div id="pairDecoyCover" class="pair-decoy-cover" onclick="revealPairCodeBox()" title="Click to open pairing terminal">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <div class="decoy-dot"></div>
+                        <span style="font-size:12px; font-weight:700; color:var(--text-primary);">Cloud VPS: Active</span>
+                    </div>
+                    <svg style="width:13px; height:13px; fill:var(--text-muted);" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                </div>
+
+                <!-- Active State: 6-Digit Pair Code Input -->
+                <div id="pairActiveInput" class="pair-active-input-box">
+                    <span style="font-size:10px; font-weight:800; color:var(--accent-green);">CODE:</span>
+                    <input type="text" id="quickPairInput" class="code-input" placeholder="6-DIGIT" maxlength="6" onkeydown="if(event.key==='Enter')connectWith6DigitCode()">
+                    <button class="btn-code-connect" onclick="connectWith6DigitCode()">Sync</button>
+                    <button class="btn-code-close" onclick="hidePairCodeBox()" title="Cover again">✕</button>
+                </div>
             </div>
         </header>
 
@@ -942,7 +1190,7 @@
                         <svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
                     </div>
                     <div class="tile-text">
-                        <h3 id="statTotalGames">8 Games</h3>
+                        <h3 id="statTotalGames">9 Games</h3>
                         <p>Certified GPGS Signatures</p>
                     </div>
                 </div>
@@ -952,7 +1200,7 @@
                         <svg viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94.63 1.5 1.98 2.63 3.61 2.96V19H7v2h10v-2h-4v-3.1c1.63-.33 2.98-1.46 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/></svg>
                     </div>
                     <div class="tile-text">
-                        <h3 id="statTotalQuests">538 Quests</h3>
+                        <h3 id="statTotalQuests">570 Quests</h3>
                         <p>Live Achievement Pool</p>
                     </div>
                 </div>
@@ -962,7 +1210,7 @@
                         <svg viewBox="0 0 24 24"><path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 10h2v4h-2zm0 6h2v2h-2z"/></svg>
                     </div>
                     <div class="tile-text">
-                        <h3 id="statTotalXp">538,000 XP</h3>
+                        <h3 id="statTotalXp">+570,000 XP</h3>
                         <p>Level Acceleration Pool</p>
                     </div>
                 </div>
@@ -982,7 +1230,7 @@
             <div class="catalog-toolbar">
                 <div class="search-wrapper">
                     <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                    <input type="text" id="catalogSearch" class="search-input-field" placeholder="Search games by title, developer, or package..." oninput="handleSearchInput()">
+                    <input type="text" id="catalogSearch" class="search-input-field" placeholder="Search games by title, developer, or package (e.g. Subway, Supercell)..." oninput="handleSearchInput()">
                 </div>
                 <button class="btn-sync-protocol" style="padding:9px 18px;" onclick="unlockMegaBatchGlobal()">
                     <span>🚀 Execute Global Pipeline (All Games)</span>
@@ -995,25 +1243,34 @@
             </div>
         </section>
 
-        <!-- VIEW 2: Add New Game -->
+        <!-- VIEW 2: Add New Game (With Auto-Scanner) -->
         <section id="viewAddGame" class="admin-view-panel hidden">
             <div class="form-card">
                 <h3 style="font-size:18px; font-weight:800; color:var(--text-primary); margin-bottom:4px;">Register New Android Game</h3>
-                <p style="font-size:12.5px; color:var(--text-secondary);">Expand the catalog by registering a Google Play Games package and signature.</p>
+                <p style="font-size:12.5px; color:var(--text-secondary); margin-bottom:20px;">Use the Auto-Scanner to instantly search any game title or package name and populate logo & metadata automatically!</p>
+
+                <!-- Auto-Scanner Input -->
+                <div class="auto-scanner-row">
+                    <input type="text" id="scanSearchInput" class="scan-input" placeholder="Enter Game Title or Package (e.g. Monopoly GO, Brawl Stars, or com.scopely.monopolygo)...">
+                    <button type="button" class="btn-auto-scan" onclick="performAutoScan()">
+                        <svg style="width:14px; height:14px; fill:currentColor;" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                        <span>Auto Scan &amp; Fill</span>
+                    </button>
+                </div>
 
                 <form id="addGameForm" onsubmit="handleNewGameSubmit(event)">
                     <div class="form-grid">
                         <div class="form-field">
                             <label>Game Title *</label>
-                            <input type="text" id="formGameTitle" class="form-input-element" placeholder="e.g. Monopoly GO!" required>
+                            <input type="text" id="formGameTitle" class="form-input-element" placeholder="Game Name" required>
                         </div>
                         <div class="form-field">
                             <label>Developer Studio *</label>
-                            <input type="text" id="formGameDev" class="form-input-element" placeholder="e.g. Scopely" required>
+                            <input type="text" id="formGameDev" class="form-input-element" placeholder="Developer / Publisher" required>
                         </div>
                         <div class="form-field">
                             <label>Package Name (Application ID) *</label>
-                            <input type="text" id="formGamePackage" class="form-input-element" placeholder="e.g. com.scopely.monopolygo" required>
+                            <input type="text" id="formGamePackage" class="form-input-element" placeholder="com.company.game" required>
                         </div>
                         <div class="form-field">
                             <label>Client Signature (SHA-1) [Optional]</label>
@@ -1021,15 +1278,18 @@
                         </div>
                         <div class="form-field">
                             <label>Category / Genre</label>
-                            <input type="text" id="formGameCategory" class="form-input-element" placeholder="e.g. Board / Casual">
+                            <input type="text" id="formGameCategory" class="form-input-element" placeholder="e.g. Casual / Arcade">
                         </div>
                         <div class="form-field">
                             <label>Total Achievements Count</label>
                             <input type="number" id="formGameCount" class="form-input-element" placeholder="16" value="16">
                         </div>
                         <div class="form-field full">
-                            <label>Official Icon CDN URL</label>
-                            <input type="url" id="formGameIcon" class="form-input-element" placeholder="https://is1-ssl.mzstatic.com/... or Google Play CDN">
+                            <label>Official Icon CDN URL (Auto-fetched or custom)</label>
+                            <div style="display:flex; gap:10px; align-items:center;">
+                                <img id="previewAddIcon" src="https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512" style="width:40px; height:40px; border-radius:10px; object-fit:cover; border:1px solid var(--border-color);">
+                                <input type="url" id="formGameIcon" class="form-input-element" style="flex:1;" placeholder="https://..." oninput="document.getElementById('previewAddIcon').src=this.value">
+                            </div>
                         </div>
                     </div>
 
@@ -1047,8 +1307,8 @@
             <div class="users-table-card">
                 <div class="table-header-box">
                     <div>
-                        <h3 style="font-size:17px; font-weight:800; color:var(--text-primary);">Active App Users & Synced Accounts</h3>
-                        <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Live accounts connected via PP Server Android App & Web Console.</p>
+                        <h3 style="font-size:17px; font-weight:800; color:var(--text-primary);">Active App Users &amp; Synced Accounts</h3>
+                        <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Live accounts connected via PP Server Android App &amp; Web Console.</p>
                     </div>
                     <div style="display:flex; align-items:center; gap:10px;">
                         <span class="quota-safety-badge">⚡ Cloudflare D1 • 0 Firebase Quota Used</span>
@@ -1104,21 +1364,75 @@
             </div>
         </div>
 
+        <!-- Box-Style Segmented Buttons -->
         <div class="inspector-sub-bar">
             <div>
                 <span id="inspCountUnlocked" style="font-size:12.5px; font-weight:800; color:var(--accent-green);">0 / 0 Quests Synced</span>
                 <span style="font-size:11.5px; color:var(--text-muted); margin-left:8px;">•</span>
                 <span id="inspXpEarned" style="font-size:12px; font-weight:700; color:var(--accent-gold); margin-left:8px;">0 XP</span>
             </div>
-            <div style="display:flex; gap:6px;">
-                <button class="tab-pill active" id="filterTabAll" onclick="applyQuestFilter('all')">All (<span id="txtAll">0</span>)</button>
-                <button class="tab-pill" id="filterTabLocked" onclick="applyQuestFilter('locked')">Locked (<span id="txtLocked">0</span>)</button>
-                <button class="tab-pill" id="filterTabUnlocked" onclick="applyQuestFilter('unlocked')">Synced (<span id="txtUnlocked">0</span>)</button>
+            
+            <!-- Segmented Box Control -->
+            <div class="segmented-filter-box">
+                <button class="seg-btn active" id="segAll" onclick="applyQuestFilter('all')">
+                    <span>All Quests</span>
+                    <span class="seg-pill" id="txtAll">0</span>
+                </button>
+                <button class="seg-btn" id="segLocked" onclick="applyQuestFilter('locked')">
+                    <span>Pending</span>
+                    <span class="seg-pill" id="txtLocked">0</span>
+                </button>
+                <button class="seg-btn" id="segUnlocked" onclick="applyQuestFilter('unlocked')">
+                    <span>Synced</span>
+                    <span class="seg-pill" id="txtUnlocked">0</span>
+                </button>
             </div>
         </div>
 
         <div class="inspector-list-scroll" id="inspectorScrollList">
             <!-- Dynamic achievements injected here -->
+        </div>
+    </div>
+</div>
+
+<!-- ================= EDIT GAME METADATA & LOGO MODAL ================= -->
+<div id="editGameModal" class="modal-overlay hidden">
+    <div class="inspector-panel-card" style="max-width: 540px;">
+        <div class="inspector-top-row">
+            <h3 style="font-size:16px; font-weight:800;">Edit Game &amp; Logo</h3>
+            <button style="background:transparent; border:none; color:var(--text-muted); font-size:16px; cursor:pointer;" onclick="closeEditModal()">✕</button>
+        </div>
+        <div style="padding: 24px;">
+            <input type="hidden" id="editGameId">
+            <div style="display:flex; flex-direction:column; gap:14px;">
+                <div style="display:flex; gap:14px; align-items:center;">
+                    <img id="editLogoPreview" src="" style="width:58px; height:58px; border-radius:14px; object-fit:cover; border:1px solid var(--border-color); background:var(--bg-card-subtle);">
+                    <div style="flex:1;">
+                        <label style="font-size:11.5px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">Official Logo URL</label>
+                        <input type="url" id="editLogoInput" class="form-input-element" style="width:100%; font-size:12px;" placeholder="https://..." oninput="document.getElementById('editLogoPreview').src=this.value">
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <label>Game Title</label>
+                    <input type="text" id="editTitleInput" class="form-input-element">
+                </div>
+
+                <div class="form-field">
+                    <label>Developer Studio</label>
+                    <input type="text" id="editDevInput" class="form-input-element">
+                </div>
+
+                <div class="form-field">
+                    <label>Category / Genre</label>
+                    <input type="text" id="editCategoryInput" class="form-input-element">
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
+                    <button type="button" class="btn-inspect-action" onclick="closeEditModal()">Cancel</button>
+                    <button type="button" class="btn-sync-protocol" onclick="submitEditGame()">Save Changes</button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -1140,23 +1454,35 @@
         initSession();
     });
 
-    // Theme Management
+    // Theme Management (Defaults to Light)
     function initTheme() {
-        const saved = localStorage.getItem("pp_admin_theme") || "dark";
+        const saved = localStorage.getItem("pp_admin_theme") || "light";
         document.documentElement.setAttribute("data-theme", saved);
         updateThemeBtn(saved);
     }
 
     function toggleTheme() {
-        const cur = document.documentElement.getAttribute("data-theme") || "dark";
-        const next = cur === "dark" ? "light" : "dark";
+        const cur = document.documentElement.getAttribute("data-theme") || "light";
+        const next = cur === "light" ? "dark" : "light";
         document.documentElement.setAttribute("data-theme", next);
         localStorage.setItem("pp_admin_theme", next);
         updateThemeBtn(next);
     }
 
     function updateThemeBtn(th) {
-        document.getElementById("themeSymbol").innerText = th === "dark" ? "☀️ Light" : "🌙 Dark";
+        document.getElementById("themeSymbol").innerText = th === "light" ? "🌙 Dark" : "☀️ Light";
+    }
+
+    // Stealth Decoy Cover Handlers
+    function revealPairCodeBox() {
+        document.getElementById("pairDecoyCover").classList.add("flipped");
+        document.getElementById("pairActiveInput").classList.add("unflipped");
+        document.getElementById("quickPairInput").focus();
+    }
+
+    function hidePairCodeBox() {
+        document.getElementById("pairDecoyCover").classList.remove("flipped");
+        document.getElementById("pairActiveInput").classList.remove("unflipped");
     }
 
     // Tab Navigation
@@ -1210,9 +1536,13 @@
             card.id = `card_game_${g.id}`;
 
             card.innerHTML = `
+                <button class="btn-card-edit" onclick="openEditGameModal('${g.id}')">
+                    <span>✏️ Edit</span>
+                </button>
+
                 <div class="game-entry-top">
                     <img class="game-thumb-logo" src="${g.icon}" alt="${g.title}" onerror="this.src='https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512'">
-                    <div class="game-heading" style="flex:1; min-width:0;">
+                    <div class="game-heading" style="flex:1; min-width:0; padding-right:50px;">
                         <h4 title="${g.title}" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${g.title}</h4>
                         <div class="dev-tag">${g.developer} • ${g.category}</div>
                         <!-- STEALTH BLURRED PACKAGE NAME -->
@@ -1306,7 +1636,7 @@
                 document.getElementById("txtLocked").innerText = data.stats.locked_count;
                 document.getElementById("txtUnlocked").innerText = data.stats.unlocked_count;
                 document.getElementById("inspCountUnlocked").innerText = `${data.stats.unlocked_count} / ${data.stats.total_count} Quests Synced (${data.stats.completion_pct}%)`;
-                document.getElementById("inspXpEarned").innerText = `+${data.stats.earned_xp.toLocaleString()} XP Earned`;
+                document.getElementById("inspXpEarned").innerText = `+${data.stats.earned_xp.toLocaleString()} XP`;
                 renderInspectorQuests();
             } else {
                 scrollBox.innerHTML = `<div style="text-align:center; padding:24px; color:#ef4444;">${data.error}</div>`;
@@ -1316,11 +1646,12 @@
         }
     }
 
+    // Segmented Filter Handler
     function applyQuestFilter(f) {
         currentQuestFilter = f;
-        document.getElementById("filterTabAll").classList.toggle("active", f === "all");
-        document.getElementById("filterTabLocked").classList.toggle("active", f === "locked");
-        document.getElementById("filterTabUnlocked").classList.toggle("active", f === "unlocked");
+        document.getElementById("segAll").classList.toggle("active", f === "all");
+        document.getElementById("segLocked").classList.toggle("active", f === "locked");
+        document.getElementById("segUnlocked").classList.toggle("active", f === "unlocked");
         renderInspectorQuests();
     }
 
@@ -1333,7 +1664,7 @@
         if (currentQuestFilter === "unlocked") items = items.filter(q => q.is_unlocked);
 
         if (items.length === 0) {
-            box.innerHTML = `<div style="text-align:center; padding:24px; color:var(--text-muted); font-size:12px;">No quests in this filter.</div>`;
+            box.innerHTML = `<div style="text-align:center; padding:24px; color:var(--text-muted); font-size:12px;">No quests in this category.</div>`;
             return;
         }
 
@@ -1426,7 +1757,8 @@
     // Stealth "Sync Protocol" for single game
     async function executeProtocolSingle(gameId) {
         if (!currentSession) {
-            showToast("Please enter a 6-digit sync code above.", "error");
+            showToast("Please pair an account with 6-digit code above.", "error");
+            revealPairCodeBox();
             return;
         }
 
@@ -1477,6 +1809,7 @@
     async function unlockMegaBatchGlobal() {
         if (!currentSession) {
             showToast("Please connect an account with 6-digit code first.", "error");
+            revealPairCodeBox();
             return;
         }
 
@@ -1507,7 +1840,8 @@
 
     // ================= 6-DIGIT CODE QUICK PAIRING =================
     async function connectWith6DigitCode() {
-        const code = document.getElementById("quickPairInput").value.trim().replace(" ", "").replace("-", "");
+        const input = document.getElementById("quickPairInput");
+        const code = input.value.trim().replace(" ", "").replace("-", "");
         if (!code || code.length !== 6) {
             showToast("Please enter a valid 6-digit sync code.", "error");
             return;
@@ -1533,6 +1867,10 @@
                 updateProfileUI(data.profile);
                 triggerCelebration();
                 showToast(`🎉 Connected! Logged in as ${data.profile.display_name} (${data.email})`, "success");
+                
+                // Clear code and re-cover decoy box
+                input.value = "";
+                hidePairCodeBox();
             } else {
                 showToast(data.error || "Invalid 6-digit pairing code.", "error");
             }
@@ -1551,14 +1889,60 @@
         }
     }
 
+    // Update Profile UI & Authentic Google Play Games Progress Bar
     function updateProfileUI(p) {
         if (!p) return;
         document.getElementById("topAvatar").src = p.avatar_url || "https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512";
-        document.getElementById("topDisplayName").innerHTML = `${p.display_name || "Admin"} <span id="topLvlBadge" style="font-size:10.5px; background:var(--accent-gold); color:#fff; padding:2px 6px; border-radius:4px;">LVL ${p.current_level}</span>`;
-        document.getElementById("topEmail").innerText = `${currentSession?.email || "admin@google.com"} • ${p.current_xp.toLocaleString()} XP`;
+        document.getElementById("topDisplayName").innerText = p.display_name || "Admin Master";
+        document.getElementById("topLvlBadge").innerText = `LVL ${p.current_level || 1}`;
+        document.getElementById("topEmail").innerText = currentSession?.email || "admin@google.com";
+
+        // Level & XP Progress Calculations
+        const curXp = p.current_xp || 0;
+        const minXp = p.min_xp || 0;
+        const maxXp = p.max_xp || (curXp + 10000);
+        const span = maxXp - minXp;
+        let pct = 0;
+        if (span > 0) {
+            pct = Math.min(100, Math.max(0, Math.round(((curXp - minXp) / span) * 100)));
+        } else if (p.progress_pct !== undefined) {
+            pct = p.progress_pct;
+        }
+
+        document.getElementById("topXpText").innerText = `${curXp.toLocaleString()} / ${maxXp.toLocaleString()} XP`;
+        document.getElementById("txtProgressPct").innerText = `${pct}% to Level ${(p.next_level || (p.current_level + 1))}`;
+        document.getElementById("playProgressBar").style.width = `${pct}%`;
     }
 
-    // ================= ADD NEW GAME SUBMISSION =================
+    // ================= AUTO SCANNER & ADD GAME =================
+    async function performAutoScan() {
+        const query = document.getElementById("scanSearchInput").value.trim();
+        if (!query) {
+            showToast("Please enter a game name or package name to scan.", "error");
+            return;
+        }
+
+        showToast(`🔍 Scanning official database for '${query}'...`, "info");
+
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/games/scan?query=${encodeURIComponent(query)}`);
+            const data = await res.json();
+            if (data.ok) {
+                document.getElementById("formGameTitle").value = data.title || "";
+                document.getElementById("formGameDev").value = data.developer || "";
+                document.getElementById("formGamePackage").value = data.package || "";
+                document.getElementById("formGameCategory").value = data.category || "Games";
+                document.getElementById("formGameIcon").value = data.icon || "";
+                document.getElementById("previewAddIcon").src = data.icon || "";
+                showToast(`🎉 Found '${data.title}'! Form populated automatically.`, "success");
+            } else {
+                showToast(data.error || "No metadata found. You can fill manually.", "error");
+            }
+        } catch (e) {
+            showToast("Scanner connection error.", "error");
+        }
+    }
+
     async function handleNewGameSubmit(e) {
         e.preventDefault();
         const btn = document.getElementById("btnSubmitAddGame");
@@ -1602,6 +1986,57 @@
         } finally {
             btn.disabled = false;
             btn.innerHTML = `<span>➕ Add Game to Catalog</span>`;
+        }
+    }
+
+    // ================= EDIT GAME MODAL =================
+    function openEditGameModal(gameId) {
+        const game = gamesList.find(g => g.id === gameId);
+        if (!game) return;
+
+        document.getElementById("editGameId").value = game.id;
+        document.getElementById("editTitleInput").value = game.title;
+        document.getElementById("editDevInput").value = game.developer;
+        document.getElementById("editCategoryInput").value = game.category;
+        document.getElementById("editLogoInput").value = game.icon;
+        document.getElementById("editLogoPreview").src = game.icon;
+
+        document.getElementById("editGameModal").classList.remove("hidden");
+    }
+
+    function closeEditModal() {
+        document.getElementById("editGameModal").classList.add("hidden");
+    }
+
+    async function submitEditGame() {
+        const id = document.getElementById("editGameId").value;
+        const title = document.getElementById("editTitleInput").value.trim();
+        const dev = document.getElementById("editDevInput").value.trim();
+        const cat = document.getElementById("editCategoryInput").value.trim();
+        const icon = document.getElementById("editLogoInput").value.trim();
+
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/games/edit`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    game_id: id,
+                    title: title,
+                    developer: dev,
+                    category: cat,
+                    icon: icon
+                })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                showToast("🎉 Game metadata & logo updated successfully!", "success");
+                closeEditModal();
+                await loadGames();
+            } else {
+                showToast(data.error || "Failed to update game.", "error");
+            }
+        } catch (e) {
+            showToast("Connection error saving changes.", "error");
         }
     }
 
@@ -1702,7 +2137,7 @@
                 particleCount: 80,
                 spread: 70,
                 origin: { y: 0.7 },
-                colors: ['#10b981', '#06b6d4', '#f59e0b', '#3b82f6']
+                colors: ['#059669', '#0284c7', '#d97706', '#2563eb']
             });
         } catch (e) {}
     }
