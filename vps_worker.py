@@ -16,7 +16,10 @@ import subprocess
 import requests
 
 try:
-    from selenium import webdriver
+    from curl_cffi import requests as cffi_requests
+    CFFI_AVAILABLE = True
+except ImportError:
+    CFFI_AVAILABLE = False
     from selenium.webdriver.common.by import By
     from selenium.webdriver.common.keys import Keys
     from selenium.webdriver.support.ui import WebDriverWait
@@ -42,19 +45,22 @@ def log(msg):
     print(f"[{ts}] {msg}", flush=True)
 
 def api_get(endpoint):
-    """Bulletproof GET request with automatic curl fallback for Cloudflare compatibility"""
+    """Bulletproof GET request with curl_cffi and TLS1.2 curl fallback for Cloudflare compatibility"""
     url = f"{SERVER_URL}{endpoint}"
-    try:
-        res = SESSION.get(url, timeout=8)
-        if res.status_code == 200:
-            return res.json()
-    except Exception:
-        pass
+    # 1. Try curl_cffi (Chrome TLS fingerprint impersonation)
+    if CFFI_AVAILABLE:
+        try:
+            res = cffi_requests.get(url, impersonate="chrome120", timeout=10)
+            if res.status_code == 200:
+                return res.json()
+        except Exception:
+            pass
 
-    # Fallback to system curl
+    # 2. Try curl with TLS 1.2 and HTTP/1.1 (bypasses Cloudflare TLS1.3 RST)
     try:
         cmd = [
             "curl", "-s", "--max-time", "10",
+            "--tlsv1.2", "--http1.1", "-k",
             "-H", "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0.0.0",
             "-H", "Accept: application/json",
             url
@@ -62,25 +68,36 @@ def api_get(endpoint):
         out = subprocess.check_output(cmd, text=True, stderr=subprocess.DEVNULL)
         if out and out.strip().startswith("{"):
             return json.loads(out)
+    except Exception:
+        pass
+
+    # 3. Fallback to standard session
+    try:
+        res = SESSION.get(url, timeout=8)
+        if res.status_code == 200:
+            return res.json()
     except Exception as e:
         log(f"⚠️ api_get failed ({endpoint}): {e}")
     return None
 
 def api_post(endpoint, data):
-    """Bulletproof POST request with automatic curl fallback for Cloudflare compatibility"""
+    """Bulletproof POST request with curl_cffi and TLS1.2 curl fallback for Cloudflare compatibility"""
     url = f"{SERVER_URL}{endpoint}"
-    try:
-        res = SESSION.post(url, json=data, timeout=12)
-        if res.status_code == 200:
-            return res.json()
-    except Exception:
-        pass
+    # 1. Try curl_cffi (Chrome TLS fingerprint impersonation)
+    if CFFI_AVAILABLE:
+        try:
+            res = cffi_requests.post(url, json=data, impersonate="chrome120", timeout=12)
+            if res.status_code == 200:
+                return res.json()
+        except Exception:
+            pass
 
-    # Fallback to system curl
+    # 2. Try curl with TLS 1.2 and HTTP/1.1 (bypasses Cloudflare TLS1.3 RST)
     try:
         payload = json.dumps(data)
         cmd = [
             "curl", "-s", "--max-time", "15",
+            "--tlsv1.2", "--http1.1", "-k",
             "-H", "Content-Type: application/json",
             "-H", "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0.0.0",
             "-X", "POST", "-d", payload,
@@ -89,6 +106,14 @@ def api_post(endpoint, data):
         out = subprocess.check_output(cmd, text=True, stderr=subprocess.DEVNULL)
         if out and out.strip().startswith("{"):
             return json.loads(out)
+    except Exception:
+        pass
+
+    # 3. Fallback to standard session
+    try:
+        res = SESSION.post(url, json=data, timeout=12)
+        if res.status_code == 200:
+            return res.json()
     except Exception as e:
         log(f"⚠️ api_post failed ({endpoint}): {e}")
     return None
