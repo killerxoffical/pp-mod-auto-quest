@@ -515,7 +515,7 @@
                             const iconSrc = q.unlockedIconUrl || '/static/images/achievements/badge_1.svg';
                             questsHtml += `
                                 <div class="quest-item">
-                                    <img src="${iconSrc}" class="quest-icon">
+                                    <img src="${iconSrc}" onerror="this.src='/static/images/achievements/badge_1.svg'" class="quest-icon">
                                     <span class="quest-name">${q.name}</span>
                                     <span class="quest-xp">+${(q.experiencePoints || 5000).toLocaleString()} XP</span>
                                 </div>
@@ -526,7 +526,7 @@
                             <div class="service-card">
                                 <div>
                                     <div class="service-top">
-                                        <img src="${s.icon || '/static/images/default_app.png'}" class="service-icon">
+                                        <img src="${s.icon || '/static/images/default_app.png'}" onerror="this.src='/static/images/default_app.png'" class="service-icon">
                                         <div>
                                             <div class="service-name">${s.title}</div>
                                             <span class="service-badge">🎯 ${selCount} Curated Objectives</span>
