@@ -2691,8 +2691,9 @@
     window.addEventListener("DOMContentLoaded", async () => {
         initTheme();
         loadVpsSettings();
-        await loadGames();
         initSession();
+        await loadGames();
+        await loadUserRemoteProgress();
 
         // Global Double-Click Listener for Stealth Blur elements (Visible for 5 seconds)
         document.addEventListener("dblclick", (e) => {
@@ -2789,14 +2790,10 @@
         if (map[gameId] !== undefined) {
             return Math.min(totalCount, map[gameId]);
         }
-        // If an account is paired, show realistic completed quests like ~70%
-        if (currentSession) {
-            return Math.min(totalCount, Math.round(totalCount * 0.72));
-        }
-        return 0;
+        return 0; // Starts at 0 until verified/synced - no fake 72%!
     }
 
-    function setGameProgress(gameId, completedCount) {
+    function setGameProgress(gameId, completedCount, totalCount) {
         const raw = localStorage.getItem("pp_game_progress");
         let map = {};
         if (raw) {
@@ -2804,6 +2801,41 @@
         }
         map[gameId] = completedCount;
         localStorage.setItem("pp_game_progress", JSON.stringify(map));
+        updateGameCardProgressUI(gameId, completedCount, totalCount);
+    }
+
+    function updateGameCardProgressUI(gameId, completedCount, totalCount) {
+        const gameObj = gamesList.find(x => String(x.id) === String(gameId));
+        const tCount = totalCount || gameObj?.achievements_count || 10;
+        const count = Math.min(tCount, Math.max(0, completedCount));
+        const pct = tCount > 0 ? Math.round((count / tCount) * 100) : 0;
+
+        const qLbl = document.getElementById(`quest_label_${gameId}`);
+        if (qLbl) qLbl.innerText = `Quests ${count}/${tCount}`;
+        const qFill = document.getElementById(`quest_fill_${gameId}`);
+        if (qFill) qFill.style.width = `${pct}%`;
+        const track = qFill ? qFill.parentElement : null;
+        if (track) track.title = `${count} of ${tCount} Quests Synced (${pct}%)`;
+    }
+
+    async function loadUserRemoteProgress() {
+        if (!currentSession || !currentSession.email) return;
+        try {
+            const res = await fetch(`${API_BASE}/api/user/progress?email=${encodeURIComponent(currentSession.email)}`);
+            const data = await res.json();
+            if (data.ok && data.progress) {
+                const raw = localStorage.getItem("pp_game_progress");
+                let map = {};
+                if (raw) {
+                    try { map = JSON.parse(raw); } catch(e) {}
+                }
+                Object.assign(map, data.progress);
+                localStorage.setItem("pp_game_progress", JSON.stringify(map));
+                if (gamesList && gamesList.length > 0) {
+                    renderGamesCatalog(gamesList);
+                }
+            }
+        } catch(e) {}
     }
 
     // Load Games Catalog
@@ -2997,7 +3029,7 @@
                 document.getElementById("inspXpEarned").innerText = `+${data.stats.earned_xp.toLocaleString()} XP`;
 
                 // Update outer game card completion
-                setGameProgress(gameId, data.stats.unlocked_count);
+                setGameProgress(gameId, data.stats.unlocked_count, data.stats.total_count);
                 const qLbl = document.getElementById(`quest_label_${gameId}`);
                 if (qLbl) qLbl.innerText = `Quests ${data.stats.unlocked_count}/${data.stats.total_count}`;
                 const qFill = document.getElementById(`quest_fill_${gameId}`);
@@ -3117,6 +3149,18 @@
                     item.state = "UNLOCKED";
                     if (item.type === "INCREMENTAL") item.current_steps = item.total_steps;
                 }
+                const unlockedCount = currentQuests.filter(q => q.is_unlocked).length;
+                const totalCount = currentQuests.length;
+                const pct = totalCount > 0 ? Math.round((unlockedCount / totalCount) * 100) : 0;
+
+                const txtUnlocked = document.getElementById("txtUnlocked");
+                if (txtUnlocked) txtUnlocked.innerText = unlockedCount;
+                const txtLocked = document.getElementById("txtLocked");
+                if (txtLocked) txtLocked.innerText = totalCount - unlockedCount;
+                const inspCount = document.getElementById("inspCountUnlocked");
+                if (inspCount) inspCount.innerText = `${unlockedCount} / ${totalCount} Quests Synced (${pct}%)`;
+
+                setGameProgress(activeInspectorGameId, unlockedCount, totalCount);
                 renderInspectorQuests();
                 if (data.profile) updateProfileUI(data.profile);
             } else {
@@ -3166,13 +3210,14 @@
             });
             const data = await res.json();
             if (data.ok) {
-                const gameObj = gamesList.find(x => x.id === gameId);
-                const tCount = gameObj?.achievements_count || 16;
-                setGameProgress(gameId, tCount);
-                const qLbl = document.getElementById(`quest_label_${gameId}`);
-                if (qLbl) qLbl.innerText = `Quests ${tCount}/${tCount}`;
-                const qFill = document.getElementById(`quest_fill_${gameId}`);
-                if (qFill) qFill.style.width = '100%';
+                const gameObj = gamesList.find(x => String(x.id) === String(gameId));
+                const tCount = gameObj?.achievements_count || 10;
+                const uCount = data.total_unlocked_count !== undefined ? data.total_unlocked_count : (data.newly_unlocked_count !== undefined ? data.newly_unlocked_count : tCount);
+                setGameProgress(gameId, uCount, tCount);
+
+                if (activeInspectorGameId && String(activeInspectorGameId) === String(gameId)) {
+                    await openGameInspector(gameId);
+                }
 
                 if (data.newly_unlocked_count > 0) {
                     triggerCelebration();
@@ -3216,15 +3261,7 @@
             });
             const data = await res.json();
             if (data.ok) {
-                gamesList.forEach(g => {
-                    const tCount = g.achievements_count || 16;
-                    setGameProgress(g.id, tCount);
-                    const qLbl = document.getElementById(`quest_label_${g.id}`);
-                    if (qLbl) qLbl.innerText = `Quests ${tCount}/${tCount}`;
-                    const qFill = document.getElementById(`quest_fill_${g.id}`);
-                    if (qFill) qFill.style.width = '100%';
-                });
-
+                await loadUserRemoteProgress();
                 triggerCelebration();
                 showToast(`🎉 Global Protocol Complete: ${data.total_unlocked} quests synced (+${data.total_xp.toLocaleString()} XP)!`, "success");
                 if (data.profile) updateProfileUI(data.profile);
@@ -3259,15 +3296,7 @@
             });
             const data = await res.json();
             if (data.ok) {
-                gamesList.filter(g => (g.section || 'quest_unlocker') === 'level_up').forEach(g => {
-                    const tCount = g.achievements_count || 10;
-                    setGameProgress(g.id, tCount);
-                    const qLbl = document.getElementById(`quest_label_${g.id}`);
-                    if (qLbl) qLbl.innerText = `Quests ${tCount}/${tCount}`;
-                    const qFill = document.getElementById(`quest_fill_${g.id}`);
-                    if (qFill) qFill.style.width = '100%';
-                });
-
+                await loadUserRemoteProgress();
                 triggerCelebration();
                 showToast(`🎉 Level-Up Boost Complete! ${data.total_unlocked} quests synced (+${data.total_xp.toLocaleString()} XP)!`, "success");
                 if (data.profile) updateProfileUI(data.profile);
@@ -3312,6 +3341,7 @@
                 // Clear code and re-cover decoy box
                 input.value = "";
                 hidePairCodeBox();
+                await loadUserRemoteProgress();
             } else {
                 showToast(data.error || "Invalid 6-digit pairing code.", "error");
             }
