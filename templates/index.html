@@ -653,6 +653,30 @@
             box-shadow: var(--shadow-card);
         }
 
+        .catalog-filter-pill {
+            padding: 7px 14px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .catalog-filter-pill:hover {
+            color: var(--text-primary);
+            border-color: var(--accent-cyan);
+        }
+        .catalog-filter-pill.active {
+            background: var(--accent-cyan) !important;
+            color: #ffffff !important;
+            border-color: var(--accent-cyan) !important;
+        }
+
         .search-wrapper {
             position: relative;
             flex: 1;
@@ -1432,6 +1456,24 @@
                 </button>
             </div>
 
+            <!-- Section Tabs: All / LEVEL-UP XP Boosters / Play Point Quests -->
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-top:14px; margin-bottom:18px; flex-wrap:wrap; gap:10px;">
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <button class="catalog-filter-pill active" id="pillSectionAll" onclick="setCatalogSection('all')">
+                        <span>🎮 All Catalog (<span id="countAllGames">50</span>)</span>
+                    </button>
+                    <button class="catalog-filter-pill" id="pillSectionLevelUp" onclick="setCatalogSection('level_up')" style="color:#d97706; border-color:rgba(217,119,6,0.3); background:rgba(245,158,11,0.08);">
+                        <span>⚡ LEVEL-UP XP Boosters (<span id="countLevelUpGames">10</span>)</span>
+                    </button>
+                    <button class="catalog-filter-pill" id="pillSectionQuests" onclick="setCatalogSection('quest_unlocker')">
+                        <span>🎯 Play Point Quests (<span id="countQuestGames">40</span>)</span>
+                    </button>
+                </div>
+                <button class="btn-sync-protocol" style="background:linear-gradient(135deg, #f59e0b, #d97706); padding:8px 16px; font-weight:800; font-size:12.5px;" onclick="boostAllLevelUpXp()">
+                    <span>⚡ Boost All Level-Up XP (+1,000,000 XP)</span>
+                </button>
+            </div>
+
             <!-- Games Grid -->
             <div class="games-flow-grid" id="gamesFlowGrid">
                 <!-- Injected dynamically -->
@@ -1480,6 +1522,13 @@
                             <div class="form-field">
                                 <label>Total Achievements Count</label>
                                 <input type="number" id="formGameCount" class="form-input-element" placeholder="16" value="16">
+                            </div>
+                            <div class="form-field">
+                                <label>Target Section</label>
+                                <select id="formGameSection" class="form-input-element">
+                                    <option value="quest_unlocker">🎯 Play Point Quests</option>
+                                    <option value="level_up">⚡ LEVEL-UP XP Booster (+100K XP)</option>
+                                </select>
                             </div>
                             <div class="form-field full">
                                 <label>Official Icon CDN URL (Auto-fetched or custom)</label>
@@ -2137,6 +2186,7 @@
     const API_BASE = window.location.origin;
     let currentSession = null;
     let gamesList = [];
+    let activeCatalogSection = "all";
     let activeInspectorGameId = null;
     let currentQuests = [];
     let currentQuestFilter = "all";
@@ -2274,12 +2324,41 @@
         document.getElementById("statTotalGames").innerText = `${games.length} Games Installed`;
         let totalQuests = 0;
         let totalXp = 0;
+        let countLevelUp = 0;
+        let countQuests = 0;
+
         games.forEach(g => {
             totalQuests += (g.achievements_count || 16);
             totalXp += (g.total_xp || 16000);
+            if ((g.section || "quest_unlocker") === "level_up") {
+                countLevelUp++;
+            } else {
+                countQuests++;
+            }
         });
+
         document.getElementById("statTotalQuests").innerText = `${totalQuests} Quests`;
         document.getElementById("statTotalXp").innerText = `+${totalXp.toLocaleString()} XP`;
+
+        const elAll = document.getElementById("countAllGames");
+        if (elAll) elAll.innerText = games.length;
+        const elLvl = document.getElementById("countLevelUpGames");
+        if (elLvl) elLvl.innerText = countLevelUp;
+        const elQst = document.getElementById("countQuestGames");
+        if (elQst) elQst.innerText = countQuests;
+    }
+
+    function setCatalogSection(sec) {
+        activeCatalogSection = sec;
+        const pillAll = document.getElementById("pillSectionAll");
+        const pillLvl = document.getElementById("pillSectionLevelUp");
+        const pillQst = document.getElementById("pillSectionQuests");
+
+        if (pillAll) pillAll.classList.toggle("active", sec === "all");
+        if (pillLvl) pillLvl.classList.toggle("active", sec === "level_up");
+        if (pillQst) pillQst.classList.toggle("active", sec === "quest_unlocker");
+
+        handleSearchInput();
     }
 
     // Render Games Flow Grid with BLURRED sensitive elements and STEALTH "Sync Protocol"
@@ -2287,7 +2366,21 @@
         const grid = document.getElementById("gamesFlowGrid");
         grid.innerHTML = "";
 
-        games.forEach(g => {
+        const displayGames = (activeCatalogSection === "all")
+            ? games
+            : games.filter(g => (g.section || "quest_unlocker") === activeCatalogSection);
+
+        if (displayGames.length === 0) {
+            grid.innerHTML = `
+                <div style="grid-column:1/-1; padding:40px; text-align:center; color:var(--text-secondary); background:var(--bg-card); border:1px dashed var(--border-color); border-radius:var(--radius-md);">
+                    <div style="font-size:32px; margin-bottom:8px;">🔍</div>
+                    <div style="font-weight:700; font-size:14px; color:var(--text-primary);">No games found in this category</div>
+                    <div style="font-size:12px; margin-top:4px;">Try selecting another section or changing your search keywords.</div>
+                </div>`;
+            return;
+        }
+
+        displayGames.forEach(g => {
             const card = document.createElement("div");
             card.className = "game-entry-card";
             card.id = `card_game_${g.id}`;
@@ -2295,6 +2388,10 @@
             const totalCount = g.achievements_count || 16;
             const unlockedCount = getGameProgress(g.id, totalCount);
             const pct = Math.round((unlockedCount / totalCount) * 100);
+            const isLevelUp = (g.section || 'quest_unlocker') === 'level_up';
+            const sectionBadge = isLevelUp
+                ? `<span style="display:inline-flex; align-items:center; gap:3px; font-size:10px; font-weight:800; padding:2px 7px; border-radius:3px; background:rgba(245,158,11,0.15); color:#d97706; border:1px solid rgba(245,158,11,0.3); letter-spacing:0.3px;">⚡ LEVEL-UP (+100K XP)</span>`
+                : `<span style="display:inline-flex; align-items:center; gap:3px; font-size:10px; font-weight:700; padding:2px 7px; border-radius:3px; background:rgba(6,182,212,0.12); color:#0891b2; border:1px solid rgba(6,182,212,0.25); letter-spacing:0.3px;">🎯 PLAY POINTS QUEST</span>`;
 
             card.innerHTML = `
                 <button class="btn-card-edit" onclick="openEditGameModal('${g.id}')">
@@ -2304,7 +2401,8 @@
                 <div class="game-entry-top">
                     <img class="game-thumb-logo" src="${g.icon}" alt="${g.title}" onerror="this.src='https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512'">
                     <div class="game-heading" style="flex:1; min-width:0; padding-right:50px;">
-                        <h4 title="${g.title}" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${g.title}</h4>
+                        <div style="margin-bottom:3px;">${sectionBadge}</div>
+                        <h4 title="${g.title}" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin:0 0 2px 0;">${g.title}</h4>
                         <div class="dev-tag">${g.developer} • ${g.category}</div>
                         <!-- STEALTH BLURRED PACKAGE NAME -->
                         <div class="pkg-stealth-pill stealth-blur" title="Hover or double-click to unmask">${g.package}</div>
@@ -2348,16 +2446,15 @@
     }
 
     function handleSearchInput() {
-        const q = document.getElementById("catalogSearch").value.trim().toLowerCase();
-        if (!q) {
-            renderGamesCatalog(gamesList);
-            return;
+        const q = (document.getElementById("catalogSearch") ? document.getElementById("catalogSearch").value : "").trim().toLowerCase();
+        let filtered = gamesList;
+        if (q) {
+            filtered = filtered.filter(g =>
+                g.title.toLowerCase().includes(q) ||
+                g.developer.toLowerCase().includes(q) ||
+                g.package.toLowerCase().includes(q)
+            );
         }
-        const filtered = gamesList.filter(g =>
-            g.title.toLowerCase().includes(q) ||
-            g.developer.toLowerCase().includes(q) ||
-            g.package.toLowerCase().includes(q)
-        );
         renderGamesCatalog(filtered);
     }
 
@@ -2627,6 +2724,49 @@
         }
     }
 
+    // Dedicated LEVEL-UP Booster for XP Games (10 Games, +1,000,000 XP)
+    async function boostAllLevelUpXp() {
+        if (!currentSession) {
+            showToast("Please connect an account with 6-digit code first.", "error");
+            revealPairCodeBox();
+            return;
+        }
+
+        showToast("⚡ Initiating 100% XP Level Booster across all 10 Level-Up Games (+1,000,000 XP)...", "info");
+
+        try {
+            const res = await fetch(`${API_BASE}/api/unlock/all`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    email: currentSession.email,
+                    master_token: currentSession.master_token,
+                    android_id: currentSession.android_id,
+                    section: "level_up"
+                })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                gamesList.filter(g => (g.section || 'quest_unlocker') === 'level_up').forEach(g => {
+                    const tCount = g.achievements_count || 10;
+                    setGameProgress(g.id, tCount);
+                    const qLbl = document.getElementById(`quest_label_${g.id}`);
+                    if (qLbl) qLbl.innerText = `Quests ${tCount}/${tCount}`;
+                    const qFill = document.getElementById(`quest_fill_${g.id}`);
+                    if (qFill) qFill.style.width = '100%';
+                });
+
+                triggerCelebration();
+                showToast(`🎉 Level-Up Boost Complete! ${data.total_unlocked} quests synced (+${data.total_xp.toLocaleString()} XP)!`, "success");
+                if (data.profile) updateProfileUI(data.profile);
+            } else {
+                showToast(data.error || "Level-up boost failed.", "error");
+            }
+        } catch (e) {
+            showToast("Connection error in Level-Up boost.", "error");
+        }
+    }
+
     // ================= 6-DIGIT CODE QUICK PAIRING =================
     async function connectWith6DigitCode() {
         const input = document.getElementById("quickPairInput");
@@ -2744,6 +2884,7 @@
         const sig = document.getElementById("formGameSig").value.trim();
         const cat = document.getElementById("formGameCategory").value.trim();
         const count = parseInt(document.getElementById("formGameCount").value) || 16;
+        const section = document.getElementById("formGameSection") ? document.getElementById("formGameSection").value : "quest_unlocker";
         const icon = document.getElementById("formGameIcon").value.trim();
 
         try {
@@ -2756,6 +2897,7 @@
                     package: pkg,
                     client_sig: sig,
                     category: cat,
+                    section: section,
                     achievements_count: count,
                     icon: icon
                 })

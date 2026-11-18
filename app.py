@@ -758,6 +758,7 @@ def get_games_list():
             "developer": v.get("developer", "Google Play Partner"),
             "package": v.get("package"),
             "category": v.get("category", "Games"),
+            "section": v.get("section", "quest_unlocker"),
             "icon": v.get("icon"),
             "achievements_count": v.get("achievements_count", 0),
             "total_xp": v.get("total_xp", 0),
@@ -779,6 +780,9 @@ def add_new_game():
     quests_count = int(data.get("achievements_count", 16) or 16)
     total_xp = int(data.get("total_xp", quests_count * 1000) or (quests_count * 1000))
     desc = data.get("desc", f"{quests_count} live GPGS achievements.").strip()
+    section = data.get("section", "quest_unlocker").strip().lower()
+    if section not in ["level_up", "quest_unlocker"]:
+        section = "quest_unlocker"
 
     if not title or not package:
         return jsonify({"ok": False, "error": "Game Title and Package Name are required."}), 400
@@ -796,6 +800,7 @@ def add_new_game():
         "package": package,
         "client_sig": client_sig,
         "category": category,
+        "section": section,
         "icon": icon,
         "achievements_count": quests_count,
         "total_xp": total_xp,
@@ -1713,7 +1718,12 @@ def unlock_all_games():
     total_unlocked_all = 0
     total_xp_all = 0
 
+    target_section = data.get("section", "").strip().lower()
+
     for g_id, g in get_merged_games().items():
+        if target_section and g.get("section", "quest_unlocker") != target_section:
+            continue
+
         tok_res = get_games_oauth_token(
             email=email,
             master_token=master_token,
