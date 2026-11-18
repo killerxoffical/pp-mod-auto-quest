@@ -23,6 +23,23 @@ DATA_DIR = os.path.dirname(os.path.abspath(__file__))
 TOKENS_FILE = os.path.join(DATA_DIR, "known_tokens.json")
 REGISTERED_DEVICES_FILE = os.path.join(DATA_DIR, "registered_devices.json")
 NOTIFICATIONS_FILE = os.path.join(DATA_DIR, "push_notifications.json")
+PORTAL_SERVICES_FILE = os.path.join(DATA_DIR, "portal_services.json")
+
+def load_portal_services():
+    if os.path.exists(PORTAL_SERVICES_FILE):
+        try:
+            with open(PORTAL_SERVICES_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {}
+
+def save_portal_services(data):
+    try:
+        with open(PORTAL_SERVICES_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+    except Exception as e:
+        print(f"[-] Error saving portal services: {e}")
 
 def load_registered_devices():
     if os.path.exists(REGISTERED_DEVICES_FILE):
@@ -277,6 +294,106 @@ def get_merged_games():
     games = dict(SUPPORTED_GAMES)
     games.update(load_custom_games())
     return games
+
+def get_game_quest_definitions(game):
+    """
+    Returns full list of quest definitions for any game (real achievements or procedural badges).
+    """
+    if not game:
+        return []
+    pkg = game.get("package", "")
+    real_achs = get_real_game_achievements(pkg)
+    if real_achs:
+        result = []
+        for a in real_achs:
+            result.append({
+                "id": a.get("id"),
+                "name": a.get("name", "Quest Objective"),
+                "description": a.get("description", "Complete game objective."),
+                "experiencePoints": int(a.get("xp", 5000) or 5000),
+                "achievementType": a.get("type", "STANDARD"),
+                "totalSteps": a.get("total_steps"),
+                "unlockedIconUrl": a.get("icon") or f"/static/images/achievements/badge_1.svg"
+            })
+        return result
+
+    # Standard generated quests
+    count = int(game.get("achievements_count", 10) or 10)
+    tot_xp = int(game.get("total_xp", 100000) or 100000)
+    per_xp = max(500, tot_xp // count) if count > 0 else 1000
+    game_title = game.get("title", "Game")
+    quest_titles = [
+        "Novice Challenger", "First Victory", "Speed Runner", "Explorer Badge", 
+        "Point Collector", "Level Up Master", "Play Points Hunter", "Champion Strike",
+        "Gold Tier Honor", "Diamond Legend", "Elite Veteran", "Ultra Collector",
+        "Milestone Conqueror", "Epic Dominator", "Master of Games", "Infinite Quest"
+    ]
+    defs = []
+    for i in range(1, count + 1):
+        ach_id = f"ach_{game.get('package', 'pkg')}_{i}"
+        q_name = quest_titles[(i - 1) % len(quest_titles)] if i <= len(quest_titles) else f"Quest Objective #{i}"
+        badge_idx = ((i - 1) % 16) + 1
+        badge_icon = f"/static/images/achievements/badge_{badge_idx}.svg"
+        defs.append({
+            "id": ach_id,
+            "name": f"{game_title}: {q_name}",
+            "description": f"Complete challenge #{i} in {game_title} to claim Google Play Points & GPGS Level XP.",
+            "achievementType": "STANDARD",
+            "experiencePoints": per_xp,
+            "unlockedIconUrl": badge_icon
+        })
+    return defs
+
+def resolve_credentials_from_input(data):
+    """
+    Resolves email, master_token, access_token, android_id from:
+    1. Direct credentials
+    2. 6-digit sync pairing code (local SYNC_CODES, Cloudflare D1, or registered devices)
+    3. Registered devices or known tokens
+    """
+    email = data.get("email", "").strip()
+    master_token = data.get("master_token", "").strip()
+    access_token = data.get("access_token", "").strip()
+    android_id = data.get("android_id", "").strip()
+    sync_code = str(data.get("sync_code") or data.get("code") or "").strip().replace(" ", "").replace("-", "")
+
+    if sync_code and sync_code.isdigit() and len(sync_code) == 6:
+        if sync_code in SYNC_CODES:
+            entry = SYNC_CODES[sync_code]
+            email = entry.get("email") or email
+            master_token = entry.get("master_token") or entry.get("token") or master_token
+            android_id = entry.get("android_id") or android_id
+        else:
+            try:
+                cf_url = f"https://ppmod-api.tredarskvt.workers.dev/api/sync/get?code={sync_code}"
+                cf_res = requests.get(cf_url, timeout=4)
+                if cf_res.status_code == 200:
+                    d = cf_res.json()
+                    if d.get("ok") and d.get("token"):
+                        master_token = d["token"]
+                        email = d.get("email") or email
+            except Exception:
+                pass
+            if not master_token:
+                devs = load_registered_devices()
+                for d in devs.values():
+                    for acc in d.get("accounts", []):
+                        if str(acc.get("code")) == sync_code:
+                            email = acc.get("email") or email
+                            master_token = acc.get("token") or master_token
+                            break
+                    if master_token:
+                        break
+
+    if not master_token and email:
+        known = load_known_tokens()
+        if email in known:
+            master_token = known[email]
+
+    if not android_id and email:
+        android_id = generate_android_id(email)
+
+    return email, master_token, access_token, android_id
 
 def load_banned_users():
     if os.path.exists(BANNED_USERS_FILE):
@@ -2227,9 +2344,19 @@ def unlock_game():
 
     already_unlocked = {a.get("id") for a in p_items if a.get("achievementState") == "UNLOCKED"}
 
+    # If restricted to specific quest IDs (Public Portal service rule)
+    allowed_quest_ids = data.get("selected_quest_ids")
+    if not allowed_quest_ids and data.get("portal_service"):
+        p_services = load_portal_services()
+        if game_id in p_services:
+            allowed_quest_ids = p_services[game_id].get("selected_quest_ids", [])
+
     targets = []
     for d in all_defs:
-        if d.get("id") not in already_unlocked:
+        ach_id = d.get("id")
+        if allowed_quest_ids and ach_id not in allowed_quest_ids:
+            continue
+        if ach_id not in already_unlocked:
             targets.append(d)
             if len(targets) >= count_requested:
                 break
@@ -2452,6 +2579,292 @@ def run_background_pinger():
 
 pinger_thread = threading.Thread(target=run_background_pinger, daemon=True)
 pinger_thread.start()
+
+# ==============================================================================
+# PUBLIC PORTAL QUEST SERVICES MANAGEMENT & EXECUTION
+# ==============================================================================
+
+@app.route("/api/portal/services", methods=["GET"])
+def get_portal_services():
+    """
+    Returns list of all active/configured quest services for the Public Portal.
+    """
+    services = load_portal_services()
+    merged = get_merged_games()
+    out = []
+    for gid, s in services.items():
+        if gid in merged:
+            g = merged[gid]
+            s["title"] = g.get("title", s.get("title"))
+            s["package"] = g.get("package", s.get("package"))
+            s["icon"] = g.get("icon", s.get("icon"))
+            s["category"] = g.get("category", s.get("category"))
+            s["developer"] = g.get("developer", s.get("developer"))
+        out.append(s)
+    out.sort(key=lambda x: (not x.get("enabled", True), x.get("title", "")))
+    return jsonify({"ok": True, "services": out, "total_services": len(out)})
+
+@app.route("/api/portal/games", methods=["GET"])
+def get_portal_available_games():
+    """
+    Returns list of ALL supported games in the catalog so the admin can pick any game to add.
+    """
+    merged = get_merged_games()
+    services = load_portal_services()
+    games_list = []
+    for gid, g in merged.items():
+        is_added = str(gid) in services
+        selected_count = len(services[str(gid)].get("selected_quest_ids", [])) if is_added else 0
+        games_list.append({
+            "id": str(gid),
+            "title": g.get("title"),
+            "package": g.get("package"),
+            "developer": g.get("developer", "Play Games"),
+            "category": g.get("category", "Quest Game"),
+            "icon": g.get("icon"),
+            "achievements_count": g.get("achievements_count", 10),
+            "total_xp": g.get("total_xp", 100000),
+            "is_added": is_added,
+            "selected_count": selected_count
+        })
+    games_list.sort(key=lambda x: x.get("title", ""))
+    return jsonify({"ok": True, "games": games_list, "total_games": len(games_list)})
+
+@app.route("/api/portal/game/<game_id>/quests", methods=["GET"])
+def get_portal_game_quests(game_id):
+    """
+    Returns all quest definitions for a game, indicating which are currently selected.
+    Used by the admin modal when adding or editing a quest service.
+    """
+    game_id = str(game_id).strip()
+    merged = get_merged_games()
+    if game_id not in merged:
+        return jsonify({"ok": False, "error": f"Game '{game_id}' not found."}), 404
+
+    game = merged[game_id]
+    all_quests = get_game_quest_definitions(game)
+    services = load_portal_services()
+    existing_srv = services.get(game_id, {})
+    selected_ids = set(existing_srv.get("selected_quest_ids", []))
+
+    for q in all_quests:
+        q["selected"] = q["id"] in selected_ids
+
+    return jsonify({
+        "ok": True,
+        "game_id": game_id,
+        "title": game.get("title"),
+        "package": game.get("package"),
+        "icon": game.get("icon"),
+        "category": game.get("category"),
+        "quests": all_quests,
+        "total_count": len(all_quests),
+        "selected_count": len(selected_ids)
+    })
+
+@app.route("/api/portal/services/save", methods=["POST"])
+def save_portal_service():
+    """
+    Saves or edits a game quest service on the Public Portal.
+    Admin can select/unselect any quests (increase or decrease).
+    """
+    data = request.get_json() or {}
+    game_id = str(data.get("game_id", "")).strip()
+    selected_quest_ids = data.get("selected_quest_ids", [])
+    enabled = bool(data.get("enabled", True))
+
+    if not game_id:
+        return jsonify({"ok": False, "error": "Game ID is required."}), 400
+
+    merged = get_merged_games()
+    if game_id not in merged:
+        return jsonify({"ok": False, "error": f"Game '{game_id}' not found in catalog."}), 404
+
+    game = merged[game_id]
+    all_quests = get_game_quest_definitions(game)
+    all_map = {q["id"]: q for q in all_quests}
+
+    # Filter only valid selected quests
+    selected_quests = []
+    valid_ids = []
+    for qid in selected_quest_ids:
+        if qid in all_map:
+            selected_quests.append(all_map[qid])
+            valid_ids.append(qid)
+
+    now_str = time.strftime("%Y-%m-%d %H:%M:%S")
+    services = load_portal_services()
+    existing = services.get(game_id, {})
+
+    service_entry = {
+        "service_id": existing.get("service_id") or f"srv_{game_id}",
+        "game_id": game_id,
+        "title": game.get("title"),
+        "package": game.get("package"),
+        "developer": game.get("developer", "Play Games"),
+        "category": game.get("category", "Quest Game"),
+        "icon": game.get("icon"),
+        "enabled": enabled,
+        "total_quests_count": len(all_quests),
+        "selected_quests_count": len(selected_quests),
+        "selected_quest_ids": valid_ids,
+        "selected_quests": selected_quests,
+        "all_quests": all_quests,
+        "created_at": existing.get("created_at", now_str),
+        "updated_at": now_str
+    }
+    services[game_id] = service_entry
+    save_portal_services(services)
+
+    return jsonify({
+        "ok": True,
+        "message": f"Successfully configured '{game.get('title')}' with {len(selected_quests)} quest(s) for Public Portal!",
+        "service": service_entry
+    })
+
+@app.route("/api/portal/services/delete", methods=["POST"])
+def delete_portal_service():
+    """
+    Removes a game service from the Public Portal.
+    """
+    data = request.get_json() or {}
+    game_id = str(data.get("game_id", "")).strip()
+    if not game_id:
+        return jsonify({"ok": False, "error": "Game ID is required."}), 400
+
+    services = load_portal_services()
+    if game_id in services:
+        removed = services.pop(game_id)
+        save_portal_services(services)
+        return jsonify({"ok": True, "message": f"Service for '{removed.get('title')}' removed from Public Portal."})
+    return jsonify({"ok": False, "error": "Service not found."}), 404
+
+@app.route("/api/portal/services/toggle", methods=["POST"])
+def toggle_portal_service():
+    """
+    Toggles a game service between Active and Paused.
+    """
+    data = request.get_json() or {}
+    game_id = str(data.get("game_id", "")).strip()
+    services = load_portal_services()
+    if game_id in services:
+        curr = services[game_id].get("enabled", True)
+        services[game_id]["enabled"] = not curr
+        services[game_id]["updated_at"] = time.strftime("%Y-%m-%d %H:%M:%S")
+        save_portal_services(services)
+        state_str = "activated" if services[game_id]["enabled"] else "paused"
+        return jsonify({
+            "ok": True,
+            "enabled": services[game_id]["enabled"],
+            "message": f"Service '{services[game_id].get('title')}' {state_str} successfully."
+        })
+    return jsonify({"ok": False, "error": "Service not found."}), 404
+
+@app.route("/api/portal/unlock", methods=["POST"])
+def unlock_portal_service_quests():
+    """
+    Executes quest unlocking specifically for a configured Public Portal service.
+    STRICT REQUIREMENT: Only unlocks the quests explicitly selected by the admin,
+    never touches any achievement outside this selection.
+    """
+    data = request.get_json() or {}
+    game_id = str(data.get("game_id", "")).strip()
+    if not game_id:
+        return jsonify({"ok": False, "error": "Game ID is required."}), 400
+
+    services = load_portal_services()
+    if game_id not in services:
+        return jsonify({"ok": False, "error": f"Game '{game_id}' is not an active Public Portal service."}), 404
+
+    service = services[game_id]
+    if not service.get("enabled", True):
+        return jsonify({"ok": False, "error": f"Quest service for '{service.get('title')}' is currently paused by admin."}), 403
+
+    selected_quest_ids = set(service.get("selected_quest_ids", []))
+    if not selected_quest_ids:
+        return jsonify({"ok": False, "error": f"No quests have been enabled by admin for '{service.get('title')}'."}), 400
+
+    email, master_token, access_token, android_id = resolve_credentials_from_input(data)
+    if not (master_token or access_token):
+        return jsonify({"ok": False, "error": "No valid authentication token or 6-digit sync code found. Please connect your account first."}), 401
+
+    merged = get_merged_games()
+    game = merged.get(game_id, service)
+
+    # Authenticate with Google Play Games
+    if master_token:
+        tok_res = get_games_oauth_token(
+            email=email,
+            master_token=master_token,
+            android_id=android_id,
+            app_package=game["package"],
+            client_sig=game.get("client_sig", "58e71785c961e7328ea9c76de647f8f6c4403b39")
+        )
+        if not tok_res.get("ok"):
+            return jsonify({"ok": False, "error": f"Game GPGS authentication failed: {tok_res.get('error')}"}), 401
+        game_token = tok_res["access_token"]
+    else:
+        game_token = access_token
+
+    # Query player's existing unlocked achievements
+    already_unlocked = set()
+    try:
+        p_res = requests.get(f"{GAMES_API_BASE}/players/me/achievements?maxResults=50", headers=get_headers(game_token), timeout=10)
+        if p_res.status_code == 200:
+            for p in p_res.json().get("items", []):
+                if p.get("achievementState") == "UNLOCKED":
+                    already_unlocked.add(p.get("id"))
+    except Exception:
+        pass
+
+    # STRICT FILTER: ONLY selected quests that are NOT yet unlocked
+    targets = [q for q in service.get("selected_quests", []) if q["id"] in selected_quest_ids and q["id"] not in already_unlocked]
+
+    unlocked_now = []
+    total_xp_earned = 0
+
+    for quest in targets:
+        ach_id = quest["id"]
+        ach_type = quest.get("achievementType", "STANDARD")
+        try:
+            if ach_type == "INCREMENTAL" and quest.get("totalSteps"):
+                res = set_achievement_steps(game_token, ach_id, int(quest["totalSteps"]))
+            else:
+                res = unlock_achievement(game_token, ach_id)
+            if res.status_code == 200:
+                xp = int(quest.get("experiencePoints", 5000) or 5000)
+                total_xp_earned += xp
+                unlocked_now.append({
+                    "id": ach_id,
+                    "name": quest.get("name"),
+                    "xp": xp,
+                    "status": "UNLOCKED"
+                })
+        except Exception as e:
+            print(f"[-] Error unlocking quest {ach_id}: {e}")
+
+    return jsonify({
+        "ok": True,
+        "service_title": service.get("title"),
+        "game_id": game_id,
+        "package": game.get("package"),
+        "total_configured_quests": len(selected_quest_ids),
+        "newly_unlocked_count": len(unlocked_now),
+        "previously_completed": len(selected_quest_ids) - len(targets),
+        "total_xp_earned": total_xp_earned,
+        "unlocked_quests": unlocked_now,
+        "message": f"Successfully completed {len(unlocked_now)} quest(s) for '{service.get('title')}'!" if unlocked_now else "All configured quests are already 100% completed!"
+    })
+
+@app.route("/portal")
+@app.route("/public-portal")
+def public_portal_page():
+    """
+    Renders standalone public-facing quest service portal.
+    """
+    services = load_portal_services()
+    active_services = [s for s in services.values() if s.get("enabled", True)]
+    return render_template("portal.html", services=active_services)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))

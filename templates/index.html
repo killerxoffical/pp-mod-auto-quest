@@ -1321,6 +1321,10 @@
                     <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
                     <span>Users &amp; Accounts</span>
                 </a>
+                <a class="nav-item" id="navPortal" onclick="switchAdminTab('portal')">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                    <span>Public Portal</span>
+                </a>
                 <a class="nav-item" id="navNotifications" onclick="switchAdminTab('notifications')">
                     <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>
                     <span>Push Notifications</span>
@@ -1750,6 +1754,57 @@
 
                     <div id="fullPanelAccountsContainer" style="display:flex; flex-direction:column; gap:10px;">
                         <!-- Dynamically populated account rows -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: Public Portal Quest Services Manager -->
+        <section id="viewPortal" class="admin-view-panel hidden">
+            <div class="users-table-card">
+                <div class="table-header-box" style="flex-wrap:wrap; gap:16px;">
+                    <div style="display:flex; align-items:center; gap:16px;">
+                        <div style="width:48px; height:48px; border-radius:var(--radius-md); background:linear-gradient(135deg, #0ea5e9, #10b981); display:flex; align-items:center; justify-content:center; color:#fff; font-size:24px; box-shadow:0 4px 16px rgba(14,165,233,0.3);">
+                            🌐
+                        </div>
+                        <div>
+                            <h3 style="font-size:18px; font-weight:800; color:var(--text-primary); margin:0;">Public Portal Quest Services</h3>
+                            <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Configure which games and specific quest objectives are provided as public completion services.</p>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                        <a href="/portal" target="_blank" rel="noopener" class="btn-inspect-action" style="padding:8px 14px; font-size:12px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+                            <span>🔗 Open Public Portal ↗</span>
+                        </a>
+                        <button class="btn-sync-protocol" style="padding:8px 18px; font-size:13px; font-weight:800; display:inline-flex; align-items:center; gap:8px;" onclick="openPortalServiceModal()">
+                            <span style="font-size:16px; font-weight:900;">＋</span>
+                            <span>Add Game Quest Service</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats & Info Bar -->
+                <div style="padding:14px 24px; background:var(--bg-card-subtle); border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <div style="display:flex; align-items:center; gap:18px; flex-wrap:wrap;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:12px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Configured Services:</span>
+                            <strong id="statPortalTotalServices" style="font-size:13px; color:var(--accent-cyan); font-family:'JetBrains Mono';">0 Games</strong>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:12px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Active Quests:</span>
+                            <strong id="statPortalTotalQuests" style="font-size:13px; color:var(--accent-green); font-family:'JetBrains Mono';">0 Quests</strong>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span class="quota-safety-badge">⚡ Strict Target Mode: Only Admin-Selected Quests Unlocked</span>
+                    </div>
+                </div>
+
+                <!-- Services Grid Container -->
+                <div id="portalServicesContainer" style="padding:24px; min-height:260px;">
+                    <div style="text-align:center; padding:40px; color:var(--text-muted);">
+                        <div class="spinner" style="margin:0 auto 12px; border-top-color:var(--accent-cyan);"></div>
+                        Loading Public Portal Services...
                     </div>
                 </div>
             </div>
@@ -2453,6 +2508,74 @@
     </div>
 </div>
 
+<!-- ================= PUBLIC PORTAL QUEST SERVICE CONFIGURATION MODAL ================= -->
+<div id="portalServiceModal" class="modal-overlay hidden" style="display:none;">
+    <div class="inspector-panel-card" style="max-width: 680px; max-height:90vh; display:flex; flex-direction:column;">
+        <div class="inspector-top-row">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:38px; height:38px; border-radius:var(--radius-sm); background:linear-gradient(135deg, #0ea5e9, #10b981); display:flex; align-items:center; justify-content:center; color:#fff; font-size:18px; font-weight:800;">
+                    🎮
+                </div>
+                <div>
+                    <h3 id="portalModalTitle" style="font-size:15px; font-weight:800; color:var(--text-primary); margin:0;">Configure Public Portal Quest Service</h3>
+                    <span style="font-size:11px; color:var(--text-muted);">Select game and choose specific quest objectives</span>
+                </div>
+            </div>
+            <button style="background:var(--bg-card); border:1px solid var(--border-color); color:var(--text-primary); width:30px; height:30px; border-radius:var(--radius-sm); cursor:pointer; font-weight:bold;" onclick="closePortalServiceModal()">✕</button>
+        </div>
+
+        <div style="padding:20px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:16px;">
+            <!-- Step 1: Game Selection -->
+            <div id="portalStepGameSelect">
+                <label style="font-size:12.5px; font-weight:700; color:var(--text-primary); display:block; margin-bottom:8px;">
+                    1. Choose Game (from All Supported Games in System):
+                </label>
+                <select id="portalGameSelectDropdown" class="form-input" style="font-size:13px; padding:10px 14px; width:100%;" onchange="onPortalGameDropdownChanged()">
+                    <option value="">-- Choose a Game to Add to Portal --</option>
+                </select>
+            </div>
+
+            <!-- Step 2: Quest Selection (Dynamic) -->
+            <div id="portalStepQuestSelect" style="display:none; flex-direction:column; gap:12px;">
+                <div style="padding:12px 16px; background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md); display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <img id="portalSelectedGameIcon" src="" style="width:44px; height:44px; border-radius:var(--radius-sm); object-fit:cover; border:1px solid var(--border-color);">
+                        <div>
+                            <strong id="portalSelectedGameTitle" style="font-size:14px; color:var(--text-primary); display:block;">Game Title</strong>
+                            <span id="portalSelectedGamePkg" style="font-size:11px; font-family:'JetBrains Mono'; color:var(--text-secondary);">com.package</span>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <button type="button" class="btn-inspect-action" style="padding:5px 10px; font-size:11.5px;" onclick="toggleAllPortalQuests(true)">Select All</button>
+                        <button type="button" class="btn-inspect-action" style="padding:5px 10px; font-size:11.5px;" onclick="toggleAllPortalQuests(false)">Clear All</button>
+                        <span id="portalSelectedQuestsCounter" class="badge-status active" style="font-size:11.5px; font-weight:800;">0 Selected</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label style="font-size:12.5px; font-weight:700; color:var(--text-primary); display:block; margin-bottom:4px;">
+                        2. Select Quest Objectives to Complete:
+                    </label>
+                    <span style="font-size:11.5px; color:var(--text-muted); display:block; margin-bottom:12px;">
+                        Only the checked quest objectives will be completed when this service is used. Anything unchecked will be ignored.
+                    </span>
+                    <div id="portalQuestsList" style="display:flex; flex-direction:column; gap:8px; max-height:340px; overflow-y:auto; padding-right:4px;">
+                        <!-- Quests injected dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Buttons -->
+        <div style="padding:16px 20px; border-top:1px solid var(--border-color); background:var(--bg-card-subtle); display:flex; justify-content:space-between; align-items:center;">
+            <button type="button" class="btn-inspect-action" onclick="closePortalServiceModal()">Cancel</button>
+            <button id="btnSavePortalService" type="button" class="btn-sync-protocol" style="padding:8px 24px; font-weight:800;" onclick="savePortalService()" disabled>
+                <span>💾 Done / Save Quest Service</span>
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- ================= ACCOUNT DETAIL INSPECTION POPUP ================= -->
 <div id="accountDetailPopup" class="modal-overlay hidden">
     <div class="inspector-panel-card" style="max-width: 520px;">
@@ -2596,6 +2719,7 @@
         document.getElementById("navGames").classList.toggle("active", tab === "games");
         document.getElementById("navAddGame").classList.toggle("active", tab === "add_game");
         document.getElementById("navUsers").classList.toggle("active", tab === "users");
+        if (document.getElementById("navPortal")) document.getElementById("navPortal").classList.toggle("active", tab === "portal");
         if (document.getElementById("navNotifications")) document.getElementById("navNotifications").classList.toggle("active", tab === "notifications");
         if (document.getElementById("navApk")) document.getElementById("navApk").classList.toggle("active", tab === "apk");
         if (document.getElementById("navGateway")) document.getElementById("navGateway").classList.toggle("active", tab === "gateway");
@@ -2603,11 +2727,13 @@
         document.getElementById("viewGames").classList.toggle("hidden", tab !== "games");
         document.getElementById("viewAddGame").classList.toggle("hidden", tab !== "add_game");
         document.getElementById("viewUsers").classList.toggle("hidden", tab !== "users");
+        if (document.getElementById("viewPortal")) document.getElementById("viewPortal").classList.toggle("hidden", tab !== "portal");
         if (document.getElementById("viewNotifications")) document.getElementById("viewNotifications").classList.toggle("hidden", tab !== "notifications");
         if (document.getElementById("viewApk")) document.getElementById("viewApk").classList.toggle("hidden", tab !== "apk");
         if (document.getElementById("viewGateway")) document.getElementById("viewGateway").classList.toggle("hidden", tab !== "gateway");
 
         if (tab === "users") loadUsersList();
+        if (tab === "portal") loadPortalServices();
         if (tab === "notifications") loadNotificationAudience();
         if (tab === "apk") loadAppVersionConfig();
         if (tab === "gateway") loadGatewayTransactions();
@@ -4415,6 +4541,402 @@
             }
         } catch (e) {
             showToast("Connection error locking transaction.", "error");
+        }
+    }
+
+    // ==============================================================================
+    // PUBLIC PORTAL QUEST SERVICES MANAGEMENT & LOGIC
+    // ==============================================================================
+
+    let portalAllServices = [];
+    let portalAllGames = [];
+    let portalCurrentSelectedGame = null;
+
+    async function loadPortalServices() {
+        const container = document.getElementById("portalServicesContainer");
+        if (!container) return;
+        container.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-muted);"><div class="spinner" style="margin:0 auto 12px; border-top-color:var(--accent-cyan);"></div>Loading Public Portal Services...</div>`;
+
+        try {
+            const res = await fetch(`${API_BASE}/api/portal/services`);
+            const data = await res.json();
+            if (data.ok && Array.isArray(data.services)) {
+                portalAllServices = data.services;
+                renderPortalServicesGrid();
+            } else {
+                container.innerHTML = `<div style="text-align:center; padding:30px; color:#ef4444;">Failed to load services: ${data.error || 'Server error'}</div>`;
+            }
+        } catch (e) {
+            container.innerHTML = `<div style="text-align:center; padding:30px; color:#ef4444;">Connection error loading portal services.</div>`;
+        }
+    }
+
+    function renderPortalServicesGrid() {
+        const container = document.getElementById("portalServicesContainer");
+        if (!container) return;
+
+        let totalQuestsCount = 0;
+        portalAllServices.forEach(s => {
+            if (s.enabled !== false) {
+                totalQuestsCount += (s.selected_quests_count || (s.selected_quest_ids ? s.selected_quest_ids.length : 0));
+            }
+        });
+
+        const statServices = document.getElementById("statPortalTotalServices");
+        const statQuests = document.getElementById("statPortalTotalQuests");
+        if (statServices) statServices.innerText = `${portalAllServices.length} Game${portalAllServices.length === 1 ? '' : 's'}`;
+        if (statQuests) statQuests.innerText = `${totalQuestsCount} Active Quest${totalQuestsCount === 1 ? '' : 's'}`;
+
+        if (portalAllServices.length === 0) {
+            container.innerHTML = `
+                <div style="text-align:center; padding:50px 20px; background:var(--bg-card-subtle); border:1px dashed var(--border-color); border-radius:var(--radius-xl);">
+                    <div style="font-size:48px; margin-bottom:12px;">🌐</div>
+                    <h4 style="font-size:16px; font-weight:800; color:var(--text-primary); margin:0 0 6px;">No Public Portal Quest Services Configured Yet</h4>
+                    <p style="font-size:12.5px; color:var(--text-muted); max-width:440px; margin:0 auto 18px;">
+                        Click the button below or "Add Game Quest Service" above to choose games from your catalog and select specific quest objectives for public users to complete.
+                    </p>
+                    <button class="btn-sync-protocol" style="padding:10px 22px; font-size:13px; font-weight:800;" onclick="openPortalServiceModal()">
+                        <span style="font-size:16px;">＋</span>
+                        <span>Add First Game Quest Service</span>
+                    </button>
+                </div>
+            `;
+            return;
+        }
+
+        let html = `<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:20px;">`;
+        portalAllServices.forEach(s => {
+            const isEnabled = s.enabled !== false;
+            const selCount = s.selected_quests_count || (s.selected_quest_ids ? s.selected_quest_ids.length : 0);
+            const totCount = s.total_quests_count || (s.all_quests ? s.all_quests.length : selCount);
+
+            // Preview chips for selected quests
+            let questsPreviewHtml = '';
+            const previewList = (s.selected_quests && s.selected_quests.length > 0) ? s.selected_quests.slice(0, 4) : [];
+            previewList.forEach(q => {
+                const iconSrc = q.unlockedIconUrl || '/static/images/achievements/badge_1.svg';
+                questsPreviewHtml += `
+                    <div style="display:flex; align-items:center; gap:8px; padding:6px 10px; background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:var(--radius-sm); font-size:11px;">
+                        <img src="${iconSrc}" style="width:20px; height:20px; border-radius:3px; object-fit:cover;">
+                        <span style="color:var(--text-primary); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px;">${q.name}</span>
+                        <span style="color:var(--accent-green); font-family:'JetBrains Mono'; font-weight:800; margin-left:auto;">+${(q.experiencePoints || 5000).toLocaleString()} XP</span>
+                    </div>
+                `;
+            });
+            if (selCount > 4) {
+                questsPreviewHtml += `
+                    <div style="font-size:10.5px; color:var(--text-muted); text-align:center; padding:4px 0;">
+                        + ${selCount - 4} more selected quest objective${selCount - 4 === 1 ? '' : 's'}...
+                    </div>
+                `;
+            }
+
+            html += `
+                <div style="background:var(--bg-card); border:1px solid ${isEnabled ? 'var(--border-color)' : 'rgba(239,68,68,0.3)'}; border-radius:var(--radius-xl); padding:20px; box-shadow:var(--shadow-card); display:flex; flex-direction:column; justify-content:space-between; gap:16px; opacity:${isEnabled ? '1' : '0.75'}; transition:all 0.25s ease;">
+                    <div>
+                        <!-- Top Header -->
+                        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:14px;">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <img src="${s.icon || '/static/images/default_app.png'}" style="width:50px; height:50px; border-radius:var(--radius-md); object-fit:cover; border:1px solid var(--border-color); box-shadow:0 4px 12px rgba(0,0,0,0.12);">
+                                <div>
+                                    <strong style="font-size:14.5px; color:var(--text-primary); display:block; line-height:1.3;">${s.title}</strong>
+                                    <span style="font-size:11px; font-family:'JetBrains Mono'; color:var(--text-muted); display:block; margin-top:2px;">${s.package || ''}</span>
+                                    <span class="badge-status ${isEnabled ? 'active' : 'banned'}" style="font-size:10px; padding:2px 7px; margin-top:4px; display:inline-block;">
+                                        ${isEnabled ? '● Live on Public Portal' : '○ Service Paused'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Progress Bar & Quests Count -->
+                        <div style="padding:10px 14px; background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md); margin-bottom:14px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                <span style="font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase;">Configured Quests</span>
+                                <strong style="font-size:12px; font-family:'JetBrains Mono'; color:var(--accent-cyan);">${selCount} of ${totCount} Objectives</strong>
+                            </div>
+                            <div style="width:100%; height:6px; background:rgba(255,255,255,0.08); border-radius:4px; overflow:hidden;">
+                                <div style="width:${totCount > 0 ? (selCount / totCount * 100) : 0}%; height:100%; background:linear-gradient(90deg, #0ea5e9, #10b981); border-radius:4px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Quests List Preview -->
+                        <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:4px;">
+                            ${questsPreviewHtml}
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; border-top:1px solid var(--border-color); padding-top:14px; flex-wrap:wrap;">
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <button class="btn-sync-protocol" style="padding:6px 12px; font-size:11.5px; font-weight:700;" onclick="openPortalServiceModal('${s.game_id}')">
+                                <span>✏️ Edit Quests</span>
+                            </button>
+                            <button class="btn-inspect-action" style="padding:6px 10px; font-size:11.5px; font-weight:700; color:${isEnabled ? '#f59e0b' : '#10b981'};" onclick="togglePortalService('${s.game_id}')">
+                                ${isEnabled ? '⏸️ Pause' : '▶️ Activate'}
+                            </button>
+                            <button class="btn-inspect-action" style="padding:6px 9px; font-size:11.5px; color:#ef4444;" title="Delete Service" onclick="deletePortalService('${s.game_id}')">
+                                🗑️
+                            </button>
+                        </div>
+                        <button class="btn-inspect-action" style="padding:6px 12px; font-size:11.5px; font-weight:700; color:var(--accent-cyan);" onclick="testPortalService('${s.game_id}')">
+                            ⚡ Test Now
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+        html += `</div>`;
+        container.innerHTML = html;
+    }
+
+    async function openPortalServiceModal(gameId = null) {
+        const modal = document.getElementById("portalServiceModal");
+        if (!modal) return;
+        modal.classList.remove("hidden");
+        modal.style.display = "flex";
+
+        const titleEl = document.getElementById("portalModalTitle");
+        const stepSelect = document.getElementById("portalStepGameSelect");
+        const stepQuests = document.getElementById("portalStepQuestSelect");
+        const dropdown = document.getElementById("portalGameSelectDropdown");
+        const btnSave = document.getElementById("btnSavePortalService");
+
+        stepQuests.style.display = "none";
+        btnSave.disabled = true;
+
+        // Fetch all catalog games
+        try {
+            const res = await fetch(`${API_BASE}/api/portal/games`);
+            const data = await res.json();
+            if (data.ok && Array.isArray(data.games)) {
+                portalAllGames = data.games;
+                dropdown.innerHTML = `<option value="">-- Choose a Game to Configure (${data.games.length} Games Available) --</option>`;
+                data.games.forEach(g => {
+                    const opt = document.createElement("option");
+                    opt.value = g.id;
+                    opt.textContent = `${g.title} (${g.achievements_count || 10} Quests - ${g.category})`;
+                    dropdown.appendChild(opt);
+                });
+            }
+        } catch(e) {}
+
+        if (gameId) {
+            titleEl.innerText = "Edit Public Portal Quest Service";
+            dropdown.value = gameId;
+            stepSelect.style.display = "block";
+            await loadPortalGameQuests(gameId);
+        } else {
+            titleEl.innerText = "Configure Public Portal Quest Service";
+            dropdown.value = "";
+            stepSelect.style.display = "block";
+        }
+    }
+
+    function closePortalServiceModal() {
+        const modal = document.getElementById("portalServiceModal");
+        if (modal) {
+            modal.classList.add("hidden");
+            modal.style.display = "none";
+        }
+    }
+
+    async function onPortalGameDropdownChanged() {
+        const dropdown = document.getElementById("portalGameSelectDropdown");
+        const gameId = dropdown.value;
+        if (!gameId) {
+            document.getElementById("portalStepQuestSelect").style.display = "none";
+            document.getElementById("btnSavePortalService").disabled = true;
+            return;
+        }
+        await loadPortalGameQuests(gameId);
+    }
+
+    async function loadPortalGameQuests(gameId) {
+        const stepQuests = document.getElementById("portalStepQuestSelect");
+        const questsList = document.getElementById("portalQuestsList");
+        stepQuests.style.display = "flex";
+        questsList.innerHTML = `<div style="text-align:center; padding:24px; color:var(--text-muted);"><div class="spinner" style="margin:0 auto 8px; border-top-color:var(--accent-cyan);"></div>Loading Quest Objectives...</div>`;
+
+        try {
+            const res = await fetch(`${API_BASE}/api/portal/game/${gameId}/quests`);
+            const data = await res.json();
+            if (data.ok && Array.isArray(data.quests)) {
+                portalCurrentSelectedGame = data;
+                document.getElementById("portalSelectedGameTitle").innerText = data.title;
+                document.getElementById("portalSelectedGamePkg").innerText = data.package;
+                document.getElementById("portalSelectedGameIcon").src = data.icon || '/static/images/default_app.png';
+
+                questsList.innerHTML = "";
+                data.quests.forEach((q, idx) => {
+                    const item = document.createElement("div");
+                    item.style.cssText = "display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 14px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-md); transition:all 0.2s ease;";
+                    
+                    const isChecked = (data.selected_count > 0) ? q.selected : true;
+                    const iconUrl = q.unlockedIconUrl || '/static/images/achievements/badge_1.svg';
+
+                    item.innerHTML = `
+                        <div style="display:flex; align-items:center; gap:12px; flex:1;">
+                            <input type="checkbox" class="portal-quest-chk" value="${q.id}" ${isChecked ? 'checked' : ''} style="width:18px; height:18px; cursor:pointer; accent-color:var(--accent-green);" onchange="updatePortalSelectedCount()">
+                            <img src="${iconUrl}" style="width:36px; height:36px; border-radius:var(--radius-sm); object-fit:cover; border:1px solid var(--border-color); flex-shrink:0;">
+                            <div>
+                                <strong style="font-size:13px; color:var(--text-primary); display:block;">${q.name}</strong>
+                                <span style="font-size:11px; color:var(--text-muted); display:block; margin-top:2px;">${q.description || 'Google Play Points Achievement Quest'}</span>
+                            </div>
+                        </div>
+                        <span style="font-size:11px; font-weight:800; font-family:'JetBrains Mono'; color:var(--accent-green); background:rgba(16,185,129,0.1); padding:3px 8px; border-radius:4px; white-space:nowrap; border:1px solid rgba(16,185,129,0.25);">
+                            +${(q.experiencePoints || 5000).toLocaleString()} XP
+                        </span>
+                    `;
+                    questsList.appendChild(item);
+                });
+                updatePortalSelectedCount();
+            } else {
+                questsList.innerHTML = `<div style="text-align:center; padding:20px; color:#ef4444;">Failed to load quests: ${data.error || 'Unknown error'}</div>`;
+            }
+        } catch(e) {
+            questsList.innerHTML = `<div style="text-align:center; padding:20px; color:#ef4444;">Network error fetching quests.</div>`;
+        }
+    }
+
+    function toggleAllPortalQuests(shouldCheck) {
+        const checkboxes = document.querySelectorAll(".portal-quest-chk");
+        checkboxes.forEach(cb => { cb.checked = shouldCheck; });
+        updatePortalSelectedCount();
+    }
+
+    function updatePortalSelectedCount() {
+        const checkboxes = document.querySelectorAll(".portal-quest-chk");
+        const total = checkboxes.length;
+        let checkedCount = 0;
+        checkboxes.forEach(cb => { if (cb.checked) checkedCount++; });
+
+        const counter = document.getElementById("portalSelectedQuestsCounter");
+        if (counter) {
+            counter.innerText = `${checkedCount} of ${total} Selected`;
+            counter.className = `badge-status ${checkedCount > 0 ? 'active' : 'banned'}`;
+        }
+        const btnSave = document.getElementById("btnSavePortalService");
+        if (btnSave) {
+            btnSave.disabled = (checkedCount === 0);
+        }
+    }
+
+    async function savePortalService() {
+        const dropdown = document.getElementById("portalGameSelectDropdown");
+        const gameId = dropdown.value;
+        if (!gameId) {
+            showToast("Please choose a game first.", "error");
+            return;
+        }
+
+        const checkboxes = document.querySelectorAll(".portal-quest-chk");
+        const selectedIds = [];
+        checkboxes.forEach(cb => {
+            if (cb.checked) selectedIds.push(cb.value);
+        });
+
+        if (selectedIds.length === 0) {
+            showToast("Please select at least 1 quest objective.", "error");
+            return;
+        }
+
+        const btnSave = document.getElementById("btnSavePortalService");
+        btnSave.disabled = true;
+        btnSave.innerText = "⏳ Saving...";
+
+        try {
+            const res = await fetch(`${API_BASE}/api/portal/services/save`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    game_id: gameId,
+                    selected_quest_ids: selectedIds,
+                    enabled: true
+                })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                showToast(`✅ ${data.message || 'Quest service configured successfully!'}`, "success");
+                closePortalServiceModal();
+                loadPortalServices();
+            } else {
+                showToast(`Failed: ${data.error || 'Server rejected save.'}`, "error");
+            }
+        } catch(e) {
+            showToast(`Connection error saving service: ${e.message}`, "error");
+        } finally {
+            btnSave.disabled = false;
+            btnSave.innerHTML = "<span>💾 Done / Save Quest Service</span>";
+        }
+    }
+
+    async function togglePortalService(gameId) {
+        try {
+            const res = await fetch(`${API_BASE}/api/portal/services/toggle`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ game_id: gameId })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                showToast(data.message || "Service status updated.", "success");
+                loadPortalServices();
+            } else {
+                showToast(data.error || "Failed to toggle service.", "error");
+            }
+        } catch(e) {
+            showToast("Connection error updating service.", "error");
+        }
+    }
+
+    async function deletePortalService(gameId) {
+        if (!confirm("Are you sure you want to remove this game service from the Public Portal?")) return;
+
+        try {
+            const res = await fetch(`${API_BASE}/api/portal/services/delete`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ game_id: gameId })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                showToast(data.message || "Service removed from Public Portal.", "success");
+                loadPortalServices();
+            } else {
+                showToast(data.error || "Failed to remove service.", "error");
+            }
+        } catch(e) {
+            showToast("Connection error removing service.", "error");
+        }
+    }
+
+    async function testPortalService(gameId) {
+        showToast("⚡ Dispatching test quest unlocking for selected service...", "info");
+        try {
+            const body = { game_id: gameId, portal_service: true };
+            if (currentSession && currentSession.master_token) {
+                body.email = currentSession.email;
+                body.master_token = currentSession.master_token;
+            } else {
+                const pairCode = document.getElementById("quickPairInput")?.value?.trim();
+                if (pairCode) body.sync_code = pairCode;
+            }
+
+            const res = await fetch(`${API_BASE}/api/portal/unlock`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            if (data.ok) {
+                const unlockedNum = data.newly_unlocked_count || 0;
+                const xp = (data.total_xp_earned || 0).toLocaleString();
+                showToast(`🎉 ${data.message} (+${xp} XP)`, "success");
+            } else {
+                showToast(`Service Test: ${data.error || 'Failed'}`, "error");
+            }
+        } catch(e) {
+            showToast(`Test error: ${e.message}`, "error");
         }
     }
 </script>

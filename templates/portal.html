@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PP Mod • Public Quest Service Portal</title>
+    <link rel="icon" type="image/svg+xml" href="/static/images/brand_logo.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #0b0f19;
+            --bg-card: #111827;
+            --bg-card-subtle: #1e293b;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-focus: #0ea5e9;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --accent-cyan: #0ea5e9;
+            --accent-green: #10b981;
+            --accent-purple: #8b5cf6;
+            --accent-amber: #f59e0b;
+            --radius-xl: 16px;
+            --radius-md: 10px;
+            --radius-sm: 6px;
+            --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+            --shadow-glow: 0 0 25px rgba(14, 165, 233, 0.25);
+        }
+
+        [data-theme="light"] {
+            --bg-base: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-card-subtle: #f1f5f9;
+            --border-color: #e2e8f0;
+            --border-focus: #0284c7;
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --shadow-card: 0 4px 18px rgba(0, 0, 0, 0.06);
+            --shadow-glow: 0 0 20px rgba(2, 132, 199, 0.15);
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.5;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+            width: 100%;
+        }
+
+        /* Top Header */
+        header {
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        [data-theme="light"] header {
+            background: rgba(255, 255, 255, 0.85);
+        }
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            background: linear-gradient(135deg, #0ea5e9, #10b981);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 20px;
+            box-shadow: 0 4px 14px rgba(14, 165, 233, 0.4);
+        }
+        .brand-title {
+            font-size: 17px;
+            font-weight: 900;
+            letter-spacing: -0.3px;
+        }
+        .brand-title span {
+            color: var(--accent-cyan);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .btn-theme-toggle {
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 7px 14px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 12.5px;
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+
+        /* Hero Banner */
+        .hero {
+            padding: 48px 0 36px;
+            text-align: center;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            background: rgba(14, 165, 233, 0.12);
+            border: 1px solid rgba(14, 165, 233, 0.3);
+            color: var(--accent-cyan);
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+        }
+        .hero-title {
+            font-size: 34px;
+            font-weight: 900;
+            line-height: 1.2;
+            letter-spacing: -0.8px;
+            margin-bottom: 12px;
+        }
+        .hero-title span {
+            background: linear-gradient(135deg, #0ea5e9, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero-desc {
+            font-size: 14.5px;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Sync Account Section */
+        .sync-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: 24px;
+            box-shadow: var(--shadow-card);
+            margin-bottom: 36px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .sync-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .sync-input {
+            flex: 1;
+            min-width: 240px;
+            padding: 12px 18px;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+        .sync-input:focus {
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+        }
+        .btn-action {
+            background: linear-gradient(135deg, #0ea5e9, #10b981);
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: var(--radius-md);
+            font-size: 13.5px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 4px 14px rgba(14, 165, 233, 0.35);
+        }
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(14, 165, 233, 0.45);
+        }
+        .btn-action:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Services Grid */
+        .services-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .services-title {
+            font-size: 20px;
+            font-weight: 900;
+            letter-spacing: -0.4px;
+        }
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 22px;
+            margin-bottom: 48px;
+        }
+        .service-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: 24px;
+            box-shadow: var(--shadow-card);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 18px;
+            transition: all 0.25s ease;
+        }
+        .service-card:hover {
+            border-color: var(--border-focus);
+            box-shadow: var(--shadow-glow);
+            transform: translateY(-3px);
+        }
+        .service-top {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .service-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: var(--radius-md);
+            object-fit: cover;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .service-name {
+            font-size: 15.5px;
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1.3;
+        }
+        .service-badge {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 7px;
+            border-radius: 4px;
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--accent-green);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            margin-top: 4px;
+        }
+
+        .quests-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            max-height: 220px;
+            overflow-y: auto;
+        }
+        .quest-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            padding: 6px 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+        }
+        .quest-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        .quest-name {
+            font-weight: 700;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+        }
+        .quest-xp {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 800;
+            color: var(--accent-green);
+            font-size: 11px;
+        }
+
+        /* Modal Result */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        .modal-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            max-width: 520px;
+            width: 100%;
+            padding: 26px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            animation: popIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.92); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Footer */
+        footer {
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            padding: 24px 0;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="container header-content">
+            <a href="/portal" class="brand">
+                <div class="brand-icon">🌐</div>
+                <div>
+                    <div class="brand-title">PP Mod <span>Quest Portal</span></div>
+                </div>
+            </a>
+            <div class="header-actions">
+                <button class="btn-theme-toggle" onclick="togglePortalTheme()">🌓 Toggle Mode</button>
+                <a href="/" style="color:var(--text-secondary); font-size:12.5px; font-weight:700; text-decoration:none;">Admin Console ➔</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Body -->
+    <main class="container">
+        <!-- Hero -->
+        <section class="hero">
+            <div class="hero-badge">⚡ Official Quest Completion Service Node</div>
+            <h1 class="hero-title">Instant Google Play <span>Quest Portal</span></h1>
+            <p class="hero-desc">
+                Connect your account via 6-digit sync pairing code and instantly complete official Google Play Points quests verified by PP Mod.
+            </p>
+        </section>
+
+        <!-- Sync Account Card -->
+        <section class="sync-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <label style="font-size:13px; font-weight:800; color:var(--text-primary); text-transform:uppercase;">
+                    🔑 Step 1: Connect Your Google Account
+                </label>
+                <span id="sessionStatusBadge" style="font-size:11px; font-weight:700; color:var(--text-muted);">
+                    Waiting for 6-Digit Sync Code...
+                </span>
+            </div>
+            <div class="sync-row">
+                <input id="portalSyncCodeInput" type="text" maxlength="8" class="sync-input" placeholder="e.g. 582914" autocomplete="off">
+                <button class="btn-action" onclick="connectPortalAccount()">🔗 Connect Account</button>
+            </div>
+            <div id="accountInfoBox" style="display:none; padding:12px 16px; background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md); font-size:12px; color:var(--text-secondary); justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <div>
+                    Connected Account: <strong id="connectedEmail" style="color:var(--text-primary); font-family:'JetBrains Mono';">user@gmail.com</strong>
+                </div>
+                <span style="color:var(--accent-green); font-weight:800;">● Active &amp; Ready</span>
+            </div>
+        </section>
+
+        <!-- Active Portal Services -->
+        <section>
+            <div class="services-header">
+                <div>
+                    <h2 class="services-title">Available Quest Services</h2>
+                    <p style="font-size:12.5px; color:var(--text-muted); margin-top:2px;">
+                        Only quests curated and configured by Admin are fulfilled.
+                    </p>
+                </div>
+                <span style="font-size:12px; font-weight:800; color:var(--accent-cyan); font-family:'JetBrains Mono';" id="serviceCountBadge">
+                    Loading Services...
+                </span>
+            </div>
+
+            <div class="services-grid" id="portalServicesList">
+                <div style="text-align:center; padding:40px; grid-column:1/-1; color:var(--text-muted);">
+                    Loading active quest services...
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal Result -->
+    <div id="resultModal" class="modal-overlay" style="display:none;">
+        <div class="modal-card">
+            <div style="text-align:center; margin-bottom:18px;">
+                <div style="font-size:42px; margin-bottom:8px;">🎉</div>
+                <h3 id="modalResTitle" style="font-size:18px; font-weight:900; color:var(--text-primary); margin:0;">Quests Completed Successfully!</h3>
+                <p id="modalResSubtitle" style="font-size:12.5px; color:var(--text-muted); margin-top:4px;">Official GPGS Quest Objectives Completed</p>
+            </div>
+
+            <div id="modalResBody" style="background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:16px; margin-bottom:18px; font-size:12.5px; line-height:1.6;">
+                <!-- Result details -->
+            </div>
+
+            <div style="display:flex; justify-content:flex-end;">
+                <button class="btn-action" style="width:100%;" onclick="closeResultModal()">Done / Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            PP Mod Quest Service Portal • Automated GPGS Engine • Zero Firebase Quota
+        </div>
+    </footer>
+
+    <script>
+        let connectedAccountData = null;
+
+        function togglePortalTheme() {
+            const cur = document.documentElement.getAttribute("data-theme") || "dark";
+            const next = cur === "dark" ? "light" : "dark";
+            document.documentElement.setAttribute("data-theme", next);
+            localStorage.setItem("pp_portal_theme", next);
+        }
+
+        // Init theme
+        const savedTheme = localStorage.getItem("pp_portal_theme") || "dark";
+        document.documentElement.setAttribute("data-theme", savedTheme);
+
+        async function loadPublicServices() {
+            const container = document.getElementById("portalServicesList");
+            const badge = document.getElementById("serviceCountBadge");
+            try {
+                const res = await fetch("/api/portal/services");
+                const data = await res.json();
+                if (data.ok && Array.isArray(data.services)) {
+                    const activeServices = data.services.filter(s => s.enabled !== false);
+                    if (badge) badge.innerText = `${activeServices.length} Active Services`;
+
+                    if (activeServices.length === 0) {
+                        container.innerHTML = `
+                            <div style="grid-column:1/-1; text-align:center; padding:60px 20px; background:var(--bg-card); border:1px dashed var(--border-color); border-radius:var(--radius-xl);">
+                                <span style="font-size:40px; display:block; margin-bottom:10px;">🛡️</span>
+                                <strong style="font-size:16px; color:var(--text-primary);">No Quest Services Currently Offered</strong>
+                                <p style="font-size:12.5px; color:var(--text-muted); margin-top:4px;">Please check back later or contact the administrator.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    let html = "";
+                    activeServices.forEach(s => {
+                        const selCount = s.selected_quests_count || (s.selected_quests ? s.selected_quests.length : 0);
+                        const quests = s.selected_quests || [];
+
+                        let questsHtml = "";
+                        quests.forEach(q => {
+                            const iconSrc = q.unlockedIconUrl || '/static/images/achievements/badge_1.svg';
+                            questsHtml += `
+                                <div class="quest-item">
+                                    <img src="${iconSrc}" class="quest-icon">
+                                    <span class="quest-name">${q.name}</span>
+                                    <span class="quest-xp">+${(q.experiencePoints || 5000).toLocaleString()} XP</span>
+                                </div>
+                            `;
+                        });
+
+                        html += `
+                            <div class="service-card">
+                                <div>
+                                    <div class="service-top">
+                                        <img src="${s.icon || '/static/images/default_app.png'}" class="service-icon">
+                                        <div>
+                                            <div class="service-name">${s.title}</div>
+                                            <span class="service-badge">🎯 ${selCount} Curated Objectives</span>
+                                        </div>
+                                    </div>
+
+                                    <div style="margin-top:16px;">
+                                        <div style="font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; margin-bottom:8px;">
+                                            Included Objectives:
+                                        </div>
+                                        <div class="quests-list">
+                                            ${questsHtml}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button class="btn-action" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="runServiceUnlock('${s.game_id}', '${s.title.replace(/'/g, "\\'")}')">
+                                    <span>⚡ Complete Quests Now</span>
+                                </button>
+                            </div>
+                        `;
+                    });
+                    container.innerHTML = html;
+                }
+            } catch(e) {
+                container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:30px; color:#ef4444;">Error connecting to portal services node.</div>`;
+            }
+        }
+
+        async function connectPortalAccount() {
+            const code = document.getElementById("portalSyncCodeInput").value.trim().replace(" ", "").replace("-", "");
+            if (!code || code.length < 6) {
+                alert("Please enter a valid 6-digit sync code from the PPM Server app.");
+                return;
+            }
+
+            const statusBadge = document.getElementById("sessionStatusBadge");
+            statusBadge.innerText = "⏳ Verifying sync code...";
+
+            try {
+                const res = await fetch("/api/sync/claim", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ code: code })
+                });
+                const data = await res.json();
+                if (data.ok && data.user) {
+                    connectedAccountData = { code: code, email: data.user.email, token: data.user.token };
+                    statusBadge.innerText = "✅ Connected Successfully";
+                    statusBadge.style.color = "var(--accent-green)";
+                    document.getElementById("connectedEmail").innerText = data.user.email;
+                    document.getElementById("accountInfoBox").style.display = "flex";
+                } else {
+                    // Try direct token login
+                    connectedAccountData = { code: code };
+                    statusBadge.innerText = "✅ Code Registered";
+                    statusBadge.style.color = "var(--accent-green)";
+                    document.getElementById("connectedEmail").innerText = `Sync Code: ${code}`;
+                    document.getElementById("accountInfoBox").style.display = "flex";
+                }
+            } catch(e) {
+                connectedAccountData = { code: code };
+                statusBadge.innerText = "✅ Code Ready";
+                document.getElementById("connectedEmail").innerText = `Sync Code: ${code}`;
+                document.getElementById("accountInfoBox").style.display = "flex";
+            }
+        }
+
+        async function runServiceUnlock(gameId, gameTitle) {
+            if (!connectedAccountData || !connectedAccountData.code) {
+                alert("Please connect your Google Account using your 6-digit sync pairing code first!");
+                document.getElementById("portalSyncCodeInput").focus();
+                return;
+            }
+
+            const body = {
+                game_id: gameId,
+                sync_code: connectedAccountData.code,
+                portal_service: true
+            };
+            if (connectedAccountData.token) {
+                body.master_token = connectedAccountData.token;
+                body.email = connectedAccountData.email;
+            }
+
+            const btn = event.currentTarget;
+            btn.disabled = true;
+            btn.innerText = "⏳ Unlocking Objectives...";
+
+            try {
+                const res = await fetch("/api/portal/unlock", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    showResultModal(data);
+                } else {
+                    alert(`Failed: ${data.error || 'Server error'}`);
+                }
+            } catch(e) {
+                alert(`Connection error: ${e.message}`);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = "<span>⚡ Complete Quests Now</span>";
+            }
+        }
+
+        function showResultModal(data) {
+            const modal = document.getElementById("resultModal");
+            const body = document.getElementById("modalResBody");
+            const title = document.getElementById("modalResTitle");
+            
+            title.innerText = `Completed: ${data.service_title}`;
+            body.innerHTML = `
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <span>Newly Unlocked:</span>
+                    <strong style="color:var(--accent-green); font-family:'JetBrains Mono';">${data.newly_unlocked_count || 0} Objectives</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <span>Total GPGS XP Earned:</span>
+                    <strong style="color:var(--accent-cyan); font-family:'JetBrains Mono';">+${(data.total_xp_earned || 0).toLocaleString()} XP</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <span>Configured Scope:</span>
+                    <strong style="color:var(--text-primary); font-family:'JetBrains Mono';">${data.total_configured_quests || 0} Objectives</strong>
+                </div>
+                <div style="margin-top:12px; padding-top:8px; border-top:1px solid var(--border-color); color:var(--accent-green); font-weight:700;">
+                    ${data.message || 'All selected objectives have been fulfilled!'}
+                </div>
+            `;
+            modal.style.display = "flex";
+        }
+
+        function closeResultModal() {
+            document.getElementById("resultModal").style.display = "none";
+        }
+
+        loadPublicServices();
+    </script>
+</body>
+</html>
