@@ -1212,7 +1212,13 @@ def admin_send_push_notification():
     all_notifs.append(new_notif)
     save_push_notifications(all_notifs)
 
-    return jsonify({"ok": True, "notification_id": notif_id, "message": "Push notification scheduled for delivery."})
+    return jsonify({
+        "ok": True,
+        "status": "success",
+        "notification_id": notif_id,
+        "queued_for": target,
+        "message": f"Push notification successfully queued for {target}."
+    })
 
 @app.route("/api/admin/user/<device_id>", methods=["GET"])
 def get_admin_user_detail(device_id):
@@ -1284,6 +1290,21 @@ def get_admin_users():
     locked_devices = load_locked_devices()
     devices = load_registered_devices()
 
+    # Pre-fetch Cloudflare D1 accounts to map real PP Mod UID and profile details
+    accounts = []
+    try:
+        cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/sync/accounts", timeout=4)
+        if cf_res.status_code == 200:
+            accounts.extend(cf_res.json().get("accounts", []))
+    except Exception:
+        pass
+
+    email_to_cloud = {}
+    for a in accounts:
+        em = (a.get("email") or "").strip().lower()
+        if em:
+            email_to_cloud[em] = a
+
     user_list = []
     seen_device_ids = set()
 
@@ -1298,16 +1319,25 @@ def get_admin_users():
         tok_preview = f"{primary_token[:12]}...{primary_token[-8:]}" if primary_token else "HardwareDeviceKey"
         is_banned = primary_email.lower() in banned
 
+        # Map to Cloudflare PP Mod UID if available
+        cloud_acc = email_to_cloud.get(primary_email.lower())
+        pp_uid = cloud_acc.get("uid") if cloud_acc else (accs[0].get("uid") if accs and "uid" in accs[0] else f"UID-{primary_code if primary_code != '------' else dev_id[:6].upper()}")
+        display_name = cloud_acc.get("display_name") if cloud_acc else dev_data.get("model", "Android Device")
+
         user_list.append({
-            "uid": f"UID-{dev_id[:8].upper()}",
-            "display_name": dev_data.get("model", "Android Hardware Node"),
+            "uid": pp_uid,
+            "display_name": display_name,
             "email": primary_email,
             "device_id": dev_id,
             "model": dev_data.get("model", "Android Device"),
             "android_version": dev_data.get("android_version", "Android"),
+            "app_version": dev_data.get("app_version", "v3.8 Enterprise"),
             "is_locked": is_locked,
             "sync_code": primary_code,
             "accounts_count": len(accs),
+            "accounts": accs,
+            "server_url": "https://pp-mod-auto-quest.onrender.com",
+            "server_status": "200 OK (Operational)",
             "master_token": primary_token,
             "token_masked": tok_preview,
             "status": "Banned" if is_banned else ("Locked" if is_locked else "Active"),

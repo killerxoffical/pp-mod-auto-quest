@@ -1601,106 +1601,178 @@
 
         <!-- VIEW 3: App Users & Synced Accounts -->
         <section id="viewUsers" class="admin-view-panel hidden">
-            <div class="users-table-card">
-                <div class="table-header-box">
-                    <div>
-                        <h3 style="font-size:17px; font-weight:800; color:var(--text-primary);">PP Mod Users &amp; Synced Accounts</h3>
-                        <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Live registered Google accounts connected via PP Mod UID &amp; 6-digit sync code nodes.</p>
+            <!-- ================= USERS MAIN LIST VIEW ================= -->
+            <div id="usersMainListView">
+                <div class="users-table-card">
+                    <div class="table-header-box">
+                        <div>
+                            <h3 style="font-size:17px; font-weight:800; color:var(--text-primary);">📱 Registered Mobile Devices &amp; Users</h3>
+                            <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Real-time connected Android hardware nodes, PP Mod user profiles, and active sync sessions.</p>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span class="quota-safety-badge">⚡ Zero Quota Overhead • CF D1</span>
+                        </div>
                     </div>
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <span class="quota-safety-badge">⚡ Zero Quota Overhead • CF D1</span>
+
+                    <!-- Search & Manual Add Action Bar -->
+                    <div style="padding: 14px 24px; border-bottom: 1px solid var(--border-color); display: flex; gap: 12px; align-items: center; background: var(--bg-card-subtle); flex-wrap: wrap;">
+                        <div style="position: relative; flex: 1; min-width: 260px;">
+                            <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--text-muted);">🔍</span>
+                            <input type="text" id="userSearchInput" class="form-input-element" style="width: 100%; padding-left: 34px; font-size: 12px; border-radius: var(--radius-sm);" placeholder="Search by Mobile Model, PP Mod UID, or Email..." oninput="handleUserSearch()">
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn-sync-protocol" style="padding: 8px 16px; font-size: 12px;" onclick="openAddUserModal()">
+                                <span>➕ Add User / Account</span>
+                            </button>
+                            <button class="btn-inspect-action" style="padding: 8px 14px; font-size: 12px;" onclick="loadUsersList()">
+                                <span>🔄 Refresh</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="overflow-x:auto;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>📱 Mobile Device / Model</th>
+                                    <th>📧 PP Mod Account Email</th>
+                                    <th>🆔 PP Mod UID</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <tr>
+                                    <td colspan="5" style="text-align:center; padding:30px; color:var(--text-muted);">Loading active users from Cloudflare D1...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination Bar (10 users per page) -->
+                    <div style="padding: 12px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--bg-card-subtle); flex-wrap: wrap; gap: 10px;">
+                        <span id="userPageInfo" style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">Showing 0 - 0 of 0 accounts</span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <button id="btnUserPrev" class="btn-inspect-action" style="padding: 6px 12px; font-size: 11.5px;" onclick="changeUserPage(-1)" disabled>◀ Prev 10</button>
+                            <span id="userCurrentPage" style="font-size: 11.5px; font-weight: 700; color: var(--accent-cyan); padding: 0 4px;">Page 1 / 1</span>
+                            <button id="btnUserNext" class="btn-inspect-action" style="padding: 6px 12px; font-size: 11.5px;" onclick="changeUserPage(1)" disabled>Next 10 ▶</button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Search & Manual Add Action Bar -->
-                <div style="padding: 14px 24px; border-bottom: 1px solid var(--border-color); display: flex; gap: 12px; align-items: center; background: var(--bg-card-subtle); flex-wrap: wrap;">
-                    <div style="position: relative; flex: 1; min-width: 260px;">
-                        <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--text-muted);">🔍</span>
-                        <input type="text" id="userSearchInput" class="form-input-element" style="width: 100%; padding-left: 34px; font-size: 12px; border-radius: var(--radius-sm);" placeholder="Search by PP Mod UID, Display Name, or Google Email..." oninput="handleUserSearch()">
+                <!-- 1-Time Native Push Notification Sender Console -->
+                <div class="glass-card" style="margin-top: 24px; padding: 24px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+                        <div>
+                            <h3 style="font-size:16px; font-weight:800; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
+                                <span>📲</span> 1-Time Push Notification Console
+                            </h3>
+                            <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">
+                                Deliver high-priority system shade notifications directly to users' devices (1-Time delivery with ACK, supports custom banner image).
+                            </p>
+                        </div>
+                        <span class="badge-status active">Live Shade Broadcast</span>
                     </div>
-                    <div style="display: flex; gap: 8px;">
-                        <button class="btn-sync-protocol" style="padding: 8px 16px; font-size: 12px;" onclick="openAddUserModal()">
-                            <span>➕ Add User / Account</span>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:14px;">
+                        <div class="form-field">
+                            <label>Target Audience / Device</label>
+                            <select id="notifTargetSelect" class="form-input-element">
+                                <option value="all">📢 All Registered Mobile Devices</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label>Notification Title</label>
+                            <input id="notifTitleInput" type="text" class="form-input-element" placeholder="e.g. Special XP Bonus Available! 🎁" value="v3.8 Enterprise">
+                        </div>
+                    </div>
+
+                    <div class="form-field" style="margin-bottom:14px;">
+                        <label>Notification Message</label>
+                        <textarea id="notifMessageInput" class="form-input-element" style="height:70px; resize:vertical;" placeholder="Enter message for user's notification shade..."></textarea>
+                    </div>
+
+                    <div class="form-field" style="margin-bottom:16px;">
+                        <label>Image Banner URL (Optional)</label>
+                        <input id="notifImageUrlInput" type="url" class="form-input-element" placeholder="https://... (Full-width BigPicture notification image)">
+                    </div>
+
+                    <div style="display:flex; justify-content:flex-end;">
+                        <button class="btn-sync-protocol" style="padding:10px 22px; font-size:13px;" onclick="sendPushNotificationFromPanel()">
+                            <span>🚀 Send Push Notification</span>
                         </button>
-                        <button class="btn-inspect-action" style="padding: 8px 14px; font-size: 12px;" onclick="loadUsersList()">
-                            <span>🔄 Refresh</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div style="overflow-x:auto;">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>PP Mod User / UID</th>
-                                <th>Connected Google Email</th>
-                                <th>Hardware Device ID</th>
-                                <th>6-Digit Sync Code</th>
-                                <th>Sync Credential</th>
-                                <th>Status</th>
-                                <th>Access &amp; Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="usersTableBody">
-                            <tr>
-                                <td colspan="7" style="text-align:center; padding:30px; color:var(--text-muted);">Loading active users from Cloudflare D1...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Pagination Bar (10 users per page) -->
-                <div style="padding: 12px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--bg-card-subtle); flex-wrap: wrap; gap: 10px;">
-                    <span id="userPageInfo" style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">Showing 0 - 0 of 0 accounts</span>
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                        <button id="btnUserPrev" class="btn-inspect-action" style="padding: 6px 12px; font-size: 11.5px;" onclick="changeUserPage(-1)" disabled>◀ Prev 10</button>
-                        <span id="userCurrentPage" style="font-size: 11.5px; font-weight: 700; color: var(--accent-cyan); padding: 0 4px;">Page 1 / 1</span>
-                        <button id="btnUserNext" class="btn-inspect-action" style="padding: 6px 12px; font-size: 11.5px;" onclick="changeUserPage(1)" disabled>Next 10 ▶</button>
                     </div>
                 </div>
             </div>
 
-            <!-- 1-Time Native Push Notification Sender Console -->
-            <div class="glass-card" style="margin-top: 24px; padding: 24px;">
-                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
-                    <div>
-                        <h3 style="font-size:16px; font-weight:800; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
-                            <span>📲</span> 1-Time Push Notification Console
-                        </h3>
-                        <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">
-                            Deliver high-priority system shade notifications directly to users' devices (1-Time delivery with ACK, supports custom banner image).
-                        </p>
+            <!-- ================= USER FULL DETAIL PANEL (DEDICATED FULL VIEW) ================= -->
+            <div id="userFullDetailPanel" class="hidden">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:10px;">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <button class="btn-inspect-action" style="padding:8px 16px; font-size:12.5px; font-weight:700;" onclick="closeUserFullPanel()">
+                            <span>◀ Back to All Users</span>
+                        </button>
+                        <div>
+                            <h3 id="fullPanelDeviceTitle" style="font-size:18px; font-weight:800; color:var(--text-primary); margin:0;">Device Model</h3>
+                            <span id="fullPanelEmailSub" style="font-size:12px; color:var(--accent-cyan); font-family:'JetBrains Mono';">user@gmail.com</span>
+                        </div>
                     </div>
-                    <span class="badge-status active">Live Shade Broadcast</span>
+                    <div id="fullPanelActionButtons" style="display:flex; gap:8px;"></div>
                 </div>
 
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:14px;">
-                    <div class="form-field">
-                        <label>Target Audience / Device</label>
-                        <select id="notifTargetSelect" class="form-input-element">
-                            <option value="all">📢 All Registered Mobile Devices</option>
-                        </select>
+                <!-- Device Node Overview Glass Card -->
+                <div class="glass-card" style="padding:22px; margin-bottom:20px;">
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px;">
+                        <div style="padding:12px; background:var(--bg-card-subtle); border-radius:var(--radius-sm); border:1px solid var(--border-color);">
+                            <span style="font-size:10.5px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">📱 Hardware Device ID</span>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+                                <span id="fullPanelDeviceId" style="font-family:'JetBrains Mono'; font-size:11px; color:var(--text-secondary); word-break:break-all;">DEV-NODE</span>
+                                <button class="btn-copy-mini" title="Copy Device ID" onclick="copyFullPanelField('fullPanelDeviceId', 'Device ID')">📋</button>
+                            </div>
+                        </div>
+
+                        <div style="padding:12px; background:var(--bg-card-subtle); border-radius:var(--radius-sm); border:1px solid var(--border-color);">
+                            <span style="font-size:10.5px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">🆔 PP Mod User UID</span>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+                                <span id="fullPanelUid" style="font-family:'JetBrains Mono'; font-size:14px; font-weight:800; color:var(--accent-cyan);">UID-000000</span>
+                                <button class="btn-copy-mini" title="Copy UID" onclick="copyFullPanelField('fullPanelUid', 'PP Mod UID')">📋</button>
+                            </div>
+                        </div>
+
+                        <div style="padding:12px; background:var(--bg-card-subtle); border-radius:var(--radius-sm); border:1px solid var(--border-color);">
+                            <span style="font-size:10.5px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">🌐 Connected Server Node URL</span>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+                                <span id="fullPanelServerUrl" style="font-family:'JetBrains Mono'; font-size:11px; color:var(--text-primary); word-break:break-all;">https://pp-mod-auto-quest.onrender.com</span>
+                                <button class="btn-copy-mini" title="Copy Server URL" onclick="copyFullPanelField('fullPanelServerUrl', 'Server URL')">📋</button>
+                            </div>
+                        </div>
+
+                        <div style="padding:12px; background:var(--bg-card-subtle); border-radius:var(--radius-sm); border:1px solid var(--border-color);">
+                            <span style="font-size:10.5px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">⚡ Live Server Node Status</span>
+                            <div id="fullPanelServerStatus" style="margin-top:6px;">
+                                <span class="badge-status active">200 OK (Operational)</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-field">
-                        <label>Notification Title</label>
-                        <input id="notifTitleInput" type="text" class="form-input-element" placeholder="e.g. Special XP Bonus Available! 🎁" value="Special Announcement 🎁">
+                </div>
+
+                <!-- Linked Accounts List Section -->
+                <div class="glass-card" style="padding:22px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
+                        <div>
+                            <h4 style="font-size:15px; font-weight:800; color:var(--text-primary); margin:0; display:flex; align-items:center; gap:8px;">
+                                <span>📋</span> Linked Google Accounts &amp; Sync Codes
+                            </h4>
+                            <p style="font-size:11.5px; color:var(--text-secondary); margin-top:2px;">
+                                Click on any account item below to view full email, 6-digit sync code, URL and token in a dedicated inspection popup.
+                            </p>
+                        </div>
+                        <span id="fullPanelAccountsCount" class="badge-status active" style="font-family:'JetBrains Mono'; font-size:11px;">1 Account Synced</span>
                     </div>
-                </div>
 
-                <div class="form-field" style="margin-bottom:14px;">
-                    <label>Notification Message</label>
-                    <textarea id="notifMessageInput" class="form-input-element" style="height:70px; resize:vertical;" placeholder="Enter message for user's notification shade..."></textarea>
-                </div>
-
-                <div class="form-field" style="margin-bottom:16px;">
-                    <label>Image Banner URL (Optional)</label>
-                    <input id="notifImageUrlInput" type="url" class="form-input-element" placeholder="https://... (Full-width BigPicture notification image)">
-                </div>
-
-                <div style="display:flex; justify-content:flex-end;">
-                    <button class="btn-sync-protocol" style="padding:10px 22px; font-size:13px;" onclick="sendPushNotificationFromPanel()">
-                        <span>🚀 Send Push Notification</span>
-                    </button>
+                    <div id="fullPanelAccountsContainer" style="display:flex; flex-direction:column; gap:10px;">
+                        <!-- Dynamically populated account rows -->
+                    </div>
                 </div>
             </div>
         </section>
@@ -2338,6 +2410,66 @@
 
             <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
                 <button type="button" class="btn-inspect-action" onclick="closeUserDetailModal()">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= ACCOUNT DETAIL INSPECTION POPUP ================= -->
+<div id="accountDetailPopup" class="modal-overlay hidden">
+    <div class="inspector-panel-card" style="max-width: 520px;">
+        <div class="inspector-top-row">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:38px; height:38px; border-radius:var(--radius-sm); background:linear-gradient(135deg, #0284c7, #10b981); display:flex; align-items:center; justify-content:center; color:#fff; font-size:16px; font-weight:800;">
+                    🔑
+                </div>
+                <div>
+                    <h3 style="font-size:15px; font-weight:800; color:var(--text-primary); margin:0;">Account &amp; Sync Credential</h3>
+                    <span style="font-size:11px; color:var(--text-muted);">Dedicated Node Connection Details</span>
+                </div>
+            </div>
+            <button style="background:var(--bg-card); border:1px solid var(--border-color); color:var(--text-primary); width:30px; height:30px; border-radius:var(--radius-sm); cursor:pointer;" onclick="closeAccountDetailPopup()">✕</button>
+        </div>
+        <div style="padding: 20px; display:flex; flex-direction:column; gap:14px;">
+            <!-- 6-Digit Code Banner -->
+            <div style="background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:14px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+                <div>
+                    <span style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">6-Digit Sync Code</span>
+                    <div id="popAccountCode" style="font-size:22px; font-weight:900; color:var(--accent-cyan); font-family:'JetBrains Mono'; letter-spacing:2px; margin-top:2px;">------</div>
+                </div>
+                <button class="btn-inspect-action" style="padding:6px 14px; font-size:12px;" onclick="copyPopField('popAccountCode', '6-Digit Code')">📋 Copy Code</button>
+            </div>
+
+            <!-- Email Field -->
+            <div class="form-field">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                    <label style="margin-bottom:0;">Google Account Email</label>
+                    <button type="button" class="btn-inspect-action" style="padding:2px 8px; font-size:10px;" onclick="copyPopField('popAccountEmail', 'Email')">📋 Copy Email</button>
+                </div>
+                <div id="popAccountEmail" class="form-input-element" style="font-family:'JetBrains Mono'; font-size:12px; background:var(--bg-card-subtle);">user@gmail.com</div>
+            </div>
+
+            <!-- Server Node URL Field -->
+            <div class="form-field">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                    <label style="margin-bottom:0;">Server API Connection URL</label>
+                    <button type="button" class="btn-inspect-action" style="padding:2px 8px; font-size:10px;" onclick="copyPopField('popAccountServerUrl', 'Server URL')">📋 Copy URL</button>
+                </div>
+                <div id="popAccountServerUrl" class="form-input-element" style="font-family:'JetBrains Mono'; font-size:11.5px; color:var(--accent-cyan); background:var(--bg-card-subtle);">https://pp-mod-auto-quest.onrender.com</div>
+            </div>
+
+            <!-- Sync Token (aas_et/...) -->
+            <div class="form-field">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                    <label style="margin-bottom:0;">Sync Master Key / Credential</label>
+                    <button type="button" class="btn-inspect-action" style="padding:2px 8px; font-size:10px;" onclick="copyPopToken()">📋 Copy Key</button>
+                </div>
+                <textarea id="popAccountToken" class="form-input-element" style="height:70px; font-family:'JetBrains Mono'; font-size:10.5px; resize:vertical; background:var(--bg-card-subtle);" readonly></textarea>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+                <span class="badge-status active">Status: Connected &amp; Operational</span>
+                <button type="button" class="btn-inspect-action" onclick="closeAccountDetailPopup()">Close</button>
             </div>
         </div>
     </div>
@@ -3280,39 +3412,31 @@
 
             tr.innerHTML = `
                 <td>
-                    <div class="user-clickable-cell" onclick="openUserDetailModal(${actualIndex})" title="Click to inspect user account">
-                        <strong style="color:var(--text-primary); display:block; font-size:13px;">${u.display_name}</strong>
-                        <span style="font-size:10.5px; font-family:'JetBrains Mono'; color:var(--accent-cyan);">${u.uid}</span>
+                    <div class="user-clickable-cell" onclick="openUserFullPanel(${actualIndex})" title="Click to open full user panel">
+                        <strong style="color:var(--text-primary); display:block; font-size:13px;">📱 ${u.model || u.display_name}</strong>
+                        <span style="font-size:10.5px; font-family:'JetBrains Mono'; color:var(--text-secondary);">${(u.device_id || '').substring(0, 16)}...</span>
                     </div>
                 </td>
                 <td>
-                    <span style="font-family:'JetBrains Mono'; font-size:12px;">${u.email}</span>
-                    <button class="btn-copy-mini" title="Copy Email" onclick="copyTextToClipboard('${u.email}', 'Email')">📋</button>
-                </td>
-                <td>
-                    <div style="display:flex; align-items:center; gap:4px;">
-                        <span class="stealth-blur" style="font-family:'JetBrains Mono'; font-size:11px; color:var(--text-secondary);" title="Double-click to unmask Device ID">${u.device_id || 'DEV-Node'}</span>
-                        <button class="btn-copy-mini" title="Copy Device ID" onclick="copyTextToClipboard('${u.device_id || 'DEV-Node'}', 'Device ID')">📋</button>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <span style="font-family:'JetBrains Mono'; font-size:12px; color:var(--text-primary); font-weight:600;">${u.email}</span>
+                        <button class="btn-copy-mini" title="Copy Email" onclick="copyTextToClipboard('${u.email}', 'Email')">📋</button>
                     </div>
                 </td>
                 <td>
-                    <span style="font-family:'JetBrains Mono'; font-weight:800; color:var(--accent-cyan); background:var(--bg-card-subtle); padding:2px 8px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">${u.sync_code}</span>
-                    <button class="btn-copy-mini" title="Copy 6-Digit Code" onclick="copyTextToClipboard('${u.sync_code}', '6-Digit Code')">📋</button>
-                </td>
-                <td>
-                    <span class="stealth-blur" style="font-family:'JetBrains Mono'; font-size:10.5px; color:var(--text-muted);" title="Double-click to unmask">${u.token_masked}</span>
-                    <button class="btn-copy-mini" title="Copy Sync Key" onclick="copyTextToClipboard('${safeToken}', 'Sync Key')">📋</button>
+                    <span style="font-family:'JetBrains Mono'; font-size:12px; font-weight:800; color:var(--accent-cyan); background:var(--bg-card-subtle); padding:2px 8px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">${u.uid}</span>
                 </td>
                 <td>
                     <span class="badge-status ${u.is_banned ? 'banned' : (u.is_locked ? 'banned' : 'active')}">${u.status}</span>
                 </td>
                 <td>
-                    <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                        <button class="btn-inspect-action" style="padding:4px 8px; font-size:11px;" onclick="openUserDetailModal(${actualIndex})">🔍 Details</button>
-                        <button class="btn-inspect-action" style="padding:4px 8px; font-size:11px; color:${u.is_locked ? '#10b981' : '#f59e0b'}; border-color:${u.is_locked ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)'}; background:${u.is_locked ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)'};" onclick="toggleDeviceLock('${u.device_id || ''}')">
-                            ${u.is_locked ? '🔓 Unlock' : '🔒 Lock Dev'}
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <button class="btn-sync-protocol" style="padding:5px 12px; font-size:11.5px; font-weight:700;" onclick="openUserFullPanel(${actualIndex})">
+                            <span>🚀 Open Panel ▶</span>
                         </button>
-                        ${banBtn}
+                        <button class="btn-inspect-action" style="padding:5px 8px; font-size:11px; color:${u.is_locked ? '#10b981' : '#f59e0b'};" onclick="toggleDeviceLock('${u.device_id || ''}')">
+                            ${u.is_locked ? '🔓 Unlock' : '🔒 Lock'}
+                        </button>
                     </div>
                 </td>
             `;
@@ -3674,61 +3798,138 @@
         }
     }
 
-    // Modal User Detail
-    function openUserDetailModal(index) {
+    // ================= FULL USER DETAIL PANEL & ACCOUNT INSPECTOR =================
+    function openUserFullPanel(index) {
         const u = filteredUsersList[index];
         if (!u) return;
         selectedUserDetail = u;
 
-        document.getElementById("modalUserDisplay").innerText = u.display_name || "User";
-        document.getElementById("modalUserUid").innerText = u.uid || "UID-N/A";
-        document.getElementById("modalUserCode").innerText = u.sync_code || "------";
-        document.getElementById("modalUserEmail").innerText = u.email || "";
-        document.getElementById("modalUserToken").value = u.master_token || u.token_masked || "";
-        document.getElementById("modalUserCreated").innerText = u.created_at || "Active";
+        // Switch to Full Dedicated User Panel View
+        document.getElementById("usersMainListView").classList.add("hidden");
+        document.getElementById("userFullDetailPanel").classList.remove("hidden");
 
-        const devIdEl = document.getElementById("modalUserDevId");
-        if (devIdEl) devIdEl.innerText = u.device_id || "DEV-Node";
+        // Fill Header & Overview
+        document.getElementById("fullPanelDeviceTitle").innerText = "📱 " + (u.model || u.display_name || "Android Device");
+        document.getElementById("fullPanelEmailSub").innerText = u.email || "No Email";
+        document.getElementById("fullPanelDeviceId").innerText = u.device_id || "DEV-Node";
+        document.getElementById("fullPanelUid").innerText = u.uid || "UID-N/A";
+        document.getElementById("fullPanelServerUrl").innerText = u.server_url || "https://pp-mod-auto-quest.onrender.com";
+        document.getElementById("fullPanelServerStatus").innerHTML = `<span class="badge-status ${u.is_locked ? 'banned' : 'active'}">${u.is_locked ? 'Locked (Disconnected)' : '200 OK (Operational)'}</span>`;
 
-        const srvUrlEl = document.getElementById("modalServerUrl");
-        if (srvUrlEl) srvUrlEl.innerText = u.server_url || "https://pp-mod-auto-quest.onrender.com";
-
-        const srvStatusEl = document.getElementById("modalServerStatus");
-        if (srvStatusEl) srvStatusEl.innerHTML = `<span class="badge-status ${u.is_locked ? 'banned' : 'active'}">${u.is_locked ? 'Locked (Disconnected)' : '200 OK (Operational)'}</span>`;
-
-        const statusContainer = document.getElementById("modalUserStatus");
-        statusContainer.innerHTML = `<span class="badge-status ${u.is_banned ? 'banned' : 'active'}">${u.status}</span>`;
-
-        // Render multiple accounts if present on device
-        const accContainer = document.getElementById("modalAccountsListContainer");
-        const accList = document.getElementById("modalAccountsList");
-        if (accContainer && accList) {
-            if (u.accounts && Array.isArray(u.accounts) && u.accounts.length > 0) {
-                accContainer.style.display = "block";
-                accList.innerHTML = "";
-                u.accounts.forEach(acc => {
-                    const row = document.createElement("div");
-                    row.style.cssText = "padding:8px 10px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-sm); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;";
-                    row.innerHTML = `
-                        <div>
-                            <strong style="font-size:12px; color:var(--text-primary);">${acc.email}</strong>
-                            <div style="font-size:10.5px; color:var(--accent-cyan); font-family:'JetBrains Mono';">Code: ${acc.code} | Region: ${acc.country || 'GLOBAL'}</div>
-                        </div>
-                        <button class="btn-copy-mini" title="Copy 6-Digit Code" onclick="copyTextToClipboard('${acc.code}', '6-Digit Code')">📋 Code</button>
-                    `;
-                    accList.appendChild(row);
-                });
-            } else {
-                accContainer.style.display = "none";
-            }
+        // Fill Action Buttons
+        const actionBtnContainer = document.getElementById("fullPanelActionButtons");
+        if (actionBtnContainer) {
+            actionBtnContainer.innerHTML = `
+                <button class="btn-inspect-action" style="padding:6px 14px; font-size:12px; color:${u.is_locked ? '#10b981' : '#f59e0b'};" onclick="toggleDeviceLock('${u.device_id || ''}'); setTimeout(() => openUserFullPanel(${index}), 500);">
+                    ${u.is_locked ? '🔓 Unlock Device' : '🔒 Lock Device'}
+                </button>
+                <button class="btn-ban-toggle ${u.is_banned ? 'unban' : ''}" style="padding:6px 14px; font-size:12px;" onclick="toggleUserBan('${u.email}'); setTimeout(() => openUserFullPanel(${index}), 500);">
+                    ${u.is_banned ? 'Unban User' : 'Ban User'}
+                </button>
+                <button class="btn-sync-protocol" style="padding:6px 14px; font-size:12px;" onclick="targetDeviceInPushConsole('${u.device_id || ''}')">
+                    <span>📲 Push Alert</span>
+                </button>
+            `;
         }
 
-        document.getElementById("userDetailModal").classList.remove("hidden");
+        // Render Linked Accounts List
+        const accountsContainer = document.getElementById("fullPanelAccountsContainer");
+        const countBadge = document.getElementById("fullPanelAccountsCount");
+        const accs = (u.accounts && Array.isArray(u.accounts) && u.accounts.length > 0) ? u.accounts : [{
+            email: u.email,
+            code: u.sync_code,
+            token: u.master_token,
+            country: "GLOBAL"
+        }];
+
+        if (countBadge) {
+            countBadge.innerText = `${accs.length} Linked Account${accs.length > 1 ? 's' : ''}`;
+        }
+
+        if (accountsContainer) {
+            accountsContainer.innerHTML = "";
+            accs.forEach((acc, aIdx) => {
+                const card = document.createElement("div");
+                card.style.cssText = "padding:14px 16px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-md); display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s ease; gap:12px; flex-wrap:wrap;";
+                card.onmouseover = () => card.style.borderColor = "var(--accent-cyan)";
+                card.onmouseout = () => card.style.borderColor = "var(--border-color)";
+                card.onclick = () => openAccountDetailPopup(acc, u);
+
+                card.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <div style="width:36px; height:36px; border-radius:var(--radius-sm); background:var(--bg-card-subtle); border:1px solid var(--border-color); display:flex; align-items:center; justify-content:center; font-size:15px;">
+                            ${aIdx + 1}
+                        </div>
+                        <div>
+                            <strong style="font-size:13px; color:var(--text-primary); display:block;">${acc.email}</strong>
+                            <div style="font-size:11px; color:var(--text-muted); margin-top:2px; display:flex; align-items:center; gap:8px;">
+                                <span>Region: <strong>${acc.country || 'GLOBAL'}</strong></span>
+                                <span>•</span>
+                                <span style="color:var(--accent-cyan); font-family:'JetBrains Mono'; font-weight:700;">Code: ${acc.code}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <button class="btn-inspect-action" style="padding:4px 10px; font-size:11px;" onclick="event.stopPropagation(); copyTextToClipboard('${acc.code}', '6-Digit Code')">📋 Code</button>
+                        <button class="btn-sync-protocol" style="padding:4px 12px; font-size:11px;" onclick="event.stopPropagation(); openAccountDetailPopup(selectedUserDetail.accounts ? selectedUserDetail.accounts[${aIdx}] : {email:selectedUserDetail.email, code:selectedUserDetail.sync_code, token:selectedUserDetail.master_token}, selectedUserDetail)">🔍 Inspect Details ▶</button>
+                    </div>
+                `;
+                accountsContainer.appendChild(card);
+            });
+        }
+    }
+
+    function closeUserFullPanel() {
+        document.getElementById("userFullDetailPanel").classList.add("hidden");
+        document.getElementById("usersMainListView").classList.remove("hidden");
+    }
+
+    function copyFullPanelField(id, label) {
+        const txt = document.getElementById(id)?.innerText || "";
+        copyTextToClipboard(txt, label);
+    }
+
+    function targetDeviceInPushConsole(devId) {
+        if (!devId) return;
+        closeUserFullPanel();
+        const select = document.getElementById("notifTargetSelect");
+        if (select) {
+            select.value = devId;
+            select.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            showToast("Device selected in Push Console!", "info");
+        }
+    }
+
+    function openAccountDetailPopup(acc, user) {
+        if (!acc) return;
+        document.getElementById("popAccountCode").innerText = acc.code || "------";
+        document.getElementById("popAccountEmail").innerText = acc.email || "";
+        document.getElementById("popAccountServerUrl").innerText = (user && user.server_url) ? user.server_url : "https://pp-mod-auto-quest.onrender.com";
+        document.getElementById("popAccountToken").value = acc.token || (user && user.master_token) || "";
+        document.getElementById("accountDetailPopup").classList.remove("hidden");
+    }
+
+    function closeAccountDetailPopup() {
+        document.getElementById("accountDetailPopup").classList.add("hidden");
+    }
+
+    function copyPopField(id, label) {
+        const txt = document.getElementById(id)?.innerText || "";
+        copyTextToClipboard(txt, label);
+    }
+
+    function copyPopToken() {
+        const txt = document.getElementById("popAccountToken")?.value || "";
+        copyTextToClipboard(txt, "Sync Key");
+    }
+
+    // Modal User Detail fallback
+    function openUserDetailModal(index) {
+        openUserFullPanel(index);
     }
 
     function closeUserDetailModal() {
-        document.getElementById("userDetailModal").classList.add("hidden");
-        selectedUserDetail = null;
+        closeUserFullPanel();
     }
 
     function copyModalField(elementId, label) {
@@ -3745,7 +3946,7 @@
     function pairAccountDirectFromModal() {
         if (!selectedUserDetail || !selectedUserDetail.sync_code) return;
         const code = selectedUserDetail.sync_code;
-        closeUserDetailModal();
+        closeUserFullPanel();
 
         const pairInput = document.getElementById("quickPairInput");
         if (pairInput) {
@@ -3780,7 +3981,7 @@
                 })
             });
             const data = await res.json();
-            if (data.status === "success") {
+            if (data.ok || data.status === "success") {
                 showToast(`✅ Push notification sent successfully to ${data.queued_for || 'devices'}!`, "success");
                 const msgInput = document.getElementById("notifMessageInput");
                 if (msgInput) msgInput.value = "";
