@@ -1380,8 +1380,7 @@
                     <div class="account-meta-top">
                         <h4 id="topDisplayName">Admin Master</h4>
                         <span id="topLvlBadge" class="badge-lvl-pill">LVL 1</span>
-                        <!-- Stealth Blurred Email -->
-                        <span id="topEmail" class="stealth-blur" style="font-size:11.5px; color:var(--text-muted);" title="Hover to view email">mdd145712@gmail.com</span>
+                        <span id="topEmail" style="font-size:11.5px; color:var(--text-muted); font-family:'JetBrains Mono';">mdd145712@gmail.com</span>
                     </div>
 
                     <!-- Authentic Google Play Games Style Level Progress Bar -->
@@ -1861,7 +1860,7 @@
                     <label>Image Banner URL (Optional)</label>
                     <input id="notifImageUrlInput" type="url" class="form-input-element" placeholder="https://... (Full-width BigPicture notification image)" oninput="updateNotifImagePreview(this.value)">
                     <div id="notifImagePreviewBox" style="display:none; margin-top:10px; max-width:320px; border-radius:var(--radius-sm); overflow:hidden; border:1px solid var(--border-color);">
-                        <img id="notifPreviewImg" style="width:100%; height:auto; display:block;" src="" alt="Banner Preview">
+                        <img id="notifPreviewImg" style="width:100%; height:auto; display:block;" src="/static/images/default_app.png" alt="Banner Preview">
                     </div>
                 </div>
 
@@ -2252,14 +2251,13 @@
     <div class="inspector-panel-card">
         <div class="inspector-top-row">
             <div class="inspector-top-left">
-                <img id="inspLogo" class="inspector-logo-sq" src="" alt="Game Icon" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512';">
+                <img id="inspLogo" class="inspector-logo-sq" src="/static/images/default_app.png" alt="Game Icon" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='/static/images/default_app.png';">
                 <div>
                     <h3 id="inspTitle" style="font-size:16px; font-weight:800; color:var(--text-primary);">Game Title</h3>
                     <div style="display:flex; align-items:center; gap:8px; margin-top:2px;">
                         <span id="inspDev" style="font-size:11.5px; color:var(--accent-cyan); font-weight:600;">Developer</span>
                         <span style="color:var(--text-muted);">•</span>
-                        <!-- Stealth blurred package name in inspector -->
-                        <span id="inspPackage" class="pkg-stealth-pill stealth-blur" title="Hover to unmask package">com.game.package</span>
+                        <span id="inspPackage" class="pkg-stealth-pill" style="font-family:'JetBrains Mono'; font-size:11px;">com.game.package</span>
                     </div>
                 </div>
             </div>
@@ -2313,7 +2311,7 @@
             <input type="hidden" id="editGameId">
             <div style="display:flex; flex-direction:column; gap:14px;">
                 <div style="display:flex; gap:14px; align-items:center;">
-                    <img id="editLogoPreview" src="" style="width:58px; height:58px; border-radius:8px; object-fit:cover; border:1px solid var(--border-color); background:var(--bg-card-subtle);">
+                    <img id="editLogoPreview" src="/static/images/default_app.png" onerror="this.onerror=null; this.src='/static/images/default_app.png';" style="width:58px; height:58px; border-radius:8px; object-fit:cover; border:1px solid var(--border-color); background:var(--bg-card-subtle);">
                     <div style="flex:1;">
                         <label style="font-size:11.5px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">Official Logo URL</label>
                         <input type="url" id="editLogoInput" class="form-input-element" style="width:100%; font-size:12px;" placeholder="https://..." oninput="document.getElementById('editLogoPreview').src=this.value">
@@ -2373,7 +2371,7 @@
 
                 <!-- User Profile Preview Card (Populated automatically) -->
                 <div id="uidUserPreviewCard" style="display:none; background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:10px 14px; align-items:center; gap:12px;">
-                    <img id="uidUserAvatar" src="" style="width:40px; height:40px; border-radius:var(--radius-sm); border:1px solid var(--border-color); object-fit:cover;">
+                    <img id="uidUserAvatar" src="/static/images/default_app.png" onerror="this.onerror=null; this.src='/static/images/default_app.png';" style="width:40px; height:40px; border-radius:var(--radius-sm); border:1px solid var(--border-color); object-fit:cover;">
                     <div style="flex:1; min-width:0;">
                         <div style="display:flex; align-items:center; gap:6px;">
                             <span id="uidUserName" style="font-size:13.5px; font-weight:800; color:var(--text-primary);"></span>
@@ -2902,13 +2900,12 @@
                 </button>
 
                 <div class="game-entry-top">
-                    <img class="game-thumb-logo" src="${g.icon}" alt="${g.title}" referrerpolicy="no-referrer" onerror="this.src='https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512'">
+                    <img class="game-thumb-logo" src="${g.icon}" alt="${g.title}" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null; this.src='/static/images/default_app.png';">
                     <div class="game-heading" style="flex:1; min-width:0; padding-right:50px;">
                         <div style="margin-bottom:3px;">${sectionBadge}</div>
                         <h4 title="${g.title}" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin:0 0 2px 0;">${g.title}</h4>
                         <div class="dev-tag">${g.developer} • ${g.category}</div>
-                        <!-- STEALTH BLURRED PACKAGE NAME -->
-                        <div class="pkg-stealth-pill stealth-blur" title="Hover or double-click to unmask">${g.package}</div>
+                        <div class="pkg-stealth-pill" style="font-family:'JetBrains Mono'; font-size:11px;">${g.package}</div>
                     </div>
                 </div>
 
@@ -2918,17 +2915,15 @@
                         <div class="card-quest-track" title="${unlockedCount} of ${totalCount} Quests Synced (${pct}%)">
                             <div class="card-quest-fill" id="quest_fill_${g.id}" style="width:${pct}%;"></div>
                         </div>
-                        <!-- STEALTH BLURRED GPGS ENDPOINTS LABEL -->
-                        <span class="sub-txt stealth-blur" title="Hover to unmask" style="margin-top:3px;">GPGS Endpoints</span>
+                        <span class="sub-txt" style="margin-top:3px;">GPGS Endpoints</span>
                     </div>
                     <div class="stat-col">
                         <span class="bold-val" style="color:var(--accent-gold); font-family:'JetBrains Mono';">+${(g.total_xp || 16000).toLocaleString()} XP</span>
                         <span class="sub-txt">Reward Pool</span>
                     </div>
                     <div class="stat-col" style="text-align:right;">
-                        <!-- STEALTH BLURRED API STATUS & 100% CERTIFIED -->
-                        <span class="bold-val stealth-blur" style="color:var(--accent-green);" title="Hover to unmask">100% Verified</span>
-                        <span class="sub-txt stealth-blur" title="Hover to unmask">API Status</span>
+                        <span class="bold-val" style="color:var(--accent-green);">100% Verified</span>
+                        <span class="sub-txt">API Status</span>
                     </div>
                 </div>
 
@@ -2972,10 +2967,9 @@
             document.getElementById("inspLogo").src = game.icon || 'https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512';
             document.getElementById("inspTitle").innerText = game.title;
             document.getElementById("inspDev").innerText = `${game.developer} • ${game.category}`;
-            // BLURRED in modal
             const pkgPill = document.getElementById("inspPackage");
             pkgPill.innerText = game.package;
-            pkgPill.className = "pkg-stealth-pill stealth-blur";
+            pkgPill.className = "pkg-stealth-pill";
         }
 
         const scrollBox = document.getElementById("inspectorScrollList");
