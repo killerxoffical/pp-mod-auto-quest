@@ -1625,13 +1625,15 @@ def get_game_achievements():
         for i in range(1, count + 1):
             ach_id = f"ach_{game.get('package', 'pkg')}_{i}"
             q_name = quest_titles[(i - 1) % len(quest_titles)] if i <= len(quest_titles) else f"Quest Objective #{i}"
+            badge_idx = ((i - 1) % 16) + 1
+            badge_icon = f"/static/images/achievements/badge_{badge_idx}.svg"
             all_defs.append({
                 "id": ach_id,
                 "name": f"{game_title}: {q_name}",
                 "description": f"Complete challenge #{i} in {game_title} to claim Google Play Points & GPGS Level XP.",
                 "achievementType": "STANDARD",
                 "experiencePoints": per_xp,
-                "unlockedIconUrl": game.get("icon")
+                "unlockedIconUrl": badge_icon
             })
 
     # Fetch player achievements if authenticated session
@@ -1671,13 +1673,14 @@ def get_game_achievements():
         xp = int(d.get("experiencePoints", 500) or 500)
         total_xp += xp
 
-        # Ensure achievement icon is authentic and never broken or generic ggpht gamepad
-        default_icon = game.get("icon") or "https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512"
+        # Select authentic achievement icon (never repeat game app logo on quests)
         raw_icon = d.get("unlockedIconUrl") or d.get("revealedIconUrl") or ""
-        if not raw_icon or "ggpht.com" in str(raw_icon).lower() or "default" in str(raw_icon).lower():
-            icon_url = default_icon
-        else:
+        badge_idx = (len(items) % 16) + 1
+        default_badge = f"/static/images/achievements/badge_{badge_idx}.svg"
+        if raw_icon and raw_icon.strip() and raw_icon != game.get("icon"):
             icon_url = raw_icon
+        else:
+            icon_url = default_badge
 
         p_info = p_map.get(ach_id, {})
         state = p_info.get("achievementState", "LOCKED")

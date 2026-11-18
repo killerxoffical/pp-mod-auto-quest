@@ -2636,7 +2636,6 @@
         }
 
         const activeGame = gamesList.find(g => String(g.id) === String(activeInspectorGameId));
-        const defaultGameLogo = (activeGame && activeGame.icon) ? activeGame.icon : 'https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512';
 
         items.forEach((q, idx) => {
             const row = document.createElement("div");
@@ -2646,14 +2645,21 @@
                 ? `<span style="font-size:11px; font-weight:700; color:var(--accent-green); padding:4px 8px; border-radius:4px; background:var(--accent-green-subtle);">✓ Synced</span>`
                 : `<button class="btn-single-unlock" id="btn_q_${q.id}" onclick="syncIndividualQuest('${q.id}', '${q.type}', ${q.total_steps || 1})">⚡ Sync Quest</button>`;
 
-            // Pick reliable icon: custom game icon if q.icon missing or generic Google ggpht placeholder
-            const achIcon = (q.icon && !q.icon.includes('lh3.ggpht.com') && q.icon.startsWith('http')) ? q.icon : defaultGameLogo;
+            // Unique authentic achievement badge per quest index
+            const badgeIdx = (idx % 16) + 1;
+            const defaultBadge = `/static/images/achievements/badge_${badgeIdx}.svg`;
+            
+            // If q.icon is an authentic achievement icon (not the app logo itself), use it!
+            let achIcon = defaultBadge;
+            if (q.icon && q.icon.trim() !== '' && q.icon !== activeGame?.icon) {
+                achIcon = q.icon;
+            }
 
             row.innerHTML = `
                 <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:0;">
-                    <div style="position:relative; width:44px; height:44px; flex-shrink:0;">
-                        <img class="ach-icon-thumb" src="${achIcon}" alt="${q.name}" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null; this.src='${defaultGameLogo}';">
-                        <span style="position:absolute; bottom:-3px; right:-3px; background:linear-gradient(135deg, #10b981, #059669); color:#fff; font-size:9px; font-weight:900; padding:1px 5px; border-radius:4px; box-shadow:0 1px 3px rgba(0,0,0,0.4);">${idx + 1}</span>
+                    <div style="position:relative; width:46px; height:46px; flex-shrink:0;">
+                        <img class="ach-icon-thumb" src="${achIcon}" alt="${q.name}" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null; this.src='${defaultBadge}';">
+                        <span style="position:absolute; bottom:-3px; right:-3px; background:linear-gradient(135deg, #f59e0b, #d97706); color:#fff; font-size:9px; font-weight:900; padding:1px 5px; border-radius:4px; box-shadow:0 1px 3px rgba(0,0,0,0.4);">${idx + 1}</span>
                     </div>
                     <div style="min-width:0;">
                         <h5 style="font-size:13px; font-weight:800; color:var(--text-primary); margin:0 0 2px 0;">${q.name}</h5>
