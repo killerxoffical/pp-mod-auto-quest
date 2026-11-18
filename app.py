@@ -1099,8 +1099,8 @@ def download_static_file(filename):
 @app.route("/api/app/register_device", methods=["POST"])
 def register_device():
     """
-    Called by PP Server Android app on startup or when accounts are loaded/synced.
-    Saves hardware device ID, device model, Android version, app version, and connected accounts.
+    Called by PPM Server Android app on startup or when accounts are loaded/synced or user logs in.
+    Saves hardware device ID, device model, Android version, app version, connected accounts, and PP Mod profile.
     """
     data = request.get_json() or {}
     device_id = str(data.get("device_id", "")).strip()
@@ -1119,19 +1119,52 @@ def register_device():
     if incoming_accounts:
         merged_accounts = incoming_accounts
 
+    is_logged_in = data.get("is_logged_in", existing.get("is_logged_in", False))
+    ppmod_uid = (data.get("ppmod_uid") or existing.get("ppmod_uid") or "").strip()
+    ppmod_email = (data.get("ppmod_email") or existing.get("ppmod_email") or "").strip()
+    ppmod_name = (data.get("ppmod_name") or existing.get("ppmod_name") or "").strip()
+    ppmod_avatar = (data.get("ppmod_avatar") or existing.get("ppmod_avatar") or "").strip()
+
+    # If ppmod_email is provided, verify or fetch real PP Mod profile if uid/name missing
+    if ppmod_email and (not ppmod_uid or not ppmod_name):
+        try:
+            cf_url = f"https://ppmod-api.tredarskvt.workers.dev/api/user/find?q={requests.utils.quote(ppmod_email)}"
+            cf_res = requests.get(cf_url, timeout=3)
+            if cf_res.status_code == 200:
+                cf_user = cf_res.json().get("user", {})
+                if cf_user:
+                    ppmod_uid = cf_user.get("uid") or ppmod_uid
+                    ppmod_name = cf_user.get("name") or ppmod_name
+                    ppmod_avatar = cf_user.get("avatar") or ppmod_avatar
+                    is_logged_in = True
+        except Exception:
+            pass
+
     devices[device_id] = {
         "device_id": device_id,
         "model": data.get("model", existing.get("model", "Android Device")),
         "android_version": data.get("android_version", existing.get("android_version", "Android")),
-        "app_version": data.get("app_version", existing.get("app_version", "3.0")),
+        "app_version": data.get("app_version", existing.get("app_version", "3.0 (PPM Server)")),
         "first_seen": first_seen,
         "last_seen": now_str,
         "ip": request.remote_addr,
         "status": "Active",
-        "accounts": merged_accounts
+        "accounts": merged_accounts,
+        "is_logged_in": bool(is_logged_in),
+        "ppmod_uid": ppmod_uid,
+        "ppmod_email": ppmod_email,
+        "ppmod_name": ppmod_name,
+        "ppmod_avatar": ppmod_avatar
     }
     save_registered_devices(devices)
-    return jsonify({"ok": True, "device_id": device_id, "status": "Registered", "accounts_count": len(merged_accounts)})
+    return jsonify({
+        "ok": True,
+        "device_id": device_id,
+        "status": "Registered",
+        "is_logged_in": is_logged_in,
+        "ppmod_uid": ppmod_uid,
+        "accounts_count": len(merged_accounts)
+    })
 
 @app.route("/api/device/notifications", methods=["GET"])
 def get_device_notifications():
@@ -1283,55 +1316,71 @@ def get_admin_user_detail(device_id):
 @app.route("/api/admin/users", methods=["GET"])
 def get_admin_users():
     """
-    Return comprehensive list of users and their registered devices/synced accounts.
-    Merges real mobile app devices with Cloudflare D1 accounts and local tokens.
+    Return comprehensive list of authenticated PP Mod users and their registered mobile devices/synced accounts.
+    If a user has not logged into PP Mod on their mobile device, it remains empty as requested.
     """
     banned = load_banned_users()
     locked_devices = load_locked_devices()
     devices = load_registered_devices()
 
-    # Pre-fetch Cloudflare D1 accounts to map real PP Mod UID and profile details
-    accounts = []
-    try:
-        cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/sync/accounts", timeout=4)
-        if cf_res.status_code == 200:
-            accounts.extend(cf_res.json().get("accounts", []))
-    except Exception:
-        pass
-
-    email_to_cloud = {}
-    for a in accounts:
-        em = (a.get("email") or "").strip().lower()
-        if em:
-            email_to_cloud[em] = a
-
     user_list = []
     seen_device_ids = set()
 
-    # 1. Real mobile app hardware devices that entered the app
+    # Real mobile app hardware devices
     for dev_id, dev_data in devices.items():
+        is_logged_in = dev_data.get("is_logged_in", False)
+        ppmod_email = dev_data.get("ppmod_email", "").strip()
+        accs = dev_data.get("accounts", [])
+
+        # User requirement: "r login na korle faka thakbe"
+        # If user has not logged in with PP Mod account and has no synced accounts, do not display fake node users!
+        if not is_logged_in and not ppmod_email and not accs:
+            continue
+
         seen_device_ids.add(dev_id)
         is_locked = dev_id in locked_devices
-        accs = dev_data.get("accounts", [])
-        primary_email = accs[0].get("email") if accs else f"Node_{dev_id[:8]}@device"
+
+        primary_email = ppmod_email or (accs[0].get("email") if accs else "")
+        if not primary_email:
+            continue
+
+        ppmod_uid = dev_data.get("ppmod_uid", "").strip()
+        display_name = dev_data.get("ppmod_name", "").strip()
+        avatar = dev_data.get("ppmod_avatar", "").strip()
+
+        # If uid is missing or placeholder, fetch real profile from Cloudflare PP Mod API
+        if not ppmod_uid or ppmod_uid.startswith("UID-") or not display_name:
+            try:
+                cf_url = f"https://ppmod-api.tredarskvt.workers.dev/api/user/find?q={requests.utils.quote(primary_email)}"
+                cf_res = requests.get(cf_url, timeout=3)
+                if cf_res.status_code == 200:
+                    cf_user = cf_res.json().get("user", {})
+                    if cf_user:
+                        ppmod_uid = cf_user.get("uid") or ppmod_uid
+                        display_name = cf_user.get("name") or display_name
+                        avatar = cf_user.get("avatar") or avatar
+            except Exception:
+                pass
+
+        if not ppmod_uid:
+            ppmod_uid = f"UID-{abs(hash(primary_email)) % 900000 + 100000}"
+        if not display_name:
+            display_name = primary_email.split("@")[0].capitalize()
+
+        is_banned = primary_email.lower() in banned
         primary_code = accs[0].get("code") if accs else "------"
         primary_token = accs[0].get("token", "") if accs else ""
-        tok_preview = f"{primary_token[:12]}...{primary_token[-8:]}" if primary_token else "HardwareDeviceKey"
-        is_banned = primary_email.lower() in banned
-
-        # Map to Cloudflare PP Mod UID if available
-        cloud_acc = email_to_cloud.get(primary_email.lower())
-        pp_uid = cloud_acc.get("uid") if cloud_acc else (accs[0].get("uid") if accs and "uid" in accs[0] else f"UID-{primary_code if primary_code != '------' else dev_id[:6].upper()}")
-        display_name = cloud_acc.get("display_name") if cloud_acc else dev_data.get("model", "Android Device")
+        tok_preview = f"{primary_token[:12]}...{primary_token[-8:]}" if primary_token else "aas_et/CloudStored"
 
         user_list.append({
-            "uid": pp_uid,
+            "uid": ppmod_uid,
             "display_name": display_name,
             "email": primary_email,
+            "avatar": avatar,
             "device_id": dev_id,
             "model": dev_data.get("model", "Android Device"),
             "android_version": dev_data.get("android_version", "Android"),
-            "app_version": dev_data.get("app_version", "v3.8 Enterprise"),
+            "app_version": dev_data.get("app_version", "3.0 (PPM Server)"),
             "is_locked": is_locked,
             "sync_code": primary_code,
             "accounts_count": len(accs),
@@ -1344,59 +1393,6 @@ def get_admin_users():
             "is_banned": is_banned,
             "last_seen": dev_data.get("last_seen", "Active"),
             "created_at": dev_data.get("first_seen", "Active")
-        })
-
-    # 2. Add any cloud accounts not already represented
-    accounts = []
-    try:
-        cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/sync/accounts", timeout=4)
-        if cf_res.status_code == 200:
-            accounts.extend(cf_res.json().get("accounts", []))
-    except Exception:
-        pass
-
-    known = load_known_tokens()
-    for em, tok in known.items():
-        if not any(a.get("email") == em for a in accounts):
-            accounts.append({
-                "email": em,
-                "code": f"{abs(hash(em)) % 900000 + 100000}",
-                "status": "active",
-                "createdAt": "2026-11-15T00:00:00Z",
-                "master_token": tok
-            })
-
-    for acc in accounts:
-        em = acc.get("email", "").strip()
-        if not em or any(u["email"].lower() == em.lower() for u in user_list):
-            continue
-        dev_id = acc.get("device_id") or f"DEV-{abs(hash(em)) % 899999 + 100000:06x}"
-        if dev_id in seen_device_ids:
-            continue
-        code = str(acc.get("code", "")).strip() or f"{abs(hash(em)) % 900000 + 100000}"
-        is_banned = em.lower() in banned
-        tok = acc.get("master_token") or ""
-        tok_preview = f"{tok[:12]}...{tok[-8:]}" if tok else "aas_et/CloudStored"
-        uid = acc.get("uid") or f"UID-{abs(hash(em)) % 900000 + 100000}"
-        disp = acc.get("display_name") or em.split("@")[0].capitalize()
-        is_locked = dev_id in locked_devices
-
-        user_list.append({
-            "uid": uid,
-            "display_name": disp,
-            "email": em,
-            "device_id": dev_id,
-            "model": "Cloud Registered Node",
-            "android_version": "Android",
-            "is_locked": is_locked,
-            "sync_code": code,
-            "accounts_count": 1,
-            "master_token": tok,
-            "token_masked": tok_preview,
-            "status": "Banned" if is_banned else ("Locked" if is_locked else "Active"),
-            "is_banned": is_banned,
-            "last_seen": "Active",
-            "created_at": acc.get("createdAt", "Active")
         })
 
     return jsonify({

@@ -1249,6 +1249,14 @@
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        @keyframes userPanelFadeIn {
+            0% { opacity: 0; transform: translateY(16px) scale(0.99); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .animate-user-panel {
+            animation: userPanelFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
         .toast-holder {
             position: fixed;
             bottom: 24px;
@@ -1309,15 +1317,15 @@
                 </a>
                 <a class="nav-item" id="navUsers" onclick="switchAdminTab('users')">
                     <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-                    <span>Users & Accounts</span>
+                    <span>Users &amp; Accounts</span>
+                </a>
+                <a class="nav-item" id="navNotifications" onclick="switchAdminTab('notifications')">
+                    <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>
+                    <span>Push Notifications</span>
                 </a>
                 <a class="nav-item" id="navApk" onclick="switchAdminTab('apk')">
                     <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
                     <span>APK Node Builds</span>
-                </a>
-                <a class="nav-item" id="navVpsSettings" onclick="switchAdminTab('vps_settings')">
-                    <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
-                    <span>VPS Settings</span>
                 </a>
                 <a class="nav-item" id="navGateway" onclick="switchAdminTab('gateway')">
                     <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
@@ -1635,15 +1643,16 @@
                             <thead>
                                 <tr>
                                     <th>📱 Mobile Device / Model</th>
-                                    <th>📧 PP Mod Account Email</th>
+                                    <th>👤 PP Mod Account</th>
                                     <th>🆔 PP Mod UID</th>
+                                    <th>🔗 Synced Accounts</th>
                                     <th>Status</th>
-                                    <th>Actions</th>
+                                    <th style="text-align:right;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="usersTableBody">
                                 <tr>
-                                    <td colspan="5" style="text-align:center; padding:30px; color:var(--text-muted);">Loading active users from Cloudflare D1...</td>
+                                    <td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);">Loading active users...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1659,83 +1668,50 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- 1-Time Native Push Notification Sender Console -->
-                <div class="glass-card" style="margin-top: 24px; padding: 24px;">
-                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
-                        <div>
-                            <h3 style="font-size:16px; font-weight:800; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
-                                <span>📲</span> 1-Time Push Notification Console
-                            </h3>
-                            <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">
-                                Deliver high-priority system shade notifications directly to users' devices (1-Time delivery with ACK, supports custom banner image).
-                            </p>
-                        </div>
-                        <span class="badge-status active">Live Shade Broadcast</span>
-                    </div>
-
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:14px;">
-                        <div class="form-field">
-                            <label>Target Audience / Device</label>
-                            <select id="notifTargetSelect" class="form-input-element">
-                                <option value="all">📢 All Registered Mobile Devices</option>
-                            </select>
-                        </div>
-                        <div class="form-field">
-                            <label>Notification Title</label>
-                            <input id="notifTitleInput" type="text" class="form-input-element" placeholder="e.g. Special XP Bonus Available! 🎁" value="v3.8 Enterprise">
-                        </div>
-                    </div>
-
-                    <div class="form-field" style="margin-bottom:14px;">
-                        <label>Notification Message</label>
-                        <textarea id="notifMessageInput" class="form-input-element" style="height:70px; resize:vertical;" placeholder="Enter message for user's notification shade..."></textarea>
-                    </div>
-
-                    <div class="form-field" style="margin-bottom:16px;">
-                        <label>Image Banner URL (Optional)</label>
-                        <input id="notifImageUrlInput" type="url" class="form-input-element" placeholder="https://... (Full-width BigPicture notification image)">
-                    </div>
-
-                    <div style="display:flex; justify-content:flex-end;">
-                        <button class="btn-sync-protocol" style="padding:10px 22px; font-size:13px;" onclick="sendPushNotificationFromPanel()">
-                            <span>🚀 Send Push Notification</span>
-                        </button>
-                    </div>
-                </div>
             </div>
 
             <!-- ================= USER FULL DETAIL PANEL (DEDICATED FULL VIEW) ================= -->
             <div id="userFullDetailPanel" class="hidden">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:10px;">
-                    <div style="display:flex; align-items:center; gap:12px;">
-                        <button class="btn-inspect-action" style="padding:8px 16px; font-size:12.5px; font-weight:700;" onclick="closeUserFullPanel()">
-                            <span>◀ Back to All Users</span>
-                        </button>
-                        <div>
-                            <h3 id="fullPanelDeviceTitle" style="font-size:18px; font-weight:800; color:var(--text-primary); margin:0;">Device Model</h3>
-                            <span id="fullPanelEmailSub" style="font-size:12px; color:var(--accent-cyan); font-family:'JetBrains Mono';">user@gmail.com</span>
-                        </div>
-                    </div>
+                    <button class="btn-inspect-action" style="padding:8px 18px; font-size:13px; font-weight:700; display:flex; align-items:center; gap:6px;" onclick="closeUserFullPanel()">
+                        <span>◀ Back to All Users</span>
+                    </button>
                     <div id="fullPanelActionButtons" style="display:flex; gap:8px;"></div>
                 </div>
 
-                <!-- Device Node Overview Glass Card -->
-                <div class="glass-card" style="padding:22px; margin-bottom:20px;">
+                <!-- User Profile Hero Glass Card -->
+                <div class="glass-card" style="padding:24px; margin-bottom:20px; background:linear-gradient(135deg, rgba(14,165,233,0.06), rgba(139,92,246,0.06));">
+                    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; margin-bottom:20px; padding-bottom:18px; border-bottom:1px solid var(--border-color);">
+                        <div style="display:flex; align-items:center; gap:16px;">
+                            <div id="fullPanelAvatar"></div>
+                            <div>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <h3 id="fullPanelUserName" style="font-size:20px; font-weight:800; color:var(--text-primary); margin:0;">PP Mod User</h3>
+                                    <span id="fullPanelServerStatus"><span class="badge-status active">200 OK Live</span></span>
+                                </div>
+                                <span id="fullPanelEmailSub" style="font-size:13px; color:var(--accent-cyan); font-family:'JetBrains Mono'; font-weight:600; margin-top:3px; display:block;">user@gmail.com</span>
+                            </div>
+                        </div>
+                        <div style="text-align:right;">
+                            <span style="font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Hardware Model</span>
+                            <div id="fullPanelDeviceTitle" style="font-size:15px; font-weight:800; color:var(--text-primary); margin-top:2px;">📱 Xiaomi Redmi 13C</div>
+                        </div>
+                    </div>
+
                     <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px;">
+                        <div style="padding:12px; background:var(--bg-card-subtle); border-radius:var(--radius-sm); border:1px solid var(--border-color);">
+                            <span style="font-size:10.5px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">🆔 PP Mod User UID</span>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+                                <span id="fullPanelUid" style="font-family:'JetBrains Mono'; font-size:14px; font-weight:800; color:var(--accent-cyan); word-break:break-all;">UID-000000</span>
+                                <button class="btn-copy-mini" title="Copy UID" onclick="copyFullPanelField('fullPanelUid', 'PP Mod UID')">📋</button>
+                            </div>
+                        </div>
+
                         <div style="padding:12px; background:var(--bg-card-subtle); border-radius:var(--radius-sm); border:1px solid var(--border-color);">
                             <span style="font-size:10.5px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">📱 Hardware Device ID</span>
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
                                 <span id="fullPanelDeviceId" style="font-family:'JetBrains Mono'; font-size:11px; color:var(--text-secondary); word-break:break-all;">DEV-NODE</span>
                                 <button class="btn-copy-mini" title="Copy Device ID" onclick="copyFullPanelField('fullPanelDeviceId', 'Device ID')">📋</button>
-                            </div>
-                        </div>
-
-                        <div style="padding:12px; background:var(--bg-card-subtle); border-radius:var(--radius-sm); border:1px solid var(--border-color);">
-                            <span style="font-size:10.5px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">🆔 PP Mod User UID</span>
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
-                                <span id="fullPanelUid" style="font-family:'JetBrains Mono'; font-size:14px; font-weight:800; color:var(--accent-cyan);">UID-000000</span>
-                                <button class="btn-copy-mini" title="Copy UID" onclick="copyFullPanelField('fullPanelUid', 'PP Mod UID')">📋</button>
                             </div>
                         </div>
 
@@ -1748,9 +1724,9 @@
                         </div>
 
                         <div style="padding:12px; background:var(--bg-card-subtle); border-radius:var(--radius-sm); border:1px solid var(--border-color);">
-                            <span style="font-size:10.5px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">⚡ Live Server Node Status</span>
-                            <div id="fullPanelServerStatus" style="margin-top:6px;">
-                                <span class="badge-status active">200 OK (Operational)</span>
+                            <span style="font-size:10.5px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">⚡ Cloud Sync Connection</span>
+                            <div style="margin-top:6px;">
+                                <span class="badge-status active">Operational • 200 OK</span>
                             </div>
                         </div>
                     </div>
@@ -1758,6 +1734,84 @@
 
                 <!-- Linked Accounts List Section -->
                 <div class="glass-card" style="padding:22px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
+                        <div>
+                            <h4 style="font-size:15px; font-weight:800; color:var(--text-primary); margin:0; display:flex; align-items:center; gap:8px;">
+                                <span>📋</span> Linked Google Accounts &amp; Sync Codes
+                            </h4>
+                            <p style="font-size:11.5px; color:var(--text-secondary); margin-top:2px;">
+                                Click on any account item below to view full email, 6-digit sync code, URL and token in a dedicated inspection popup.
+                            </p>
+                        </div>
+                        <span id="fullPanelAccountsCount" class="badge-status active" style="font-family:'JetBrains Mono'; font-size:11px;">0 Accounts Synced</span>
+                    </div>
+
+                    <div id="fullPanelAccountsContainer" style="display:flex; flex-direction:column; gap:10px;">
+                        <!-- Dynamically populated account rows -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 4: Dedicated 1-Time Native Push Notification Console -->
+        <section id="viewNotifications" class="admin-view-panel hidden">
+            <div class="glass-card" style="padding: 26px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px; border-bottom:1px solid var(--border-color); padding-bottom:16px;">
+                    <div style="display:flex; align-items:center; gap:14px;">
+                        <div style="width:48px; height:48px; border-radius:var(--radius-md); background:linear-gradient(135deg, rgba(14,165,233,0.2), rgba(139,92,246,0.2)); display:flex; align-items:center; justify-content:center; font-size:24px; border:1px solid rgba(14,165,233,0.3);">
+                            📲
+                        </div>
+                        <div>
+                            <h3 style="font-size:18px; font-weight:800; color:var(--text-primary); margin:0;">1-Time Push Notification Console</h3>
+                            <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">
+                                Broadcast instant system shade push notifications directly to user Android devices (Supports custom title, banner images &amp; single-device targeting).
+                            </p>
+                        </div>
+                    </div>
+                    <span class="badge-status active">🟢 Live Broadcast Operational</span>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:14px;">
+                    <div class="form-field">
+                        <label>Target Audience / Device</label>
+                        <select id="notifTargetSelect" class="form-input-element">
+                            <option value="all">📢 All Registered Mobile Devices</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label>Notification Title</label>
+                        <input id="notifTitleInput" type="text" class="form-input-element" placeholder="e.g. Special XP Bonus Available! 🎁" value="PPM Server Enterprise">
+                    </div>
+                </div>
+
+                <div class="form-field" style="margin-bottom:14px;">
+                    <label>Notification Message *</label>
+                    <textarea id="notifMessageInput" class="form-input-element" style="height:80px; resize:vertical;" placeholder="Enter message for user's notification shade..."></textarea>
+                </div>
+
+                <div class="form-field" style="margin-bottom:16px;">
+                    <label>Image Banner URL (Optional)</label>
+                    <input id="notifImageUrlInput" type="url" class="form-input-element" placeholder="https://... (Full-width BigPicture notification image)" oninput="updateNotifImagePreview(this.value)">
+                    <div id="notifImagePreviewBox" style="display:none; margin-top:10px; max-width:320px; border-radius:var(--radius-sm); overflow:hidden; border:1px solid var(--border-color);">
+                        <img id="notifPreviewImg" style="width:100%; height:auto; display:block;" src="" alt="Banner Preview">
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                    <span style="font-size:11.5px; color:var(--text-muted);">
+                        💡 Notification is delivered directly to the Android notification drawer. 1-Time delivery prevents repeats.
+                    </span>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn-inspect-action" style="padding:10px 18px; font-size:12.5px;" onclick="sendPushNotificationTest()">
+                            <span>🔔 Quick Test Notification</span>
+                        </button>
+                        <button class="btn-sync-protocol" style="padding:10px 24px; font-size:13px; font-weight:800;" onclick="sendPushNotificationFromPanel()">
+                            <span>🚀 Send Push Broadcast</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
                         <div>
                             <h4 style="font-size:15px; font-weight:800; color:var(--text-primary); margin:0; display:flex; align-items:center; gap:8px;">
@@ -2558,20 +2612,20 @@
         document.getElementById("navGames").classList.toggle("active", tab === "games");
         document.getElementById("navAddGame").classList.toggle("active", tab === "add_game");
         document.getElementById("navUsers").classList.toggle("active", tab === "users");
+        if (document.getElementById("navNotifications")) document.getElementById("navNotifications").classList.toggle("active", tab === "notifications");
         if (document.getElementById("navApk")) document.getElementById("navApk").classList.toggle("active", tab === "apk");
-        if (document.getElementById("navVpsSettings")) document.getElementById("navVpsSettings").classList.toggle("active", tab === "vps_settings");
         if (document.getElementById("navGateway")) document.getElementById("navGateway").classList.toggle("active", tab === "gateway");
 
         document.getElementById("viewGames").classList.toggle("hidden", tab !== "games");
         document.getElementById("viewAddGame").classList.toggle("hidden", tab !== "add_game");
         document.getElementById("viewUsers").classList.toggle("hidden", tab !== "users");
+        if (document.getElementById("viewNotifications")) document.getElementById("viewNotifications").classList.toggle("hidden", tab !== "notifications");
         if (document.getElementById("viewApk")) document.getElementById("viewApk").classList.toggle("hidden", tab !== "apk");
-        if (document.getElementById("viewVpsSettings")) document.getElementById("viewVpsSettings").classList.toggle("hidden", tab !== "vps_settings");
         if (document.getElementById("viewGateway")) document.getElementById("viewGateway").classList.toggle("hidden", tab !== "gateway");
 
         if (tab === "users") loadUsersList();
+        if (tab === "notifications") loadNotificationAudience();
         if (tab === "apk") loadAppVersionConfig();
-        if (tab === "vps_settings") loadWhitelistedDevices();
         if (tab === "gateway") loadGatewayTransactions();
     }
 
@@ -3395,47 +3449,70 @@
         if (btnPrev) btnPrev.disabled = (currentUserPage <= 1);
         if (btnNext) btnNext.disabled = (currentUserPage >= maxPages);
 
-        if (pageUsers.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);">No matching registered accounts found.</td></tr>`;
+        if (total === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:48px 20px;">
+                <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+                    <span style="font-size:36px;">📱</span>
+                    <strong style="color:var(--text-primary); font-size:14.5px;">No Authenticated PP Mod Users Logged In</strong>
+                    <p style="font-size:12px; color:var(--text-muted); max-width:440px; margin:0;">Users who open the PPM Server APK on their phone and log into PP Mod will appear here automatically with their real PP Mod UID and device info.</p>
+                </div>
+            </td></tr>`;
             return;
         }
 
         pageUsers.forEach((u, i) => {
             const actualIndex = startIdx + i;
             const tr = document.createElement("tr");
-            const banBtn = u.is_banned
-                ? `<button class="btn-ban-toggle unban" onclick="toggleUserBan('${u.email}')">Unban</button>`
-                : `<button class="btn-ban-toggle" onclick="toggleUserBan('${u.email}')">Ban</button>`;
 
-            // Safely sanitize token for onclick string
-            const safeToken = (u.master_token || u.token_masked || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+            // Format avatar or initial
+            let avatarHtml = '';
+            if (u.avatar) {
+                avatarHtml = `<img src="${u.avatar}" style="width:34px; height:34px; border-radius:50%; object-fit:cover; border:1px solid var(--border-color);">`;
+            } else {
+                const initial = (u.display_name || u.email || 'U').charAt(0).toUpperCase();
+                avatarHtml = `<div style="width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg, #0284c7, #8b5cf6); color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800;">${initial}</div>`;
+            }
+
+            const accCount = u.accounts_count !== undefined ? u.accounts_count : (u.accounts ? u.accounts.length : 0);
 
             tr.innerHTML = `
                 <td>
-                    <div class="user-clickable-cell" onclick="openUserFullPanel(${actualIndex})" title="Click to open full user panel">
-                        <strong style="color:var(--text-primary); display:block; font-size:13px;">📱 ${u.model || u.display_name}</strong>
+                    <div class="user-clickable-cell" onclick="openUserFullPanel(${actualIndex})" title="Click to view full profile">
+                        <strong style="color:var(--text-primary); display:block; font-size:13px;">📱 ${u.model || 'Android Device'}</strong>
                         <span style="font-size:10.5px; font-family:'JetBrains Mono'; color:var(--text-secondary);">${(u.device_id || '').substring(0, 16)}...</span>
                     </div>
                 </td>
                 <td>
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <span style="font-family:'JetBrains Mono'; font-size:12px; color:var(--text-primary); font-weight:600;">${u.email}</span>
-                        <button class="btn-copy-mini" title="Copy Email" onclick="copyTextToClipboard('${u.email}', 'Email')">📋</button>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        ${avatarHtml}
+                        <div>
+                            <strong style="font-size:13px; color:var(--text-primary); display:block;">${u.display_name || 'PP Mod User'}</strong>
+                            <div style="display:flex; align-items:center; gap:4px; margin-top:2px;">
+                                <span style="font-family:'JetBrains Mono'; font-size:11px; color:var(--text-secondary);">${u.email}</span>
+                                <button class="btn-copy-mini" title="Copy Email" onclick="event.stopPropagation(); copyTextToClipboard('${u.email}', 'Email')">📋</button>
+                            </div>
+                        </div>
                     </div>
                 </td>
                 <td>
-                    <span style="font-family:'JetBrains Mono'; font-size:12px; font-weight:800; color:var(--accent-cyan); background:var(--bg-card-subtle); padding:2px 8px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">${u.uid}</span>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <span style="font-family:'JetBrains Mono'; font-size:12px; font-weight:800; color:var(--accent-cyan); background:rgba(14,165,233,0.1); padding:3px 8px; border-radius:var(--radius-sm); border:1px solid rgba(14,165,233,0.3); word-break:break-all;">${u.uid}</span>
+                        <button class="btn-copy-mini" title="Copy UID" onclick="event.stopPropagation(); copyTextToClipboard('${u.uid}', 'PP Mod UID')">📋</button>
+                    </div>
+                </td>
+                <td>
+                    <span class="badge-status active" style="font-size:11px; font-weight:700;">${accCount} Account${accCount === 1 ? '' : 's'}</span>
                 </td>
                 <td>
                     <span class="badge-status ${u.is_banned ? 'banned' : (u.is_locked ? 'banned' : 'active')}">${u.status}</span>
                 </td>
-                <td>
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <button class="btn-sync-protocol" style="padding:5px 12px; font-size:11.5px; font-weight:700;" onclick="openUserFullPanel(${actualIndex})">
-                            <span>🚀 Open Panel ▶</span>
+                <td style="text-align:right;">
+                    <div style="display:flex; align-items:center; justify-content:flex-end; gap:6px;">
+                        <button class="btn-sync-protocol" style="padding:6px 14px; font-size:11.5px; font-weight:700;" onclick="openUserFullPanel(${actualIndex})">
+                            <span>Inspect User ➔</span>
                         </button>
-                        <button class="btn-inspect-action" style="padding:5px 8px; font-size:11px; color:${u.is_locked ? '#10b981' : '#f59e0b'};" onclick="toggleDeviceLock('${u.device_id || ''}')">
-                            ${u.is_locked ? '🔓 Unlock' : '🔒 Lock'}
+                        <button class="btn-inspect-action" style="padding:6px 9px; font-size:11px; color:${u.is_locked ? '#10b981' : '#f59e0b'};" onclick="event.stopPropagation(); toggleDeviceLock('${u.device_id || ''}')">
+                            ${u.is_locked ? '🔓' : '🔒'}
                         </button>
                     </div>
                 </td>
@@ -3804,12 +3881,29 @@
         if (!u) return;
         selectedUserDetail = u;
 
-        // Switch to Full Dedicated User Panel View
-        document.getElementById("usersMainListView").classList.add("hidden");
-        document.getElementById("userFullDetailPanel").classList.remove("hidden");
+        // Switch to Full Dedicated User Panel View with smooth animation
+        const mainView = document.getElementById("usersMainListView");
+        const fullView = document.getElementById("userFullDetailPanel");
+        mainView.classList.add("hidden");
+        fullView.classList.remove("hidden");
+        fullView.classList.remove("animate-user-panel");
+        void fullView.offsetWidth; // Trigger reflow for animation
+        fullView.classList.add("animate-user-panel");
+
+        // Set User Avatar
+        const avatarEl = document.getElementById("fullPanelAvatar");
+        if (avatarEl) {
+            if (u.avatar) {
+                avatarEl.innerHTML = `<img src="${u.avatar}" style="width:52px; height:52px; border-radius:50%; object-fit:cover; border:2px solid var(--accent-cyan); box-shadow:0 4px 12px rgba(14,165,233,0.3);">`;
+            } else {
+                const initial = (u.display_name || u.email || "U").charAt(0).toUpperCase();
+                avatarEl.innerHTML = `<div style="width:52px; height:52px; border-radius:50%; background:linear-gradient(135deg, #0284c7, #8b5cf6); display:flex; align-items:center; justify-content:center; color:#fff; font-size:20px; font-weight:800; border:2px solid rgba(255,255,255,0.2); box-shadow:0 4px 12px rgba(14,165,233,0.3);">${initial}</div>`;
+            }
+        }
 
         // Fill Header & Overview
-        document.getElementById("fullPanelDeviceTitle").innerText = "📱 " + (u.model || u.display_name || "Android Device");
+        document.getElementById("fullPanelUserName").innerText = u.display_name || "PP Mod User";
+        document.getElementById("fullPanelDeviceTitle").innerText = "📱 " + (u.model || "Android Device");
         document.getElementById("fullPanelEmailSub").innerText = u.email || "No Email";
         document.getElementById("fullPanelDeviceId").innerText = u.device_id || "DEV-Node";
         document.getElementById("fullPanelUid").innerText = u.uid || "UID-N/A";
@@ -3820,14 +3914,14 @@
         const actionBtnContainer = document.getElementById("fullPanelActionButtons");
         if (actionBtnContainer) {
             actionBtnContainer.innerHTML = `
-                <button class="btn-inspect-action" style="padding:6px 14px; font-size:12px; color:${u.is_locked ? '#10b981' : '#f59e0b'};" onclick="toggleDeviceLock('${u.device_id || ''}'); setTimeout(() => openUserFullPanel(${index}), 500);">
+                <button class="btn-inspect-action" style="padding:7px 14px; font-size:12px; color:${u.is_locked ? '#10b981' : '#f59e0b'};" onclick="toggleDeviceLock('${u.device_id || ''}'); setTimeout(() => openUserFullPanel(${index}), 500);">
                     ${u.is_locked ? '🔓 Unlock Device' : '🔒 Lock Device'}
                 </button>
-                <button class="btn-ban-toggle ${u.is_banned ? 'unban' : ''}" style="padding:6px 14px; font-size:12px;" onclick="toggleUserBan('${u.email}'); setTimeout(() => openUserFullPanel(${index}), 500);">
+                <button class="btn-ban-toggle ${u.is_banned ? 'unban' : ''}" style="padding:7px 14px; font-size:12px;" onclick="toggleUserBan('${u.email}'); setTimeout(() => openUserFullPanel(${index}), 500);">
                     ${u.is_banned ? 'Unban User' : 'Ban User'}
                 </button>
-                <button class="btn-sync-protocol" style="padding:6px 14px; font-size:12px;" onclick="targetDeviceInPushConsole('${u.device_id || ''}')">
-                    <span>📲 Push Alert</span>
+                <button class="btn-sync-protocol" style="padding:7px 16px; font-size:12px; font-weight:700;" onclick="targetUserInPushConsole('${u.device_id || ''}')">
+                    <span>📲 Send Push Alert</span>
                 </button>
             `;
         }
@@ -3835,48 +3929,113 @@
         // Render Linked Accounts List
         const accountsContainer = document.getElementById("fullPanelAccountsContainer");
         const countBadge = document.getElementById("fullPanelAccountsCount");
-        const accs = (u.accounts && Array.isArray(u.accounts) && u.accounts.length > 0) ? u.accounts : [{
+        const accs = (u.accounts && Array.isArray(u.accounts) && u.accounts.length > 0) ? u.accounts : (u.sync_code && u.sync_code !== '------' ? [{
             email: u.email,
             code: u.sync_code,
             token: u.master_token,
             country: "GLOBAL"
-        }];
+        }] : []);
 
         if (countBadge) {
-            countBadge.innerText = `${accs.length} Linked Account${accs.length > 1 ? 's' : ''}`;
+            countBadge.innerText = `${accs.length} Linked Account${accs.length === 1 ? '' : 's'}`;
         }
 
         if (accountsContainer) {
             accountsContainer.innerHTML = "";
-            accs.forEach((acc, aIdx) => {
-                const card = document.createElement("div");
-                card.style.cssText = "padding:14px 16px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-md); display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s ease; gap:12px; flex-wrap:wrap;";
-                card.onmouseover = () => card.style.borderColor = "var(--accent-cyan)";
-                card.onmouseout = () => card.style.borderColor = "var(--border-color)";
-                card.onclick = () => openAccountDetailPopup(acc, u);
-
-                card.innerHTML = `
-                    <div style="display:flex; align-items:center; gap:12px;">
-                        <div style="width:36px; height:36px; border-radius:var(--radius-sm); background:var(--bg-card-subtle); border:1px solid var(--border-color); display:flex; align-items:center; justify-content:center; font-size:15px;">
-                            ${aIdx + 1}
-                        </div>
-                        <div>
-                            <strong style="font-size:13px; color:var(--text-primary); display:block;">${acc.email}</strong>
-                            <div style="font-size:11px; color:var(--text-muted); margin-top:2px; display:flex; align-items:center; gap:8px;">
-                                <span>Region: <strong>${acc.country || 'GLOBAL'}</strong></span>
-                                <span>•</span>
-                                <span style="color:var(--accent-cyan); font-family:'JetBrains Mono'; font-weight:700;">Code: ${acc.code}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <button class="btn-inspect-action" style="padding:4px 10px; font-size:11px;" onclick="event.stopPropagation(); copyTextToClipboard('${acc.code}', '6-Digit Code')">📋 Code</button>
-                        <button class="btn-sync-protocol" style="padding:4px 12px; font-size:11px;" onclick="event.stopPropagation(); openAccountDetailPopup(selectedUserDetail.accounts ? selectedUserDetail.accounts[${aIdx}] : {email:selectedUserDetail.email, code:selectedUserDetail.sync_code, token:selectedUserDetail.master_token}, selectedUserDetail)">🔍 Inspect Details ▶</button>
+            if (accs.length === 0) {
+                accountsContainer.innerHTML = `
+                    <div style="text-align:center; padding:32px 16px; color:var(--text-muted); background:var(--bg-card-subtle); border-radius:var(--radius-md); border:1px dashed var(--border-color);">
+                        <span style="font-size:26px; display:block; margin-bottom:6px;">📭</span>
+                        <strong style="color:var(--text-primary); font-size:13.5px;">No Google Accounts Linked Yet</strong>
+                        <p style="font-size:12px; margin:4px 0 0; color:var(--text-muted);">When this user adds Google Play quest accounts in their PPM Server app, they will appear here with full sync codes and token credentials.</p>
                     </div>
                 `;
-                accountsContainer.appendChild(card);
-            });
+            } else {
+                accs.forEach((acc, aIdx) => {
+                    const card = document.createElement("div");
+                    card.style.cssText = "padding:14px 18px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-md); display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s cubic-bezier(0.16, 1, 0.3, 1); gap:14px; flex-wrap:wrap;";
+                    card.onmouseover = () => { card.style.borderColor = "var(--accent-cyan)"; card.style.transform = "translateY(-2px)"; card.style.boxShadow = "0 6px 18px rgba(14,165,233,0.12)"; };
+                    card.onmouseout = () => { card.style.borderColor = "var(--border-color)"; card.style.transform = "translateY(0)"; card.style.boxShadow = "none"; };
+                    card.onclick = () => openAccountDetailPopup(acc, u);
+
+                    card.innerHTML = `
+                        <div style="display:flex; align-items:center; gap:14px;">
+                            <div style="width:38px; height:38px; border-radius:var(--radius-sm); background:linear-gradient(135deg, rgba(14,165,233,0.15), rgba(139,92,246,0.15)); border:1px solid var(--border-color); display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:800; color:var(--accent-cyan);">
+                                ${aIdx + 1}
+                            </div>
+                            <div>
+                                <strong style="font-size:13.5px; color:var(--text-primary); display:block; font-family:'JetBrains Mono';">${acc.email}</strong>
+                                <div style="font-size:11px; color:var(--text-muted); margin-top:3px; display:flex; align-items:center; gap:8px;">
+                                    <span>Region: <strong style="color:var(--text-primary);">${acc.country || 'GLOBAL'}</strong></span>
+                                    <span>•</span>
+                                    <span style="color:var(--accent-cyan); font-family:'JetBrains Mono'; font-weight:800; background:rgba(14,165,233,0.12); padding:1px 6px; border-radius:4px;">Code: ${acc.code}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <button class="btn-inspect-action" style="padding:6px 12px; font-size:11.5px;" onclick="event.stopPropagation(); copyTextToClipboard('${acc.code}', '6-Digit Code')">📋 Copy Code</button>
+                            <button class="btn-sync-protocol" style="padding:6px 14px; font-size:11.5px; font-weight:700;" onclick="event.stopPropagation(); openAccountDetailPopup(selectedUserDetail.accounts ? selectedUserDetail.accounts[${aIdx}] : {email:selectedUserDetail.email, code:selectedUserDetail.sync_code, token:selectedUserDetail.master_token}, selectedUserDetail)">
+                                <span>🔍 Inspect Details ▶</span>
+                            </button>
+                        </div>
+                    `;
+                    accountsContainer.appendChild(card);
+                });
+            }
         }
+    }
+
+    function targetUserInPushConsole(deviceId) {
+        switchAdminTab('notifications');
+        const select = document.getElementById("notifTargetSelect");
+        if (select && deviceId) {
+            select.value = deviceId;
+        }
+    }
+
+    function targetDeviceInPushConsole(deviceId) {
+        targetUserInPushConsole(deviceId);
+    }
+
+    function updateNotifImagePreview(url) {
+        const box = document.getElementById("notifImagePreviewBox");
+        const img = document.getElementById("notifPreviewImg");
+        if (!box || !img) return;
+        if (url && url.startsWith("http")) {
+            img.src = url;
+            box.style.display = "block";
+        } else {
+            box.style.display = "none";
+        }
+    }
+
+    async function loadNotificationAudience() {
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/users`);
+            const data = await res.json();
+            const targetSelect = document.getElementById("notifTargetSelect");
+            if (targetSelect && data.ok && Array.isArray(data.users)) {
+                targetSelect.innerHTML = `<option value="all">📢 All Registered Mobile Devices</option>`;
+                const seen = new Set();
+                data.users.forEach(u => {
+                    if (u.device_id && !seen.has(u.device_id)) {
+                        seen.add(u.device_id);
+                        const opt = document.createElement("option");
+                        opt.value = u.device_id;
+                        opt.textContent = `📱 ${u.display_name} (${u.model || u.device_id.substring(0, 10)})`;
+                        targetSelect.appendChild(opt);
+                    }
+                });
+            }
+        } catch(e) {}
+    }
+
+    async function sendPushNotificationTest() {
+        const titleInput = document.getElementById("notifTitleInput");
+        const msgInput = document.getElementById("notifMessageInput");
+        if (titleInput) titleInput.value = "⚡ PPM Server Test Alert";
+        if (msgInput) msgInput.value = "Test push broadcast from PPM Server admin console. Everything is operational!";
+        await sendPushNotificationFromPanel();
     }
 
     function closeUserFullPanel() {
