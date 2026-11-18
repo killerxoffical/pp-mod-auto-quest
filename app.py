@@ -1342,14 +1342,38 @@ def ppmod_login():
     if email in load_banned_users():
         return jsonify({"ok": False, "error": "This account is suspended."}), 403
 
-    uid = f"UID-{abs(hash(email)) % 900000 + 100000}"
-    disp = email.split("@")[0].capitalize()
+    # Query Cloudflare worker for real PP Mod account info (Name, Avatar, UID, Balance)
+    real_user = None
+    try:
+        cf_url = f"https://ppmod-api.tredarskvt.workers.dev/api/user/find?q={requests.utils.quote(email)}"
+        cf_res = requests.get(cf_url, timeout=5)
+        if cf_res.status_code == 200:
+            d = cf_res.json()
+            if d.get("ok") and d.get("user"):
+                real_user = d["user"]
+    except Exception as e:
+        print(f"[-] Error querying PP Mod user find: {e}")
+
+    if real_user:
+        uid = real_user.get("uid") or f"UID-{abs(hash(email)) % 900000 + 100000}"
+        disp = real_user.get("name") or email.split("@")[0].capitalize()
+        real_email = real_user.get("email") or email
+        avatar = real_user.get("avatar") or ""
+        coins = int(real_user.get("playPoints") or real_user.get("balance") or 1000)
+    else:
+        uid = f"UID-{abs(hash(email)) % 900000 + 100000}"
+        disp = email.split("@")[0].capitalize()
+        real_email = email
+        avatar = ""
+        coins = 1000
+
     return jsonify({
         "ok": True,
         "uid": uid,
-        "email": email,
+        "email": real_email,
         "display_name": disp,
-        "coins": 1000,
+        "avatar": avatar,
+        "coins": coins,
         "token": f"ppmod_{abs(hash(email))}",
         "message": "Authenticated with PP Mod credentials",
         "ppmod_web_url": "https://ppmods.netlify.app/"
