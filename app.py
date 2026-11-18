@@ -839,6 +839,33 @@ def scan_game_metadata():
     if not q:
         return jsonify({"ok": False, "error": "Query is required"}), 400
 
+    # 1. Try Google Play Store directly if it looks like a package name
+    if "." in q and " " not in q:
+        try:
+            play_url = f"https://play.google.com/store/apps/details?id={q}&hl=en&gl=us"
+            headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+            r = requests.get(play_url, headers=headers, timeout=5)
+            if r.status_code == 200:
+                html = r.text
+                m_og = re.search(r'<meta property="og:image" content="([^"]+)"', html)
+                m_title = re.search(r'<h1 [^>]*itemprop="name"[^>]*>([^<]+)</h1>', html) or re.search(r'<title>([^<]+) - Apps on Google Play</title>', html)
+                icon = (m_og.group(1).split("=")[0] + "=s256-rw") if m_og else ""
+                title = m_title.group(1).strip() if m_title else q
+                if icon:
+                    return jsonify({
+                        "ok": True,
+                        "title": title,
+                        "developer": "Verified Android Studio",
+                        "category": "Google Play Games",
+                        "icon": icon,
+                        "package": q,
+                        "achievements_count": 16,
+                        "total_xp": 16000
+                    })
+        except Exception:
+            pass
+
+    # 2. Try iTunes
     clean_q = q.replace("com.", "").replace(".", " ").strip()
     try:
         url = "https://itunes.apple.com/search?term=" + requests.utils.quote(clean_q) + "&entity=software&limit=1"
