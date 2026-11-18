@@ -2032,7 +2032,7 @@
     <div class="inspector-panel-card">
         <div class="inspector-top-row">
             <div class="inspector-top-left">
-                <img id="inspLogo" class="inspector-logo-sq" src="" alt="Game Icon" referrerpolicy="no-referrer">
+                <img id="inspLogo" class="inspector-logo-sq" src="" alt="Game Icon" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512';">
                 <div>
                     <h3 id="inspTitle" style="font-size:16px; font-weight:800; color:var(--text-primary);">Game Title</h3>
                     <div style="display:flex; align-items:center; gap:8px; margin-top:2px;">
@@ -2562,9 +2562,9 @@
         const modal = document.getElementById("inspectorModal");
         modal.classList.remove("hidden");
 
-        const game = gamesList.find(g => g.id === gameId);
+        const game = gamesList.find(g => String(g.id) === String(gameId));
         if (game) {
-            document.getElementById("inspLogo").src = game.icon;
+            document.getElementById("inspLogo").src = game.icon || 'https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512';
             document.getElementById("inspTitle").innerText = game.title;
             document.getElementById("inspDev").innerText = `${game.developer} • ${game.category}`;
             // BLURRED in modal
@@ -2635,7 +2635,10 @@
             return;
         }
 
-        items.forEach(q => {
+        const activeGame = gamesList.find(g => String(g.id) === String(activeInspectorGameId));
+        const defaultGameLogo = (activeGame && activeGame.icon) ? activeGame.icon : 'https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512';
+
+        items.forEach((q, idx) => {
             const row = document.createElement("div");
             row.className = `ach-row-card ${q.is_unlocked ? 'unlocked' : 'locked'}`;
 
@@ -2643,13 +2646,19 @@
                 ? `<span style="font-size:11px; font-weight:700; color:var(--accent-green); padding:4px 8px; border-radius:4px; background:var(--accent-green-subtle);">✓ Synced</span>`
                 : `<button class="btn-single-unlock" id="btn_q_${q.id}" onclick="syncIndividualQuest('${q.id}', '${q.type}', ${q.total_steps || 1})">⚡ Sync Quest</button>`;
 
+            // Pick reliable icon: custom game icon if q.icon missing or generic Google ggpht placeholder
+            const achIcon = (q.icon && !q.icon.includes('lh3.ggpht.com') && q.icon.startsWith('http')) ? q.icon : defaultGameLogo;
+
             row.innerHTML = `
                 <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:0;">
-                    <img class="ach-icon-thumb" src="${q.icon}" alt="Icon" referrerpolicy="no-referrer" onerror="this.src='https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512'">
+                    <div style="position:relative; width:44px; height:44px; flex-shrink:0;">
+                        <img class="ach-icon-thumb" src="${achIcon}" alt="${q.name}" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null; this.src='${defaultGameLogo}';">
+                        <span style="position:absolute; bottom:-3px; right:-3px; background:linear-gradient(135deg, #10b981, #059669); color:#fff; font-size:9px; font-weight:900; padding:1px 5px; border-radius:4px; box-shadow:0 1px 3px rgba(0,0,0,0.4);">${idx + 1}</span>
+                    </div>
                     <div style="min-width:0;">
-                        <h5 style="font-size:13px; font-weight:800; color:var(--text-primary);">${q.name}</h5>
+                        <h5 style="font-size:13px; font-weight:800; color:var(--text-primary); margin:0 0 2px 0;">${q.name}</h5>
                         <p style="font-size:11.5px; color:var(--text-secondary); line-height:1.3; margin:2px 0;">${q.description}</p>
-                        <div style="display:flex; gap:6px; flex-wrap:wrap; font-size:10px; font-weight:700;">
+                        <div style="display:flex; gap:6px; flex-wrap:wrap; font-size:10px; font-weight:700; margin-top:3px;">
                             <span style="color:var(--accent-cyan);">${q.type === 'INCREMENTAL' ? `STEPS: ${q.current_steps || 0}/${q.total_steps}` : 'STANDARD'}</span>
                             <span style="color:var(--accent-gold); font-family:'JetBrains Mono';">+${q.xp} XP</span>
                             <span style="color:${q.is_unlocked ? 'var(--accent-green)' : 'var(--text-muted)'};">${q.is_unlocked ? 'SYNCED' : 'PENDING'}</span>

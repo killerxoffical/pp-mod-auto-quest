@@ -116,6 +116,8 @@ def get_games_oauth_token(email: str, master_token: str, android_id: str, app_pa
                 "ok": True,
                 "access_token": res["Auth"],
                 "expires_in": res.get("Expiry", 3600),
+                "is_fallback": False,
+                "target_app": target_app,
                 "raw": res
             }
 
@@ -134,6 +136,8 @@ def get_games_oauth_token(email: str, master_token: str, android_id: str, app_pa
                     "ok": True,
                     "access_token": res_fallback["Auth"],
                     "expires_in": res_fallback.get("Expiry", 3600),
+                    "is_fallback": True,
+                    "target_app": PLAY_GAMES_PACKAGE,
                     "raw": res_fallback
                 }
         

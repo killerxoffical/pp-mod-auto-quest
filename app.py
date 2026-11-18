@@ -1557,6 +1557,7 @@ def get_game_achievements():
 
     # Acquire active game OAuth token
     game_token = None
+    is_fallback_token = False
     if master_token:
         tok_res = get_games_oauth_token(
             email=email,
@@ -1567,28 +1568,32 @@ def get_game_achievements():
         )
         if tok_res.get("ok"):
             game_token = tok_res["access_token"]
+            is_fallback_token = tok_res.get("is_fallback", False)
     elif access_token:
         game_token = access_token
     else:
-        # Fallback to test known token if available so definitions are ALWAYS inspectable
-        known = load_known_tokens()
-        if known:
-            first_email = list(known.keys())[0]
-            first_tok = known[first_email]
-            tok_res = get_games_oauth_token(
-                email=first_email,
-                master_token=first_tok,
-                android_id=android_id or "1234567890abcdef",
-                app_package=game["package"],
-                client_sig=game["client_sig"]
-            )
-            if tok_res.get("ok"):
-                game_token = tok_res["access_token"]
+        # Fallback to test known token if available so definitions are ALWAYS inspectable for Game 1
+        if game_id == "1":
+            known = load_known_tokens()
+            if known:
+                first_email = list(known.keys())[0]
+                first_tok = known[first_email]
+                tok_res = get_games_oauth_token(
+                    email=first_email,
+                    master_token=first_tok,
+                    android_id=android_id or "1234567890abcdef",
+                    app_package=game["package"],
+                    client_sig=game["client_sig"]
+                )
+                if tok_res.get("ok"):
+                    game_token = tok_res["access_token"]
+                    is_fallback_token = tok_res.get("is_fallback", False)
 
     # Fetch GPGS definitions (with pagination)
     all_defs = []
     page_token = None
-    if game_token:
+    # Only query GPGS /achievements if token was specifically issued for this game package or Game 1
+    if game_token and (not is_fallback_token or game_id == "1"):
         try:
             while True:
                 url = f"{GAMES_API_BASE}/achievements?maxResults=50"
@@ -1666,7 +1671,13 @@ def get_game_achievements():
         xp = int(d.get("experiencePoints", 500) or 500)
         total_xp += xp
 
-        icon_url = d.get("unlockedIconUrl") or d.get("revealedIconUrl") or game.get("icon")
+        # Ensure achievement icon is authentic and never broken or generic ggpht gamepad
+        default_icon = game.get("icon") or "https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512"
+        raw_icon = d.get("unlockedIconUrl") or d.get("revealedIconUrl") or ""
+        if not raw_icon or "ggpht.com" in str(raw_icon).lower() or "default" in str(raw_icon).lower():
+            icon_url = default_icon
+        else:
+            icon_url = raw_icon
 
         p_info = p_map.get(ach_id, {})
         state = p_info.get("achievementState", "LOCKED")
