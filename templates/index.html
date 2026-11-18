@@ -1681,7 +1681,7 @@
                                 <img src="/static/images/pp_logo.png" style="width:48px; height:48px; border-radius:var(--radius-md); object-fit:cover; box-shadow:0 4px 12px rgba(139,92,246,0.3); border:1px solid var(--border-color);">
                                 <div>
                                     <h4 style="font-size:16px; font-weight:800; color:var(--text-primary);">PP Server Node Client</h4>
-                                    <span style="font-size:11.5px; color:var(--accent-green); font-weight:700;">v3.4 Release Signed • 547 KB</span>
+                                    <span style="font-size:11.5px; color:var(--accent-green); font-weight:700;">v3.8 Enterprise • Release Signed (V1+V2+V3)</span>
                                 </div>
                             </div>
                             <span class="badge-status active">STABLE</span>
@@ -1760,10 +1760,52 @@
                             </div>
                         </div>
                     </div>
-                    <a href="/download/PlayQuest_Token_Finder.apk" class="btn-download-apk" style="background:linear-gradient(135deg, #0284c7, #0369a1);" download>
-                        <svg style="width:16px; height:16px; fill:currentColor;" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
-                        <span>⬇️ Download Token_Finder.apk</span>
-                    </a>
+                <!-- FORCE UPDATE CONTROLLER -->
+                <div class="card" style="grid-column: 1 / -1; margin-top: 16px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 22px; box-shadow: var(--shadow-md);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+                        <div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="font-size:20px;">🚀</span>
+                                <h4 style="font-size:16px; font-weight:800; color:var(--text-primary); margin:0;">PP Server In-App Force Update Manager</h4>
+                            </div>
+                            <p style="font-size:12px; color:var(--text-secondary); margin-top:3px;">
+                                এডমিন এখান থেকে নতুন ভার্সন পুশ করলে ইউজারের অ্যাপে সুন্দর ৩ডি পপআপ আসবে এবং আপডেট না করা পর্যন্ত আগের অ্যাপ আর চালানো যাবে না।
+                            </p>
+                        </div>
+                        <span id="badgeCurrentAppVer" class="badge-status active">LIVE: v3.8 (Code 4)</span>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:14px;">
+                        <div>
+                            <label style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:5px;">Minimum Required Version Code *</label>
+                            <input id="updMinVerCode" type="number" class="form-input-element" value="4" style="height:42px; font-weight:700; font-family:'JetBrains Mono'; font-size:13px;">
+                            <span style="font-size:11px; color:var(--text-muted); display:block; margin-top:3px;">ইউজারের অ্যাপের Version Code এর চেয়ে কম হলে ফোর্স আপডেট পপআপ ব্লক করবে।</span>
+                        </div>
+                        <div>
+                            <label style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:5px;">Latest Version Name (Full Text) *</label>
+                            <input id="updVerName" type="text" class="form-input-element" value="v3.8 Enterprise" style="height:42px; font-weight:700; font-size:13px;">
+                            <span style="font-size:11px; color:var(--text-muted); display:block; margin-top:3px;">এডমিন যা লিখবেন পপআপে বড় অক্ষরে সেটাই শো করবে (যেমন: v3.8 Enterprise)।</span>
+                        </div>
+                        <div style="grid-column: 1 / -1;">
+                            <label style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:5px;">Direct APK Download URL *</label>
+                            <input id="updDownloadUrl" type="url" class="form-input-element" value="https://pp-mod-auto-quest.onrender.com/download/PP_Server.apk" style="height:42px; font-family:'JetBrains Mono'; font-size:12px;">
+                            <span style="font-size:11px; color:var(--text-muted); display:block; margin-top:3px;">ইউজার আপডেট বাটনে ক্লিক করলে সরাসরি এই লিংক থেকে লেটেস্ট APK ডাউনলোড শুরু হবে।</span>
+                        </div>
+                        <div style="grid-column: 1 / -1;">
+                            <label style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:5px;">Release Notes / What's New</label>
+                            <textarea id="updReleaseNotes" class="form-input-element" style="height:65px; font-size:12px; resize:vertical;" placeholder="New security features, live profile synchronization, and anti-interception enhancements..."></textarea>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; padding-top:14px; border-top:1px solid var(--border-color); flex-wrap:wrap; gap:10px;">
+                        <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; cursor:pointer;">
+                            <input id="chkForceUpdate" type="checkbox" checked style="width:16px; height:16px; accent-color:var(--accent-purple);">
+                            <span>Enforce Strict Blocking (আপডেট ছাড়া কোনো ইউজার অ্যাপ ব্যবহার করতে পারবে না)</span>
+                        </label>
+                        <button type="button" class="btn-primary" onclick="pushAppForceUpdate()" style="padding:10px 22px; font-weight:800; font-size:13px;">
+                            🚀 Push Live Update to All Devices
+                        </button>
+                    </div>
                 </div>
             </div>
         </section>
@@ -2275,6 +2317,7 @@
         if (document.getElementById("viewGateway")) document.getElementById("viewGateway").classList.toggle("hidden", tab !== "gateway");
 
         if (tab === "users") loadUsersList();
+        if (tab === "apk") loadAppVersionConfig();
         if (tab === "vps_settings") loadWhitelistedDevices();
         if (tab === "gateway") loadGatewayTransactions();
     }
@@ -3142,6 +3185,54 @@
             }
         } catch(e) {
             showToast("Connection error updating device lock.", "error");
+        }
+    }
+
+    async function loadAppVersionConfig() {
+        try {
+            const res = await fetch(`${API_BASE}/api/app/version`);
+            const data = await res.json();
+            if (data.ok) {
+                if (document.getElementById("updMinVerCode")) document.getElementById("updMinVerCode").value = data.min_required_version_code || 4;
+                if (document.getElementById("updVerName")) document.getElementById("updVerName").value = data.latest_version_name || "v3.8 Enterprise";
+                if (document.getElementById("updDownloadUrl")) document.getElementById("updDownloadUrl").value = data.download_url || "https://pp-mod-auto-quest.onrender.com/download/PP_Server.apk";
+                if (document.getElementById("updReleaseNotes")) document.getElementById("updReleaseNotes").value = data.release_notes || "";
+                if (document.getElementById("chkForceUpdate")) document.getElementById("chkForceUpdate").checked = !!data.is_force_update;
+                if (document.getElementById("badgeCurrentAppVer")) {
+                    document.getElementById("badgeCurrentAppVer").textContent = `LIVE: ${data.latest_version_name} (Code ${data.min_required_version_code})`;
+                }
+            }
+        } catch(e) {}
+    }
+
+    async function pushAppForceUpdate() {
+        const minCode = parseInt(document.getElementById("updMinVerCode")?.value || "4");
+        const verName = document.getElementById("updVerName")?.value || "";
+        const dlUrl = document.getElementById("updDownloadUrl")?.value || "";
+        const notes = document.getElementById("updReleaseNotes")?.value || "";
+        const force = document.getElementById("chkForceUpdate")?.checked ?? true;
+
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/app/version/update`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    min_required_version_code: minCode,
+                    latest_version_name: verName,
+                    download_url: dlUrl,
+                    release_notes: notes,
+                    is_force_update: force
+                })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                showToast(data.message, "success");
+                await loadAppVersionConfig();
+            } else {
+                showToast(data.error || "Failed to update version.", "error");
+            }
+        } catch(e) {
+            showToast("Connection error pushing update.", "error");
         }
     }
 

@@ -934,6 +934,83 @@ def toggle_device_lock():
     save_locked_devices(locked)
     return jsonify({"ok": True, "device_id": dev_id, "status": status, "locked": (status == "Locked"), "message": msg})
 
+VERSION_CONFIG_FILE = os.path.join(DATA_DIR, "app_version_config.json")
+
+def load_version_config():
+    default_cfg = {
+        "latest_version_code": 4,
+        "latest_version_name": "v3.8 Enterprise",
+        "min_required_version_code": 4,
+        "download_url": "https://pp-mod-auto-quest.onrender.com/download/PP_Server.apk",
+        "release_notes": "Security hardening, live profile sync, and enhanced anti-interception protection.",
+        "is_force_update": True,
+        "updated_at": int(time.time())
+    }
+    if os.path.exists(VERSION_CONFIG_FILE):
+        try:
+            with open(VERSION_CONFIG_FILE, "r") as f:
+                saved = json.load(f)
+                default_cfg.update(saved)
+                return default_cfg
+        except Exception:
+            return default_cfg
+    return default_cfg
+
+def save_version_config(cfg):
+    try:
+        with open(VERSION_CONFIG_FILE, "w") as f:
+            json.dump(cfg, f, indent=2)
+    except Exception as e:
+        print(f"[-] Error saving version config: {e}")
+
+@app.route("/api/app/version", methods=["GET"])
+def get_app_version():
+    """Public endpoint for mobile app to check update requirements on launch"""
+    cfg = load_version_config()
+    return jsonify({
+        "ok": True,
+        "latest_version_code": cfg.get("latest_version_code", 4),
+        "latest_version_name": cfg.get("latest_version_name", "v3.8 Enterprise"),
+        "min_required_version_code": cfg.get("min_required_version_code", 4),
+        "download_url": cfg.get("download_url", "https://pp-mod-auto-quest.onrender.com/download/PP_Server.apk"),
+        "release_notes": cfg.get("release_notes", "Important security update required."),
+        "is_force_update": cfg.get("is_force_update", True),
+        "updated_at": cfg.get("updated_at", int(time.time()))
+    })
+
+@app.route("/api/admin/app/version/update", methods=["POST"])
+def update_app_version():
+    """Admin endpoint to push a new version requirement to all devices"""
+    data = request.get_json() or {}
+    cfg = load_version_config()
+
+    if "min_required_version_code" in data:
+        try:
+            cfg["min_required_version_code"] = int(data["min_required_version_code"])
+            cfg["latest_version_code"] = max(cfg.get("latest_version_code", 4), cfg["min_required_version_code"])
+        except ValueError:
+            pass
+
+    if "latest_version_name" in data and str(data["latest_version_name"]).strip():
+        cfg["latest_version_name"] = str(data["latest_version_name"]).strip()
+
+    if "download_url" in data and str(data["download_url"]).strip():
+        cfg["download_url"] = str(data["download_url"]).strip()
+
+    if "release_notes" in data:
+        cfg["release_notes"] = str(data["release_notes"]).strip()
+
+    if "is_force_update" in data:
+        cfg["is_force_update"] = bool(data["is_force_update"])
+
+    cfg["updated_at"] = int(time.time())
+    save_version_config(cfg)
+    return jsonify({
+        "ok": True,
+        "message": f"Successfully pushed update requirement for {cfg['latest_version_name']} (Min Code: {cfg['min_required_version_code']})",
+        "config": cfg
+    })
+
 @app.route("/download/<path:filename>")
 def download_static_file(filename):
     """Serve APK files and assets for direct admin download"""
