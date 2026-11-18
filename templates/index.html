@@ -1323,10 +1323,6 @@
                     <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
                     <span>Gateway &amp; SMS</span>
                 </a>
-                <a class="nav-item" onclick="unlockMegaBatchGlobal()">
-                    <svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
-                    <span>Run Mega Protocol</span>
-                </a>
                 <a class="nav-item" href="https://ppmods.netlify.app/" target="_blank" rel="noopener">
                     <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
                     <span>PP Mod Web Portal ↗</span>
@@ -1938,6 +1934,46 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- 24/7 Render Keep-Alive Cron Pinger Card -->
+            <div class="vps-config-card" style="margin-top:24px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span style="font-size:26px;">⏰</span>
+                        <div>
+                            <h3 style="font-size:18px; font-weight:800; color:var(--text-primary);">24/7 Render Free-Tier Keep-Alive &amp; Cron Ping Node</h3>
+                            <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Render-এর ফ্রি সার্ভার যাতে ১৫ মিনিট পর ঘুমে (spin-down) না যায়, সেজন্য ডেডিকেটেড পিং এন্ডপয়েন্ট ও সেলফ-পিঙ্গার।</p>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span class="quota-safety-badge" style="background:rgba(16,185,129,0.1); color:#10b981; border-color:rgba(16,185,129,0.25);">⚡ 8-Min Auto Self-Pinger Active</span>
+                    </div>
+                </div>
+
+                <div style="background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:18px; margin-bottom:16px;">
+                    <div style="display:grid; grid-template-columns: 1fr auto auto; gap:12px; align-items:flex-end;">
+                        <div class="form-field" style="margin-bottom:0;">
+                            <label style="font-weight:700;">Public Cron Ping Endpoint URL (Set to 5-10 min interval in Cron-Job.org / UptimeRobot)</label>
+                            <input type="text" id="cronPingUrlInput" class="form-input-element" style="font-family:monospace; font-weight:600; color:#3b82f6;" value="https://pp-mod-auto-quest.onrender.com/api/ping" readonly>
+                        </div>
+                        <button type="button" class="btn-inspect-action" onclick="copyCronPingUrl()" style="height:40px; padding:0 18px; white-space:nowrap;">
+                            <span>📋 Copy Cron URL</span>
+                        </button>
+                        <button type="button" class="btn-sync-protocol" id="btnTestLivePing" onclick="testLivePing()" style="height:40px; padding:0 20px; white-space:nowrap;">
+                            <span>⚡ Ping Server Now</span>
+                        </button>
+                    </div>
+
+                    <div id="pingTestResultBox" style="display:none; margin-top:14px; padding:12px 16px; border-radius:var(--radius-sm); font-size:12.5px; font-family:monospace; line-height:1.5;"></div>
+
+                    <div style="margin-top:14px; padding:12px 14px; background:rgba(59,130,246,0.06); border:1px solid rgba(59,130,246,0.2); border-radius:var(--radius-sm); font-size:11.5px; color:var(--text-secondary); line-height:1.6;">
+                        🚀 <b>কীভাবে সেটআপ করবেন?</b><br>
+                        ১. <b>Free Cron Setup:</b> <a href="https://cron-job.org" target="_blank" rel="noopener" style="color:#3b82f6; font-weight:700;">cron-job.org</a> বা <a href="https://uptimerobot.com" target="_blank" rel="noopener" style="color:#3b82f6; font-weight:700;">UptimeRobot</a>-এ ফ্রি অ্যাকাউন্ট খুলে উপরের URL-টি দিন।<br>
+                        ২. <b>Schedule:</b> প্রতি <b>5 থেকে 10 মিনিট</b> পরপর <code>GET</code> রিকোয়েস্ট পাঠাতে দিন।<br>
+                        ৩. <b>Zero Downtime:</b> ব্যাকএন্ড সার্ভার প্রতিবার পিং রিসিভ করার সাথে সাথে <code>200 OK</code> রেসপন্স প্রদান করে Render-এর ১৫ মিনিটের ইনঅ্যাক্টিভিটি স্লিপ টাইমার রিসেট করে দিবে, ফলে সার্ভার ২৪/৭ সচল থাকবে এবং কোনো ইউজার রিকোয়েস্টে ল্যাগ হবে না।
+                    </div>
                 </div>
             </div>
         </section>
@@ -3481,6 +3517,62 @@
             }
         } catch (e) {
             showToast("Network error removing device.", "error");
+        }
+    }
+
+    // 24/7 Render Keep-Alive Cron Helper Functions
+    function copyCronPingUrl() {
+        const input = document.getElementById("cronPingUrlInput");
+        if (!input) return;
+        navigator.clipboard.writeText(input.value.trim()).then(() => {
+            showToast("Cron Keep-Alive URL copied to clipboard! Set in cron-job.org / UptimeRobot.", "success");
+        }).catch(() => {
+            input.select();
+            document.execCommand("copy");
+            showToast("Cron Keep-Alive URL copied!", "success");
+        });
+    }
+
+    async function testLivePing() {
+        const btn = document.getElementById("btnTestLivePing");
+        const box = document.getElementById("pingTestResultBox");
+        if (!box) return;
+
+        btn.disabled = true;
+        btn.innerHTML = `<span>⏳ Pinging...</span>`;
+        box.style.display = "block";
+        box.style.background = "rgba(59,130,246,0.1)";
+        box.style.border = "1px solid rgba(59,130,246,0.3)";
+        box.style.color = "#3b82f6";
+        box.innerHTML = "Sending keep-alive ping to Render node endpoint (/api/ping)...";
+
+        const start = performance.now();
+        try {
+            const res = await fetch(`${API_BASE}/api/ping`, { method: "GET" });
+            const latency = Math.round(performance.now() - start);
+            const data = await res.json();
+            if (res.ok && data.ok) {
+                box.style.background = "rgba(16,185,129,0.1)";
+                box.style.border = "1px solid rgba(16,185,129,0.3)";
+                box.style.color = "#10b981";
+                box.innerHTML = `✅ <b>Ping Successful (HTTP ${res.status} OK • ${latency}ms latency)</b><br>` +
+                                `Server Message: <i>${data.message || "Alive"}</i><br>` +
+                                `Status: <b>${data.uptime || "24/7 Active"}</b> • Timestamp: ${new Date(data.timestamp * 1000).toLocaleTimeString()}<br>` +
+                                `<span style="font-size:11px; color:var(--text-secondary);">Render 15-minute inactivity timer has been successfully reset!</span>`;
+            } else {
+                box.style.background = "rgba(239,68,68,0.1)";
+                box.style.border = "1px solid rgba(239,68,68,0.3)";
+                box.style.color = "#ef4444";
+                box.innerHTML = `⚠️ Ping returned status ${res.status}: ${data.message || "Check server connectivity"}`;
+            }
+        } catch (err) {
+            box.style.background = "rgba(239,68,68,0.1)";
+            box.style.border = "1px solid rgba(239,68,68,0.3)";
+            box.style.color = "#ef4444";
+            box.innerHTML = `❌ Failed to reach ping endpoint: ${err.message}`;
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = `<span>⚡ Ping Server Now</span>`;
         }
     }
 

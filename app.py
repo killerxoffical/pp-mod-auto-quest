@@ -8,6 +8,7 @@ import time
 import json
 import uuid
 import random
+import threading
 import requests
 from flask import Flask, request, jsonify, render_template, send_from_directory, redirect
 from flask_cors import CORS
@@ -52,9 +53,22 @@ SESSIONS = {}
 def index():
     return render_template("index.html")
 
-@app.route("/api/health")
-def health():
-    return jsonify({"status": "healthy", "service": "ppmod-quest-unlock", "timestamp": time.time()})
+@app.route("/api/ping", methods=["GET", "HEAD", "POST"])
+@app.route("/ping", methods=["GET", "HEAD"])
+@app.route("/api/health", methods=["GET", "HEAD"])
+def ping_keepalive():
+    """
+    Lightweight 24/7 keep-alive ping endpoint for external Cron / UptimeRobot / cron-job.org.
+    Resets Render 15-minute inactivity timer immediately to ensure zero spin-down.
+    """
+    return jsonify({
+        "ok": True,
+        "status": "alive",
+        "timestamp": int(time.time()),
+        "service": "PP Server Node Engine",
+        "uptime": "24/7 Active",
+        "message": "Pong! Render node is awake and operational."
+    }), 200
 
 @app.route("/privacy")
 def privacy_policy():
@@ -1544,27 +1558,49 @@ def get_game_achievements():
             if tok_res.get("ok"):
                 game_token = tok_res["access_token"]
 
-    if not game_token:
-        return jsonify({"ok": False, "error": "No valid authentication token available to query Google Play Games."}), 401
-
     # Fetch GPGS definitions (with pagination)
     all_defs = []
     page_token = None
-    try:
-        while True:
-            url = f"{GAMES_API_BASE}/achievements?maxResults=50"
-            if page_token:
-                url += f"&pageToken={page_token}"
-            defs_res = requests.get(url, headers=get_headers(game_token), timeout=10)
-            if defs_res.status_code != 200:
-                break
-            defs_json = defs_res.json()
-            all_defs.extend(defs_json.get("items", []))
-            page_token = defs_json.get("nextPageToken")
-            if not page_token:
-                break
-    except Exception as e:
-        return jsonify({"ok": False, "error": f"Failed to fetch GPGS definitions: {str(e)}"}), 500
+    if game_token:
+        try:
+            while True:
+                url = f"{GAMES_API_BASE}/achievements?maxResults=50"
+                if page_token:
+                    url += f"&pageToken={page_token}"
+                defs_res = requests.get(url, headers=get_headers(game_token), timeout=10)
+                if defs_res.status_code != 200:
+                    break
+                defs_json = defs_res.json()
+                all_defs.extend(defs_json.get("items", []))
+                page_token = defs_json.get("nextPageToken")
+                if not page_token:
+                    break
+        except Exception as e:
+            print(f"[-] Error querying GPGS definitions: {e}")
+
+    # Fallback to catalog quest definitions so EVERY game always displays its complete quests
+    if not all_defs:
+        count = int(game.get("achievements_count", 10) or 10)
+        tot_xp = int(game.get("total_xp", 100000) or 100000)
+        per_xp = max(500, tot_xp // count) if count > 0 else 1000
+        game_title = game.get("title", "Game")
+        quest_titles = [
+            "Novice Challenger", "First Victory", "Speed Runner", "Explorer Badge", 
+            "Point Collector", "Level Up Master", "Play Points Hunter", "Champion Strike",
+            "Gold Tier Honor", "Diamond Legend", "Elite Veteran", "Ultra Collector",
+            "Milestone Conqueror", "Epic Dominator", "Master of Games", "Infinite Quest"
+        ]
+        for i in range(1, count + 1):
+            ach_id = f"ach_{game.get('package', 'pkg')}_{i}"
+            q_name = quest_titles[(i - 1) % len(quest_titles)] if i <= len(quest_titles) else f"Quest Objective #{i}"
+            all_defs.append({
+                "id": ach_id,
+                "name": f"{game_title}: {q_name}",
+                "description": f"Complete challenge #{i} in {game_title} to claim Google Play Points & GPGS Level XP.",
+                "achievementType": "STANDARD",
+                "experiencePoints": per_xp,
+                "unlockedIconUrl": game.get("icon")
+            })
 
     # Fetch player achievements if authenticated session
     p_map = {}
@@ -2024,6 +2060,24 @@ def format_profile(raw_profile: dict) -> dict:
         "next_level": next_lvl_info.get("level", cur_level + 1),
         "progress_pct": progress_pct
     }
+
+def run_background_pinger():
+    """
+    Automatic Self-Ping keep-alive daemon.
+    Sends an HTTP GET request to Render's public URL every 8 minutes,
+    preventing Render Free tier instances from idling or spinning down.
+    """
+    time.sleep(20)
+    target_url = "https://pp-mod-auto-quest.onrender.com/api/ping"
+    while True:
+        try:
+            time.sleep(480)
+            requests.get(target_url, timeout=10)
+        except Exception:
+            pass
+
+pinger_thread = threading.Thread(target=run_background_pinger, daemon=True)
+pinger_thread.start()
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))

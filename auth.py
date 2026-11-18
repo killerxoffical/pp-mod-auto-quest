@@ -118,6 +118,24 @@ def get_games_oauth_token(email: str, master_token: str, android_id: str, app_pa
                 "expires_in": res.get("Expiry", 3600),
                 "raw": res
             }
+
+        # Fallback to base Google Play Games package if game-specific signature failed
+        if target_app != PLAY_GAMES_PACKAGE:
+            res_fallback = gpsoauth.perform_oauth(
+                email=email.strip(),
+                master_token=master_token,
+                android_id=android_id,
+                service=f"oauth2:{SCOPE_GAMES}",
+                app=PLAY_GAMES_PACKAGE,
+                client_sig=GOOGLE_CLIENT_SIG
+            )
+            if "Auth" in res_fallback:
+                return {
+                    "ok": True,
+                    "access_token": res_fallback["Auth"],
+                    "expires_in": res_fallback.get("Expiry", 3600),
+                    "raw": res_fallback
+                }
         
         return {
             "ok": False,
