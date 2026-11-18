@@ -1295,6 +1295,10 @@
                     <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
                     <span>VPS Settings</span>
                 </a>
+                <a class="nav-item" id="navGateway" onclick="switchAdminTab('gateway')">
+                    <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+                    <span>Gateway &amp; SMS</span>
+                </a>
                 <a class="nav-item" onclick="unlockMegaBatchGlobal()">
                     <svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
                     <span>Run Mega Protocol</span>
@@ -1772,6 +1776,50 @@
                 </div>
             </div>
         </section>
+
+        <!-- VIEW 6: Payment Gateway & Mobile SMS Monitor -->
+        <section id="viewGateway" class="admin-view-panel hidden">
+            <div class="users-table-card">
+                <div class="table-header-box">
+                    <div>
+                        <h3 style="font-size:17px; font-weight:800; color:var(--text-primary);">📱 Mobile SMS Payment Gateway &amp; TrxID Monitor</h3>
+                        <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Real-time automated payment alerts captured by PP Gateway Node (bKash • Nagad • Rocket).</p>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span class="quota-safety-badge">🔒 Anti-Duplicate TrxID Active</span>
+                        <button class="btn-inspect-action" onclick="loadGatewayTransactions()">🔄 Refresh SMS</button>
+                    </div>
+                </div>
+
+                <!-- Info Banner -->
+                <div style="padding:12px 24px; background:var(--bg-card-subtle); border-bottom:1px solid var(--border-color); display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+                    <span style="font-size:16px;">💡</span>
+                    <span style="font-size:12px; color:var(--text-secondary);">
+                        ইউজারদের পেমেন্ট স্বয়ংক্রিয়ভাবে কয়েন ব্যালেন্সে যোগ হয়। আন-ক্লেইমড ট্রানজেকশন অ্যাডমিন <strong>[Claim as Admin]</strong> বাটনে ক্লিক করে স্থায়ীভাবে লক করে রাখতে পারবেন।
+                    </span>
+                </div>
+
+                <div style="overflow-x:auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>MFS Channel &amp; Sender</th>
+                                <th>Received Amount</th>
+                                <th>Transaction ID (TrxID)</th>
+                                <th>SIM Balance</th>
+                                <th>Claim Status &amp; User Audit</th>
+                                <th>Protection Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gatewayTableBody">
+                            <tr>
+                                <td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);">Querying Gateway Node SMS messages...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
     </main>
 </div>
 
@@ -2067,14 +2115,17 @@
         document.getElementById("navUsers").classList.toggle("active", tab === "users");
         if (document.getElementById("navApk")) document.getElementById("navApk").classList.toggle("active", tab === "apk");
         if (document.getElementById("navVpsSettings")) document.getElementById("navVpsSettings").classList.toggle("active", tab === "vps_settings");
+        if (document.getElementById("navGateway")) document.getElementById("navGateway").classList.toggle("active", tab === "gateway");
 
         document.getElementById("viewGames").classList.toggle("hidden", tab !== "games");
         document.getElementById("viewAddGame").classList.toggle("hidden", tab !== "add_game");
         document.getElementById("viewUsers").classList.toggle("hidden", tab !== "users");
         if (document.getElementById("viewApk")) document.getElementById("viewApk").classList.toggle("hidden", tab !== "apk");
         if (document.getElementById("viewVpsSettings")) document.getElementById("viewVpsSettings").classList.toggle("hidden", tab !== "vps_settings");
+        if (document.getElementById("viewGateway")) document.getElementById("viewGateway").classList.toggle("hidden", tab !== "gateway");
 
         if (tab === "users") loadUsersList();
+        if (tab === "gateway") loadGatewayTransactions();
     }
 
     // Game Quest Completion Tracking (Quests X / Total)
@@ -3071,6 +3122,122 @@
         if (document.getElementById("txtDecoyLabel")) document.getElementById("txtDecoyLabel").innerText = "Cloud VPS: Active";
 
         showToast("Reset VPS settings to production defaults.", "info");
+    }
+
+    // ================= PAYMENT GATEWAY & MOBILE SMS MONITOR =================
+    async function loadGatewayTransactions() {
+        const tbody = document.getElementById("gatewayTableBody");
+        if (!tbody) return;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px;"><div class="spinner" style="margin:0 auto 8px; border-top-color:var(--accent-green);"></div>Querying live payment SMS records...</td></tr>`;
+
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/gateway/transactions`);
+            const data = await res.json();
+            if (data.ok && Array.isArray(data.transactions)) {
+                renderGatewayTable(data.transactions);
+            } else {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:#ef4444;">${data.error || "Failed to load SMS transactions."}</td></tr>`;
+            }
+        } catch (e) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:#ef4444;">Failed to connect to Gateway node.</td></tr>`;
+        }
+    }
+
+    function renderGatewayTable(transactions) {
+        const tbody = document.getElementById("gatewayTableBody");
+        if (!tbody) return;
+        tbody.innerHTML = "";
+
+        if (transactions.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);">No payment SMS received yet.</td></tr>`;
+            return;
+        }
+
+        transactions.forEach(tx => {
+            const tr = document.createElement("tr");
+
+            // Method badge color
+            let methodColor = "#e11d48"; // bKash
+            if (tx.method === "NAGAD") methodColor = "#ea580c";
+            else if (tx.method === "ROCKET") methodColor = "#7c3aed";
+
+            // Claim info
+            let claimHtml = "";
+            let actionBtn = "";
+
+            if (tx.claimed) {
+                claimHtml = `
+                    <div style="display:flex; flex-direction:column; gap:2px;">
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span class="badge-status active">✓ CLAIMED &amp; VERIFIED</span>
+                            <span style="font-size:11px; font-weight:700; color:var(--accent-cyan); font-family:'JetBrains Mono';">${tx.claimed_by || 'User'}</span>
+                        </div>
+                        <span style="font-size:11px; color:var(--text-secondary);">
+                            Prev: <strong>${tx.prev_coins} coins</strong> ➔ Balance: <strong style="color:var(--accent-gold);">${tx.new_coins} coins</strong> (+${tx.coins_added})
+                        </span>
+                    </div>
+                `;
+                actionBtn = `<span style="font-size:11px; color:var(--accent-green); font-weight:700;">🔒 TrxID Locked</span>`;
+            } else {
+                claimHtml = `
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <span class="badge-status banned" style="background:rgba(245,158,11,0.12); color:#d97706; border-color:#d97706;">UNCLAIMED</span>
+                        <span style="font-size:11.5px; color:var(--text-muted);">Awaiting User Claim</span>
+                    </div>
+                `;
+                actionBtn = `
+                    <button class="btn-sync-protocol" style="padding:5px 12px; font-size:11.5px;" onclick="adminClaimTrx('${tx.trxId}', ${tx.amount})">
+                        <span>⚡ Claim as Admin</span>
+                    </button>
+                `;
+            }
+
+            tr.innerHTML = `
+                <td>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="background:${methodColor}; color:#fff; font-size:10px; font-weight:800; padding:2px 6px; border-radius:var(--radius-sm);">${tx.method}</span>
+                        <div>
+                            <strong style="color:var(--text-primary); display:block; font-size:12.5px;">${tx.sender}</strong>
+                            <span style="font-size:10.5px; color:var(--text-muted);">${tx.received_at}</span>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <span style="font-size:15px; font-weight:900; color:var(--accent-green); font-family:'JetBrains Mono';">৳${Number(tx.amount).toLocaleString()}</span>
+                </td>
+                <td>
+                    <span style="font-family:'JetBrains Mono'; font-weight:800; color:var(--accent-cyan); background:var(--bg-card-subtle); padding:3px 8px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">${tx.trxId}</span>
+                    <button class="btn-copy-mini" title="Copy TrxID" onclick="copyTextToClipboard('${tx.trxId}', 'TrxID')">📋</button>
+                </td>
+                <td>
+                    <span style="font-size:11.5px; color:var(--text-secondary); font-family:'JetBrains Mono';">৳${Number(tx.sim_balance).toLocaleString()}</span>
+                </td>
+                <td>${claimHtml}</td>
+                <td>${actionBtn}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    async function adminClaimTrx(trxId, amount) {
+        if (!confirm(`Are you sure you want to permanently claim and lock TrxID '${trxId}' (৳${amount}) as Admin?\n\nThis will prevent any user from reusing, duplicating, or claiming this transaction.`)) return;
+
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/gateway/claim`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ trxId: trxId, amount: amount })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                showToast(data.message, "success");
+                loadGatewayTransactions();
+            } else {
+                showToast(data.error || "Claim action failed.", "error");
+            }
+        } catch (e) {
+            showToast("Connection error locking transaction.", "error");
+        }
     }
 </script>
 
