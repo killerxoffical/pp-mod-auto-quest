@@ -4138,13 +4138,13 @@
                     image_url: imageUrl
                 })
             });
-            const data = await res.json();
-            if (data.ok || data.status === "success") {
+            const data = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+            if (res.ok && (data.ok || data.status === "success")) {
                 showToast(`✅ Push notification sent successfully to ${data.queued_for || 'devices'}!`, "success");
                 const msgInput = document.getElementById("notifMessageInput");
                 if (msgInput) msgInput.value = "";
             } else {
-                showToast("Failed: " + (data.error || "Unknown error"), "error");
+                showToast("Failed: " + (data.error || `HTTP ${res.status}` || "Server rejected request"), "error");
             }
         } catch (e) {
             showToast("Error sending notification: " + e.message, "error");

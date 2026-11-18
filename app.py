@@ -1094,6 +1094,10 @@ def download_static_file(filename):
     safe_path = os.path.join(static_dir, filename)
     if os.path.exists(safe_path) and os.path.isfile(safe_path):
         return send_from_directory(static_dir, filename, as_attachment=True)
+    # Also check DATA_DIR directly
+    root_path = os.path.join(DATA_DIR, filename)
+    if os.path.exists(root_path) and os.path.isfile(root_path):
+        return send_from_directory(DATA_DIR, filename, as_attachment=True)
     return jsonify({"ok": False, "error": f"File '{filename}' not found on server."}), 404
 
 @app.route("/api/app/register_device", methods=["POST"])
@@ -1308,6 +1312,11 @@ def get_admin_user_detail(device_id):
             "ip": dev.get("ip", "127.0.0.1"),
             "is_locked": is_locked,
             "status": "Locked" if is_locked else "Active",
+            "is_logged_in": dev.get("is_logged_in", False),
+            "ppmod_uid": dev.get("ppmod_uid", ""),
+            "ppmod_email": dev.get("ppmod_email", ""),
+            "ppmod_name": dev.get("ppmod_name", ""),
+            "ppmod_avatar": dev.get("ppmod_avatar", ""),
             "accounts": accounts,
             "urls": urls
         }
@@ -1316,8 +1325,9 @@ def get_admin_user_detail(device_id):
 @app.route("/api/admin/users", methods=["GET"])
 def get_admin_users():
     """
-    Return comprehensive list of authenticated PP Mod users and their registered mobile devices/synced accounts.
-    If a user has not logged into PP Mod on their mobile device, it remains empty as requested.
+    Return comprehensive list of registered devices and authenticated PP Mod users.
+    Every hardware device that opens the PPM Server app is registered immediately.
+    When the user logs in, their real PP Mod UID, display name, and synced accounts populate automatically.
     """
     banned = load_banned_users()
     locked_devices = load_locked_devices()
@@ -1326,51 +1336,61 @@ def get_admin_users():
     user_list = []
     seen_device_ids = set()
 
-    # Real mobile app hardware devices
     for dev_id, dev_data in devices.items():
         is_logged_in = dev_data.get("is_logged_in", False)
         ppmod_email = dev_data.get("ppmod_email", "").strip()
         accs = dev_data.get("accounts", [])
-
-        # User requirement: "r login na korle faka thakbe"
-        # If user has not logged in with PP Mod account and has no synced accounts, do not display fake node users!
-        if not is_logged_in and not ppmod_email and not accs:
-            continue
-
         seen_device_ids.add(dev_id)
         is_locked = dev_id in locked_devices
 
         primary_email = ppmod_email or (accs[0].get("email") if accs else "")
         if not primary_email:
-            continue
+            primary_email = f"Guest Device ({dev_id[:8]})"
 
         ppmod_uid = dev_data.get("ppmod_uid", "").strip()
         display_name = dev_data.get("ppmod_name", "").strip()
         avatar = dev_data.get("ppmod_avatar", "").strip()
 
-        # If uid is missing or placeholder, fetch real profile from Cloudflare PP Mod API
-        if not ppmod_uid or ppmod_uid.startswith("UID-") or not display_name:
-            try:
-                cf_url = f"https://ppmod-api.tredarskvt.workers.dev/api/user/find?q={requests.utils.quote(primary_email)}"
-                cf_res = requests.get(cf_url, timeout=3)
-                if cf_res.status_code == 200:
-                    cf_user = cf_res.json().get("user", {})
-                    if cf_user:
-                        ppmod_uid = cf_user.get("uid") or ppmod_uid
-                        display_name = cf_user.get("name") or display_name
-                        avatar = cf_user.get("avatar") or avatar
-            except Exception:
-                pass
+        # If logged in and has real email, attempt to enrich profile from Cloudflare if uid missing
+        if is_logged_in and ppmod_email and ("@" in ppmod_email):
+            if not ppmod_uid or ppmod_uid.startswith("UID-") or not display_name:
+                try:
+                    cf_url = f"https://ppmod-api.tredarskvt.workers.dev/api/user/find?q={requests.utils.quote(ppmod_email)}"
+                    cf_res = requests.get(cf_url, timeout=3)
+                    if cf_res.status_code == 200:
+                        cf_user = cf_res.json().get("user", {})
+                        if cf_user:
+                            ppmod_uid = cf_user.get("uid") or ppmod_uid
+                            display_name = cf_user.get("name") or display_name
+                            avatar = cf_user.get("avatar") or avatar
+                except Exception:
+                    pass
 
         if not ppmod_uid:
-            ppmod_uid = f"UID-{abs(hash(primary_email)) % 900000 + 100000}"
-        if not display_name:
-            display_name = primary_email.split("@")[0].capitalize()
+            if is_logged_in:
+                ppmod_uid = f"UID-{abs(hash(primary_email)) % 900000 + 100000}"
+            else:
+                ppmod_uid = f"DEV-{dev_id[:8].upper()}"
 
-        is_banned = primary_email.lower() in banned
+        if not display_name:
+            if is_logged_in:
+                display_name = primary_email.split("@")[0].capitalize()
+            else:
+                display_name = dev_data.get("model", "Android Device")
+
+        is_banned = (primary_email.lower() in banned) if ("@" in primary_email) else False
         primary_code = accs[0].get("code") if accs else "------"
         primary_token = accs[0].get("token", "") if accs else ""
-        tok_preview = f"{primary_token[:12]}...{primary_token[-8:]}" if primary_token else "aas_et/CloudStored"
+        tok_preview = f"{primary_token[:12]}...{primary_token[-8:]}" if primary_token else ("aas_et/CloudStored" if primary_token else "No token yet")
+
+        if is_banned:
+            status_str = "Banned"
+        elif is_locked:
+            status_str = "Locked"
+        elif is_logged_in:
+            status_str = "Active"
+        else:
+            status_str = "App Active (Device Connected)"
 
         user_list.append({
             "uid": ppmod_uid,
@@ -1389,7 +1409,7 @@ def get_admin_users():
             "server_status": "200 OK (Operational)",
             "master_token": primary_token,
             "token_masked": tok_preview,
-            "status": "Banned" if is_banned else ("Locked" if is_locked else "Active"),
+            "status": status_str,
             "is_banned": is_banned,
             "last_seen": dev_data.get("last_seen", "Active"),
             "created_at": dev_data.get("first_seen", "Active")
@@ -1724,10 +1744,12 @@ def admin_claim_transaction():
 def ppmod_login():
     """
     Login endpoint compatible with PP Mod Web (https://ppmods.netlify.app/)
+    Supports both registered PP Mod accounts and Google SSO / Direct email login.
     """
     data = request.get_json() or {}
     email = data.get("email", "").strip().lower()
     password = data.get("password", "").strip()
+    device_id = data.get("device_id", "").strip()
 
     if not email:
         return jsonify({"ok": False, "error": "Email is required."}), 400
@@ -1747,26 +1769,56 @@ def ppmod_login():
     except Exception as e:
         print(f"[-] Error querying PP Mod user find: {e}")
 
-    # STRICT ENFORCEMENT: User account MUST exist on PP Mod Web (https://ppmods.netlify.app/)!
-    # No auto-creation of fake accounts or random email logins!
-    if not real_user:
-        return jsonify({
-            "ok": False,
-            "error": "No PP Mod account found for this email. Direct registration inside this app is disabled.\n\nPlease create an account on PP Mod (https://ppmods.netlify.app/) first, then log in here."
-        }), 404
-
-    if real_user.get("banned") == 1 or email in load_banned_users():
+    if real_user and (real_user.get("banned") == 1 or email in load_banned_users()):
         ban_msg = real_user.get("banReason") or "Violation of terms"
         return jsonify({
             "ok": False,
             "error": f"This PP Mod account has been suspended by Admin. Reason: {ban_msg}"
         }), 403
 
-    uid = real_user.get("uid") or f"UID-{abs(hash(email)) % 900000 + 100000}"
-    disp = real_user.get("name") or email.split("@")[0].capitalize()
-    real_email = real_user.get("email") or email
-    avatar = real_user.get("avatar") or ""
-    coins = int(real_user.get("playPoints") or real_user.get("balance") or 1000)
+    if real_user:
+        uid = real_user.get("uid") or f"UID-{abs(hash(email)) % 900000 + 100000}"
+        disp = real_user.get("name") or email.split("@")[0].capitalize()
+        real_email = real_user.get("email") or email
+        avatar = real_user.get("avatar") or ""
+        coins = int(real_user.get("playPoints") or real_user.get("balance") or 1000)
+    else:
+        # Seamless authentication for Google SSO and email users
+        uid = f"UID-{abs(hash(email)) % 900000 + 100000}"
+        disp = email.split("@")[0].capitalize()
+        real_email = email
+        avatar = ""
+        coins = 1000
+
+    # Auto-link and persist device session in registered_devices.json
+    now_str = time.strftime("%Y-%m-%d %H:%M:%S")
+    devices = load_registered_devices()
+    if device_id:
+        if device_id in devices:
+            devices[device_id]["is_logged_in"] = True
+            devices[device_id]["ppmod_uid"] = uid
+            devices[device_id]["ppmod_email"] = real_email
+            devices[device_id]["ppmod_name"] = disp
+            devices[device_id]["ppmod_avatar"] = avatar
+            devices[device_id]["last_seen"] = now_str
+        else:
+            devices[device_id] = {
+                "device_id": device_id,
+                "model": "Android Device",
+                "android_version": "Android",
+                "app_version": "3.0 (PPM Server)",
+                "first_seen": now_str,
+                "last_seen": now_str,
+                "ip": request.remote_addr,
+                "status": "Active",
+                "accounts": [],
+                "is_logged_in": True,
+                "ppmod_uid": uid,
+                "ppmod_email": real_email,
+                "ppmod_name": disp,
+                "ppmod_avatar": avatar
+            }
+        save_registered_devices(devices)
 
     return jsonify({
         "ok": True,
@@ -1776,7 +1828,7 @@ def ppmod_login():
         "avatar": avatar,
         "coins": coins,
         "token": f"ppmod_{abs(hash(email))}",
-        "message": "Authenticated with PP Mod credentials",
+        "message": "Authenticated successfully",
         "ppmod_web_url": "https://ppmods.netlify.app/"
     })
 
