@@ -1354,18 +1354,26 @@ def ppmod_login():
     except Exception as e:
         print(f"[-] Error querying PP Mod user find: {e}")
 
-    if real_user:
-        uid = real_user.get("uid") or f"UID-{abs(hash(email)) % 900000 + 100000}"
-        disp = real_user.get("name") or email.split("@")[0].capitalize()
-        real_email = real_user.get("email") or email
-        avatar = real_user.get("avatar") or ""
-        coins = int(real_user.get("playPoints") or real_user.get("balance") or 1000)
-    else:
-        uid = f"UID-{abs(hash(email)) % 900000 + 100000}"
-        disp = email.split("@")[0].capitalize()
-        real_email = email
-        avatar = ""
-        coins = 1000
+    # STRICT ENFORCEMENT: User account MUST exist on PP Mod Web (https://ppmods.netlify.app/)!
+    # No auto-creation of fake accounts or random email logins!
+    if not real_user:
+        return jsonify({
+            "ok": False,
+            "error": "No PP Mod account found for this email. Direct registration inside this app is disabled.\n\nPlease create an account on PP Mod (https://ppmods.netlify.app/) first, then log in here."
+        }), 404
+
+    if real_user.get("banned") == 1 or email in load_banned_users():
+        ban_msg = real_user.get("banReason") or "Violation of terms"
+        return jsonify({
+            "ok": False,
+            "error": f"This PP Mod account has been suspended by Admin. Reason: {ban_msg}"
+        }), 403
+
+    uid = real_user.get("uid") or f"UID-{abs(hash(email)) % 900000 + 100000}"
+    disp = real_user.get("name") or email.split("@")[0].capitalize()
+    real_email = real_user.get("email") or email
+    avatar = real_user.get("avatar") or ""
+    coins = int(real_user.get("playPoints") or real_user.get("balance") or 1000)
 
     return jsonify({
         "ok": True,
@@ -1378,6 +1386,37 @@ def ppmod_login():
         "message": "Authenticated with PP Mod credentials",
         "ppmod_web_url": "https://ppmods.netlify.app/"
     })
+
+@app.route("/api/user/profile", methods=["GET"])
+def get_user_profile():
+    """
+    Fetch live user profile from PP Mod Cloudflare D1.
+    Allows mobile app to reflect name and avatar changes made on PP Mod Web immediately.
+    """
+    query = request.args.get("q", "").strip() or request.args.get("email", "").strip() or request.args.get("uid", "").strip()
+    if not query:
+        return jsonify({"ok": False, "error": "Query parameter 'q', 'email', or 'uid' is required."}), 400
+
+    try:
+        cf_url = f"https://ppmod-api.tredarskvt.workers.dev/api/user/find?q={requests.utils.quote(query)}"
+        cf_res = requests.get(cf_url, timeout=5)
+        if cf_res.status_code == 200:
+            d = cf_res.json()
+            if d.get("ok") and d.get("user"):
+                u = d["user"]
+                return jsonify({
+                    "ok": True,
+                    "uid": u.get("uid", ""),
+                    "email": u.get("email", ""),
+                    "display_name": u.get("name", ""),
+                    "avatar": u.get("avatar", ""),
+                    "coins": int(u.get("playPoints") or u.get("balance") or 1000),
+                    "banned": u.get("banned", 0) == 1
+                })
+    except Exception as e:
+        print(f"[-] Error fetching profile: {e}")
+
+    return jsonify({"ok": False, "error": "User not found in PP Mod database."}), 404
 
 @app.route("/api/game/achievements", methods=["POST"])
 def get_game_achievements():
