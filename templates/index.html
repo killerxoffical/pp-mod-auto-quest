@@ -1659,9 +1659,7 @@
                     <div>
                         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
                             <div style="display:flex; align-items:center; gap:12px;">
-                                <div style="width:48px; height:48px; border-radius:var(--radius-md); background:linear-gradient(135deg, #f59e0b, #d97706); display:flex; align-items:center; justify-content:center; color:#fff; font-size:22px; font-weight:800; box-shadow:0 4px 12px rgba(245,158,11,0.3); border:1px solid var(--border-color);">
-                                    ৳
-                                </div>
+                                <img src="/static/images/gateway_logo.png" style="width:48px; height:48px; border-radius:var(--radius-md); object-fit:cover; box-shadow:0 4px 12px rgba(245,158,11,0.3); border:1px solid var(--border-color);">
                                 <div>
                                     <h4 style="font-size:16px; font-weight:800; color:var(--text-primary);">PP Auto Payment Gateway</h4>
                                     <span style="font-size:11.5px; color:var(--accent-gold); font-weight:700;">v2.1 Release Signed • 551 KB</span>
@@ -1775,15 +1773,75 @@
                     </button>
                 </div>
             </div>
+
+            <!-- Hardware Device Whitelist Manager Card -->
+            <div class="vps-config-card" style="margin-top:24px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span style="font-size:26px;">🛡️</span>
+                        <div>
+                            <h3 style="font-size:18px; font-weight:800; color:var(--text-primary);">Hardware Device &amp; Root Whitelist Security</h3>
+                            <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Authorize specific hardware Android Device IDs to bypass root detection and run PP Server node securely.</p>
+                        </div>
+                    </div>
+                    <button class="btn-inspect-action" onclick="loadWhitelistedDevices()">🔄 Refresh Devices</button>
+                </div>
+
+                <!-- Add Device Whitelist Form -->
+                <div style="background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:16px; margin-bottom:20px;">
+                    <h4 style="font-size:13.5px; font-weight:800; color:var(--text-primary); margin-bottom:10px;">+ Authorize New Hardware Device ID</h4>
+                    <form onsubmit="submitAddDeviceWhitelist(event)" style="display:grid; grid-template-columns: 1fr 1fr auto; gap:12px; align-items:flex-end;">
+                        <div class="form-field" style="margin-bottom:0;">
+                            <label>Hardware Device ID (Android ID hex) *</label>
+                            <input type="text" id="whitelistDeviceIdInput" class="form-input-element" placeholder="e.g. 7f2081d5a49c30e1" required>
+                        </div>
+                        <div class="form-field" style="margin-bottom:0;">
+                            <label>Device Owner / Label (Optional)</label>
+                            <input type="text" id="whitelistDeviceLabelInput" class="form-input-element" placeholder="e.g. User Sadib - Pixel 7 Pro">
+                        </div>
+                        <button type="submit" class="btn-sync-protocol" id="btnSubmitAddDevice" style="height:40px; padding:0 20px;">
+                            <span>+ Whitelist Device</span>
+                        </button>
+                    </form>
+                    <div style="font-size:11px; color:var(--text-muted); margin-top:8px; line-height:1.5;">
+                        💡 <b>ইউজার Device ID কীভাবে পাবে?</b> ইউজার তার ফোনে <code>PP_Server.apk</code> ওপেন করলে যদি Root বা Restricted Environment থাকে, তবে অ্যাপের স্ক্রিনে সরাসরি তার ইউনিক Hardware Device ID (Android ID) দেখাবে এবং 'Copy Device ID' বাটনে চাপ দিয়ে কপি করতে পারবে। ইউজার সেই Device ID অ্যাডমিনকে দিলে অ্যাডমিন এখানে পেস্ট করে '+ Whitelist Device' বাটনে চাপ দিলেই ওই ফোনে অ্যাপ সাথে সাথে আনলক হয়ে কাজ করবে।
+                    </div>
+                </div>
+
+                <!-- Whitelisted Devices Table -->
+                <div class="table-container-custom">
+                    <table class="users-data-table">
+                        <thead>
+                            <tr>
+                                <th>Hardware Device ID (Android ID)</th>
+                                <th>Owner / Label</th>
+                                <th>Authorization Status</th>
+                                <th>Whitelisted On</th>
+                                <th style="text-align:right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="deviceWhitelistTableBody">
+                            <tr>
+                                <td colspan="5" style="text-align:center; padding:24px; color:var(--text-muted);">
+                                    ⏳ Loading authorized hardware devices...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </section>
 
         <!-- VIEW 6: Payment Gateway & Mobile SMS Monitor -->
         <section id="viewGateway" class="admin-view-panel hidden">
             <div class="users-table-card">
                 <div class="table-header-box">
-                    <div>
-                        <h3 style="font-size:17px; font-weight:800; color:var(--text-primary);">📱 Mobile SMS Payment Gateway &amp; TrxID Monitor</h3>
-                        <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Real-time automated payment alerts captured by PP Gateway Node (bKash • Nagad • Rocket).</p>
+                    <div style="display:flex; align-items:center; gap:16px;">
+                        <img src="/static/images/gateway_logo.png" style="width:52px; height:52px; border-radius:var(--radius-md); object-fit:cover; border:1px solid var(--border-color); box-shadow:0 4px 14px rgba(245,158,11,0.25);">
+                        <div>
+                            <h3 style="font-size:18px; font-weight:800; color:var(--text-primary);">📱 Mobile SMS Payment Gateway &amp; TrxID Monitor</h3>
+                            <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Real-time automated payment alerts captured by PP Gateway Node (bKash • Nagad • Rocket).</p>
+                        </div>
                     </div>
                     <div style="display:flex; align-items:center; gap:10px;">
                         <span class="quota-safety-badge">🔒 Anti-Duplicate TrxID Active</span>
@@ -1922,7 +1980,7 @@
 
 <!-- ================= ADMIN MANUAL ADD USER / ACCOUNT MODAL ================= -->
 <div id="adminAddUserModal" class="modal-overlay hidden">
-    <div class="inspector-panel-card" style="max-width: 520px;">
+    <div class="inspector-panel-card" style="max-width: 540px;">
         <div class="inspector-top-row">
             <div style="display:flex; align-items:center; gap:10px;">
                 <span style="font-size:20px;">👤</span>
@@ -1935,24 +1993,65 @@
         </div>
         <div style="padding: 24px;">
             <form onsubmit="submitAdminAddUser(event)" style="display:flex; flex-direction:column; gap:14px;">
+                <!-- PP Mod User UID with Auto-Fetch -->
                 <div class="form-field">
-                    <label>PP Mod User UID (User ID)</label>
-                    <input type="text" id="addAccUid" class="form-input-element" placeholder="e.g. UID-984721 or PPMod_User12 (Optional)">
-                    <span style="font-size:10.5px; color:var(--text-muted); margin-top:3px;">ফাঁকা রাখলে স্বয়ংক্রিয়ভাবে একটি ইউনিক UID তৈরি হবে।</span>
+                    <label>PP Mod User UID (User ID) *</label>
+                    <div style="display:flex; gap:8px;">
+                        <input type="text" id="addAccUid" class="form-input-element" placeholder="e.g. 1CIBZ1wzCdYekxbWxsdfTTBsenZ2 or email..." style="flex:1;">
+                        <button type="button" class="btn-inspect-action" id="btnAutoFetchUid" onclick="autoFetchPPModUser()" style="white-space:nowrap; padding:0 14px; font-weight:700;">
+                            <span id="uidFetchSpinner" style="display:none; animation: spin 1s linear infinite;">⏳</span> ⚡ Auto-Fetch
+                        </button>
+                    </div>
+                    <div id="uidFetchStatus" style="font-size:11px; margin-top:4px; display:none;"></div>
                 </div>
+
+                <!-- User Profile Preview Card (Populated automatically) -->
+                <div id="uidUserPreviewCard" style="display:none; background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:10px 14px; align-items:center; gap:12px;">
+                    <img id="uidUserAvatar" src="" style="width:40px; height:40px; border-radius:var(--radius-sm); border:1px solid var(--border-color); object-fit:cover;">
+                    <div style="flex:1; min-width:0;">
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span id="uidUserName" style="font-size:13.5px; font-weight:800; color:var(--text-primary);"></span>
+                            <span style="font-size:9.5px; background:rgba(16,185,129,0.15); color:var(--accent-emerald); padding:1px 6px; border-radius:2px; font-weight:700;">VERIFIED PP MOD</span>
+                        </div>
+                        <div id="uidUserMeta" style="font-size:11px; color:var(--text-muted); font-family:'JetBrains Mono';"></div>
+                    </div>
+                </div>
+
                 <div class="form-field">
-                    <label>PP Mod Display Name</label>
-                    <input type="text" id="addAccDisplay" class="form-input-element" placeholder="e.g. Rubel Modder / Pro Player (Optional)">
+                    <label>PP Mod Display Name (Auto-filled or Custom)</label>
+                    <input type="text" id="addAccDisplay" class="form-input-element" placeholder="Auto-populated from PP Mod or type custom...">
                 </div>
+
                 <div class="form-field">
                     <label>Connected Google Account Email *</label>
                     <input type="email" id="addAccEmail" class="form-input-element" placeholder="user@gmail.com" required>
                 </div>
+
+                <!-- Google Play Points Country Select (Only Official Play Points Regions) -->
+                <div class="form-field">
+                    <label>Google Play Points Server / Region</label>
+                    <select id="addAccRegion" class="form-input-element" style="cursor:pointer;">
+                        <option value="GLOBAL">🌐 Global (All Play Points Regions)</option>
+                        <option value="US" selected>🇺🇸 United States (US)</option>
+                        <option value="JP">🇯🇵 Japan (JP)</option>
+                        <option value="KR">🇰🇷 South Korea (KR)</option>
+                        <option value="TW">🇹🇼 Taiwan (TW)</option>
+                        <option value="GB">🇬🇧 United Kingdom (GB)</option>
+                        <option value="DE">🇩🇪 Germany (DE)</option>
+                        <option value="FR">🇫🇷 France (FR)</option>
+                        <option value="AU">🇦🇺 Australia (AU)</option>
+                        <option value="IN">🇮🇳 India (IN)</option>
+                        <option value="TR">🇹🇷 Turkey (TR)</option>
+                        <option value="BR">🇧🇷 Brazil (BR)</option>
+                    </select>
+                </div>
+
                 <div class="form-field">
                     <label>Google Master Token (aas_et/...) *</label>
                     <textarea id="addAccToken" class="form-input-element" style="height:76px; font-family:'JetBrains Mono'; font-size:11.5px; resize:vertical;" placeholder="aas_et/AKxxxx..." required></textarea>
                     <span style="font-size:10.5px; color:var(--text-muted); margin-top:3px;">ইউজারের Master Token দিলে তার জন্য ৬-ডিজিট সিঙ্ক কোড তৈরি হয়ে Cloudflare D1-এ সেভ হবে।</span>
                 </div>
+
                 <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
                     <button type="button" class="btn-inspect-action" onclick="closeAddUserModal()">Cancel</button>
                     <button type="submit" class="btn-sync-protocol" id="btnSubmitAddUser">
@@ -2125,6 +2224,7 @@
         if (document.getElementById("viewGateway")) document.getElementById("viewGateway").classList.toggle("hidden", tab !== "gateway");
 
         if (tab === "users") loadUsersList();
+        if (tab === "vps_settings") loadWhitelistedDevices();
         if (tab === "gateway") loadGatewayTransactions();
     }
 
@@ -2879,11 +2979,74 @@
         document.getElementById("addAccDisplay").value = "";
         document.getElementById("addAccEmail").value = "";
         document.getElementById("addAccToken").value = "";
+        const previewCard = document.getElementById("uidUserPreviewCard");
+        if (previewCard) previewCard.style.display = "none";
+        const statusEl = document.getElementById("uidFetchStatus");
+        if (statusEl) {
+            statusEl.style.display = "none";
+            statusEl.innerHTML = "";
+        }
         document.getElementById("adminAddUserModal").classList.remove("hidden");
     }
 
     function closeAddUserModal() {
         document.getElementById("adminAddUserModal").classList.add("hidden");
+    }
+
+    async function autoFetchPPModUser() {
+        const uidInput = document.getElementById("addAccUid");
+        const statusEl = document.getElementById("uidFetchStatus");
+        const spinner = document.getElementById("uidFetchSpinner");
+        const previewCard = document.getElementById("uidUserPreviewCard");
+        const uid = uidInput.value.trim();
+
+        if (!uid) {
+            showToast("Please enter a PP Mod UID or Email first!", "error");
+            uidInput.focus();
+            return;
+        }
+
+        if (spinner) spinner.style.display = "inline-block";
+        statusEl.style.display = "block";
+        statusEl.style.color = "var(--text-muted)";
+        statusEl.innerHTML = `<span>⏳ Searching PP Mod Cloudflare D1 database for '${escapeHtml(uid)}'...</span>`;
+
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/users/lookup?uid=${encodeURIComponent(uid)}`);
+            const data = await res.json();
+            if (spinner) spinner.style.display = "none";
+
+            if (data.ok && data.found && data.user) {
+                const u = data.user;
+                document.getElementById("addAccDisplay").value = u.name || "";
+                document.getElementById("addAccEmail").value = u.email || "";
+
+                if (previewCard) {
+                    previewCard.style.display = "flex";
+                    document.getElementById("uidUserName").textContent = u.name || "PP Mod Member";
+                    document.getElementById("uidUserMeta").textContent = `${u.email} • Balance: ৳${u.balance || 0} • UID: ${u.uid}`;
+                    const avatarImg = document.getElementById("uidUserAvatar");
+                    if (u.avatar) {
+                        avatarImg.src = u.avatar;
+                        avatarImg.style.display = "block";
+                    } else {
+                        avatarImg.src = "/static/images/token_finder_logo.png";
+                    }
+                }
+
+                statusEl.style.color = "var(--accent-green)";
+                statusEl.innerHTML = `<span>✅ Found PP Mod User! Name and Email populated automatically.</span>`;
+                showToast(`PP Mod Profile loaded for ${u.name || u.email}!`, "success");
+            } else {
+                if (previewCard) previewCard.style.display = "none";
+                statusEl.style.color = "var(--accent-gold)";
+                statusEl.innerHTML = `<span>⚠️ ${data.message || "User not found in PP Mod database. You can still type manually."}</span>`;
+            }
+        } catch (err) {
+            if (spinner) spinner.style.display = "none";
+            statusEl.style.color = "var(--accent-red)";
+            statusEl.innerHTML = `<span>❌ Error connecting to server: ${escapeHtml(err.message)}</span>`;
+        }
     }
 
     async function submitAdminAddUser(event) {
@@ -2893,6 +3056,7 @@
         const display_name = document.getElementById("addAccDisplay").value.trim();
         const email = document.getElementById("addAccEmail").value.trim();
         const master_token = document.getElementById("addAccToken").value.trim();
+        const region = document.getElementById("addAccRegion") ? document.getElementById("addAccRegion").value : "GLOBAL";
 
         if (!email || !master_token) {
             showToast("Email and Master Token are required!", "error");
@@ -2906,7 +3070,7 @@
             const res = await fetch(`${API_BASE}/api/admin/users/add`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ uid, display_name, email, master_token })
+                body: JSON.stringify({ uid, display_name, email, master_token, region })
             });
             const data = await res.json();
             if (data.ok) {
@@ -2921,6 +3085,121 @@
         } finally {
             btn.disabled = false;
             btn.innerHTML = `<span>⚡ Generate Code &amp; Register Account</span>`;
+        }
+    }
+
+    // ================= HARDWARE DEVICE & ROOT WHITELIST =================
+    async function loadWhitelistedDevices() {
+        const tbody = document.getElementById("deviceWhitelistTableBody");
+        if (!tbody) return;
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-muted);"><div class="spinner" style="margin:0 auto 8px;"></div>Querying authorized hardware devices...</td></tr>`;
+
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/devices/whitelist`);
+            const data = await res.json();
+            if (data.ok && Array.isArray(data.devices)) {
+                renderWhitelistedDevicesTable(data.devices);
+            } else {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:#ef4444;">${data.error || "Failed to load devices."}</td></tr>`;
+            }
+        } catch (e) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:#ef4444;">Failed to connect to device whitelist API.</td></tr>`;
+        }
+    }
+
+    function renderWhitelistedDevicesTable(devices) {
+        const tbody = document.getElementById("deviceWhitelistTableBody");
+        if (!tbody) return;
+        tbody.innerHTML = "";
+
+        if (devices.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:30px; color:var(--text-muted);">No hardware devices whitelisted yet.</td></tr>`;
+            return;
+        }
+
+        devices.forEach(dev => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>
+                    <span style="font-family:'JetBrains Mono'; font-weight:800; color:var(--accent-cyan); background:var(--bg-card-subtle); padding:3px 8px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">${dev.deviceId}</span>
+                    <button class="btn-copy-mini" title="Copy Device ID" onclick="copyTextToClipboard('${dev.deviceId}', 'Device ID')">📋</button>
+                </td>
+                <td>
+                    <strong style="color:var(--text-primary); font-size:12.5px;">${dev.label || 'User Device'}</strong>
+                </td>
+                <td>
+                    <span class="badge-status active">AUTHORIZED (ROOT ALLOWED)</span>
+                </td>
+                <td>
+                    <span style="font-size:11px; color:var(--text-muted);">${dev.addedAt || 'Active'}</span>
+                </td>
+                <td style="text-align:right;">
+                    <button class="btn-ban-toggle" style="background:rgba(239,68,68,0.15); color:#ef4444; border-color:#ef4444;" onclick="removeDeviceWhitelist('${dev.deviceId}')">Revoke</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    async function submitAddDeviceWhitelist(event) {
+        event.preventDefault();
+        const idInput = document.getElementById("whitelistDeviceIdInput");
+        const labelInput = document.getElementById("whitelistDeviceLabelInput");
+        const btn = document.getElementById("btnSubmitAddDevice");
+
+        const deviceId = idInput.value.trim().toLowerCase();
+        const label = labelInput.value.trim();
+
+        if (!deviceId) {
+            showToast("Device ID is required!", "error");
+            idInput.focus();
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = `<span>⏳ Whitelisting...</span>`;
+
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/devices/whitelist`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ deviceId, label })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                showToast(data.message, "success");
+                idInput.value = "";
+                labelInput.value = "";
+                loadWhitelistedDevices();
+            } else {
+                showToast(data.error || "Failed to whitelist device.", "error");
+            }
+        } catch (e) {
+            showToast("Network error whitelisting device.", "error");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = `<span>+ Whitelist Device</span>`;
+        }
+    }
+
+    async function removeDeviceWhitelist(deviceId) {
+        if (!confirm(`Are you sure you want to revoke authorization for device '${deviceId}'?`)) return;
+
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/devices/whitelist/remove`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ deviceId })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                showToast(data.message, "success");
+                loadWhitelistedDevices();
+            } else {
+                showToast(data.error || "Failed to remove device.", "error");
+            }
+        } catch (e) {
+            showToast("Network error removing device.", "error");
         }
     }
 

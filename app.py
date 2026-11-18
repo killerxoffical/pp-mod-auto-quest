@@ -253,13 +253,74 @@ def create_sync_code():
     if not token:
         return jsonify({"ok": False, "error": "Token required"}), 400
     
+    country = data.get("country", "GLOBAL")
+    uid = data.get("uid", "")
+
     code = f"{random.randint(100000, 999999)}"
     SYNC_CODES[code] = {
         "email": email,
         "token": token,
+        "country": country,
+        "uid": uid,
         "created_at": time.time()
     }
     return jsonify({"ok": True, "code": code})
+
+@app.route("/api/sync/accounts", methods=["GET"])
+def get_sync_accounts():
+    """
+    Returns user accounts for mobile app and web console.
+    Optionally filtered by ?uid=...
+    Zero Firebase quota usage.
+    """
+    req_uid = request.args.get("uid", "").strip()
+    accounts = []
+
+    # 1. Pull from Cloudflare D1
+    try:
+        cf_url = "https://ppmod-api.tredarskvt.workers.dev/api/sync/accounts"
+        if req_uid:
+            cf_url += f"?uid={requests.utils.quote(req_uid)}"
+        cf_res = requests.get(cf_url, timeout=4)
+        if cf_res.status_code == 200:
+            accounts.extend(cf_res.json().get("accounts", []))
+    except Exception:
+        pass
+
+    # 2. Add from local SYNC_CODES
+    for code, entry in SYNC_CODES.items():
+        em = entry.get("email", "")
+        e_uid = entry.get("uid", "")
+        if req_uid and e_uid and e_uid != req_uid:
+            continue
+        if not any(a.get("email") == em for a in accounts):
+            accounts.append({
+                "id": f"acc_{code}",
+                "email": em,
+                "code": code,
+                "token": entry.get("token") or entry.get("master_token", ""),
+                "country": entry.get("country", "GLOBAL"),
+                "uid": e_uid,
+                "createdAt": int(entry.get("created_at", time.time()) * 1000)
+            })
+
+    # 3. Known tokens fallback if no specific UID
+    if not req_uid:
+        known = load_known_tokens()
+        for em, tok in known.items():
+            if not any(a.get("email") == em for a in accounts):
+                code = f"{abs(hash(em)) % 900000 + 100000}"
+                accounts.append({
+                    "id": f"acc_{code}",
+                    "email": em,
+                    "code": code,
+                    "token": tok,
+                    "country": "GLOBAL",
+                    "uid": "",
+                    "createdAt": int(time.time() * 1000)
+                })
+
+    return jsonify({"ok": True, "accounts": accounts})
 
 @app.route("/api/sync/claim", methods=["POST"])
 def claim_sync_code():
@@ -975,6 +1036,142 @@ def toggle_ban_user():
 
     save_banned_users(banned)
     return jsonify({"ok": True, "email": email, "status": status, "message": msg})
+
+@app.route("/api/admin/users/lookup", methods=["GET"])
+def admin_lookup_user():
+    """
+    Auto-fetches PP Mod user information (display name, email, avatar, wallet balance)
+    from Cloudflare D1 by UID or email. Zero Firebase quota usage.
+    """
+    uid_or_query = request.args.get("uid", "").strip() or request.args.get("q", "").strip()
+    if not uid_or_query:
+        return jsonify({"ok": False, "error": "Query 'uid' parameter is required."}), 400
+
+    try:
+        cf_url = f"https://ppmod-api.tredarskvt.workers.dev/api/user/find?q={requests.utils.quote(uid_or_query)}"
+        cf_res = requests.get(cf_url, timeout=5)
+        if cf_res.status_code == 200:
+            data = cf_res.json()
+            if data.get("ok") and data.get("user"):
+                u = data["user"]
+                return jsonify({
+                    "ok": True,
+                    "found": True,
+                    "user": {
+                        "uid": u.get("uid"),
+                        "name": u.get("name") or u.get("display_name", ""),
+                        "email": u.get("email", ""),
+                        "avatar": u.get("avatar", ""),
+                        "balance": u.get("balance", 0)
+                    }
+                })
+    except Exception as e:
+        print(f"[-] Lookup error in Cloudflare: {e}")
+
+    # Fallback to local known tokens if matching email
+    for em, tok in load_known_tokens().items():
+        if uid_or_query.lower() in em.lower():
+            return jsonify({
+                "ok": True,
+                "found": True,
+                "user": {
+                    "uid": f"UID-{abs(hash(em)) % 900000 + 100000}",
+                    "name": em.split("@")[0].capitalize(),
+                    "email": em,
+                    "avatar": "",
+                    "balance": 100
+                }
+            })
+
+    return jsonify({
+        "ok": True,
+        "found": False,
+        "message": f"User '{uid_or_query}' not found in PP Mod database. You can still register manually."
+    })
+
+# ----------------- DEVICE WHITELIST SYSTEM -----------------
+WHITELISTED_DEVICES_FILE = os.path.join(DATA_DIR, "whitelisted_devices.json")
+
+def load_whitelisted_devices():
+    default_devs = [
+        {"deviceId": "admin_master_device", "label": "Admin Master Node", "addedAt": "2026-11-15 00:00:00"},
+        {"deviceId": "emulator_dev_node", "label": "Developer Emulator", "addedAt": "2026-11-15 00:00:00"}
+    ]
+    if os.path.exists(WHITELISTED_DEVICES_FILE):
+        try:
+            with open(WHITELISTED_DEVICES_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return default_devs
+
+def save_whitelisted_devices(devices_list):
+    try:
+        with open(WHITELISTED_DEVICES_FILE, "w", encoding="utf-8") as f:
+            json.dump(devices_list, f, indent=2)
+    except Exception as e:
+        print(f"[-] Error saving whitelisted devices: {e}")
+
+@app.route("/api/device/check", methods=["GET"])
+def check_device_authorization():
+    """
+    Checks if a given hardware deviceId is authorized/whitelisted.
+    Called by PP_Server.apk upon detecting root or restricted environments.
+    """
+    dev_id = request.args.get("deviceId", "").strip().lower()
+    if not dev_id:
+        return jsonify({"ok": False, "authorized": False, "error": "Missing deviceId"}), 400
+
+    devices = load_whitelisted_devices()
+    is_auth = any(d.get("deviceId", "").lower() == dev_id for d in devices)
+    return jsonify({
+        "ok": True,
+        "deviceId": dev_id,
+        "authorized": is_auth
+    })
+
+@app.route("/api/admin/devices/whitelist", methods=["GET", "POST"])
+def admin_manage_device_whitelist():
+    """
+    GET: returns list of whitelisted devices.
+    POST: adds a deviceId to the whitelist.
+    """
+    devices = load_whitelisted_devices()
+    if request.method == "POST":
+        data = request.get_json() or {}
+        dev_id = str(data.get("deviceId", "")).strip().lower()
+        label = str(data.get("label", "")).strip() or "User Device"
+
+        if not dev_id:
+            return jsonify({"ok": False, "error": "Device ID is required."}), 400
+
+        # Check duplicate
+        if any(d.get("deviceId", "").lower() == dev_id for d in devices):
+            return jsonify({"ok": False, "error": f"Device '{dev_id}' is already whitelisted."}), 400
+
+        new_entry = {
+            "deviceId": dev_id,
+            "label": label,
+            "addedAt": time.strftime("%Y-%m-%d %H:%M:%S")
+        }
+        devices.insert(0, new_entry)
+        save_whitelisted_devices(devices)
+        return jsonify({"ok": True, "message": f"Device '{dev_id}' ({label}) successfully whitelisted!", "device": new_entry})
+
+    return jsonify({"ok": True, "devices": devices})
+
+@app.route("/api/admin/devices/whitelist/remove", methods=["POST"])
+def admin_remove_device_whitelist():
+    """Removes a deviceId from whitelist."""
+    data = request.get_json() or {}
+    dev_id = str(data.get("deviceId", "")).strip().lower()
+    if not dev_id:
+        return jsonify({"ok": False, "error": "Device ID is required."}), 400
+
+    devices = load_whitelisted_devices()
+    updated = [d for d in devices if d.get("deviceId", "").lower() != dev_id]
+    save_whitelisted_devices(updated)
+    return jsonify({"ok": True, "message": f"Device '{dev_id}' removed from whitelist."})
 
 @app.route("/api/admin/gateway/transactions", methods=["GET"])
 def get_gateway_transactions():
