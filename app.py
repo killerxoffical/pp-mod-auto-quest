@@ -889,6 +889,51 @@ def edit_game_metadata():
         "message": f"Updated metadata and logo for '{target['title']}'!"
     })
 
+DEVICE_LOCKS_FILE = os.path.join(DATA_DIR, "device_locks.json")
+
+def load_locked_devices():
+    if os.path.exists(DEVICE_LOCKS_FILE):
+        try:
+            with open(DEVICE_LOCKS_FILE, "r") as f:
+                return set(json.load(f))
+        except Exception:
+            return set()
+    return set()
+
+def save_locked_devices(locked):
+    try:
+        with open(DEVICE_LOCKS_FILE, "w") as f:
+            json.dump(list(locked), f)
+    except Exception as e:
+        print(f"[-] Error saving device locks: {e}")
+
+@app.route("/api/device/status", methods=["GET"])
+def check_device_status():
+    dev_id = request.args.get("device_id", "").strip()
+    if not dev_id:
+        return jsonify({"ok": True, "locked": False})
+    locked = load_locked_devices()
+    is_locked = dev_id in locked
+    return jsonify({"ok": True, "device_id": dev_id, "locked": is_locked})
+
+@app.route("/api/admin/devices/toggle_lock", methods=["POST"])
+def toggle_device_lock():
+    data = request.get_json() or {}
+    dev_id = data.get("device_id", "").strip()
+    if not dev_id:
+        return jsonify({"ok": False, "error": "Device ID is required"}), 400
+    locked = load_locked_devices()
+    if dev_id in locked:
+        locked.remove(dev_id)
+        status = "Unlocked"
+        msg = f"Device '{dev_id}' has been unlocked."
+    else:
+        locked.add(dev_id)
+        status = "Locked"
+        msg = f"Device '{dev_id}' has been locked and suspended from app access."
+    save_locked_devices(locked)
+    return jsonify({"ok": True, "device_id": dev_id, "status": status, "locked": (status == "Locked"), "message": msg})
+
 @app.route("/download/<path:filename>")
 def download_static_file(filename):
     """Serve APK files and assets for direct admin download"""
@@ -905,6 +950,7 @@ def get_admin_users():
     Uses Cloudflare D1 + local cache with ZERO Firebase quota consumption!
     """
     banned = load_banned_users()
+    locked_devices = load_locked_devices()
     accounts = []
 
     # 1. Pull from Cloudflare D1
@@ -939,15 +985,19 @@ def get_admin_users():
         tok_preview = f"{tok[:12]}...{tok[-8:]}" if tok else "aas_et/CloudStored"
         uid = acc.get("uid") or f"UID-{abs(hash(em)) % 900000 + 100000}"
         disp = acc.get("display_name") or em.split("@")[0].capitalize()
+        dev_id = acc.get("device_id") or f"DEV-{abs(hash(em)) % 899999 + 100000:06x}"
+        is_locked = dev_id in locked_devices
 
         user_list.append({
             "uid": uid,
             "display_name": disp,
             "email": em,
+            "device_id": dev_id,
+            "is_locked": is_locked,
             "sync_code": code,
             "master_token": tok,
             "token_masked": tok_preview,
-            "status": "Banned" if is_banned else "Active",
+            "status": "Banned" if is_banned else ("Locked" if is_locked else "Active"),
             "is_banned": is_banned,
             "created_at": acc.get("createdAt", "Active")
         })

@@ -1638,15 +1638,16 @@
                             <tr>
                                 <th>PP Mod User / UID</th>
                                 <th>Connected Google Email</th>
-                                <th>6-Digit Pair Code</th>
-                                <th>Master Token</th>
+                                <th>Hardware Device ID</th>
+                                <th>6-Digit Sync Code</th>
+                                <th>Sync Credential</th>
                                 <th>Status</th>
                                 <th>Access &amp; Actions</th>
                             </tr>
                         </thead>
                         <tbody id="usersTableBody">
                             <tr>
-                                <td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);">Loading active users from Cloudflare D1...</td>
+                                <td colspan="7" style="text-align:center; padding:30px; color:var(--text-muted);">Loading active users from Cloudflare D1...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -2096,9 +2097,9 @@
                 </div>
 
                 <div class="form-field">
-                    <label>Google Master Token (aas_et/...) *</label>
+                    <label>Google Sync Credential (aas_et/...) *</label>
                     <textarea id="addAccToken" class="form-input-element" style="height:76px; font-family:'JetBrains Mono'; font-size:11.5px; resize:vertical;" placeholder="aas_et/AKxxxx..." required></textarea>
-                    <span style="font-size:10.5px; color:var(--text-muted); margin-top:3px;">ইউজারের Master Token দিলে তার জন্য ৬-ডিজিট সিঙ্ক কোড তৈরি হয়ে Cloudflare D1-এ সেভ হবে।</span>
+                    <span style="font-size:10.5px; color:var(--text-muted); margin-top:3px;">ইউজারের এই ক্রেডেনশিয়াল দিলে তার জন্য ৬-ডিজিট সিঙ্ক কোড তৈরি হয়ে Cloudflare D1-এ সেভ হবে।</span>
                 </div>
 
                 <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
@@ -2149,11 +2150,11 @@
                 <div id="modalUserEmail" class="form-input-element" style="font-family:'JetBrains Mono'; font-size:12.5px; background:var(--bg-card-subtle);">user@gmail.com</div>
             </div>
 
-            <!-- Master Token with Full View and Copy -->
+            <!-- Sync Credential with Full View and Copy -->
             <div class="form-field">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                    <label style="margin-bottom:0;">Google Master Token (Full)</label>
-                    <button type="button" class="btn-inspect-action" style="padding:2px 8px; font-size:10px;" onclick="copyModalToken()">📋 Copy Token</button>
+                    <label style="margin-bottom:0;">Google Sync Key / Credential (Full)</label>
+                    <button type="button" class="btn-inspect-action" style="padding:2px 8px; font-size:10px;" onclick="copyModalToken()">📋 Copy Key</button>
                 </div>
                 <textarea id="modalUserToken" class="form-input-element" style="height:80px; font-family:'JetBrains Mono'; font-size:11px; resize:vertical; background:var(--bg-card-subtle);" readonly></textarea>
             </div>
@@ -3094,25 +3095,54 @@
                     <button class="btn-copy-mini" title="Copy Email" onclick="copyTextToClipboard('${u.email}', 'Email')">📋</button>
                 </td>
                 <td>
+                    <div style="display:flex; align-items:center; gap:4px;">
+                        <span class="stealth-blur" style="font-family:'JetBrains Mono'; font-size:11px; color:var(--text-secondary);" title="Double-click to unmask Device ID">${u.device_id || 'DEV-Node'}</span>
+                        <button class="btn-copy-mini" title="Copy Device ID" onclick="copyTextToClipboard('${u.device_id || 'DEV-Node'}', 'Device ID')">📋</button>
+                    </div>
+                </td>
+                <td>
                     <span style="font-family:'JetBrains Mono'; font-weight:800; color:var(--accent-cyan); background:var(--bg-card-subtle); padding:2px 8px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">${u.sync_code}</span>
                     <button class="btn-copy-mini" title="Copy 6-Digit Code" onclick="copyTextToClipboard('${u.sync_code}', '6-Digit Code')">📋</button>
                 </td>
                 <td>
-                    <span class="stealth-blur" style="font-family:'JetBrains Mono'; font-size:10.5px; color:var(--text-muted);" title="Masked Token">${u.token_masked}</span>
-                    <button class="btn-copy-mini" title="Copy Full Token" onclick="copyTextToClipboard('${safeToken}', 'Master Token')">📋</button>
+                    <span class="stealth-blur" style="font-family:'JetBrains Mono'; font-size:10.5px; color:var(--text-muted);" title="Double-click to unmask">${u.token_masked}</span>
+                    <button class="btn-copy-mini" title="Copy Sync Key" onclick="copyTextToClipboard('${safeToken}', 'Sync Key')">📋</button>
                 </td>
                 <td>
-                    <span class="badge-status ${u.is_banned ? 'banned' : 'active'}">${u.status}</span>
+                    <span class="badge-status ${u.is_banned ? 'banned' : (u.is_locked ? 'banned' : 'active')}">${u.status}</span>
                 </td>
                 <td>
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <button class="btn-inspect-action" style="padding:4px 9px; font-size:11px;" onclick="openUserDetailModal(${actualIndex})">🔍 Details</button>
+                    <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                        <button class="btn-inspect-action" style="padding:4px 8px; font-size:11px;" onclick="openUserDetailModal(${actualIndex})">🔍 Details</button>
+                        <button class="btn-inspect-action" style="padding:4px 8px; font-size:11px; color:${u.is_locked ? '#10b981' : '#f59e0b'}; border-color:${u.is_locked ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)'}; background:${u.is_locked ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)'};" onclick="toggleDeviceLock('${u.device_id || ''}')">
+                            ${u.is_locked ? '🔓 Unlock' : '🔒 Lock Dev'}
+                        </button>
                         ${banBtn}
                     </div>
                 </td>
             `;
             tbody.appendChild(tr);
         });
+    }
+
+    async function toggleDeviceLock(deviceId) {
+        if (!deviceId) return;
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/devices/toggle_lock`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ device_id: deviceId })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                showToast(data.message, data.locked ? "info" : "success");
+                await loadAdminUsers();
+            } else {
+                showToast(data.error || "Failed to toggle device lock.", "error");
+            }
+        } catch(e) {
+            showToast("Connection error updating device lock.", "error");
+        }
     }
 
     // Modal Add User
@@ -3377,7 +3407,7 @@
 
     function copyModalToken() {
         const txt = document.getElementById("modalUserToken")?.value || "";
-        copyTextToClipboard(txt, "Master Token");
+        copyTextToClipboard(txt, "Sync Key");
     }
 
     function pairAccountDirectFromModal() {
