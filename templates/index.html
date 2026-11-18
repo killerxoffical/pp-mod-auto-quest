@@ -884,8 +884,10 @@
             gap: 18px;
         }
 
-        .admin-view-panel.hidden {
-            display: none;
+        .admin-view-panel.hidden,
+        .hidden,
+        [hidden] {
+            display: none !important;
         }
 
         /* Add Game Form & Auto-Scanner */
@@ -1671,7 +1673,7 @@
             </div>
 
             <!-- ================= USER FULL DETAIL PANEL (DEDICATED FULL VIEW) ================= -->
-            <div id="userFullDetailPanel" class="hidden">
+            <div id="userFullDetailPanel" class="hidden" style="display:none;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:10px;">
                     <button class="btn-inspect-action" style="padding:8px 18px; font-size:13px; font-weight:700; display:flex; align-items:center; gap:6px;" onclick="closeUserFullPanel()">
                         <span>◀ Back to All Users</span>
@@ -1808,24 +1810,6 @@
                         <button class="btn-sync-protocol" style="padding:10px 24px; font-size:13px; font-weight:800;" onclick="sendPushNotificationFromPanel()">
                             <span>🚀 Send Push Broadcast</span>
                         </button>
-                    </div>
-                </div>
-            </div>
-        </section>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
-                        <div>
-                            <h4 style="font-size:15px; font-weight:800; color:var(--text-primary); margin:0; display:flex; align-items:center; gap:8px;">
-                                <span>📋</span> Linked Google Accounts &amp; Sync Codes
-                            </h4>
-                            <p style="font-size:11.5px; color:var(--text-secondary); margin-top:2px;">
-                                Click on any account item below to view full email, 6-digit sync code, URL and token in a dedicated inspection popup.
-                            </p>
-                        </div>
-                        <span id="fullPanelAccountsCount" class="badge-status active" style="font-family:'JetBrains Mono'; font-size:11px;">1 Account Synced</span>
-                    </div>
-
-                    <div id="fullPanelAccountsContainer" style="display:flex; flex-direction:column; gap:10px;">
-                        <!-- Dynamically populated account rows -->
                     </div>
                 </div>
             </div>
@@ -3345,6 +3329,7 @@
     let selectedUserDetail = null;
 
     async function loadUsersList() {
+        closeUserFullPanel();
         const tbody = document.getElementById("usersTableBody");
         tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px;"><div class="spinner" style="margin:0 auto 8px; border-top-color:var(--accent-green);"></div>Querying Cloudflare D1 accounts...</td></tr>`;
 
@@ -3884,11 +3869,17 @@
         // Switch to Full Dedicated User Panel View with smooth animation
         const mainView = document.getElementById("usersMainListView");
         const fullView = document.getElementById("userFullDetailPanel");
-        mainView.classList.add("hidden");
-        fullView.classList.remove("hidden");
-        fullView.classList.remove("animate-user-panel");
-        void fullView.offsetWidth; // Trigger reflow for animation
-        fullView.classList.add("animate-user-panel");
+        if (mainView) {
+            mainView.classList.add("hidden");
+            mainView.style.display = "none";
+        }
+        if (fullView) {
+            fullView.classList.remove("hidden");
+            fullView.style.display = "block";
+            fullView.classList.remove("animate-user-panel");
+            void fullView.offsetWidth; // Trigger reflow for animation
+            fullView.classList.add("animate-user-panel");
+        }
 
         // Set User Avatar
         const avatarEl = document.getElementById("fullPanelAvatar");
@@ -4039,8 +4030,16 @@
     }
 
     function closeUserFullPanel() {
-        document.getElementById("userFullDetailPanel").classList.add("hidden");
-        document.getElementById("usersMainListView").classList.remove("hidden");
+        const fullView = document.getElementById("userFullDetailPanel");
+        const mainView = document.getElementById("usersMainListView");
+        if (fullView) {
+            fullView.classList.add("hidden");
+            fullView.style.display = "none";
+        }
+        if (mainView) {
+            mainView.classList.remove("hidden");
+            mainView.style.display = "block";
+        }
     }
 
     function copyFullPanelField(id, label) {
