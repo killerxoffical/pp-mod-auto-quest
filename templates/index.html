@@ -3258,12 +3258,6 @@
             pkgPill.setAttribute("onclick", "handleStealthBlurClick(event, this)");
             pkgPill.setAttribute("title", "Single-click: 5s reveal • Double-click: 30s reveal");
         }
-            const pkgPill = document.getElementById("inspPackage");
-            pkgPill.innerText = game.package;
-            pkgPill.className = "pkg-stealth-pill";
-            pkgPill.setAttribute("onclick", "handleStealthBlurClick(event, this)");
-            pkgPill.setAttribute("title", "Single-click: 5s reveal • Double-click: 30s reveal");
-        }
 
         const scrollBox = document.getElementById("inspectorScrollList");
         scrollBox.innerHTML = `<div style="text-align:center; padding:30px;"><div class="spinner" style="margin:0 auto 10px; border-top-color:var(--accent-green);"></div><p style="font-size:12px; color:var(--text-secondary);">Querying Google Play Games achievement endpoints...</p></div>`;
