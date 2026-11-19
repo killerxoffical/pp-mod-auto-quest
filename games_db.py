@@ -5,21 +5,28 @@ Categorized into LEVEL-UP XP Boosters and Quest Unlocker apps.
 
 SUPPORTED_GAMES = {
     "1": {
-        "title": "XP Tap: Level Booster",
-        "developer": "Lakuna Games",
-        "package": "com.lakunagames.xptaplevelboost",
-        "client_sig": "58e71785c961e7328ea9c76de647f8f6c4403b39",
-        "category": "LEVEL-UP XP Booster",
+        "title": "Google Play Games (Official GPGS)",
+        "developer": "Google LLC",
+        "package": "com.google.android.play.games",
+        "client_sig": "38918a453d07199354f8b19af05ec6562ced5788",
+        "category": "Official Play Games",
         "section": "level_up",
-        "icon": "https://play-lh.googleusercontent.com/iRt2JFBUYiJWU8Dejbk9lbIz73ltI9QlcllDaAwAL9SxJMjhOE50gBBZ4M1L9Gi7fJvFOm7ADk-2o5QAhW4kYb4=s256-rw",
-        "achievements_count": 10,
-        "total_xp": 100000,
-        "desc": "10 GPGS achievements (100,000 XP). Dedicated Play Games Level Booster.",
+        "icon": "https://lh3.googleusercontent.com/i3L2Y4fxDYhfy0X65FMRa3oB_chEfam-m7jGpfnwtXF-VAGBad5hrBSK9TI7Ejb7Zg",
+        "achievements_count": 5,
+        "total_xp": 2500,
+        "desc": "Official Google Play Games platform achievements. Directly synced with Google Play cloud servers.",
         "tags": [
-            "LEVEL-UP",
-            "XP Booster",
-            "Google Play Level 100",
-            "Instant Max XP"
+            "Official",
+            "Google Play",
+            "Live Cloud Sync",
+            "Direct XP"
+        ],
+        "achievements": [
+            {"id": "CgkIsunb0aQREAIQAg", "name": "Play Games: Achievement 1", "description": "Official Google Play Games platform achievement", "xp": 500, "type": "STANDARD"},
+            {"id": "CgkIsunb0aQREAIQAw", "name": "Play Games: Achievement 2", "description": "Official Google Play Games platform achievement", "xp": 500, "type": "STANDARD"},
+            {"id": "CgkIsunb0aQREAIQBA", "name": "Play Games: Achievement 3", "description": "Official Google Play Games platform achievement", "xp": 500, "type": "STANDARD"},
+            {"id": "CgkIsunb0aQREAIQBQ", "name": "Play Games: Achievement 4", "description": "Official Google Play Games platform achievement", "xp": 500, "type": "STANDARD"},
+            {"id": "CgkIsunb0aQREAIQBg", "name": "Play Games: Achievement 5", "description": "Official Google Play Games platform achievement", "xp": 500, "type": "STANDARD"}
         ]
     },
     "2": {
