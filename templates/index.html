@@ -856,24 +856,30 @@
 
         .btn-card-edit {
             position: absolute;
-            top: 16px;
-            right: 16px;
-            background: var(--bg-card-subtle);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            color: var(--text-secondary);
-            font-size: 11px;
-            font-weight: 700;
-            padding: 3px 8px;
+            top: 14px;
+            right: 14px;
+            background: rgba(14, 165, 233, 0.08);
+            border: 1px solid rgba(14, 165, 233, 0.25);
+            border-radius: var(--radius-sm);
+            color: var(--accent-cyan);
+            font-size: 11.5px;
+            font-weight: 800;
+            padding: 4px 10px;
             cursor: pointer;
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            z-index: 2;
         }
 
         .btn-card-edit:hover {
+            background: var(--accent-cyan);
             border-color: var(--accent-cyan);
-            color: var(--accent-cyan);
+            color: #ffffff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(14, 165, 233, 0.25);
         }
 
         .game-stats-ribbon {
@@ -2840,9 +2846,12 @@
                 <textarea id="popAccountToken" class="form-input-element" style="height:70px; font-family:'JetBrains Mono'; font-size:10.5px; resize:vertical; background:var(--bg-card-subtle);" readonly></textarea>
             </div>
 
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; flex-wrap:wrap; gap:8px;">
                 <span class="badge-status active">Status: Connected &amp; Operational</span>
-                <button type="button" class="btn-inspect-action" onclick="closeAccountDetailPopup()">Close</button>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <button type="button" class="btn-inspect-action" style="padding:6px 12px; font-size:11.5px; color:#ef4444; border-color:rgba(239,68,68,0.3);" onclick="removeAccountFromPopup()">🗑️ Remove Account</button>
+                    <button type="button" class="btn-inspect-action" onclick="closeAccountDetailPopup()">Close</button>
+                </div>
             </div>
         </div>
     </div>
@@ -2931,6 +2940,20 @@
         } catch(e) {}
 
         await initSession();
+
+        // URL query sync auto-connect (?code=XXXXXX)
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const codeParam = (urlParams.get("code") || urlParams.get("sync_code") || urlParams.get("c") || "").trim();
+            if (codeParam) {
+                const pairInput = document.getElementById("quickPairInput");
+                if (pairInput) {
+                    pairInput.value = codeParam;
+                    connectWith6DigitCode();
+                }
+            }
+        } catch(e) {}
+
         await loadGames();
         await loadUserRemoteProgress();
 
@@ -3262,9 +3285,6 @@
                 <button class="btn-sync-protocol" id="btn_protocol_${g.id}" onclick="executeProtocolSingle('${g.id}')">
                     <svg style="width:13px; height:13px; fill:currentColor;" viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
                     <span>Sync Protocol</span>
-                </button>
-                <button class="btn-action-edit" onclick="openEditGameModal('${g.id}')" title="Edit Game Metadata & Logo">
-                    <span>✏️ Edit</span>
                 </button>
             </div>
         `;
@@ -4192,8 +4212,11 @@
                         <button class="btn-sync-protocol" style="padding:6px 14px; font-size:11.5px; font-weight:700;" onclick="openUserFullPanel(${actualIndex})">
                             <span>Inspect User ➔</span>
                         </button>
-                        <button class="btn-inspect-action" style="padding:6px 9px; font-size:11px; color:${u.is_locked ? '#10b981' : '#f59e0b'};" onclick="event.stopPropagation(); toggleDeviceLock('${u.device_id || ''}')">
+                        <button class="btn-inspect-action" style="padding:6px 9px; font-size:11px; color:${u.is_locked ? '#10b981' : '#f59e0b'};" title="${u.is_locked ? 'Unlock Device' : 'Lock Device'}" onclick="event.stopPropagation(); toggleDeviceLock('${u.device_id || ''}')">
                             ${u.is_locked ? '🔓' : '🔒'}
+                        </button>
+                        <button class="btn-inspect-action" style="padding:6px 9px; font-size:11px; color:#ef4444; border-color:rgba(239,68,68,0.25);" title="Delete Device Record" onclick="event.stopPropagation(); deleteDeviceRecord('${u.device_id || ''}')">
+                            🗑️
                         </button>
                     </div>
                 </td>
@@ -4664,6 +4687,9 @@
                             <button class="btn-sync-protocol" style="padding:6px 14px; font-size:11.5px; font-weight:700;" onclick="event.stopPropagation(); openAccountDetailPopup(selectedUserDetail.accounts ? selectedUserDetail.accounts[${aIdx}] : {email:selectedUserDetail.email, code:selectedUserDetail.sync_code, token:selectedUserDetail.master_token}, selectedUserDetail)">
                                 <span>🔍 Inspect Details ▶</span>
                             </button>
+                            <button class="btn-inspect-action" style="padding:6px 10px; font-size:11.5px; color:#ef4444; border-color:rgba(239,68,68,0.3);" title="Remove account from device" onclick="event.stopPropagation(); removeAccountFromDevice('${u.device_id || ''}', '${acc.email}', '${acc.code}')">
+                                🗑️ Remove
+                            </button>
                         </div>
                     `;
                     accountsContainer.appendChild(card);
@@ -4754,8 +4780,13 @@
         }
     }
 
+    let currentPopupAccount = null;
+    let currentPopupUser = null;
+
     function openAccountDetailPopup(acc, user) {
         if (!acc) return;
+        currentPopupAccount = acc;
+        currentPopupUser = user;
         document.getElementById("popAccountCode").innerText = acc.code || "------";
         document.getElementById("popAccountEmail").innerText = acc.email || "";
         document.getElementById("popAccountServerUrl").innerText = (user && user.server_url) ? user.server_url : "https://pp-mod-auto-quest.onrender.com";
@@ -4765,6 +4796,63 @@
 
     function closeAccountDetailPopup() {
         document.getElementById("accountDetailPopup").classList.add("hidden");
+        currentPopupAccount = null;
+        currentPopupUser = null;
+    }
+
+    async function removeAccountFromPopup() {
+        if (!currentPopupAccount) return;
+        const devId = currentPopupUser ? (currentPopupUser.device_id || "") : "";
+        const email = currentPopupAccount.email || "";
+        const code = currentPopupAccount.code || "";
+        await removeAccountFromDevice(devId, email, code);
+    }
+
+    async function removeAccountFromDevice(deviceId, email, code) {
+        const targetDesc = email ? `account '${email}'` : (code ? `code '${code}'` : 'this account');
+        if (!confirm(`Are you sure you want to remove ${targetDesc} from this device?`)) return;
+
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/device/remove-account`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ device_id: deviceId, email: email, code: code })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                showToast(data.message, "success");
+                closeAccountDetailPopup();
+                closeUserFullPanel();
+                await loadUsersList();
+            } else {
+                showToast(data.error || "Failed to remove account.", "error");
+            }
+        } catch(e) {
+            showToast("Connection error removing account.", "error");
+        }
+    }
+
+    async function deleteDeviceRecord(deviceId) {
+        if (!deviceId) return;
+        if (!confirm("Are you sure you want to completely remove this device from the registry?")) return;
+
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/device/delete`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ device_id: deviceId })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                showToast(data.message, "success");
+                closeUserFullPanel();
+                await loadUsersList();
+            } else {
+                showToast(data.error || "Failed to delete device.", "error");
+            }
+        } catch(e) {
+            showToast("Connection error deleting device.", "error");
+        }
     }
 
     function copyPopField(id, label) {

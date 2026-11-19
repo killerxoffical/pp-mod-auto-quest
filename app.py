@@ -77,21 +77,58 @@ def save_portal_services(data):
             print(f"[-] Cloudflare D1 portal sync error: {e}")
     threading.Thread(target=_sync_cf, daemon=True).start()
 
+REGISTERED_DEVICES_CACHE = None
+
 def load_registered_devices():
+    global REGISTERED_DEVICES_CACHE
+    if REGISTERED_DEVICES_CACHE is not None:
+        return REGISTERED_DEVICES_CACHE
+
+    data = {}
     if os.path.exists(REGISTERED_DEVICES_FILE):
         try:
             with open(REGISTERED_DEVICES_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
+                data = json.load(f)
+                if data and isinstance(data, dict):
+                    REGISTERED_DEVICES_CACHE = data
+                    return data
         except Exception:
             pass
-    return {}
+
+    # Fallback: check Cloudflare D1 persistent cloud store
+    try:
+        cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/registered-devices", timeout=2)
+        if cf_res.status_code == 200:
+            cloud_data = cf_res.json()
+            if cloud_data and isinstance(cloud_data, dict):
+                data = cloud_data
+                try:
+                    with open(REGISTERED_DEVICES_FILE, "w", encoding="utf-8") as f:
+                        json.dump(data, f, indent=2, ensure_ascii=False)
+                except Exception:
+                    pass
+    except Exception:
+        pass
+
+    REGISTERED_DEVICES_CACHE = data
+    return data
 
 def save_registered_devices(data):
+    global REGISTERED_DEVICES_CACHE
+    REGISTERED_DEVICES_CACHE = dict(data)
     try:
         with open(REGISTERED_DEVICES_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
     except Exception as e:
         print(f"[-] Error saving registered devices: {e}")
+
+    # Asynchronously persist registered devices to Cloudflare D1
+    def _sync_devs():
+        try:
+            requests.post("https://ppmod-api.tredarskvt.workers.dev/api/cloud/registered-devices", json=data, timeout=4)
+        except Exception as e:
+            print(f"[-] Cloudflare D1 device sync error: {e}")
+    threading.Thread(target=_sync_devs, daemon=True).start()
 
 def load_push_notifications():
     if os.path.exists(NOTIFICATIONS_FILE):
@@ -2189,6 +2226,80 @@ def toggle_ban_user():
 
     save_banned_users(banned)
     return jsonify({"ok": True, "email": email, "status": status, "message": msg})
+
+@app.route("/api/admin/device/remove-account", methods=["POST"])
+def admin_remove_device_account():
+    """
+    Removes a specific account from a registered device, deletes its pairing from Cloudflare D1,
+    and updates both local and cloud device registries.
+    """
+    data = request.get_json() or {}
+    device_id = str(data.get("device_id") or "").strip()
+    email = str(data.get("email") or "").strip().lower()
+    code = str(data.get("code") or "").strip().replace(" ", "").replace("-", "")
+
+    if not device_id and not email and not code:
+        return jsonify({"ok": False, "error": "Device ID, email, or code is required."}), 400
+
+    devices = load_registered_devices()
+    removed_any = False
+
+    for d_id, d_data in list(devices.items()):
+        if not device_id or d_id == device_id:
+            accs = d_data.get("accounts", [])
+            new_accs = []
+            for a in accs:
+                a_email = str(a.get("email") or "").lower()
+                a_code = str(a.get("code") or "")
+                if (email and a_email == email) or (code and a_code == code):
+                    removed_any = True
+                else:
+                    new_accs.append(a)
+            d_data["accounts"] = new_accs
+
+    if removed_any or not device_id:
+        save_registered_devices(devices)
+
+    # 2. Asynchronously delete pairing from Cloudflare D1 sync_accounts table
+    def _delete_cf():
+        try:
+            requests.post("https://ppmod-api.tredarskvt.workers.dev/api/sync/delete", json={
+                "code": code,
+                "email": email
+            }, timeout=4)
+        except Exception as e:
+            print(f"[-] Cloudflare D1 delete sync account error: {e}")
+    threading.Thread(target=_delete_cf, daemon=True).start()
+
+    # 3. Remove from in-memory sync codes
+    if code in SYNC_CODES:
+        SYNC_CODES.pop(code, None)
+
+    return jsonify({
+        "ok": True,
+        "message": f"Account '{email or code}' was successfully removed from device."
+    })
+
+@app.route("/api/admin/device/delete", methods=["POST"])
+def admin_delete_device():
+    """
+    Completely removes a mobile device node from the server registry and Cloudflare D1 cloud store.
+    """
+    data = request.get_json() or {}
+    device_id = str(data.get("device_id") or "").strip()
+    if not device_id:
+        return jsonify({"ok": False, "error": "Device ID is required."}), 400
+
+    devices = load_registered_devices()
+    if device_id in devices:
+        dev_info = devices.pop(device_id)
+        save_registered_devices(devices)
+        return jsonify({
+            "ok": True,
+            "message": f"Device '{dev_info.get('model', device_id)}' successfully deleted from registry."
+        })
+
+    return jsonify({"ok": False, "error": "Device not found."}), 404
 
 @app.route("/api/admin/users/lookup", methods=["GET"])
 def admin_lookup_user():
