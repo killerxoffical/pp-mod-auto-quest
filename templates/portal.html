@@ -427,23 +427,66 @@
 
         <!-- Sync Account Card -->
         <section class="sync-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                <label style="font-size:13px; font-weight:800; color:var(--text-primary); text-transform:uppercase;">
-                    🔑 Step 1: Connect Your Google Account
-                </label>
-                <span id="sessionStatusBadge" style="font-size:11px; font-weight:700; color:var(--text-muted);">
-                    Waiting for 6-Digit Sync Code...
-                </span>
-            </div>
-            <div class="sync-row">
-                <input id="portalSyncCodeInput" type="text" maxlength="8" class="sync-input" placeholder="e.g. 582914" autocomplete="off">
-                <button class="btn-action" onclick="connectPortalAccount()">🔗 Connect Account</button>
-            </div>
-            <div id="accountInfoBox" style="display:none; padding:12px 16px; background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md); font-size:12px; color:var(--text-secondary); justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                <div>
-                    Connected Account: <strong id="connectedEmail" style="color:var(--text-primary); font-family:'JetBrains Mono';">user@gmail.com</strong>
+            <!-- Connection Mode Tabs (Shown when NOT connected) -->
+            <div id="portalConnectHeader" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <label style="font-size:13px; font-weight:800; color:var(--text-primary); text-transform:uppercase;">
+                        🔑 Step 1: Connect Your Google Account
+                    </label>
+                    <span style="font-size:10px; font-weight:700; color:var(--accent-cyan); background:rgba(14,165,233,0.12); padding:2px 8px; border-radius:12px; border:1px solid rgba(14,165,233,0.3);">
+                        One-Time Isolated Session
+                    </span>
                 </div>
-                <span style="color:var(--accent-green); font-weight:800;">● Active &amp; Ready</span>
+                <div style="display:flex; gap:6px;">
+                    <button type="button" id="tabBtnCode" class="portal-section-pill active" style="font-size:11px; padding:4px 12px;" onclick="switchPortalTab('code')">🔢 6-Digit Code</button>
+                    <button type="button" id="tabBtnToken" class="portal-section-pill" style="font-size:11px; padding:4px 12px;" onclick="switchPortalTab('token')">🔑 Master Token</button>
+                </div>
+            </div>
+
+            <!-- TAB 1: 6-Digit Sync Code -->
+            <div id="tabContentCode" class="sync-row" style="margin-top:4px;">
+                <input id="portalSyncCodeInput" type="text" maxlength="8" class="sync-input" placeholder="Enter 6-digit sync code (e.g. 582914)" autocomplete="off" onkeydown="if(event.key==='Enter')connectPortalAccount('code')">
+                <button class="btn-action" id="btnConnectCode" onclick="connectPortalAccount('code')">🔗 Connect Account</button>
+            </div>
+
+            <!-- TAB 2: Master Token -->
+            <div id="tabContentToken" style="display:none; flex-direction:column; gap:10px; margin-top:4px;">
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <input id="portalMasterTokenInput" type="text" class="sync-input" style="flex:2; font-size:13px; letter-spacing:0;" placeholder="Paste Google Master Token (aas_et/...)" autocomplete="off">
+                    <input id="portalEmailInput" type="email" class="sync-input" style="flex:1; font-size:13px; letter-spacing:0;" placeholder="Email (optional, e.g. player@gmail.com)" autocomplete="off">
+                </div>
+                <div style="display:flex; justify-content:flex-end;">
+                    <button class="btn-action" id="btnConnectToken" onclick="connectPortalAccount('token')">⚡ Connect via Token</button>
+                </div>
+            </div>
+
+            <!-- Status hint during connection -->
+            <div id="portalConnectStatus" style="font-size:11.5px; color:var(--text-muted); display:none;"></div>
+
+            <!-- CONNECTED PLAYER BANNER (Isolated from Admin panel) -->
+            <div id="portalConnectedBox" style="display:none; padding:16px 20px; background:linear-gradient(135deg, rgba(17,24,39,0.95), rgba(30,41,59,0.95)); border:1.5px solid rgba(16,185,129,0.4); border-radius:var(--radius-xl); box-shadow:0 8px 20px rgba(0,0,0,0.4); justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+                <div style="display:flex; align-items:center; gap:14px;">
+                    <img id="portalAvatar" src="https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512" style="width:48px; height:48px; border-radius:50%; border:2px solid var(--accent-green); object-fit:cover;" alt="Avatar">
+                    <div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <strong id="portalDisplayName" style="font-size:15px; color:var(--text-primary);">Connected Gamer</strong>
+                            <span id="portalLevelBadge" style="background:rgba(16,185,129,0.18); border:1px solid rgba(16,185,129,0.4); color:var(--accent-green); font-size:10.5px; font-weight:800; padding:2px 8px; border-radius:10px;">LVL --</span>
+                            <span style="background:rgba(14,165,233,0.15); border:1px solid rgba(14,165,233,0.3); color:var(--accent-cyan); font-size:10px; font-weight:700; padding:2px 7px; border-radius:8px;">🟢 Public Session</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px; margin-top:3px; font-size:12px; color:var(--text-muted);">
+                            <span id="portalEmail" style="font-family:'JetBrains Mono'; color:var(--text-secondary);">user@gmail.com</span>
+                            <span>•</span>
+                            <span id="portalXpText" style="color:var(--accent-cyan); font-family:'JetBrains Mono';">Ready for Quest Sync</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:11px; color:var(--accent-green); font-weight:700; display:inline-flex; align-items:center; gap:4px;">
+                        <span style="width:7px; height:7px; border-radius:50%; background:var(--accent-green); display:inline-block;"></span> Active One-Time
+                    </span>
+                    <button type="button" class="btn-action" style="background:#ef4444; box-shadow:none; padding:7px 14px; font-size:12px;" onclick="disconnectPortalAccount()">✕ Disconnect</button>
+                </div>
             </div>
         </section>
 
@@ -647,65 +690,156 @@
                 .replace(/'/g, '&#039;');
         }
 
-        async function connectPortalAccount() {
-            const code = document.getElementById("portalSyncCodeInput").value.trim().replace(" ", "").replace("-", "");
-            if (!code || code.length < 6) {
-                alert("Please enter a valid 6-digit sync code from the PPM Server app.");
-                return;
-            }
+        function switchPortalTab(tab) {
+            const btnCode = document.getElementById("tabBtnCode");
+            const btnToken = document.getElementById("tabBtnToken");
+            const cntCode = document.getElementById("tabContentCode");
+            const cntToken = document.getElementById("tabContentToken");
 
-            const statusBadge = document.getElementById("sessionStatusBadge");
-            statusBadge.innerText = "⏳ Verifying sync code...";
-
-            try {
-                const res = await fetch("/api/sync/claim", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ code: code })
-                });
-                const data = await res.json();
-                if (data.ok && data.user) {
-                    connectedAccountData = { code: code, email: data.user.email, token: data.user.token };
-                    statusBadge.innerText = "✅ Connected Successfully";
-                    statusBadge.style.color = "var(--accent-green)";
-                    document.getElementById("connectedEmail").innerText = data.user.email;
-                    document.getElementById("accountInfoBox").style.display = "flex";
-                } else {
-                    // Try direct token login
-                    connectedAccountData = { code: code };
-                    statusBadge.innerText = "✅ Code Registered";
-                    statusBadge.style.color = "var(--accent-green)";
-                    document.getElementById("connectedEmail").innerText = `Sync Code: ${code}`;
-                    document.getElementById("accountInfoBox").style.display = "flex";
-                }
-            } catch(e) {
-                connectedAccountData = { code: code };
-                statusBadge.innerText = "✅ Code Ready";
-                document.getElementById("connectedEmail").innerText = `Sync Code: ${code}`;
-                document.getElementById("accountInfoBox").style.display = "flex";
+            if (tab === 'code') {
+                btnCode.classList.add("active");
+                btnToken.classList.remove("active");
+                cntCode.style.display = "flex";
+                cntToken.style.display = "none";
+            } else {
+                btnToken.classList.add("active");
+                btnCode.classList.remove("active");
+                cntCode.style.display = "none";
+                cntToken.style.display = "flex";
             }
         }
 
+        async function connectPortalAccount(mode) {
+            let reqBody = {};
+            const statusDiv = document.getElementById("portalConnectStatus");
+            statusDiv.style.display = "block";
+            statusDiv.style.color = "var(--text-muted)";
+            statusDiv.innerText = "⏳ Verifying account with Google Play Games...";
+
+            if (mode === 'token') {
+                const tok = (document.getElementById("portalMasterTokenInput").value || "").trim();
+                const em = (document.getElementById("portalEmailInput").value || "").trim();
+                if (!tok) {
+                    alert("Please paste a valid Google Master Token (aas_et/...).");
+                    statusDiv.style.display = "none";
+                    return;
+                }
+                reqBody = { master_token: tok, email: em };
+                document.getElementById("btnConnectToken").disabled = true;
+            } else {
+                const code = (document.getElementById("portalSyncCodeInput").value || "").trim().replace(" ", "").replace("-", "");
+                if (!code || code.length < 6) {
+                    alert("Please enter a valid 6-digit sync code from the PPM Server app.");
+                    statusDiv.style.display = "none";
+                    return;
+                }
+                reqBody = { code: code };
+                document.getElementById("btnConnectCode").disabled = true;
+            }
+
+            try {
+                const res = await fetch("/api/portal/connect", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(reqBody)
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    connectedAccountData = {
+                        email: data.email,
+                        master_token: data.master_token,
+                        android_id: data.android_id,
+                        code: reqBody.code || "",
+                        profile: data.profile
+                    };
+                    sessionStorage.setItem("pp_portal_session", JSON.stringify(connectedAccountData));
+                    renderConnectedUI(connectedAccountData);
+                    statusDiv.style.display = "none";
+                } else {
+                    alert(`Connection Failed: ${data.error || 'Server error'}`);
+                    statusDiv.style.color = "#ef4444";
+                    statusDiv.innerText = `❌ ${data.error || 'Failed to connect.'}`;
+                }
+            } catch(e) {
+                alert(`Network error connecting to portal: ${e.message}`);
+                statusDiv.style.color = "#ef4444";
+                statusDiv.innerText = `❌ Error: ${e.message}`;
+            } finally {
+                if (document.getElementById("btnConnectCode")) document.getElementById("btnConnectCode").disabled = false;
+                if (document.getElementById("btnConnectToken")) document.getElementById("btnConnectToken").disabled = false;
+            }
+        }
+
+        function renderConnectedUI(acc) {
+            const header = document.getElementById("portalConnectHeader");
+            const cntCode = document.getElementById("tabContentCode");
+            const cntToken = document.getElementById("tabContentToken");
+            const box = document.getElementById("portalConnectedBox");
+
+            header.style.display = "none";
+            cntCode.style.display = "none";
+            cntToken.style.display = "none";
+            box.style.display = "flex";
+
+            if (acc.profile) {
+                document.getElementById("portalDisplayName").innerText = acc.profile.display_name || "Gamer";
+                document.getElementById("portalLevelBadge").innerText = `LVL ${acc.profile.current_level || 1}`;
+                document.getElementById("portalEmail").innerText = acc.email || "player@gmail.com";
+                document.getElementById("portalXpText").innerText = `${(acc.profile.current_xp || 0).toLocaleString()} XP`;
+                if (acc.profile.avatar_url) {
+                    document.getElementById("portalAvatar").src = acc.profile.avatar_url;
+                }
+            } else {
+                document.getElementById("portalDisplayName").innerText = acc.email.split("@")[0] || "Connected User";
+                document.getElementById("portalEmail").innerText = acc.email || "Connected";
+            }
+        }
+
+        function disconnectPortalAccount() {
+            connectedAccountData = null;
+            sessionStorage.removeItem("pp_portal_session");
+
+            document.getElementById("portalConnectedBox").style.display = "none";
+            document.getElementById("portalConnectHeader").style.display = "flex";
+            document.getElementById("tabContentCode").style.display = "flex";
+            document.getElementById("portalSyncCodeInput").value = "";
+            document.getElementById("portalMasterTokenInput").value = "";
+            document.getElementById("portalConnectStatus").style.display = "none";
+        }
+
+        function initPortalSession() {
+            try {
+                const saved = sessionStorage.getItem("pp_portal_session");
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (parsed && (parsed.master_token || parsed.email)) {
+                        connectedAccountData = parsed;
+                        renderConnectedUI(parsed);
+                    }
+                }
+            } catch(e) {}
+        }
+
         async function runServiceUnlock(gameId, gameTitle) {
-            if (!connectedAccountData || !connectedAccountData.code) {
-                alert("Please connect your Google Account using your 6-digit sync pairing code first!");
-                document.getElementById("portalSyncCodeInput").focus();
+            if (!connectedAccountData || (!connectedAccountData.master_token && !connectedAccountData.code)) {
+                alert("Please connect your Google Account first in Step 1 (via 6-digit sync code or Master Token)!");
+                window.scrollTo({ top: 120, behavior: 'smooth' });
                 return;
             }
 
             const body = {
                 game_id: gameId,
-                sync_code: connectedAccountData.code,
+                sync_code: connectedAccountData.code || "",
+                master_token: connectedAccountData.master_token || "",
+                email: connectedAccountData.email || "",
+                android_id: connectedAccountData.android_id || "",
                 portal_service: true
             };
-            if (connectedAccountData.token) {
-                body.master_token = connectedAccountData.token;
-                body.email = connectedAccountData.email;
-            }
 
             const btn = event.currentTarget;
+            const originalHtml = btn.innerHTML;
             btn.disabled = true;
-            btn.innerText = "⏳ Unlocking Objectives...";
+            btn.innerText = "⏳ Unlocking Objectives on Google...";
 
             try {
                 const res = await fetch("/api/portal/unlock", {
@@ -723,7 +857,7 @@
                 alert(`Connection error: ${e.message}`);
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = "<span>Sync Quests</span>";
+                btn.innerHTML = originalHtml;
             }
         }
 
@@ -758,6 +892,7 @@
         }
 
         loadPublicServices();
+        initPortalSession();
     </script>
 </body>
 </html>

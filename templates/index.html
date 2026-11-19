@@ -1479,6 +1479,7 @@
                             <span>🏆</span> <span id="topAchievementsCount">0</span> Achievements Unlocked
                         </span>
                         <span id="topEmail" style="font-size:11.5px; color:var(--text-muted); font-family:'JetBrains Mono';">mdd145712@gmail.com</span>
+                        <button type="button" class="btn-sync-protocol" style="padding:3px 9px; font-size:10.5px; margin-left:6px; border-radius:10px; background:rgba(14,165,233,0.15); border:1px solid rgba(14,165,233,0.4); color:var(--accent-cyan); display:inline-flex; align-items:center; gap:4px;" onclick="openAccountSwitchModal()">🔄 Switch / Add Account</button>
                     </div>
 
                     <!-- Authentic Google Play Games Style Level Progress Bar -->
@@ -2841,6 +2842,60 @@
     </div>
 </div>
 
+<!-- Account Switcher & Master Token Modal -->
+<div id="modalAccountSwitch" class="admin-modal-overlay" style="display:none; align-items:center; justify-content:center; z-index:9999;">
+    <div class="admin-modal-box" style="width:580px; max-width:94vw; max-height:90vh; overflow-y:auto; border-radius:var(--radius-xl); background:var(--bg-card); border:1px solid var(--border-color); box-shadow:var(--shadow-card);">
+        <div style="padding:18px 24px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:36px; height:36px; border-radius:10px; background:rgba(14,165,233,0.15); color:var(--accent-cyan); display:flex; align-items:center; justify-content:center; font-size:18px;">🔄</div>
+                <div>
+                    <h3 style="margin:0; font-size:16px; font-weight:800; color:var(--text-primary);">Google Accounts &amp; Switcher</h3>
+                    <p style="margin:0; font-size:11.5px; color:var(--text-muted);">Switch between connected accounts or add a new Google Master Token</p>
+                </div>
+            </div>
+            <button style="background:var(--bg-card-subtle); border:1px solid var(--border-color); color:var(--text-primary); width:32px; height:32px; border-radius:var(--radius-sm); cursor:pointer; font-weight:700;" onclick="closeAccountSwitchModal()">✕</button>
+        </div>
+
+        <div style="padding:20px 24px; display:flex; flex-direction:column; gap:20px;">
+            <!-- Current Active Account Badge -->
+            <div style="padding:12px 16px; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:var(--radius-md); display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <span style="font-size:10.5px; font-weight:700; color:var(--accent-green); text-transform:uppercase;">Currently Active Session:</span>
+                    <div id="switchModalCurrentEmail" style="font-size:13.5px; font-weight:700; color:var(--text-primary); font-family:'JetBrains Mono'; margin-top:2px;">mdd145712@gmail.com</div>
+                </div>
+                <span class="badge-status active">● Connected</span>
+            </div>
+
+            <!-- Saved Accounts List -->
+            <div>
+                <label style="font-size:12px; font-weight:800; color:var(--text-secondary); text-transform:uppercase; margin-bottom:8px; display:block;">
+                    📋 Saved Google Accounts in Database
+                </label>
+                <div id="switchModalAccountsList" style="display:flex; flex-direction:column; gap:8px; max-height:160px; overflow-y:auto;">
+                    <div style="font-size:12px; color:var(--text-muted); padding:10px; text-align:center;">Loading accounts...</div>
+                </div>
+            </div>
+
+            <!-- Divider -->
+            <div style="height:1px; background:var(--border-color); margin:0 -4px;"></div>
+
+            <!-- Add or Connect via Master Token -->
+            <div>
+                <label style="font-size:12px; font-weight:800; color:var(--text-secondary); text-transform:uppercase; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                    <span>🔑</span> Connect New Account via Master Token (aas_et/...)
+                </label>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <input type="text" id="inputSwitchMasterToken" class="form-input-element" placeholder="Paste Master Token (aas_et/...)" style="font-family:'JetBrains Mono'; font-size:12px;">
+                    <div style="display:flex; gap:10px;">
+                        <input type="email" id="inputSwitchEmail" class="form-input-element" placeholder="Email (e.g. user@gmail.com)" style="flex:1; font-family:'JetBrains Mono'; font-size:12px;">
+                        <button type="button" class="btn-sync-protocol" style="padding:8px 18px; font-size:12px; font-weight:700;" onclick="submitMasterTokenSwitch()">⚡ Connect &amp; Switch</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Toast Container -->
 <div class="toast-holder" id="toastHolder"></div>
 
@@ -3594,6 +3649,118 @@
 
 
 
+    // ================= ACCOUNT SWITCHER & MASTER TOKEN MODAL =================
+    async function openAccountSwitchModal() {
+        const modal = document.getElementById("modalAccountSwitch");
+        const listDiv = document.getElementById("switchModalAccountsList");
+        const curEmailEl = document.getElementById("switchModalCurrentEmail");
+
+        const curEmail = (currentSession && currentSession.email) ? currentSession.email : "mdd145712@gmail.com";
+        curEmailEl.innerText = curEmail;
+        modal.style.display = "flex";
+        listDiv.innerHTML = `<div style="font-size:12px; color:var(--text-muted); padding:10px; text-align:center;">Loading accounts...</div>`;
+
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/accounts?current=${encodeURIComponent(curEmail)}`);
+            const data = await res.json();
+            if (data.ok && data.accounts && data.accounts.length > 0) {
+                listDiv.innerHTML = data.accounts.map(acc => {
+                    const isActive = acc.is_active || (acc.email.toLowerCase() === curEmail.toLowerCase());
+                    return `
+                        <div style="padding:10px 14px; background:var(--bg-card-subtle); border:1px solid ${isActive ? 'rgba(16,185,129,0.5)' : 'var(--border-color)'}; border-radius:var(--radius-md); display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <strong style="font-size:12.5px; color:var(--text-primary); font-family:'JetBrains Mono';">${acc.email}</strong>
+                                <div style="font-size:10.5px; color:var(--text-muted); margin-top:2px;">
+                                    ${acc.token_type} • ${acc.token_preview || 'Token present'}
+                                </div>
+                            </div>
+                            <div>
+                                ${isActive ? `<span style="font-size:11px; font-weight:800; color:var(--accent-green);">● Active</span>` : `<button type="button" class="btn-sync-protocol" style="padding:5px 12px; font-size:11px;" onclick="switchAccountToEmail('${acc.email}')">Switch</button>`}
+                            </div>
+                        </div>
+                    `;
+                }).join("");
+            } else {
+                listDiv.innerHTML = `<div style="font-size:12px; color:var(--text-muted); padding:10px; text-align:center;">No saved accounts found in database.</div>`;
+            }
+        } catch(e) {
+            listDiv.innerHTML = `<div style="font-size:12px; color:#ef4444; padding:10px; text-align:center;">Failed to load accounts: ${e.message}</div>`;
+        }
+    }
+
+    function closeAccountSwitchModal() {
+        document.getElementById("modalAccountSwitch").style.display = "none";
+    }
+
+    async function switchAccountToEmail(email) {
+        showToast(`Switching active session to ${email}...`, "info");
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/switch-account`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: email })
+            });
+            const data = await res.json();
+            if (data.ok && data.profile) {
+                currentSession = {
+                    email: data.email,
+                    master_token: data.master_token,
+                    android_id: data.android_id,
+                    profile: data.profile
+                };
+                localStorage.setItem("pp_active_session", JSON.stringify(currentSession));
+                updateProfileUI(data.profile);
+                triggerCelebration();
+                showToast(`🎉 Switched successfully to ${data.profile.display_name} (${data.email})!`, "success");
+                closeAccountSwitchModal();
+                await loadUserRemoteProgress();
+            } else {
+                showToast(`Switch failed: ${data.error || 'Server error'}`, "error");
+            }
+        } catch(e) {
+            showToast(`Error switching account: ${e.message}`, "error");
+        }
+    }
+
+    async function submitMasterTokenSwitch() {
+        const tok = (document.getElementById("inputSwitchMasterToken").value || "").trim();
+        const em = (document.getElementById("inputSwitchEmail").value || "").trim();
+        if (!tok) {
+            showToast("Please enter a Google Master Token (aas_et/...)", "error");
+            return;
+        }
+
+        showToast("Verifying Master Token with Google Play Games...", "info");
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/switch-account`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ master_token: tok, email: em })
+            });
+            const data = await res.json();
+            if (data.ok && data.profile) {
+                currentSession = {
+                    email: data.email,
+                    master_token: data.master_token,
+                    android_id: data.android_id,
+                    profile: data.profile
+                };
+                localStorage.setItem("pp_active_session", JSON.stringify(currentSession));
+                updateProfileUI(data.profile);
+                triggerCelebration();
+                showToast(`🎉 Account connected! Logged in as ${data.profile.display_name} (${data.email})`, "success");
+                document.getElementById("inputSwitchMasterToken").value = "";
+                document.getElementById("inputSwitchEmail").value = "";
+                closeAccountSwitchModal();
+                await loadUserRemoteProgress();
+            } else {
+                showToast(`Connection failed: ${data.error || 'Invalid token'}`, "error");
+            }
+        } catch(e) {
+            showToast(`Connection error: ${e.message}`, "error");
+        }
+    }
+
     // ================= 6-DIGIT CODE QUICK PAIRING =================
     async function connectWith6DigitCode() {
         const input = document.getElementById("quickPairInput");
@@ -3629,7 +3796,7 @@
                 hidePairCodeBox();
                 await loadUserRemoteProgress();
             } else {
-                showToast(data.error || "Invalid 6-digit pairing code.", "error");
+                showToast(data.error || "Invalid or expired 6-digit pairing code.", "error");
             }
         } catch (e) {
             showToast("Failed to connect pairing code.", "error");

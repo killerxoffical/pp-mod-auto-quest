@@ -29,10 +29,44 @@ def load_portal_services():
     if os.path.exists(PORTAL_SERVICES_FILE):
         try:
             with open(PORTAL_SERVICES_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
+                data = json.load(f)
+                if data:
+                    return data
         except Exception:
             pass
-    return {}
+
+    # Initialize default starter services from verified real games
+    defaults = {}
+    try:
+        merged = get_merged_games()
+        starter_ids = ["1", "2", "3", "4", "5", "6"]
+        for gid in starter_ids:
+            if gid in merged:
+                g = merged[gid]
+                all_q = get_game_quest_definitions(g)
+                sel_q = all_q[:10]
+                defaults[gid] = {
+                    "id": gid,
+                    "title": g.get("title", gid),
+                    "developer": g.get("developer", "Top Developer"),
+                    "package": g.get("package", ""),
+                    "icon": g.get("icon", ""),
+                    "category": g.get("category", "Popular Game"),
+                    "section": g.get("section", "quest_unlocker"),
+                    "total_quests_count": len(all_q),
+                    "selected_quests_count": len(sel_q),
+                    "selected_quest_ids": [q["id"] for q in sel_q],
+                    "selected_quests": sel_q,
+                    "all_quests": all_q,
+                    "enabled": True,
+                    "created_at": time.strftime("%Y-%m-%d %H:%M:%S")
+                }
+        if defaults:
+            save_portal_services(defaults)
+    except Exception as e:
+        print(f"[-] Error initializing default portal services: {e}")
+
+    return defaults
 
 def save_portal_services(data):
     try:
@@ -422,9 +456,11 @@ def resolve_credentials_from_input(data):
                 cf_res = requests.get(cf_url, timeout=4)
                 if cf_res.status_code == 200:
                     d = cf_res.json()
-                    if d.get("ok") and d.get("token"):
-                        master_token = d["token"]
-                        email = d.get("email") or email
+                    acc = d.get("account") or d
+                    if acc and (acc.get("master_token") or acc.get("token")):
+                        master_token = acc.get("master_token") or acc.get("token")
+                        if acc.get("email") and acc.get("email") != "Google Play User":
+                            email = acc.get("email")
             except Exception:
                 pass
             if not master_token:
@@ -474,16 +510,39 @@ def create_sync_code():
     
     country = data.get("country", "GLOBAL")
     uid = data.get("uid", "")
+    android_id = data.get("android_id", "").strip() or generate_android_id(email if email else None)
+
+    # Immediately convert fresh oauth_token to permanent master_token
+    master_token = token
+    if not (token.startswith("aas_et/") or token.startswith("oauth2rt_1/")):
+        clean_tok = token
+        if "oauth_token=" in clean_tok:
+            import re
+            m = re.search(r'oauth_token=([a-zA-Z0-9_\-]+)', clean_tok)
+            clean_tok = m.group(1) if m else clean_tok.replace("oauth_token=", "").strip()
+        
+        ex_res = exchange_oauth_token_for_master(email if ("@" in email) else "", clean_tok, android_id)
+        if ex_res.get("ok"):
+            master_token = ex_res.get("master_token", token)
+            if ex_res.get("email") and "@" in ex_res.get("email"):
+                email = ex_res["email"]
+            print(f"[+] Fresh oauth_token converted to permanent master_token for {email}")
 
     code = f"{random.randint(100000, 999999)}"
     SYNC_CODES[code] = {
         "email": email,
-        "token": token,
+        "token": master_token,
+        "master_token": master_token,
         "country": country,
         "uid": uid,
+        "android_id": android_id,
         "created_at": time.time()
     }
-    return jsonify({"ok": True, "code": code})
+
+    if email and "@" in email and master_token.startswith("aas_et/"):
+        save_known_token(email, master_token)
+
+    return jsonify({"ok": True, "code": code, "email": email, "master_token": master_token})
 
 @app.route("/api/sync/accounts", methods=["GET"])
 def get_sync_accounts():
@@ -589,7 +648,7 @@ def do_token_login(email: str, token_str: str, android_id: str = None):
         return jsonify({"ok": False, "error": "This account has been suspended by administrator."}), 403
 
     if not android_id:
-        android_id = generate_android_id()
+        android_id = generate_android_id(email if email else None)
 
     # Check if already a master token
     if token_str.startswith("aas_et/") or token_str.startswith("oauth2rt_1/"):
@@ -605,12 +664,24 @@ def do_token_login(email: str, token_str: str, android_id: str = None):
             else:
                 clean_tok = clean_tok.replace("oauth_token=", "").strip()
         
-        ex_res = exchange_oauth_token_for_master(email, clean_tok, android_id)
+        ex_res = exchange_oauth_token_for_master(email if ("@" in email) else "", clean_tok, android_id)
         if not ex_res.get("ok"):
-            return jsonify({"ok": False, "error": f"Google token exchange failed: {ex_res.get('error')}"}), 401
-        master_token = ex_res["master_token"]
-        if ex_res.get("email"):
-            email = ex_res["email"]
+            err = ex_res.get("error", "UnknownError")
+            # Fallback to known tokens if available
+            known = load_known_tokens()
+            if email and email.lower() in known:
+                master_token = known[email.lower()]
+            else:
+                if "BadAuthentication" in err:
+                    return jsonify({
+                        "ok": False, 
+                        "error": "This sync code has expired (Google requires webview authorization within 5 minutes). Please reopen the app on the phone to generate a fresh 6-digit code, or connect using Master Token directly."
+                    }), 401
+                return jsonify({"ok": False, "error": f"Google token exchange failed: {err}"}), 401
+        else:
+            master_token = ex_res["master_token"]
+            if ex_res.get("email") and "@" in ex_res.get("email"):
+                email = ex_res["email"]
 
     if not email:
         email = "player@google.com"
@@ -642,6 +713,143 @@ def do_token_login(email: str, token_str: str, android_id: str = None):
         "master_token": master_token,
         "android_id": android_id,
         "profile": format_profile(profile_res)
+    })
+
+@app.route("/api/admin/accounts", methods=["GET"])
+def admin_get_accounts():
+    """
+    Returns all saved Google Play accounts for Admin switcher.
+    """
+    known = load_known_tokens()
+    req_cur = request.args.get("current", "").strip().lower()
+    acc_list = []
+    for em, tok in known.items():
+        tok_type = "Master Token (aas_et)" if str(tok).startswith("aas_et/") else "OAuth Token"
+        acc_list.append({
+            "email": em,
+            "token_type": tok_type,
+            "token_preview": (tok[:15] + "..." + tok[-8:]) if len(tok) > 25 else tok,
+            "is_active": (em.lower() == req_cur) if req_cur else False,
+            "has_token": bool(tok)
+        })
+    return jsonify({"ok": True, "accounts": acc_list})
+
+@app.route("/api/admin/switch-account", methods=["POST"])
+def admin_switch_account():
+    """
+    Allows Admin to switch to any saved account or add a new account via Master Token.
+    Instantly verifies with Google Play Games.
+    """
+    data = request.get_json() or {}
+    target_email = data.get("email", "").strip().lower()
+    master_token = data.get("master_token", "").strip()
+    code = data.get("code", "").strip()
+
+    if code:
+        return claim_sync_code()
+
+    if not master_token and target_email:
+        known = load_known_tokens()
+        if target_email in known:
+            master_token = known[target_email]
+
+    if not master_token:
+        return jsonify({"ok": False, "error": "Master Token (aas_et/...) or valid email is required."}), 400
+
+    aid = generate_android_id(target_email if target_email else None)
+    return do_token_login(target_email, master_token, aid)
+
+@app.route("/api/portal/connect", methods=["POST"])
+def portal_connect_account():
+    """
+    Dedicated, isolated account connection for the Public Portal.
+    Accepts 6-digit sync code OR direct master_token / access_token.
+    Validates with Google Play Games and returns the player profile.
+    Does NOT modify the Admin panel session.
+    """
+    data = request.get_json() or {}
+    code = str(data.get("code") or data.get("sync_code") or "").strip().replace(" ", "").replace("-", "")
+    token_str = str(data.get("token") or data.get("master_token") or "").strip()
+    email = str(data.get("email") or "").strip()
+    android_id = str(data.get("android_id") or "").strip() or generate_android_id(email if email else None)
+
+    # 1. Resolve 6-digit sync code if provided
+    if code and code.isdigit() and len(code) == 6:
+        if code in SYNC_CODES:
+            entry = SYNC_CODES[code]
+            email = entry.get("email") or email
+            token_str = entry.get("master_token") or entry.get("token") or token_str
+            android_id = entry.get("android_id") or android_id
+        else:
+            try:
+                cf_url = f"https://ppmod-api.tredarskvt.workers.dev/api/sync/get?code={code}"
+                cf_res = requests.get(cf_url, timeout=4)
+                if cf_res.status_code == 200:
+                    cf_data = cf_res.json()
+                    acc = cf_data.get("account") or cf_data
+                    if acc and (acc.get("master_token") or acc.get("token")):
+                        token_str = acc.get("master_token") or acc.get("token")
+                        if acc.get("email") and acc.get("email") != "Google Play User":
+                            email = acc.get("email")
+            except Exception as e:
+                print(f"[-] Cloudflare D1 query portal connect: {e}")
+
+        if not token_str:
+            known = load_known_tokens()
+            for em, tok in known.items():
+                c_hash = f"{abs(hash(em)) % 900000 + 100000}"
+                if code == c_hash:
+                    email = em
+                    token_str = tok
+                    break
+
+    if not token_str:
+        return jsonify({"ok": False, "error": "Invalid or expired 6-digit code. Please enter a valid code or direct Master Token."}), 400
+
+    # Check if master token or oauth_token
+    if token_str.startswith("aas_et/") or token_str.startswith("oauth2rt_1/"):
+        master_token = token_str
+    else:
+        clean_tok = token_str
+        if "oauth_token=" in clean_tok:
+            import re
+            m = re.search(r'oauth_token=([a-zA-Z0-9_\-]+)', clean_tok)
+            clean_tok = m.group(1) if m else clean_tok.replace("oauth_token=", "")
+
+        ex_res = exchange_oauth_token_for_master(email if ("@" in email) else "", clean_tok, android_id)
+        if not ex_res.get("ok"):
+            err = ex_res.get("error", "Unknown")
+            if "BadAuthentication" in err:
+                return jsonify({
+                    "ok": False,
+                    "error": "This sync code has expired (Google temporary tokens expire in 5 minutes). Please generate a fresh code in the app or paste Master Token."
+                }), 401
+            return jsonify({"ok": False, "error": f"Google token exchange failed: {err}"}), 401
+        master_token = ex_res["master_token"]
+        if ex_res.get("email") and "@" in ex_res.get("email"):
+            email = ex_res["email"]
+
+    if not email:
+        email = "player@google.com"
+
+    tok_res = get_games_oauth_token(email, master_token, android_id)
+    if not tok_res.get("ok"):
+        return jsonify({"ok": False, "error": f"Google Play Games authentication failed: {tok_res.get('error')}"}), 401
+
+    access_token = tok_res["access_token"]
+    profile_res = get_player_profile(access_token)
+    if not profile_res.get("ok"):
+        return jsonify({"ok": False, "error": "Could not load Google Play Games profile for this account."}), 400
+
+    profile = format_profile(profile_res)
+
+    return jsonify({
+        "ok": True,
+        "email": email,
+        "master_token": master_token,
+        "android_id": android_id,
+        "profile": profile,
+        "message": f"Connected as {profile.get('display_name', email)} (One-time Public Session)"
     })
 
 @app.route("/api/login/token", methods=["POST"])
@@ -3276,7 +3484,14 @@ def unlock_portal_service_quests():
     if not selected_quest_ids:
         return jsonify({"ok": False, "error": f"No quests have been enabled by admin for '{service.get('title')}'."}), 400
 
-    email, master_token, access_token, android_id = resolve_credentials_from_input(data)
+    email = data.get("email", "").strip()
+    master_token = data.get("master_token", "").strip() or data.get("token", "").strip()
+    access_token = data.get("access_token", "").strip()
+    android_id = data.get("android_id", "").strip()
+
+    if not master_token and not access_token:
+        email, master_token, access_token, android_id = resolve_credentials_from_input(data)
+
     if not (master_token or access_token):
         return jsonify({"ok": False, "error": "No valid authentication token or 6-digit sync code found. Please connect your account first."}), 401
 

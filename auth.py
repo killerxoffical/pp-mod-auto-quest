@@ -7,8 +7,12 @@ import random
 import gpsoauth
 from config import SCOPE_GAMES, PLAY_GAMES_PACKAGE, GOOGLE_CLIENT_SIG
 
-def generate_android_id() -> str:
-    """Generate a random 16-character hexadecimal Android Device ID"""
+def generate_android_id(seed: str = None) -> str:
+    """Generate a 16-character hexadecimal Android Device ID (deterministic if seed provided)"""
+    if seed:
+        import hashlib
+        h = hashlib.sha256(str(seed).strip().lower().encode("utf-8")).hexdigest()
+        return h[:16]
     return "".join(random.choices("0123456789abcdef", k=16))
 
 def exchange_oauth_token_for_master(email: str, oauth_token: str, android_id: str = None) -> dict:
