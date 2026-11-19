@@ -3170,7 +3170,7 @@ def get_user_progress_summary():
     now = time.time()
     if not force_refresh and email in USER_PROGRESS_CACHE:
         cached = USER_PROGRESS_CACHE[email]
-        if now - cached.get("timestamp", 0) < 15:
+        if now - cached.get("timestamp", 0) < 300:
             return jsonify({
                 "ok": True,
                 "progress": cached.get("summary", {}),
