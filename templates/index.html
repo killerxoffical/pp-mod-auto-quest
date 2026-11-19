@@ -3169,7 +3169,7 @@
                 </button>
                 <button class="btn-sync-protocol" id="btn_protocol_${g.id}" onclick="executeProtocolSingle('${g.id}')">
                     <svg style="width:13px; height:13px; fill:currentColor;" viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
-                    <span>${parseInt(g.id) <= 12 ? 'Sync Protocol' : 'Catalog Info'}</span>
+                    <span>Sync Protocol</span>
                 </button>
                 <button class="btn-action-edit" onclick="openEditGameModal('${g.id}')" title="Edit Game Metadata & Logo">
                     <span>✏️ Edit</span>
@@ -3357,14 +3357,6 @@
         const box = document.getElementById("inspectorScrollList");
         box.innerHTML = "";
 
-        const isPartner = parseInt(activeInspectorGameId) > 12;
-        if (isPartner) {
-            const notice = document.createElement("div");
-            notice.style = "background:rgba(245, 158, 11, 0.08); border:1px solid rgba(245, 158, 11, 0.25); border-radius:8px; padding:10px 14px; margin-bottom:12px; font-size:12px; color:#f59e0b; display:flex; align-items:center; gap:8px;";
-            notice.innerHTML = `<span>ℹ️</span><span><strong>Partner Quest App:</strong> This app does not have official Google Play Games Services credentials. To unlock live cloud achievements and boost XP in your phone's Google Play Games app, please select from verified games (Games 1 to 12).</span>`;
-            box.appendChild(notice);
-        }
-
         let items = currentQuests;
         if (currentQuestFilter === "locked") items = items.filter(q => !q.is_unlocked);
         if (currentQuestFilter === "unlocked") items = items.filter(q => q.is_unlocked);
@@ -3383,11 +3375,9 @@
             const row = document.createElement("div");
             row.className = `ach-row-card ${q.is_unlocked ? 'unlocked' : 'locked'}`;
 
-            const actionBtn = isPartner
-                ? `<span style="font-size:11px; font-weight:600; color:var(--text-muted); padding:4px 8px; border-radius:4px; background:var(--bg-card-subtle);">Catalog Info</span>`
-                : (q.is_unlocked 
-                    ? `<span style="font-size:11px; font-weight:700; color:var(--accent-green); padding:4px 8px; border-radius:4px; background:var(--accent-green-subtle);">✓ Synced</span>`
-                    : `<button class="btn-single-unlock" id="btn_q_${q.id}" onclick="syncIndividualQuest('${q.id}', '${q.type}', ${q.total_steps || 1})">⚡ Sync Quest</button>`);
+            const actionBtn = q.is_unlocked 
+                ? `<span style="font-size:11px; font-weight:700; color:var(--accent-green); padding:5px 10px; border-radius:6px; background:var(--accent-green-subtle);">✓ Synced</span>`
+                : `<button class="btn-single-unlock" id="btn_q_${q.id}" onclick="syncIndividualQuest('${q.id}', '${q.type}', ${q.total_steps || 1})">⚡ Sync Quest</button>`;
 
             // Unique authentic achievement badge per quest index
             const badgeIdx = (idx % 16) + 1;
@@ -3430,10 +3420,6 @@
     async function syncIndividualQuest(achId, type, steps) {
         if (!currentSession) {
             showToast("Please pair an account via 6-digit code first.", "error");
-            return;
-        }
-        if (parseInt(activeInspectorGameId) > 12) {
-            showToast("ℹ️ Partner apps require developer APK signing. Please use Games 1 to 12 for live cloud unlocks!", "info");
             return;
         }
         const btn = document.getElementById(`btn_q_${achId}`);
@@ -3501,11 +3487,6 @@
         if (!currentSession) {
             showToast("Please pair an account with 6-digit code above.", "error");
             revealPairCodeBox();
-            return;
-        }
-
-        if (parseInt(gameId) > 12) {
-            showToast("ℹ️ Partner apps require developer APK signing. Please use Games 1 to 12 for 100% Live Google Play Games unlocks & XP boosts!", "info");
             return;
         }
 
