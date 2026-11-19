@@ -25,69 +25,44 @@ REGISTERED_DEVICES_FILE = os.path.join(DATA_DIR, "registered_devices.json")
 NOTIFICATIONS_FILE = os.path.join(DATA_DIR, "push_notifications.json")
 PORTAL_SERVICES_FILE = os.path.join(DATA_DIR, "portal_services.json")
 
+PORTAL_SERVICES_CACHE = None
+
 def load_portal_services():
-    # 1. Local file read
+    global PORTAL_SERVICES_CACHE
+    if PORTAL_SERVICES_CACHE is not None:
+        return PORTAL_SERVICES_CACHE
+
     data = {}
     if os.path.exists(PORTAL_SERVICES_FILE):
         try:
             with open(PORTAL_SERVICES_FILE, "r", encoding="utf-8") as f:
                 data = json.load(f)
+                PORTAL_SERVICES_CACHE = data
+                return data
         except Exception:
             pass
 
-    # 2. Check Cloudflare D1 persistent cloud store (survives Render redeploy)
+    # If file doesn't exist locally, check Cloudflare D1 once on boot
     try:
-        cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", timeout=2.5)
+        cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", timeout=2)
         if cf_res.status_code == 200:
             cloud_data = cf_res.json()
-            if cloud_data and isinstance(cloud_data, dict) and len(cloud_data) > 0:
+            if cloud_data and isinstance(cloud_data, dict):
                 data = cloud_data
                 try:
                     with open(PORTAL_SERVICES_FILE, "w", encoding="utf-8") as f:
                         json.dump(data, f, indent=2, ensure_ascii=False)
                 except Exception:
                     pass
-                return data
     except Exception:
         pass
 
-    if data:
-        return data
-
-    # Initialize default starter services from verified real games
-    defaults = {}
-    try:
-        merged = get_merged_games()
-        starter_ids = ["1", "2", "3", "4", "5", "6"]
-        for gid in starter_ids:
-            if gid in merged:
-                g = merged[gid]
-                all_q = get_game_quest_definitions(g)
-                sel_q = all_q[:10]
-                defaults[gid] = {
-                    "id": gid,
-                    "title": g.get("title", gid),
-                    "developer": g.get("developer", "Top Developer"),
-                    "package": g.get("package", ""),
-                    "icon": g.get("icon", ""),
-                    "category": g.get("category", "Popular Game"),
-                    "section": g.get("section", "quest_unlocker"),
-                    "total_quests_count": len(all_q),
-                    "selected_quests_count": len(sel_q),
-                    "selected_quest_ids": [q["id"] for q in sel_q],
-                    "selected_quests": sel_q,
-                    "all_quests": all_q,
-                    "enabled": True,
-                    "created_at": time.strftime("%Y-%m-%d %H:%M:%S")
-                }
-        if defaults:
-            save_portal_services(defaults)
-    except Exception as e:
-        print(f"[-] Error initializing default portal services: {e}")
-
-    return defaults
+    PORTAL_SERVICES_CACHE = data
+    return data
 
 def save_portal_services(data):
+    global PORTAL_SERVICES_CACHE
+    PORTAL_SERVICES_CACHE = dict(data)
     try:
         with open(PORTAL_SERVICES_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
@@ -333,21 +308,29 @@ SYNC_CODES = {}
 CUSTOM_GAMES_FILE = os.path.join(DATA_DIR, "custom_games.json")
 BANNED_USERS_FILE = os.path.join(DATA_DIR, "banned_users.json")
 
+CUSTOM_GAMES_CACHE = None
+
 def load_custom_games():
+    global CUSTOM_GAMES_CACHE
+    if CUSTOM_GAMES_CACHE is not None:
+        return CUSTOM_GAMES_CACHE
+
     data = {}
     if os.path.exists(CUSTOM_GAMES_FILE):
         try:
             with open(CUSTOM_GAMES_FILE, "r", encoding="utf-8") as f:
                 data = json.load(f)
+                CUSTOM_GAMES_CACHE = data
+                return data
         except Exception:
             pass
 
-    # Check Cloudflare D1 persistent cloud store (survives Render redeploy)
+    # Check Cloudflare D1 persistent cloud store on startup if file missing
     try:
-        cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/custom-games", timeout=2.5)
+        cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/custom-games", timeout=2)
         if cf_res.status_code == 200:
             cloud_data = cf_res.json()
-            if cloud_data and isinstance(cloud_data, dict) and len(cloud_data) > 0:
+            if cloud_data and isinstance(cloud_data, dict):
                 data.update(cloud_data)
                 try:
                     with open(CUSTOM_GAMES_FILE, "w", encoding="utf-8") as f:
@@ -357,11 +340,14 @@ def load_custom_games():
     except Exception:
         pass
 
+    CUSTOM_GAMES_CACHE = data
     return data
 
 def save_custom_game(game_id, game_data):
+    global CUSTOM_GAMES_CACHE
     games = load_custom_games()
     games[str(game_id)] = game_data
+    CUSTOM_GAMES_CACHE = dict(games)
     try:
         with open(CUSTOM_GAMES_FILE, "w", encoding="utf-8") as f:
             json.dump(games, f, indent=2)
@@ -3536,16 +3522,31 @@ def delete_portal_service():
     Removes a game service from the Public Portal.
     """
     data = request.get_json() or {}
-    game_id = str(data.get("game_id", "")).strip()
+    game_id = str(data.get("game_id") or data.get("id") or "").strip()
     if not game_id:
         return jsonify({"ok": False, "error": "Game ID is required."}), 400
 
     services = load_portal_services()
-    if game_id in services:
-        removed = services.pop(game_id)
+    found_key = None
+    for k, s in services.items():
+        if k == game_id or str(s.get("id")) == game_id or str(s.get("game_id")) == game_id or s.get("package") == game_id:
+            found_key = k
+            break
+
+    if found_key:
+        removed = services.pop(found_key)
         save_portal_services(services)
         return jsonify({"ok": True, "message": f"Service for '{removed.get('title')}' removed from Public Portal."})
     return jsonify({"ok": False, "error": "Service not found."}), 404
+
+@app.route("/api/portal/services/clear-all", methods=["POST"])
+def clear_all_portal_services():
+    """
+    Clears all configured portal services.
+    """
+    services = {}
+    save_portal_services(services)
+    return jsonify({"ok": True, "message": "All portal services cleared successfully."})
 
 @app.route("/api/portal/services/toggle", methods=["POST"])
 def toggle_portal_service():
@@ -3553,18 +3554,24 @@ def toggle_portal_service():
     Toggles a game service between Active and Paused.
     """
     data = request.get_json() or {}
-    game_id = str(data.get("game_id", "")).strip()
+    game_id = str(data.get("game_id") or data.get("id") or "").strip()
     services = load_portal_services()
-    if game_id in services:
-        curr = services[game_id].get("enabled", True)
-        services[game_id]["enabled"] = not curr
-        services[game_id]["updated_at"] = time.strftime("%Y-%m-%d %H:%M:%S")
+    found_key = None
+    for k, s in services.items():
+        if k == game_id or str(s.get("id")) == game_id or str(s.get("game_id")) == game_id or s.get("package") == game_id:
+            found_key = k
+            break
+
+    if found_key:
+        curr = services[found_key].get("enabled", True)
+        services[found_key]["enabled"] = not curr
+        services[found_key]["updated_at"] = time.strftime("%Y-%m-%d %H:%M:%S")
         save_portal_services(services)
-        state_str = "activated" if services[game_id]["enabled"] else "paused"
+        state_str = "activated" if services[found_key]["enabled"] else "paused"
         return jsonify({
             "ok": True,
-            "enabled": services[game_id]["enabled"],
-            "message": f"Service '{services[game_id].get('title')}' {state_str} successfully."
+            "enabled": services[found_key]["enabled"],
+            "message": f"Service '{services[found_key].get('title')}' {state_str} successfully."
         })
     return jsonify({"ok": False, "error": "Service not found."}), 404
 
