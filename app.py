@@ -1119,6 +1119,8 @@ def edit_game_metadata():
         target["icon"] = data["icon"].strip()
     if "package" in data and data["package"].strip():
         target["package"] = data["package"].strip()
+    if "section" in data and data["section"].strip():
+        target["section"] = data["section"].strip()
     if "achievements_count" in data:
         try:
             cnt = int(data["achievements_count"])
