@@ -26,14 +26,33 @@ NOTIFICATIONS_FILE = os.path.join(DATA_DIR, "push_notifications.json")
 PORTAL_SERVICES_FILE = os.path.join(DATA_DIR, "portal_services.json")
 
 def load_portal_services():
+    # 1. Local file read
+    data = {}
     if os.path.exists(PORTAL_SERVICES_FILE):
         try:
             with open(PORTAL_SERVICES_FILE, "r", encoding="utf-8") as f:
                 data = json.load(f)
-                if data:
-                    return data
         except Exception:
             pass
+
+    # 2. Check Cloudflare D1 persistent cloud store (survives Render redeploy)
+    try:
+        cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", timeout=2.5)
+        if cf_res.status_code == 200:
+            cloud_data = cf_res.json()
+            if cloud_data and isinstance(cloud_data, dict) and len(cloud_data) > 0:
+                data = cloud_data
+                try:
+                    with open(PORTAL_SERVICES_FILE, "w", encoding="utf-8") as f:
+                        json.dump(data, f, indent=2, ensure_ascii=False)
+                except Exception:
+                    pass
+                return data
+    except Exception:
+        pass
+
+    if data:
+        return data
 
     # Initialize default starter services from verified real games
     defaults = {}
@@ -74,6 +93,14 @@ def save_portal_services(data):
             json.dump(data, f, indent=2, ensure_ascii=False)
     except Exception as e:
         print(f"[-] Error saving portal services: {e}")
+
+    # Sync to Cloudflare D1 persistent cloud store in background
+    def _sync_cf():
+        try:
+            requests.post("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", json=data, timeout=4)
+        except Exception as e:
+            print(f"[-] Cloudflare D1 portal sync error: {e}")
+    threading.Thread(target=_sync_cf, daemon=True).start()
 
 def load_registered_devices():
     if os.path.exists(REGISTERED_DEVICES_FILE):
@@ -307,13 +334,30 @@ CUSTOM_GAMES_FILE = os.path.join(DATA_DIR, "custom_games.json")
 BANNED_USERS_FILE = os.path.join(DATA_DIR, "banned_users.json")
 
 def load_custom_games():
+    data = {}
     if os.path.exists(CUSTOM_GAMES_FILE):
         try:
             with open(CUSTOM_GAMES_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
+                data = json.load(f)
         except Exception:
             pass
-    return {}
+
+    # Check Cloudflare D1 persistent cloud store (survives Render redeploy)
+    try:
+        cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/custom-games", timeout=2.5)
+        if cf_res.status_code == 200:
+            cloud_data = cf_res.json()
+            if cloud_data and isinstance(cloud_data, dict) and len(cloud_data) > 0:
+                data.update(cloud_data)
+                try:
+                    with open(CUSTOM_GAMES_FILE, "w", encoding="utf-8") as f:
+                        json.dump(data, f, indent=2)
+                except Exception:
+                    pass
+    except Exception:
+        pass
+
+    return data
 
 def save_custom_game(game_id, game_data):
     games = load_custom_games()
@@ -323,6 +367,14 @@ def save_custom_game(game_id, game_data):
             json.dump(games, f, indent=2)
     except Exception as e:
         print(f"[-] Error saving custom game: {e}")
+
+    # Sync to Cloudflare D1 persistent cloud store in background
+    def _sync_cf_games():
+        try:
+            requests.post("https://ppmod-api.tredarskvt.workers.dev/api/cloud/custom-games", json=games, timeout=4)
+        except Exception as e:
+            print(f"[-] Cloudflare D1 custom games sync error: {e}")
+    threading.Thread(target=_sync_cf_games, daemon=True).start()
 
 def get_merged_games():
     games = dict(SUPPORTED_GAMES)
@@ -732,6 +784,26 @@ def admin_get_accounts():
             "is_active": (em.lower() == req_cur) if req_cur else False,
             "has_token": bool(tok)
         })
+
+    # Include Cloudflare D1 paired accounts
+    try:
+        cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/sync/accounts", timeout=2.5)
+        if cf_res.status_code == 200:
+            cf_accs = cf_res.json().get("accounts", [])
+            for c_acc in cf_accs:
+                c_email = (c_acc.get("email") or "").strip()
+                if c_email and "@" in c_email:
+                    if not any(a["email"].lower() == c_email.lower() for a in acc_list):
+                        acc_list.append({
+                            "email": c_email,
+                            "token_type": "Cloud Paired (Cloudflare D1)",
+                            "token_preview": f"Sync Code: {c_acc.get('code', '------')}",
+                            "is_active": (c_email.lower() == req_cur) if req_cur else False,
+                            "has_token": True
+                        })
+    except Exception:
+        pass
+
     return jsonify({"ok": True, "accounts": acc_list})
 
 @app.route("/api/admin/switch-account", methods=["POST"])
@@ -2005,6 +2077,42 @@ def get_admin_users():
                 "last_seen": "Online Live",
                 "created_at": "Active"
             })
+
+    # Merge Cloudflare D1 paired accounts & mobile nodes
+    try:
+        cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/sync/accounts", timeout=3)
+        if cf_res.status_code == 200:
+            cf_accs = cf_res.json().get("accounts", [])
+            for c_acc in cf_accs:
+                c_email = (c_acc.get("email") or "").strip()
+                c_code = (c_acc.get("code") or "").strip()
+                if c_email and "@" in c_email:
+                    if not any(u.get("email", "").lower() == c_email.lower() for u in user_list):
+                        dev_id = f"dev_{abs(hash(c_email)) % 9000000 + 1000000:x}00"
+                        user_list.append({
+                            "uid": f"UID-{abs(hash(c_email)) % 900000 + 100000}",
+                            "display_name": c_email.split("@")[0].capitalize(),
+                            "email": c_email,
+                            "avatar": "",
+                            "device_id": dev_id,
+                            "model": "Mobile Node (Paired)",
+                            "android_version": "Android 14",
+                            "app_version": "3.0 (PP Server)",
+                            "is_locked": False,
+                            "sync_code": c_code,
+                            "accounts_count": 1,
+                            "accounts": [{"email": c_email, "code": c_code, "status": "Active (Cloudflare D1)"}],
+                            "server_url": "https://pp-mod-auto-quest.onrender.com",
+                            "server_status": "200 OK (Operational)",
+                            "master_token": "aas_et/CloudStored",
+                            "token_masked": "aas_et/CloudStored",
+                            "status": "Active",
+                            "is_banned": (c_email.lower() in banned),
+                            "last_seen": "Cloud Paired",
+                            "created_at": "Active"
+                        })
+    except Exception as e:
+        print(f"[-] Cloudflare D1 accounts fetch error: {e}")
 
     return jsonify({
         "ok": True,
