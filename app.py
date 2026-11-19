@@ -2882,45 +2882,22 @@ pinger_thread.start()
 def get_portal_services():
     """
     Returns list of all active/configured quest services for the Public Portal with section tagging.
+    Only returns services explicitly configured by the Admin.
     """
     services = load_portal_services()
     merged = get_merged_games()
     out = []
 
-    # If no custom curated services configured yet, offer all catalog games by default
-    if not services:
-        for gid, g in merged.items():
-            achs = g.get("achievements", [])
-            out.append({
-                "game_id": str(gid),
-                "title": g.get("title"),
-                "package": g.get("package"),
-                "icon": g.get("icon"),
-                "category": g.get("category", "Games"),
-                "developer": g.get("developer", "Google Play Partner"),
-                "section": g.get("section", "quest_unlocker"),
-                "enabled": True,
-                "selected_quests_count": g.get("achievements_count", len(achs)),
-                "selected_quests": [
-                    {
-                        "id": a.get("id"),
-                        "name": a.get("name"),
-                        "experiencePoints": a.get("xp", 5000),
-                        "unlockedIconUrl": a.get("icon")
-                    } for a in achs[:5]
-                ]
-            })
-    else:
-        for gid, s in services.items():
-            if gid in merged:
-                g = merged[gid]
-                s["title"] = g.get("title", s.get("title"))
-                s["package"] = g.get("package", s.get("package"))
-                s["icon"] = g.get("icon", s.get("icon"))
-                s["category"] = g.get("category", s.get("category"))
-                s["developer"] = g.get("developer", s.get("developer"))
-                s["section"] = g.get("section", "quest_unlocker")
-            out.append(s)
+    for gid, s in services.items():
+        if gid in merged:
+            g = merged[gid]
+            s["title"] = g.get("title", s.get("title"))
+            s["package"] = g.get("package", s.get("package"))
+            s["icon"] = g.get("icon", s.get("icon"))
+            s["category"] = g.get("category", s.get("category"))
+            s["developer"] = g.get("developer", s.get("developer"))
+            s["section"] = g.get("section", s.get("section", "quest_unlocker"))
+        out.append(s)
 
     out.sort(key=lambda x: (not x.get("enabled", True), x.get("title", "")))
     return jsonify({"ok": True, "services": out, "total_services": len(out)})
@@ -3025,6 +3002,7 @@ def save_portal_service():
         "developer": game.get("developer", "Play Games"),
         "category": game.get("category", "Quest Game"),
         "icon": game.get("icon"),
+        "section": game.get("section", "quest_unlocker"),
         "enabled": enabled,
         "total_quests_count": len(all_quests),
         "selected_quests_count": len(selected_quests),

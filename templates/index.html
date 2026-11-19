@@ -794,82 +794,56 @@
             box-shadow: 0 0 10px rgba(14, 165, 233, 0.25);
         }
 
-        /* Mobile-Style Vertical Alphabet Jump Rail */
-        .alphabet-rail {
-            position: fixed;
-            right: 8px;
-            top: 52%;
-            transform: translateY(-50%);
+        /* Modern Clean Horizontal Alphabet Filter Bar (On White Panel) */
+        .catalog-alpha-bar {
             display: flex;
-            flex-direction: column;
             align-items: center;
-            background: rgba(15, 23, 42, 0.82);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 20px;
-            padding: 6px 3px;
-            z-index: 1000;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-            user-select: none;
-            touch-action: none;
+            gap: 5px;
+            padding: 10px 14px;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            margin-bottom: 20px;
+            overflow-x: auto;
+            scrollbar-width: thin;
         }
 
-        .rail-char {
+        .alpha-btn {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 10.5px;
+            font-size: 11.5px;
             font-weight: 800;
-            color: var(--text-muted);
-            width: 20px;
-            height: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            padding: 5px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-secondary);
             cursor: pointer;
-            border-radius: 4px;
-            transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
-            position: relative;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            user-select: none;
+            white-space: nowrap;
+            min-width: 28px;
+            text-align: center;
         }
 
-        .rail-char.has-games {
+        .alpha-btn:hover {
             color: var(--text-primary);
+            border-color: var(--accent-cyan);
+            background: rgba(14, 165, 233, 0.08);
+            transform: translateY(-1px);
         }
 
-        .rail-char.disabled {
-            opacity: 0.22;
-            cursor: default;
-            pointer-events: none;
-        }
-
-        .rail-char:hover, .rail-char.active-touch {
-            color: #fff;
-            background: linear-gradient(135deg, #06b6d4, #8b5cf6);
-            transform: scale(1.4) translateX(-4px);
-            box-shadow: 0 0 14px rgba(6, 182, 212, 0.85);
-            border-radius: 50%;
-            z-index: 1001;
-        }
-
-        .rail-magnifier-bubble {
-            position: fixed;
-            width: 48px;
-            height: 48px;
-            border-radius: 50% 50% 4px 50%;
-            background: linear-gradient(135deg, #06b6d4, #8b5cf6);
+        .alpha-btn.active {
+            background: linear-gradient(135deg, #0ea5e9, #8b5cf6);
             color: #ffffff;
-            font-size: 22px;
+            border-color: transparent;
+            box-shadow: 0 2px 10px rgba(14, 165, 233, 0.35);
             font-weight: 900;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 8px 24px rgba(6, 182, 212, 0.7);
-            pointer-events: none;
-            transform: translateY(-50%) rotate(-45deg);
-            z-index: 1002;
-            transition: top 0.05s ease;
         }
-        .rail-magnifier-bubble span {
-            transform: rotate(45deg);
+
+        .alpha-btn.disabled {
+            opacity: 0.25;
+            cursor: not-allowed;
+            pointer-events: none;
         }
 
         .group-flash-highlight {
@@ -1596,16 +1570,44 @@
                 </div>
             </div>
 
-            <!-- Games Catalog Container (Grouped Alphabetically A-Z) -->
-            <div id="gamesCatalogContainer" style="width:100%; min-height:400px; position:relative;">
-                <div class="games-flow-grid" id="gamesFlowGrid">
-                    <!-- Injected dynamically -->
-                </div>
+            <!-- Modern Horizontal Alphabet Filter Bar Situated on White Panel -->
+            <div class="catalog-alpha-bar" id="catalogAlphaBar">
+                <button type="button" class="alpha-btn active" data-letter="ALL" onclick="setAlphaFilter('ALL')">All</button>
+                <button type="button" class="alpha-btn" data-letter="A" onclick="setAlphaFilter('A')">A</button>
+                <button type="button" class="alpha-btn" data-letter="B" onclick="setAlphaFilter('B')">B</button>
+                <button type="button" class="alpha-btn" data-letter="C" onclick="setAlphaFilter('C')">C</button>
+                <button type="button" class="alpha-btn" data-letter="D" onclick="setAlphaFilter('D')">D</button>
+                <button type="button" class="alpha-btn" data-letter="E" onclick="setAlphaFilter('E')">E</button>
+                <button type="button" class="alpha-btn" data-letter="F" onclick="setAlphaFilter('F')">F</button>
+                <button type="button" class="alpha-btn" data-letter="G" onclick="setAlphaFilter('G')">G</button>
+                <button type="button" class="alpha-btn" data-letter="H" onclick="setAlphaFilter('H')">H</button>
+                <button type="button" class="alpha-btn" data-letter="I" onclick="setAlphaFilter('I')">I</button>
+                <button type="button" class="alpha-btn" data-letter="J" onclick="setAlphaFilter('J')">J</button>
+                <button type="button" class="alpha-btn" data-letter="K" onclick="setAlphaFilter('K')">K</button>
+                <button type="button" class="alpha-btn" data-letter="L" onclick="setAlphaFilter('L')">L</button>
+                <button type="button" class="alpha-btn" data-letter="M" onclick="setAlphaFilter('M')">M</button>
+                <button type="button" class="alpha-btn" data-letter="N" onclick="setAlphaFilter('N')">N</button>
+                <button type="button" class="alpha-btn" data-letter="O" onclick="setAlphaFilter('O')">O</button>
+                <button type="button" class="alpha-btn" data-letter="P" onclick="setAlphaFilter('P')">P</button>
+                <button type="button" class="alpha-btn" data-letter="Q" onclick="setAlphaFilter('Q')">Q</button>
+                <button type="button" class="alpha-btn" data-letter="R" onclick="setAlphaFilter('R')">R</button>
+                <button type="button" class="alpha-btn" data-letter="S" onclick="setAlphaFilter('S')">S</button>
+                <button type="button" class="alpha-btn" data-letter="T" onclick="setAlphaFilter('T')">T</button>
+                <button type="button" class="alpha-btn" data-letter="U" onclick="setAlphaFilter('U')">U</button>
+                <button type="button" class="alpha-btn" data-letter="V" onclick="setAlphaFilter('V')">V</button>
+                <button type="button" class="alpha-btn" data-letter="W" onclick="setAlphaFilter('W')">W</button>
+                <button type="button" class="alpha-btn" data-letter="X" onclick="setAlphaFilter('X')">X</button>
+                <button type="button" class="alpha-btn" data-letter="Y" onclick="setAlphaFilter('Y')">Y</button>
+                <button type="button" class="alpha-btn" data-letter="Z" onclick="setAlphaFilter('Z')">Z</button>
+                <button type="button" class="alpha-btn" data-letter="#" onclick="setAlphaFilter('#')">#</button>
             </div>
 
-            <!-- Floating Vertical Alphabet Rail & Magnifier Bubble -->
-            <nav class="alphabet-rail" id="alphabetRail" aria-label="Alphabetical Fast Jump Rail"></nav>
-            <div class="rail-magnifier-bubble" id="railMagnifierBubble"><span id="railMagnifierText">A</span></div>
+            <!-- Games Catalog Grid (Single unified grid, all games together) -->
+            <div id="gamesCatalogContainer" style="width:100%; min-height:400px; position:relative;">
+                <div class="games-flow-grid" id="gamesFlowGrid">
+                    <!-- Injected dynamically in single grid -->
+                </div>
+            </div>
         </section>
 
         <!-- VIEW 2: Add New Game & GPGS Architecture Guide -->
@@ -1916,6 +1918,19 @@
                     <div style="display:flex; align-items:center; gap:8px;">
                         <span class="quota-safety-badge">⚡ Strict Target Mode: Only Admin-Selected Quests Unlocked</span>
                     </div>
+                </div>
+
+                <!-- 2 Sections: LEVEL-UP & QUEST -->
+                <div style="padding:14px 24px 0; background:var(--bg-card); display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                    <button type="button" class="catalog-filter-pill active" id="portalAdminPillAll" onclick="setAdminPortalSection('all')">
+                        <span>🎮 All Configured Services (<span id="portalAdminCountAll">0</span>)</span>
+                    </button>
+                    <button type="button" class="catalog-filter-pill" id="portalAdminPillLevelUp" onclick="setAdminPortalSection('level_up')" style="color:#d97706; border-color:rgba(217,119,6,0.3); background:rgba(245,158,11,0.08);">
+                        <span>⚡ LEVEL-UP (<span id="portalAdminCountLevelUp">0</span>)</span>
+                    </button>
+                    <button type="button" class="catalog-filter-pill" id="portalAdminPillQuests" onclick="setAdminPortalSection('quest_unlocker')">
+                        <span>🎯 QUEST (<span id="portalAdminCountQuests">0</span>)</span>
+                    </button>
                 </div>
 
                 <!-- Services Grid Container -->
@@ -2941,7 +2956,7 @@
                 }
 
                 if (gamesList && gamesList.length > 0) {
-                    renderGamesCatalog(gamesList);
+                    applyCatalogFilters();
                 }
             }
         } catch(e) {}
@@ -2954,7 +2969,7 @@
             const data = await res.json();
             if (data.ok) {
                 gamesList = data.games;
-                renderGamesCatalog(gamesList);
+                applyCatalogFilters();
                 updateTopMetrics(gamesList);
             }
         } catch (e) {
@@ -3119,172 +3134,111 @@
         return card;
     }
 
-    // ================= ALPHABETICAL GROUPING & RENDER =================
+    // ================= UNIFIED CATALOG FILTER & RENDER =================
+    let activeAlphaFilter = "ALL";
+
+    function decodeHtml(str) {
+        if (!str) return '';
+        const txt = document.createElement("textarea");
+        txt.innerHTML = str;
+        return txt.value;
+    }
+
+    function setAlphaFilter(letter) {
+        activeAlphaFilter = (letter || "ALL").toUpperCase();
+        document.querySelectorAll(".alpha-btn").forEach(btn => {
+            btn.classList.toggle("active", btn.dataset.letter === activeAlphaFilter);
+        });
+        applyCatalogFilters();
+    }
+
+    function applyCatalogFilters() {
+        const q = (document.getElementById("catalogSearch")?.value || "").trim().toLowerCase();
+        
+        let filtered = [...gamesList];
+
+        // 1. Section Filter (all / level_up / quest_unlocker)
+        if (activeCatalogSection !== "all") {
+            filtered = filtered.filter(g => (g.section || "quest_unlocker") === activeCatalogSection);
+        }
+
+        // 2. Alphabet Filter
+        if (activeAlphaFilter !== "ALL") {
+            if (activeAlphaFilter === "#") {
+                filtered = filtered.filter(g => {
+                    const firstChar = (g.title || "").trim()[0] || "";
+                    return !/[a-zA-Z]/.test(firstChar);
+                });
+            } else {
+                filtered = filtered.filter(g => {
+                    const firstChar = (g.title || "").trim()[0] || "";
+                    return firstChar.toUpperCase() === activeAlphaFilter;
+                });
+            }
+        }
+
+        // 3. Search query
+        if (q) {
+            filtered = filtered.filter(g =>
+                (g.title || "").toLowerCase().includes(q) ||
+                (g.developer || "").toLowerCase().includes(q) ||
+                (g.package || "").toLowerCase().includes(q)
+            );
+        }
+
+        // Update Alpha Buttons availability/counts dynamically
+        updateAlphaButtonsAvailability();
+
+        renderGamesCatalog(filtered);
+    }
+
+    function updateAlphaButtonsAvailability() {
+        const baseFiltered = (activeCatalogSection === "all")
+            ? gamesList
+            : gamesList.filter(g => (g.section || "quest_unlocker") === activeCatalogSection);
+
+        const availableLetters = new Set();
+        baseFiltered.forEach(g => {
+            let ch = (g.title || "").trim()[0] || "";
+            if (/[a-zA-Z]/.test(ch)) {
+                availableLetters.add(ch.toUpperCase());
+            } else {
+                availableLetters.add("#");
+            }
+        });
+
+        document.querySelectorAll(".alpha-btn").forEach(btn => {
+            const letter = btn.dataset.letter;
+            if (letter === "ALL") return;
+            btn.classList.toggle("disabled", !availableLetters.has(letter));
+        });
+    }
+
     function renderGamesCatalog(games) {
-        const rootContainer = document.getElementById("gamesCatalogContainer") || document.getElementById("gamesFlowGrid");
-        rootContainer.innerHTML = "";
+        const grid = document.getElementById("gamesFlowGrid");
+        if (!grid) return;
+        grid.innerHTML = "";
 
-        const displayGames = (activeCatalogSection === "all")
-            ? [...games]
-            : games.filter(g => (g.section || "quest_unlocker") === activeCatalogSection);
-
-        if (displayGames.length === 0) {
-            rootContainer.innerHTML = `
-                <div style="padding:50px 20px; text-align:center; color:var(--text-secondary); background:var(--bg-card); border:1px dashed var(--border-color); border-radius:var(--radius-xl); margin:20px 0;">
+        if (games.length === 0) {
+            grid.innerHTML = `
+                <div style="grid-column:1/-1; padding:50px 20px; text-align:center; color:var(--text-secondary); background:var(--bg-card); border:1px dashed var(--border-color); border-radius:var(--radius-xl); margin:20px 0;">
                     <div style="font-size:36px; margin-bottom:8px;">🔍</div>
-                    <div style="font-weight:800; font-size:15px; color:var(--text-primary);">No games found in this category</div>
-                    <div style="font-size:12.5px; margin-top:4px;">Try selecting another section or clearing your search keywords.</div>
+                    <div style="font-weight:800; font-size:15px; color:var(--text-primary);">No games match the selected filters</div>
+                    <div style="font-size:12.5px; margin-top:4px;">Try selecting "All", clearing search keywords, or switching categories.</div>
                 </div>`;
-            renderAlphabetRail({});
             return;
         }
 
         // Sort alphabetically by Title A-Z
-        displayGames.sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: 'base' }));
+        const sorted = [...games].sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, { sensitivity: 'base' }));
 
-        // Group by starting character
-        const groups = {};
-        displayGames.forEach(g => {
-            let ch = (g.title.trim()[0] || '#').toUpperCase();
-            if (!/[A-Z]/.test(ch)) ch = '#';
-            if (!groups[ch]) groups[ch] = [];
-            groups[ch].push(g);
+        sorted.forEach(g => {
+            grid.appendChild(createGameCardElement(g));
         });
-
-        const sortedLetters = Object.keys(groups).sort((a, b) => {
-            if (a === '#') return 1;
-            if (b === '#') return -1;
-            return a.localeCompare(b);
-        });
-
-        sortedLetters.forEach(letter => {
-            const groupWrap = document.createElement("div");
-            groupWrap.className = "alphabet-group-block";
-            groupWrap.id = `letter_section_${letter}`;
-            groupWrap.style.marginBottom = "34px";
-
-            // Group Header with neon letter badge & count
-            groupWrap.innerHTML = `
-                <div class="alphabet-group-header" style="display:flex; align-items:center; gap:12px; margin-bottom:14px; position:sticky; top:64px; z-index:15; background:var(--bg-body); padding:10px 0;">
-                    <span class="alphabet-letter-badge" style="width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); color:#fff; display:flex; align-items:center; justify-content:center; font-size:17px; font-weight:900; box-shadow:0 4px 14px rgba(6,182,212,0.4);">${letter}</span>
-                    <span style="font-size:15px; font-weight:800; color:var(--text-primary); letter-spacing:0.3px;">Titles: '${letter}'</span>
-                    <span style="font-size:11px; font-weight:700; color:var(--text-muted); background:var(--bg-card); border:1px solid var(--border-color); padding:3px 10px; border-radius:12px; font-family:'JetBrains Mono';">${groups[letter].length} Games</span>
-                    <div style="flex:1; height:1px; background:linear-gradient(90deg, var(--border-color), transparent);"></div>
-                </div>
-            `;
-
-            const grid = document.createElement("div");
-            grid.className = "games-flow-grid";
-
-            groups[letter].forEach(g => {
-                grid.appendChild(createGameCardElement(g));
-            });
-
-            groupWrap.appendChild(grid);
-            rootContainer.appendChild(groupWrap);
-        });
-
-        renderAlphabetRail(groups);
-    }
-
-    // ================= ALPHABET FAST RAIL (A-Z Fast Scroller) =================
-    function renderAlphabetRail(activeGroups) {
-        let rail = document.getElementById("alphabetRail");
-        if (!rail) return;
-
-        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ#".split("");
-        rail.innerHTML = "";
-
-        letters.forEach(ch => {
-            const hasGames = !!activeGroups[ch];
-            const item = document.createElement("div");
-            item.className = `rail-char ${hasGames ? 'has-games' : 'disabled'}`;
-            item.innerText = ch;
-            item.dataset.letter = ch;
-
-            if (hasGames) {
-                item.onclick = (e) => {
-                    e.stopPropagation();
-                    jumpToLetter(ch);
-                };
-                item.onmouseenter = (e) => showRailBubble(e.currentTarget, ch);
-                item.onmouseleave = () => hideRailBubble();
-            }
-
-            rail.appendChild(item);
-        });
-
-        setupRailTouchEvents(rail);
-    }
-
-    function jumpToLetter(letter) {
-        const el = document.getElementById(`letter_section_${letter}`);
-        if (el) {
-            el.scrollIntoView({ behavior: "smooth", block: "start" });
-            el.classList.add("group-flash-highlight");
-            setTimeout(() => el.classList.remove("group-flash-highlight"), 900);
-        }
-    }
-
-    function showRailBubble(targetEl, letter) {
-        const bubble = document.getElementById("railMagnifierBubble");
-        const txt = document.getElementById("railMagnifierText");
-        if (!bubble || !txt) return;
-
-        txt.innerText = letter;
-        const rect = targetEl.getBoundingClientRect();
-        bubble.style.top = `${rect.top + (rect.height / 2)}px`;
-        bubble.style.right = `${window.innerWidth - rect.left + 16}px`;
-        bubble.style.display = "flex";
-    }
-
-    function hideRailBubble() {
-        const bubble = document.getElementById("railMagnifierBubble");
-        if (bubble) bubble.style.display = "none";
-    }
-
-    let isRailTouching = false;
-    function setupRailTouchEvents(rail) {
-        rail.ontouchstart = (e) => {
-            isRailTouching = true;
-            handleRailTouchMove(e);
-        };
-        rail.ontouchmove = (e) => {
-            if (!isRailTouching) return;
-            handleRailTouchMove(e);
-        };
-        rail.ontouchend = () => {
-            isRailTouching = false;
-            hideRailBubble();
-        };
-        rail.ontouchcancel = () => {
-            isRailTouching = false;
-            hideRailBubble();
-        };
-    }
-
-    function handleRailTouchMove(e) {
-        if (!e.touches || !e.touches[0]) return;
-        const touch = e.touches[0];
-        const target = document.elementFromPoint(touch.clientX, touch.clientY);
-        if (target && target.classList.contains("rail-char") && target.classList.contains("has-games")) {
-            const letter = target.dataset.letter;
-            showRailBubble(target, letter);
-            jumpToLetter(letter);
-        }
     }
 
     function handleSearchInput() {
-        const q = (document.getElementById("catalogSearch") ? document.getElementById("catalogSearch").value : "").trim().toLowerCase();
-        let filtered = gamesList;
-        if (q) {
-            filtered = filtered.filter(g =>
-                g.title.toLowerCase().includes(q) ||
-                g.developer.toLowerCase().includes(q) ||
-                g.package.toLowerCase().includes(q)
-            );
-        }
-        renderGamesCatalog(filtered);
+        applyCatalogFilters();
     }
 
     // ================= ACHIEVEMENT INSPECTOR =================
@@ -3296,8 +3250,14 @@
         const game = gamesList.find(g => String(g.id) === String(gameId));
         if (game) {
             document.getElementById("inspLogo").src = game.icon || 'https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512';
-            document.getElementById("inspTitle").innerText = game.title;
-            document.getElementById("inspDev").innerText = `${game.developer} • ${game.category}`;
+            document.getElementById("inspTitle").innerHTML = decodeHtml(game.title);
+            document.getElementById("inspDev").innerHTML = `${decodeHtml(game.developer)} • ${decodeHtml(game.category)}`;
+            const pkgPill = document.getElementById("inspPackage");
+            pkgPill.innerText = game.package;
+            pkgPill.className = "pkg-stealth-pill";
+            pkgPill.setAttribute("onclick", "handleStealthBlurClick(event, this)");
+            pkgPill.setAttribute("title", "Single-click: 5s reveal • Double-click: 30s reveal");
+        }
             const pkgPill = document.getElementById("inspPackage");
             pkgPill.innerText = game.package;
             pkgPill.className = "pkg-stealth-pill";
@@ -4926,6 +4886,19 @@
         }
     }
 
+    let activeAdminPortalSection = "all";
+
+    function setAdminPortalSection(sec) {
+        activeAdminPortalSection = sec;
+        const pAll = document.getElementById("portalAdminPillAll");
+        const pLvl = document.getElementById("portalAdminPillLevelUp");
+        const pQst = document.getElementById("portalAdminPillQuests");
+        if (pAll) pAll.classList.toggle("active", sec === "all");
+        if (pLvl) pLvl.classList.toggle("active", sec === "level_up");
+        if (pQst) pQst.classList.toggle("active", sec === "quest_unlocker");
+        renderPortalServicesGrid();
+    }
+
     function renderPortalServicesGrid() {
         const container = document.getElementById("portalServicesContainer");
         if (!container) return;
@@ -4942,17 +4915,30 @@
         if (statServices) statServices.innerText = `${portalAllServices.length} Game${portalAllServices.length === 1 ? '' : 's'}`;
         if (statQuests) statQuests.innerText = `${totalQuestsCount} Active Quest${totalQuestsCount === 1 ? '' : 's'}`;
 
-        if (portalAllServices.length === 0) {
+        const lvlCount = portalAllServices.filter(s => (s.section || "quest_unlocker") === "level_up").length;
+        const qstCount = portalAllServices.length - lvlCount;
+        const elAll = document.getElementById("portalAdminCountAll");
+        const elLvl = document.getElementById("portalAdminCountLevelUp");
+        const elQst = document.getElementById("portalAdminCountQuests");
+        if (elAll) elAll.innerText = portalAllServices.length;
+        if (elLvl) elLvl.innerText = lvlCount;
+        if (elQst) elQst.innerText = qstCount;
+
+        const displayServices = (activeAdminPortalSection === "all")
+            ? portalAllServices
+            : portalAllServices.filter(s => (s.section || "quest_unlocker") === activeAdminPortalSection);
+
+        if (displayServices.length === 0) {
             container.innerHTML = `
                 <div style="text-align:center; padding:50px 20px; background:var(--bg-card-subtle); border:1px dashed var(--border-color); border-radius:var(--radius-xl);">
                     <div style="font-size:48px; margin-bottom:12px;">🌐</div>
-                    <h4 style="font-size:16px; font-weight:800; color:var(--text-primary); margin:0 0 6px;">No Public Portal Quest Services Configured Yet</h4>
+                    <h4 style="font-size:16px; font-weight:800; color:var(--text-primary); margin:0 0 6px;">No Portal Quest Services Configured Here</h4>
                     <p style="font-size:12.5px; color:var(--text-muted); max-width:440px; margin:0 auto 18px;">
-                        Click the button below or "Add Game Quest Service" above to choose games from your catalog and select specific quest objectives for public users to complete.
+                        Click the button below to choose games and check off specific quests to offer on the Public Portal.
                     </p>
                     <button class="btn-sync-protocol" style="padding:10px 22px; font-size:13px; font-weight:800;" onclick="openPortalServiceModal()">
                         <span style="font-size:16px;">＋</span>
-                        <span>Add First Game Quest Service</span>
+                        <span>Add Game Quest Service</span>
                     </button>
                 </div>
             `;
@@ -4960,10 +4946,11 @@
         }
 
         let html = `<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:20px;">`;
-        portalAllServices.forEach(s => {
+        displayServices.forEach(s => {
             const isEnabled = s.enabled !== false;
             const selCount = s.selected_quests_count || (s.selected_quest_ids ? s.selected_quest_ids.length : 0);
             const totCount = s.total_quests_count || (s.all_quests ? s.all_quests.length : selCount);
+            const isLevelUp = (s.section || "quest_unlocker") === "level_up";
 
             // Preview chips for selected quests
             let questsPreviewHtml = '';
@@ -4972,8 +4959,8 @@
                 const iconSrc = q.unlockedIconUrl || '/static/images/achievements/badge_1.svg';
                 questsPreviewHtml += `
                     <div style="display:flex; align-items:center; gap:8px; padding:6px 10px; background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:var(--radius-sm); font-size:11px;">
-                        <img src="${iconSrc}" style="width:20px; height:20px; border-radius:3px; object-fit:cover;">
-                        <span style="color:var(--text-primary); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px;">${q.name}</span>
+                        <img src="${iconSrc}" referrerpolicy="no-referrer" style="width:20px; height:20px; border-radius:3px; object-fit:cover;">
+                        <span style="color:var(--text-primary); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px;">${escapeHtml(q.name)}</span>
                         <span style="color:var(--accent-green); font-family:'JetBrains Mono'; font-weight:800; margin-left:auto;">+${(q.experiencePoints || 5000).toLocaleString()} XP</span>
                     </div>
                 `;
@@ -4986,19 +4973,26 @@
                 `;
             }
 
+            const secBadge = isLevelUp
+                ? `<span class="service-badge" style="background:rgba(245,158,11,0.15); color:#d97706; border-color:rgba(245,158,11,0.3); font-size:10px; font-weight:800; padding:2px 7px; border-radius:4px; display:inline-block; margin-top:4px;">⚡ LEVEL-UP XP</span>`
+                : `<span class="service-badge" style="background:rgba(14,165,233,0.12); color:var(--accent-cyan); border-color:rgba(14,165,233,0.3); font-size:10px; font-weight:800; padding:2px 7px; border-radius:4px; display:inline-block; margin-top:4px;">🎯 QUEST UNLOCKER</span>`;
+
             html += `
                 <div style="background:var(--bg-card); border:1px solid ${isEnabled ? 'var(--border-color)' : 'rgba(239,68,68,0.3)'}; border-radius:var(--radius-xl); padding:20px; box-shadow:var(--shadow-card); display:flex; flex-direction:column; justify-content:space-between; gap:16px; opacity:${isEnabled ? '1' : '0.75'}; transition:all 0.25s ease;">
                     <div>
                         <!-- Top Header -->
                         <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:14px;">
                             <div style="display:flex; align-items:center; gap:12px;">
-                                <img src="${s.icon || '/static/images/default_app.png'}" style="width:50px; height:50px; border-radius:var(--radius-md); object-fit:cover; border:1px solid var(--border-color); box-shadow:0 4px 12px rgba(0,0,0,0.12);">
+                                <img src="${s.icon || '/static/images/default_app.png'}" onerror="this.src='/static/images/default_app.png'" style="width:50px; height:50px; border-radius:var(--radius-md); object-fit:cover; border:1px solid var(--border-color); box-shadow:0 4px 12px rgba(0,0,0,0.12);">
                                 <div>
-                                    <strong style="font-size:14.5px; color:var(--text-primary); display:block; line-height:1.3;">${s.title}</strong>
-                                    <span style="font-size:11px; font-family:'JetBrains Mono'; color:var(--text-muted); display:block; margin-top:2px;">${s.package || ''}</span>
-                                    <span class="badge-status ${isEnabled ? 'active' : 'banned'}" style="font-size:10px; padding:2px 7px; margin-top:4px; display:inline-block;">
-                                        ${isEnabled ? '● Live on Public Portal' : '○ Service Paused'}
-                                    </span>
+                                    <strong style="font-size:14.5px; color:var(--text-primary); display:block; line-height:1.3;">${escapeHtml(s.title)}</strong>
+                                    <span style="font-size:11px; font-family:'JetBrains Mono'; color:var(--text-muted); display:block; margin-top:2px;">${escapeHtml(s.package || '')}</span>
+                                    <div style="display:flex; align-items:center; gap:6px; margin-top:4px;">
+                                        <span class="badge-status ${isEnabled ? 'active' : 'banned'}" style="font-size:10px; padding:2px 7px;">
+                                            ${isEnabled ? '● Live on Public Portal' : '○ Service Paused'}
+                                        </span>
+                                        ${secBadge}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -5033,9 +5027,7 @@
                                 🗑️
                             </button>
                         </div>
-                        <button class="btn-inspect-action" style="padding:6px 12px; font-size:11.5px; font-weight:700; color:var(--accent-cyan);" onclick="testPortalService('${s.game_id}')">
-                            ⚡ Test Now
-                        </button>
+                        <span style="font-size:11px; font-weight:800; color:var(--accent-cyan); font-family:'JetBrains Mono';">${selCount} Selected</span>
                     </div>
                 </div>
             `;
@@ -5225,7 +5217,7 @@
                     item.innerHTML = `
                         <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:0;">
                             <input type="checkbox" class="portal-quest-chk" value="${q.id}" ${isChecked ? 'checked' : ''} style="width:18px; height:18px; cursor:pointer; accent-color:var(--accent-green);" onclick="event.stopPropagation()" onchange="updatePortalSelectedCount()">
-                            <img src="${iconUrl}" onerror="this.src='/static/images/achievements/badge_1.svg'" style="width:36px; height:36px; border-radius:var(--radius-sm); object-fit:cover; border:1px solid var(--border-color); flex-shrink:0;">
+                            <img src="${iconUrl}" referrerpolicy="no-referrer" onerror="this.src='/static/images/achievements/badge_1.svg'" style="width:36px; height:36px; border-radius:var(--radius-sm); object-fit:cover; border:1px solid var(--border-color); flex-shrink:0;">
                             <div style="min-width:0; flex:1;">
                                 <strong style="font-size:13px; color:var(--text-primary); display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(q.name)}</strong>
                                 <span style="font-size:11px; color:var(--text-muted); display:block; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(q.description || 'Google Play Points Achievement Quest')}</span>

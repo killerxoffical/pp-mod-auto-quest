@@ -598,8 +598,8 @@
                     const iconSrc = q.unlockedIconUrl || '/static/images/achievements/badge_1.svg';
                     questsHtml += `
                         <div class="quest-item">
-                            <img src="${iconSrc}" onerror="this.src='/static/images/achievements/badge_1.svg'" class="quest-icon">
-                            <span class="quest-name">${q.name}</span>
+                            <img src="${iconSrc}" referrerpolicy="no-referrer" onerror="this.src='/static/images/achievements/badge_1.svg'" class="quest-icon">
+                            <span class="quest-name">${escapeHtml(q.name)}</span>
                             <span class="quest-xp">+${(q.experiencePoints || 5000).toLocaleString()} XP</span>
                         </div>
                     `;
@@ -611,14 +611,15 @@
                             <div class="service-top">
                                 <img src="${s.icon || '/static/images/default_app.png'}" onerror="this.src='/static/images/default_app.png'" class="service-icon">
                                 <div>
-                                    <div class="service-name">${s.title}</div>
+                                    <div class="service-name">${escapeHtml(s.title)}</div>
                                     ${secBadge}
                                 </div>
                             </div>
 
                             <div style="margin-top:16px;">
-                                <div style="font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; margin-bottom:8px;">
-                                    Included Objectives:
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                    <span style="font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase;">Included Objectives:</span>
+                                    <span style="font-size:11px; font-weight:800; font-family:'JetBrains Mono'; color:var(--accent-cyan);">${quests.length} Objectives</span>
                                 </div>
                                 <div class="quests-list">
                                     ${questsHtml}
@@ -626,13 +627,24 @@
                             </div>
                         </div>
 
-                        <button class="btn-action" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="runServiceUnlock('${s.game_id}', '${s.title.replace(/'/g, "\\'")}')">
-                            <span>⚡ Complete Quests Now</span>
-                        </button>
+                        <div style="margin-top:14px; padding-top:12px; border-top:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                            <span style="font-size:11px; color:var(--text-muted); font-family:'JetBrains Mono';">${escapeHtml(s.package || '')}</span>
+                            <span style="font-size:11px; font-weight:800; color:var(--accent-green); background:rgba(16,185,129,0.1); padding:2px 8px; border-radius:4px; border:1px solid rgba(16,185,129,0.25);">● PP Mod Active</span>
+                        </div>
                     </div>
                 `;
             });
             container.innerHTML = html;
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
         }
 
         async function connectPortalAccount() {
@@ -711,7 +723,7 @@
                 alert(`Connection error: ${e.message}`);
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = "<span>⚡ Complete Quests Now</span>";
+                btn.innerHTML = "<span>Sync Quests</span>";
             }
         }
 
