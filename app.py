@@ -986,19 +986,118 @@ def get_games_list():
         })
     return jsonify({"ok": True, "games": games})
 
+def resolve_play_store_gpgs_info(package_name: str, email: str = None, master_token: str = None, android_id: str = "46e14d2451000000") -> dict:
+    """
+    Automatically resolves the authentic APK signing SHA-1 (client_sig) from Google Play Store FDFE
+    and fetches all live GPGS achievement definitions directly from Google Play Games REST API.
+    """
+    import base64
+    import gpsoauth
+
+    if not email or not master_token:
+        known = load_known_tokens()
+        if known:
+            email = email or list(known.keys())[0]
+            master_token = master_token or known.get(email.lower()) or list(known.values())[0]
+    if not email or not master_token:
+        return {"ok": False, "error": "No master token available to query Play Store."}
+
+    try:
+        mkt_res = gpsoauth.perform_oauth(
+            email.strip(), master_token.strip(), android_id,
+            service="androidmarket",
+            app="com.android.vending",
+            client_sig="38918a453d07199354f8b19af05ec6562ced5788"
+        )
+        if "Auth" not in mkt_res:
+            return {"ok": False, "error": "Failed Play Store auth."}
+
+        fdfe_headers = {
+            "Authorization": f"GoogleLogin auth={mkt_res['Auth']}",
+            "X-DFE-Device-Id": android_id,
+            "User-Agent": "Android-Finsky/37.5.24-29 [0] [PR] 565477504 (api=3,versionCode=83752410,sdk=33,device=cheetah,hardware=cheetah,product=cheetah,platformVersionRelease=13,model=Pixel 7 Pro,buildId=TQ3A.230901.001,isWideScreen=0,supportedAbis=arm64-v8a;armeabi-v7a;armeabi)",
+            "Accept-Language": "en-US",
+        }
+        r = requests.get(f"https://android.clients.google.com/fdfe/details?doc={package_name}", headers=fdfe_headers, timeout=12)
+        if r.status_code != 200:
+            return {"ok": False, "error": f"Play Store details returned HTTP {r.status_code}"}
+
+        cands = []
+        for m in re.finditer(rb'\x1b([A-Za-z0-9_-]{27})(?![A-Za-z0-9_-])', r.content):
+            try:
+                raw = base64.urlsafe_b64decode(m.group(1).decode('ascii') + '=')
+                if len(raw) == 20:
+                    h = raw.hex()
+                    if h not in cands:
+                        cands.append(h)
+            except Exception:
+                pass
+
+        for sig in cands:
+            tok_res = get_games_oauth_token(email, master_token, android_id, package_name, sig)
+            if tok_res.get("ok") and not tok_res.get("is_fallback"):
+                at = tok_res["access_token"]
+                items = []
+                page_token = None
+                while True:
+                    url = f"{GAMES_API_BASE}/achievements?maxResults=50"
+                    if page_token:
+                        url += f"&pageToken={page_token}"
+                    ar = requests.get(url, headers=get_headers(at), timeout=10)
+                    if ar.status_code != 200:
+                        break
+                    ad = ar.json()
+                    items.extend(ad.get("items", []))
+                    page_token = ad.get("nextPageToken")
+                    if not page_token:
+                        break
+
+                formatted = []
+                total_xp = 0
+                for it in items:
+                    xp = int(it.get("experiencePoints", 500) or 500)
+                    total_xp += xp
+                    ic = it.get("unlockedIconUrl") or it.get("revealedIconUrl") or ""
+                    obj = {
+                        "id": it.get("id"),
+                        "name": it.get("name", "Achievement"),
+                        "description": it.get("description", ""),
+                        "xp": xp,
+                        "experiencePoints": xp,
+                        "type": it.get("achievementType", "STANDARD"),
+                        "achievementType": it.get("achievementType", "STANDARD"),
+                        "icon": ic,
+                        "unlockedIconUrl": it.get("unlockedIconUrl", ic),
+                        "revealedIconUrl": it.get("revealedIconUrl", ic),
+                    }
+                    if it.get("totalSteps"):
+                        obj["totalSteps"] = it.get("totalSteps")
+                    formatted.append(obj)
+
+                return {
+                    "ok": True,
+                    "client_sig": sig,
+                    "achievements": formatted,
+                    "achievements_count": len(formatted),
+                    "total_xp": total_xp
+                }
+        return {"ok": False, "error": "Could not verify GPGS SHA-1 signature for this package."}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
 @app.route("/api/admin/games/add", methods=["POST"])
 def add_new_game():
-    """Admin endpoint to add a new Android GPGS game dynamically"""
+    """Admin endpoint to add a new Android GPGS game dynamically with automatic real SHA-1 & GPGS achievement discovery"""
     data = request.get_json() or {}
     title = data.get("title", "").strip()
     package = data.get("package", "").strip()
-    client_sig = data.get("client_sig", "").strip() or "58e71785c961e7328ea9c76de647f8f6c4403b39"
+    client_sig = data.get("client_sig", "").strip()
     developer = data.get("developer", "Verified Studio").strip()
     category = data.get("category", "Action / Arcade").strip()
     icon = data.get("icon", "").strip() or "https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512"
     quests_count = int(data.get("achievements_count", 16) or 16)
     total_xp = int(data.get("total_xp", quests_count * 1000) or (quests_count * 1000))
-    desc = data.get("desc", f"{quests_count} live GPGS achievements.").strip()
+    desc = data.get("desc", "").strip()
     section = data.get("section", "quest_unlocker").strip().lower()
     if section not in ["level_up", "quest_unlocker"]:
         section = "quest_unlocker"
@@ -1012,6 +1111,21 @@ def add_new_game():
         if g.get("package", "").lower() == package.lower():
             return jsonify({"ok": False, "error": f"Game with package '{package}' already exists (ID: {gid})."}), 400
 
+    # Auto-resolve real SHA-1 client_sig and real GPGS achievements from Google Play!
+    real_achs = []
+    if not client_sig or client_sig in ("58e71785c961e7328ea9c76de647f8f6c4403b39", "38918a453d07199354f8b19af05ec6562ced5788"):
+        resolved = resolve_play_store_gpgs_info(package)
+        if resolved.get("ok"):
+            client_sig = resolved["client_sig"]
+            real_achs = resolved.get("achievements", [])
+            if real_achs:
+                quests_count = len(real_achs)
+                total_xp = resolved.get("total_xp", total_xp)
+    if not client_sig:
+        client_sig = "38918a453d07199354f8b19af05ec6562ced5788"
+    if not desc:
+        desc = f"{quests_count} live GPGS achievements."
+
     next_id = str(max([int(k) for k in all_g.keys() if k.isdigit()] or [0]) + 1)
     new_game = {
         "title": title,
@@ -1024,14 +1138,16 @@ def add_new_game():
         "achievements_count": quests_count,
         "total_xp": total_xp,
         "desc": desc,
-        "tags": ["Admin Added", "GPGS Verified"]
+        "tags": ["Admin Added", "GPGS Verified"] if real_achs else ["Admin Added"],
+        "achievements": real_achs,
+        "gpgs_verified": bool(real_achs)
     }
     save_custom_game(next_id, new_game)
     return jsonify({
         "ok": True,
         "game_id": next_id,
         "game": new_game,
-        "message": f"'{title}' has been successfully added to Games Catalog!"
+        "message": f"'{title}' added with {len(real_achs)} real GPGS achievements!" if real_achs else f"'{title}' has been successfully added to Games Catalog!"
     })
 
 @app.route("/api/admin/games/scan", methods=["GET"])
@@ -2151,7 +2267,9 @@ def get_game_achievements():
 
     if not master_token and not access_token and email:
         known = load_known_tokens()
-        if email in known:
+        if email.lower() in known:
+            master_token = known[email.lower()]
+        elif email in known:
             master_token = known[email]
 
     if not android_id:
@@ -2238,13 +2356,11 @@ def get_game_achievements():
         except Exception:
             pass
 
-    # Build rich achievement items list
+    # Build rich achievement items list (100% live from Google Play Games server)
     items = []
     unlocked_count = 0
     total_xp = 0
     earned_xp = 0
-
-    persisted_unlocked = get_user_unlocked_quest_ids(email, game_id)
 
     for d in all_defs:
         ach_id = d.get("id")
@@ -2268,9 +2384,8 @@ def get_game_achievements():
 
         p_info = p_map.get(ach_id, {})
         state = p_info.get("achievementState", "LOCKED")
-        is_unlocked = (state == "UNLOCKED") or (ach_id in persisted_unlocked)
+        is_unlocked = (state == "UNLOCKED")
         if is_unlocked:
-            state = "UNLOCKED"
             unlocked_count += 1
             earned_xp += xp
 
@@ -2341,10 +2456,16 @@ def unlock_single_achievement():
         known = load_known_tokens()
         if known:
             email = list(known.keys())[0]
+    if not master_token and not access_token and email:
+        known = load_known_tokens()
+        master_token = known.get(email.lower()) or known.get(email, "")
 
-    # Acquire active game OAuth token
+    # Acquire active game OAuth token (strictly game-scoped for authentic GPGS unlock)
     game_token = None
+    is_fallback = False
     if master_token:
+        if email:
+            save_known_token(email, master_token)
         tok_res = get_games_oauth_token(
             email=email,
             master_token=master_token,
@@ -2354,51 +2475,62 @@ def unlock_single_achievement():
         )
         if tok_res.get("ok"):
             game_token = tok_res.get("access_token")
+            is_fallback = tok_res.get("is_fallback", False)
     elif access_token:
         game_token = access_token
 
-    # 1. Authentic Google Play Games achievement live unlock
-    # Real Google Play Console achievement IDs start with CgkI without any _quest_ or _lvlup_ tags
-    is_real_gpgs = ach_id.startswith("CgkI") and ("_quest_" not in ach_id) and ("_lvlup_" not in ach_id)
-    gpgs_success = False
+    # 1. Authentic Google Play Games achievement live unlock (supports CgkI..., CggI..., CgwI..., etc.)
+    is_real_gpgs = ach_id.startswith("Cg") and ("_quest_" not in ach_id) and ("_lvlup_" not in ach_id)
 
-    if is_real_gpgs and game_token:
-        try:
-            reveal_achievement(game_token, ach_id)
-            total_steps = data.get("total_steps")
-            ach_type = data.get("type", "STANDARD")
-            if ach_type == "INCREMENTAL" and total_steps:
-                res = set_achievement_steps(game_token, ach_id, int(total_steps))
-                if not res.get("ok") or not res.get("newly_unlocked"):
-                    res = unlock_achievement(game_token, ach_id)
-            else:
+    if not is_real_gpgs:
+        return jsonify({
+            "ok": False,
+            "error": f"Invalid non-GPGS achievement ID '{ach_id}'. Only official Google Play Games achievements can be unlocked."
+        }), 400
+
+    if not game_token or (is_fallback and game_id != "1" and game.get("package") != "com.google.android.play.games"):
+        return jsonify({
+            "ok": False,
+            "error": f"Google Play Games authentication failed for {game['title']} ({game['package']}). Please re-verify account pairing."
+        }), 401
+
+    try:
+        reveal_achievement(game_token, ach_id)
+        total_steps = data.get("total_steps")
+        ach_type = data.get("type", "STANDARD")
+        if ach_type == "INCREMENTAL" and total_steps:
+            res = set_achievement_steps(game_token, ach_id, int(total_steps))
+            if not res.get("ok") or not res.get("newly_unlocked"):
                 res = unlock_achievement(game_token, ach_id)
-            if res and res.get("ok"):
-                gpgs_success = True
-        except Exception as e:
-            print(f"[-] GPGS live unlock notice for {ach_id}: {e}")
-    else:
-        # Partner quest or level-up objective: sync cleanly without Google API error!
-        gpgs_success = True
+        else:
+            res = unlock_achievement(game_token, ach_id)
 
-    # 2. Persist in user quest progress
+        if not res or not res.get("ok"):
+            raw_err = res.get("error", "Google Play Games rejected unlock.") if res else "No response from Google."
+            try:
+                err_json = json.loads(raw_err)
+                clean_err = err_json.get("error", {}).get("message", raw_err)
+            except Exception:
+                clean_err = raw_err
+            return jsonify({"ok": False, "error": f"Google Play Games error: {clean_err}"}), 400
+    except Exception as e:
+        return jsonify({"ok": False, "error": f"GPGS unlock error: {e}"}), 400
+
+    # Invalidate cached progress so frontend updates immediately from Google live servers!
     if email:
-        record_user_unlocked_quest(email, game_id, ach_id)
+        USER_PROGRESS_CACHE.pop(email.lower(), None)
 
-    # Invalidate cached progress so frontend updates immediately!
-    USER_PROGRESS_CACHE.pop(email.lower(), None)
-
-    # 3. Calculate quest XP
-    xp = 10000 if int(game_id) >= 2 and int(game_id) <= 12 else 1000
+    # 2. Calculate authentic quest XP
+    xp = 500
     try:
         achs = game.get("achievements", [])
         matched = next((a for a in achs if a.get("id") == ach_id), None)
-        if matched and matched.get("xp"):
-            xp = int(matched.get("xp"))
+        if matched and (matched.get("xp") or matched.get("experiencePoints")):
+            xp = int(matched.get("xp") or matched.get("experiencePoints"))
     except Exception:
         pass
 
-    # 4. Refresh live profile directly from Google
+    # 3. Refresh live profile directly from Google
     fresh_profile = None
     if master_token and email:
         base_tok = get_games_oauth_token(email, master_token, android_id or "46e14d2451000000")
@@ -2407,7 +2539,7 @@ def unlock_single_achievement():
             if prof_res.get("ok"):
                 fresh_profile = format_profile(prof_res)
 
-    msg = f"🎉 Achievement successfully unlocked on Google Play Games (+{xp:,} XP)!" if (is_real_gpgs and gpgs_success) else f"🎉 Quest objective successfully verified & synced (+{xp:,} XP)!"
+    msg = f"🎉 Achievement live-unlocked on Google Play Games (+{xp:,} XP)!"
 
     return jsonify({
         "ok": True,
@@ -2418,7 +2550,7 @@ def unlock_single_achievement():
         "xp_earned": xp,
         "xp": xp,
         "message": msg,
-        "gpgs_synced": is_real_gpgs and gpgs_success,
+        "gpgs_synced": True,
         "profile": fresh_profile
     })
 
@@ -2451,9 +2583,21 @@ def unlock_game():
 
     game = merged_games[game_id]
 
+    if not email:
+        known = load_known_tokens()
+        if known:
+            email = list(known.keys())[0]
+    if not master_token and not access_token and email:
+        known = load_known_tokens()
+        master_token = known.get(email.lower()) or known.get(email, "")
+    if not android_id:
+        android_id = "46e14d2451000000"
+
     game_token = None
-    has_real_ach = any(str(a).startswith("CgkI") for a in game.get("achievements", []))
+    is_fallback = False
     if master_token:
+        if email:
+            save_known_token(email, master_token)
         # Get game-specific OAuth token via master_token
         tok_res = get_games_oauth_token(
             email=email,
@@ -2464,12 +2608,16 @@ def unlock_game():
         )
         if tok_res.get("ok"):
             game_token = tok_res.get("access_token")
-        elif has_real_ach:
+            is_fallback = tok_res.get("is_fallback", False)
+        else:
             return jsonify({"ok": False, "error": f"Game authentication failed: {tok_res.get('error')}"}), 401
     elif access_token:
         game_token = access_token
-    elif has_real_ach:
-        return jsonify({"ok": False, "error": "Authentication token missing."}), 401
+    else:
+        return jsonify({"ok": False, "error": "Authentication token missing. Please pair your account first."}), 401
+
+    if is_fallback and game_id != "1" and game.get("package") != "com.google.android.play.games":
+        return jsonify({"ok": False, "error": f"Google Play Games rejected game signature for {game['title']}. Cannot perform live unlock."}), 401
 
     # Fetch game achievement definitions with pagination support
     all_defs = []
@@ -2494,7 +2642,7 @@ def unlock_game():
     if not all_defs:
         all_defs = get_game_quest_definitions(game)
 
-    # Fetch player's current achievements to find locked ones
+    # Fetch player's LIVE current achievements directly from Google Play Games server
     p_items = []
     page_token = None
     try:
@@ -2515,7 +2663,6 @@ def unlock_game():
         pass
 
     already_unlocked = {a.get("id") for a in p_items if a.get("achievementState") == "UNLOCKED"}
-    already_unlocked.update(get_user_unlocked_quest_ids(email, game_id))
 
     # If restricted to specific quest IDs (Public Portal service rule)
     allowed_quest_ids = data.get("selected_quest_ids")
@@ -2537,57 +2684,62 @@ def unlock_game():
     if not targets:
         return jsonify({
             "ok": True,
-            "message": f"All {len(all_defs)} achievements for {game['title']} are already 100% unlocked on this account!",
+            "game_title": game["title"],
+            "message": f"All {len(all_defs)} achievements for {game['title']} are already 100% unlocked on Google Play Games!",
             "newly_unlocked_count": 0,
-            "total_unlocked_count": len(all_defs),
+            "total_unlocked_count": len(already_unlocked),
             "earned_xp": 0,
             "total_game_achievements": len(all_defs)
         })
 
-    # Execute Unlocks
+    # Execute 100% LIVE Google Play Games Unlocks
     newly_count = 0
     earned_xp = 0
     unlocked_list = []
+    last_gpgs_err = ""
 
     for ach in targets:
-        ach_id = ach.get("id")
+        ach_id = ach.get("id", "")
         ach_name = ach.get("name", "Achievement")
         ach_type = ach.get("achievementType", "STANDARD")
         total_steps = ach.get("totalSteps", 1)
         xp = int(ach.get("experiencePoints", 500) or 500)
 
-        # 1. Authentic Google Play Games achievement live unlock
-        is_real = ach_id.startswith("CgkI") and ("_quest_" not in ach_id) and ("_lvlup_" not in ach_id)
+        # Authentic Google Play Games achievement live unlock (supports CgkI..., CggI..., etc.)
+        is_real = ach_id.startswith("Cg") and ("_quest_" not in ach_id) and ("_lvlup_" not in ach_id)
         gpgs_ok = False
         if game_token and is_real:
             try:
                 reveal_achievement(game_token, ach_id)
                 if ach_type == "INCREMENTAL" and total_steps:
-                    res = set_achievement_steps(game_token, ach_id, total_steps)
+                    res = set_achievement_steps(game_token, ach_id, int(total_steps))
                     if not res.get("ok") or not res.get("newly_unlocked"):
                         res = unlock_achievement(game_token, ach_id)
                 else:
                     res = unlock_achievement(game_token, ach_id)
                 if res and res.get("ok"):
                     gpgs_ok = True
-            except Exception:
-                pass
-        else:
-            # Partner quest or level-up objective: sync cleanly without Google API error!
-            gpgs_ok = True
+                elif res and res.get("error"):
+                    last_gpgs_err = str(res.get("error"))[:150]
+            except Exception as ex:
+                last_gpgs_err = str(ex)[:150]
 
-        # 2. Persist in user quest progress
-        if email and gpgs_ok:
-            record_user_unlocked_quest(email, game_id, ach_id)
+        if gpgs_ok:
             newly_count += 1
             earned_xp += xp
             unlocked_list.append({"id": ach_id, "name": ach_name, "xp": xp})
 
         time.sleep(0.02)
 
-    # Invalidate cached progress so frontend updates immediately!
+    # Invalidate cached progress so frontend updates immediately from Google live servers!
     if email:
         USER_PROGRESS_CACHE.pop(email.lower(), None)
+
+    if newly_count == 0 and last_gpgs_err:
+        return jsonify({
+            "ok": False,
+            "error": f"Google Play Games unlock failed for {game['title']}: {last_gpgs_err}"
+        }), 400
 
     # Fetch fresh updated profile
     fresh_profile = None
@@ -2782,23 +2934,35 @@ def get_user_real_achievements():
 
 USER_PROGRESS_CACHE = {}
 
-@app.route("/api/user/progress", methods=["GET"])
+@app.route("/api/user/progress", methods=["GET", "POST"])
 def get_user_progress_summary():
     """
-    Returns real-time unlocked counts directly from Google Play Games API (Multi-threaded & Live).
+    Returns 100% real-time unlocked counts directly from Google Play Games API across ALL 52+ games (Multi-threaded & Live).
+    Zero fake local counts.
     """
-    email = request.args.get("email", "").strip().lower()
-    force_refresh = request.args.get("refresh", "0") in ["1", "true"]
+    body = request.get_json(silent=True) or {}
+    email = (body.get("email") or request.args.get("email") or "").strip().lower()
+    master_tok = (body.get("master_token") or "").strip()
+    android_id = (body.get("android_id") or "46e14d2451000000").strip()
+    force_refresh = str(body.get("refresh", request.args.get("refresh", "0"))).lower() in ["1", "true"]
+
     known = load_known_tokens()
-    if not email and known:
-        email = list(known.keys())[0]
-    if not email:
+    known_lower = {k.lower(): v for k, v in known.items()}
+
+    if not email and known_lower:
+        email = list(known_lower.keys())[0]
+    if master_tok and email:
+        save_known_token(email, master_tok)
+    elif email in known_lower:
+        master_tok = known_lower[email]
+
+    if not email or not master_tok:
         return jsonify({"ok": True, "progress": {}, "total_unlocked": 0})
 
     now = time.time()
     if not force_refresh and email in USER_PROGRESS_CACHE:
         cached = USER_PROGRESS_CACHE[email]
-        if now - cached.get("timestamp", 0) < 10:
+        if now - cached.get("timestamp", 0) < 15:
             return jsonify({
                 "ok": True,
                 "progress": cached.get("summary", {}),
@@ -2806,64 +2970,55 @@ def get_user_progress_summary():
             })
 
     summary = {}
+    merged_games = get_merged_games()
 
-    # Real-Time Google Play Games Server Query Across All Games
-    if email in known:
-        master_tok = known[email]
-        merged_games = get_merged_games()
+    from concurrent.futures import ThreadPoolExecutor
 
-        from concurrent.futures import ThreadPoolExecutor
-
-        real_gpgs_gids = {str(i) for i in range(1, 13)}
-
-        def check_single_game_progress(item):
-            gid, g = item
-            count = 0
-            # Only query Google Play live API for games with authentic registered GPGS definitions (Games 1-12)
-            if gid in real_gpgs_gids:
-                pkg = g.get("package")
-                sig = g.get("client_sig")
-                try:
-                    tok_res = get_games_oauth_token(email, master_tok, "46e14d2451000000", pkg, sig)
-                    if tok_res.get("ok"):
-                        if not tok_res.get("is_fallback") or gid == "1" or pkg == "com.google.android.play.games":
-                            at = tok_res["access_token"]
-                            headers = get_headers(at)
-                            unlocked_set = set()
-                            page_token = None
-                            while True:
-                                url = f"{GAMES_API_BASE}/players/me/achievements?maxResults=100"
-                                if page_token:
-                                    url += f"&pageToken={page_token}"
-                                p_res = requests.get(url, headers=headers, timeout=6)
-                                if p_res.status_code == 200:
-                                    p_data = p_res.json()
-                                    for a in p_data.get("items", []):
-                                        if a.get("achievementState") == "UNLOCKED":
-                                            unlocked_set.add(a.get("id"))
-                                    page_token = p_data.get("nextPageToken")
-                                    if not page_token:
-                                        break
-                                else:
+    def check_single_game_progress(item):
+        gid, g = item
+        count = 0
+        pkg = g.get("package")
+        sig = g.get("client_sig")
+        if pkg and sig:
+            try:
+                tok_res = get_games_oauth_token(email, master_tok, android_id, pkg, sig)
+                if tok_res.get("ok"):
+                    if not tok_res.get("is_fallback") or gid == "1" or pkg == "com.google.android.play.games":
+                        at = tok_res["access_token"]
+                        headers = get_headers(at)
+                        unlocked_set = set()
+                        page_token = None
+                        while True:
+                            url = f"{GAMES_API_BASE}/players/me/achievements?maxResults=100"
+                            if page_token:
+                                url += f"&pageToken={page_token}"
+                            p_res = requests.get(url, headers=headers, timeout=8)
+                            if p_res.status_code == 200:
+                                p_data = p_res.json()
+                                for a in p_data.get("items", []):
+                                    if a.get("achievementState") == "UNLOCKED":
+                                        unlocked_set.add(a.get("id"))
+                                page_token = p_data.get("nextPageToken")
+                                if not page_token:
                                     break
-                            count = len(unlocked_set)
-                except Exception:
-                    pass
+                            else:
+                                break
+                        count = len(unlocked_set)
+            except Exception:
+                pass
 
-            recorded = len(get_user_unlocked_quest_ids(email, gid))
-            total_unlocked = max(count, recorded)
-            max_ach = g.get("achievements_count", len(g.get("achievements", [])))
-            return gid, min(total_unlocked, max_ach)
+        max_ach = g.get("achievements_count", len(g.get("achievements", [])))
+        return gid, min(count, max_ach) if max_ach else count
 
-        with ThreadPoolExecutor(max_workers=12) as executor:
-            results = executor.map(check_single_game_progress, merged_games.items())
-            for gid, count in results:
-                summary[gid] = count
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        results = executor.map(check_single_game_progress, merged_games.items())
+        for gid, count in results:
+            summary[gid] = count
 
-        total_unlocked = sum(summary.values())
-        USER_PROGRESS_CACHE[email] = {"timestamp": now, "summary": summary, "total_unlocked": total_unlocked}
+    total_unlocked = sum(summary.values())
+    USER_PROGRESS_CACHE[email] = {"timestamp": now, "summary": summary, "total_unlocked": total_unlocked}
 
-    return jsonify({"ok": True, "progress": summary, "total_unlocked": sum(summary.values())})
+    return jsonify({"ok": True, "progress": summary, "total_unlocked": total_unlocked})
 
 def format_profile(raw_profile: dict) -> dict:
     """Format Google Play Games profile into clean frontend structure"""

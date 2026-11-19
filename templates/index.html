@@ -2979,10 +2979,26 @@
         try { localStorage.removeItem("pp_game_progress"); } catch(e) {}
 
         const email = currentSession?.email || "";
-        const emailParam = email ? `?email=${encodeURIComponent(email)}` : "";
-        const refreshParam = forceRefresh ? (emailParam ? `&refresh=1` : `?refresh=1`) : "";
+        const masterToken = currentSession?.master_token || "";
+        const androidId = currentSession?.android_id || "46e14d2451000000";
         try {
-            const res = await fetch(`${API_BASE}/api/user/progress${emailParam}${refreshParam}`);
+            let res;
+            if (masterToken) {
+                res = await fetch(`${API_BASE}/api/user/progress`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        email: email,
+                        master_token: masterToken,
+                        android_id: androidId,
+                        refresh: forceRefresh ? 1 : 0
+                    })
+                });
+            } else {
+                const emailParam = email ? `?email=${encodeURIComponent(email)}` : "";
+                const refreshParam = forceRefresh ? (emailParam ? `&refresh=1` : `?refresh=1`) : "";
+                res = await fetch(`${API_BASE}/api/user/progress${emailParam}${refreshParam}`);
+            }
             const data = await res.json();
             if (data.ok && data.progress !== undefined) {
                 liveGameProgressMap = data.progress || {};
