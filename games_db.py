@@ -870,5 +870,58 @@ SUPPORTED_GAMES = {
             "Certified GPGS",
             "Auto Sync"
         ]
+    },
+    "51": {
+        "title": "Stumble Guys",
+        "developer": "Scopely, Inc.",
+        "package": "com.kitkagames.fallbuddies",
+        "client_sig": "58e71785c961e7328ea9c76de647f8f6c4403b39",
+        "category": "Party / Knockout",
+        "section": "quest_unlocker",
+        "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/12/37/b9/1237b998-08b7-605f-f41d-f336b33e712f/AppIcon-0-0-1x_U007emarketing-0-5-0-85-220.png/512x512bb.jpg",
+        "achievements_count": 32,
+        "total_xp": 32000,
+        "desc": "32 live GPGS achievements.",
+        "tags": [
+            "Official",
+            "Party Game",
+            "GPGS Verified"
+        ]
+    },
+    "52": {
+        "title": "Gossip Harbor®: Merge & Story",
+        "developer": "Microfun Limited",
+        "package": "com.mergegames.gossipharbor",
+        "client_sig": "58e71785c961e7328ea9c76de647f8f6c4403b39",
+        "category": "Puzzle & Merge",
+        "section": "quest_unlocker",
+        "icon": "https://play-lh.googleusercontent.com/VIv1J5fPLy-r9KrlA4WhLvzTboMphqs_jo_U9OqLyOmkr1AGAZ-nzIPo74_VISY7Ul28ZkObCkvlyyWPd_50=w512-h512",
+        "achievements_count": 16,
+        "total_xp": 72000,
+        "desc": "Official Google Play Games achievements for Gossip Harbor®: Merge & Story. Directly synced with Google Play cloud servers.",
+        "tags": [
+            "Official GPGS",
+            "Merge Game",
+            "Live Cloud Sync",
+            "Google Play Quest"
+        ],
+        "achievements": [
+            {"id": "CgkI3YvxrpUIEAIQAQ", "name": "Starter Snack Bar", "description": "Complete 5 orders", "xp": 1000, "type": "INCREMENTAL", "totalSteps": 5, "icon": "https://lh3.googleusercontent.com/YuuMHNKQ30LfFQUbW74wDvddPpaipfSRMcyECiHniEWIPnBC8MAayLHbgenvumcQsIk"},
+            {"id": "CgkI3YvxrpUIEAIQAg", "name": "Beginner Bistro", "description": "Complete 10 orders", "xp": 1000, "type": "INCREMENTAL", "totalSteps": 10, "icon": "https://lh3.googleusercontent.com/ITLcBPNttveElkd2IUYwkmFThxd0MJi-gLu9ZFOZU13yMIbEXJrkWrc7ftgLhuPxG6c"},
+            {"id": "CgkI3YvxrpUIEAIQAw", "name": "Growing Griller", "description": "Complete 100 orders", "xp": 2000, "type": "INCREMENTAL", "totalSteps": 100, "icon": "https://lh3.googleusercontent.com/9Fz_c4FHTlRdnX9J6V9cwYQrmA_vGkGieU5e4TfLCSxUmD6O49kxNCPjvoTEbWlt6zz3"},
+            {"id": "CgkI3YvxrpUIEAIQBA", "name": "Delightful Diner", "description": "Complete 500 orders", "xp": 5000, "type": "INCREMENTAL", "totalSteps": 500, "icon": "https://lh3.googleusercontent.com/C4T9eqquBLo1QGqnCPoqZMBMjzMhby5PS9FyRC42f9PF_VokVCdAM-32uNL4v8lAZ_s"},
+            {"id": "CgkI3YvxrpUIEAIQBQ", "name": "Top Tavern", "description": "Complete 1,000 orders", "xp": 5000, "type": "INCREMENTAL", "totalSteps": 1000, "icon": "https://lh3.googleusercontent.com/B-ropyU0sOVvdvAQwMYqCFkmghMlv8xJc3jWoZOb67nDKLDRjjRktpP4AP_CMk3igu4"},
+            {"id": "CgkI3YvxrpUIEAIQBg", "name": "Rated Restaurant", "description": "Complete 10,000 orders", "xp": 10000, "type": "INCREMENTAL", "totalSteps": 10000, "icon": "https://lh3.googleusercontent.com/vgJ83obWEL1Bpw47wZz3Fue_wUW28gheovdc34HQkBi32YgOBFBxK0trX2VibrGW5nI"},
+            {"id": "CgkI3YvxrpUIEAIQBw", "name": "Welcome to Brimwave", "description": "Complete Day 1 of the story", "xp": 1000, "type": "STANDARD", "icon": "https://lh3.googleusercontent.com/hQkDXRODRdIdPRkX7sMd24506yhww4oJ5TBcH3Kb7WeZlCBakcPOyYZqFXBatRdj7jkO"},
+            {"id": "CgkI3YvxrpUIEAIQCA", "name": "Brimwave Beginnings", "description": "Complete Day 2 of the story", "xp": 1000, "type": "STANDARD", "icon": "https://lh3.googleusercontent.com/GBWx_p0QyYnWH2ocH93KT8YVETmiI_YXecJdSeQzkUoPFFSgQ_FaRD5kuVtIUxkJVA"},
+            {"id": "CgkI3YvxrpUIEAIQCQ", "name": "Not-so-New Neighbor", "description": "Complete Day 20 of the story", "xp": 2000, "type": "STANDARD", "icon": "https://lh3.googleusercontent.com/kOI311u9cwveX0nLNiWEy4a4jGyBmTNGseY9NyQO_rvAxKmOQD9RJ-dqetQd28Z3XoWq"},
+            {"id": "CgkI3YvxrpUIEAIQCg", "name": "Town Tattler", "description": "Complete Day 100 of the story", "xp": 5000, "type": "STANDARD", "icon": "https://lh3.googleusercontent.com/maIpFm0hDygvYzvuBbmsDOTiRnbKdxj9IdbkV8hKpfcLNhki4kt_ojxmSHR8okQ7CzM"},
+            {"id": "CgkI3YvxrpUIEAIQCw", "name": "Harbor Gossiper", "description": "Complete Day 200 of the story", "xp": 10000, "type": "STANDARD", "icon": "https://lh3.googleusercontent.com/hHCm3MrMISeSZJeBLaWjpOmSZpSOxHRSUrvD38hgwqvLvBGDX3PcjPBPcwctWm3MMhuq"},
+            {"id": "CgkI3YvxrpUIEAIQDA", "name": "Leveled Up", "description": "Reach Level 6", "xp": 2000, "type": "STANDARD", "icon": "https://lh3.googleusercontent.com/Hl5HkZl2l6wuV6fHL32KJSEACnR9fY23oQAj0k0ie2wVPsWFo9TzK6v12-0REjRRT6E"},
+            {"id": "CgkI3YvxrpUIEAIQDg", "name": "Card Consultant", "description": "Complete two different Card Collection events", "xp": 5000, "type": "INCREMENTAL", "totalSteps": 2, "icon": "https://lh3.googleusercontent.com/0q6sl-gHq954WLmZmljK0O4xsOqyB3e3wIODyH8eZ_pnd_s2lkIgcfbV_nh4-AjFrPY"},
+            {"id": "CgkI3YvxrpUIEAIQDw", "name": "Card Connoisseur", "description": "Complete five different Card Collection events", "xp": 10000, "type": "INCREMENTAL", "totalSteps": 5, "icon": "https://lh3.googleusercontent.com/SoLyC-NacgVuMOY3XvIZ5AyTWwKAeTmw-bGIQ9buu67QC-29fDLCnfFsiOlC--UsRuY"},
+            {"id": "CgkI3YvxrpUIEAIQEA", "name": "Album Admirer", "description": "Complete the same Card Collection event twice", "xp": 5000, "type": "STANDARD", "icon": "https://lh3.googleusercontent.com/tZlrPJ7Lpxp5_1KBYTOFnuXaQzPIDqQ4MdBvzH07nAvaN99vEe4gjkexRWgJVHSNww"},
+            {"id": "CgkI3YvxrpUIEAIQEQ", "name": "Album Aficionado", "description": "Complete the same Card Collection event four times", "xp": 10000, "type": "STANDARD", "icon": "https://lh3.googleusercontent.com/7WjaBA9bnNn0tVyj-ZFoefrg0hq29rXxt3qUimPB4_9m5cosf4MXNXmJDGIIOiMadA"}
+        ]
     }
 }

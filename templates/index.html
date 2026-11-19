@@ -2780,27 +2780,18 @@
         if (tab === "gateway") loadGatewayTransactions();
     }
 
-    // Game Quest Completion Tracking (Quests X / Total)
+    // Live Real-Time Game Quest Completion Tracking (Zero Local Storage Cache)
+    let liveGameProgressMap = {};
+
     function getGameProgress(gameId, totalCount) {
-        const raw = localStorage.getItem("pp_game_progress");
-        let map = {};
-        if (raw) {
-            try { map = JSON.parse(raw); } catch(e) {}
+        if (liveGameProgressMap[gameId] !== undefined) {
+            return Math.min(totalCount, liveGameProgressMap[gameId]);
         }
-        if (map[gameId] !== undefined) {
-            return Math.min(totalCount, map[gameId]);
-        }
-        return 0; // Starts at 0 until verified/synced - no fake 72%!
+        return 0; // Starts at 0 until live verified from Google Play Games servers
     }
 
     function setGameProgress(gameId, completedCount, totalCount) {
-        const raw = localStorage.getItem("pp_game_progress");
-        let map = {};
-        if (raw) {
-            try { map = JSON.parse(raw); } catch(e) {}
-        }
-        map[gameId] = completedCount;
-        localStorage.setItem("pp_game_progress", JSON.stringify(map));
+        liveGameProgressMap[gameId] = completedCount;
         updateGameCardProgressUI(gameId, completedCount, totalCount);
     }
 
@@ -2819,14 +2810,16 @@
     }
 
     async function loadUserRemoteProgress() {
+        // Purge any stale localStorage progress cache permanently
+        try { localStorage.removeItem("pp_game_progress"); } catch(e) {}
+
         const email = currentSession?.email || "";
         const emailParam = email ? `?email=${encodeURIComponent(email)}` : "";
         try {
             const res = await fetch(`${API_BASE}/api/user/progress${emailParam}`);
             const data = await res.json();
             if (data.ok && data.progress !== undefined) {
-                const map = data.progress || {};
-                localStorage.setItem("pp_game_progress", JSON.stringify(map));
+                liveGameProgressMap = data.progress || {};
                 if (gamesList && gamesList.length > 0) {
                     renderGamesCatalog(gamesList);
                 }

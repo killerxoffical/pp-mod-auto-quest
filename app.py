@@ -2242,13 +2242,6 @@ def get_game_achievements():
     total_xp = 0
     earned_xp = 0
 
-    if not email:
-        known = load_known_tokens()
-        if known:
-            email = list(known.keys())[0]
-
-    persisted_unlocked = get_user_unlocked_quest_ids(email, game_id)
-
     for d in all_defs:
         ach_id = d.get("id")
         ach_name = d.get("name", "Achievement")
@@ -2268,10 +2261,8 @@ def get_game_achievements():
             icon_url = default_badge
 
         p_info = p_map.get(ach_id, {})
-        is_gpgs_unlocked = (p_info.get("achievementState") == "UNLOCKED")
-        is_persisted = (ach_id in persisted_unlocked)
-        is_unlocked = is_gpgs_unlocked or is_persisted
-        state = "UNLOCKED" if is_unlocked else p_info.get("achievementState", "LOCKED")
+        state = p_info.get("achievementState", "LOCKED")
+        is_unlocked = (state == "UNLOCKED")
         current_steps = p_info.get("currentSteps", (total_steps if is_unlocked else (0 if ach_type == "INCREMENTAL" else None)))
 
         if is_unlocked:
@@ -2769,6 +2760,9 @@ def get_user_real_achievements():
 
 @app.route("/api/user/progress", methods=["GET"])
 def get_user_progress_summary():
+    """
+    Returns real-time unlocked counts directly from Google Play Games API (Zero Cache / Zero Local DB).
+    """
     email = request.args.get("email", "").strip().lower()
     known = load_known_tokens()
     if not email and known:
@@ -2778,25 +2772,30 @@ def get_user_progress_summary():
 
     summary = {}
 
-    # 1. Load from persisted user quest progress
-    user_prog = load_user_quest_progress().get(email, {})
-    for gid, achs in user_prog.items():
-        summary[str(gid)] = len(achs)
-
-    # 2. For Game 1 (Google Play Games official GPGS) check live Google server
+    # Real-Time Google Play Games Server Query
     if email in known:
+        master_tok = known[email]
         try:
-            tok_res = get_games_oauth_token(email, known[email], "46e14d2451000000")
+            # 1. Base Google Play Games Token (for Game 1)
+            tok_res = get_games_oauth_token(email, master_tok, "46e14d2451000000")
             if tok_res.get("ok"):
                 access_token = tok_res["access_token"]
-                p_res = requests.get(f"{GAMES_API_BASE}/players/me/achievements", headers=get_headers(access_token), timeout=10)
+                p_res = requests.get(f"{GAMES_API_BASE}/players/me/achievements?maxResults=50", headers=get_headers(access_token), timeout=10)
                 if p_res.status_code == 200:
                     p_items = p_res.json().get("items", [])
                     unlocked_ids = {a.get("id") for a in p_items if a.get("achievementState") == "UNLOCKED"}
                     g1_achs = {"CgkIsunb0aQREAIQAg", "CgkIsunb0aQREAIQAw", "CgkIsunb0aQREAIQBA", "CgkIsunb0aQREAIQBQ", "CgkIsunb0aQREAIQBg"}
-                    summary["1"] = max(summary.get("1", 0), len(g1_achs.intersection(unlocked_ids)))
-        except Exception:
-            pass
+                    summary["1"] = len(g1_achs.intersection(unlocked_ids))
+
+            # 2. Gossip Harbor Game Token (Game 52)
+            gh_res = get_games_oauth_token(email, master_tok, "46e14d2451000000", "com.mergegames.gossipharbor", "58e71785c961e7328ea9c76de647f8f6c4403b39")
+            if gh_res.get("ok"):
+                gh_p = requests.get(f"{GAMES_API_BASE}/players/me/achievements?maxResults=50", headers=get_headers(gh_res["access_token"]), timeout=10)
+                if gh_p.status_code == 200:
+                    gh_unlocked = [a for a in gh_p.json().get("items", []) if a.get("achievementState") == "UNLOCKED"]
+                    summary["52"] = len(gh_unlocked)
+        except Exception as e:
+            print(f"[-] Error querying live user progress: {e}")
 
     return jsonify({"ok": True, "progress": summary})
 
