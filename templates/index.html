@@ -2819,17 +2819,13 @@
     }
 
     async function loadUserRemoteProgress() {
-        if (!currentSession || !currentSession.email) return;
+        const email = currentSession?.email || "";
+        const emailParam = email ? `?email=${encodeURIComponent(email)}` : "";
         try {
-            const res = await fetch(`${API_BASE}/api/user/progress?email=${encodeURIComponent(currentSession.email)}`);
+            const res = await fetch(`${API_BASE}/api/user/progress${emailParam}`);
             const data = await res.json();
-            if (data.ok && data.progress) {
-                const raw = localStorage.getItem("pp_game_progress");
-                let map = {};
-                if (raw) {
-                    try { map = JSON.parse(raw); } catch(e) {}
-                }
-                Object.assign(map, data.progress);
+            if (data.ok && data.progress !== undefined) {
+                const map = data.progress || {};
                 localStorage.setItem("pp_game_progress", JSON.stringify(map));
                 if (gamesList && gamesList.length > 0) {
                     renderGamesCatalog(gamesList);
@@ -3142,7 +3138,7 @@
             const data = await res.json();
             if (data.ok) {
                 triggerCelebration();
-                showToast("🎉 Quest state successfully verified & synced!", "success");
+                showToast(data.message || "🎉 Quest state successfully verified & synced!", "success");
                 const item = currentQuests.find(q => q.id === achId);
                 if (item) {
                     item.is_unlocked = true;
