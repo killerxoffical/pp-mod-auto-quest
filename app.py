@@ -2251,16 +2251,16 @@ def get_game_achievements():
         xp = int(d.get("experiencePoints", 500) or 500)
         total_xp += xp
 
-        # Select authentic achievement icon (always use official Google Play Games icon)
+        # Select authentic achievement icon (prioritize Google Play CDN or official game icon)
         raw_icon = d.get("unlockedIconUrl") or d.get("revealedIconUrl") or d.get("icon") or ""
-        badge_idx = (len(items) % 16) + 1
-        default_badge = f"/static/images/achievements/badge_{badge_idx}.svg"
+        game_icon = game.get("icon", "")
         if raw_icon and raw_icon.strip().startswith("http"):
             icon_url = raw_icon.strip()
-        elif raw_icon and raw_icon.strip() and raw_icon != game.get("icon"):
-            icon_url = raw_icon.strip()
+        elif game_icon and game_icon.strip().startswith("http"):
+            icon_url = game_icon.strip()
         else:
-            icon_url = default_badge
+            badge_idx = (len(items) % 16) + 1
+            icon_url = f"/static/images/achievements/badge_{badge_idx}.svg"
 
         p_info = p_map.get(ach_id, {})
         state = p_info.get("achievementState", "LOCKED")
@@ -2765,20 +2765,25 @@ USER_PROGRESS_CACHE = {}
 @app.route("/api/user/progress", methods=["GET"])
 def get_user_progress_summary():
     """
-    Returns real-time unlocked counts directly from Google Play Games API (Multi-threaded & Cached).
+    Returns real-time unlocked counts directly from Google Play Games API (Multi-threaded & Live).
     """
     email = request.args.get("email", "").strip().lower()
+    force_refresh = request.args.get("refresh", "0") in ["1", "true"]
     known = load_known_tokens()
     if not email and known:
         email = list(known.keys())[0]
     if not email:
-        return jsonify({"ok": True, "progress": {}})
+        return jsonify({"ok": True, "progress": {}, "total_unlocked": 0})
 
     now = time.time()
-    if email in USER_PROGRESS_CACHE:
+    if not force_refresh and email in USER_PROGRESS_CACHE:
         cached = USER_PROGRESS_CACHE[email]
-        if now - cached.get("timestamp", 0) < 60:
-            return jsonify({"ok": True, "progress": cached.get("summary", {})})
+        if now - cached.get("timestamp", 0) < 10:
+            return jsonify({
+                "ok": True,
+                "progress": cached.get("summary", {}),
+                "total_unlocked": cached.get("total_unlocked", sum(cached.get("summary", {}).values()))
+            })
 
     summary = {}
 
@@ -2793,6 +2798,7 @@ def get_user_progress_summary():
             gid, g = item
             pkg = g.get("package")
             sig = g.get("client_sig")
+            count = 0
             try:
                 tok_res = get_games_oauth_token(email, master_tok, "46e14d2451000000", pkg, sig)
                 if tok_res.get("ok"):
@@ -2800,19 +2806,23 @@ def get_user_progress_summary():
                     p_res = requests.get(f"{GAMES_API_BASE}/players/me/achievements?maxResults=100", headers=get_headers(at), timeout=5)
                     if p_res.status_code == 200:
                         unlocked = [a for a in p_res.json().get("items", []) if a.get("achievementState") == "UNLOCKED"]
-                        return gid, len(unlocked)
+                        count = len(unlocked)
             except Exception:
                 pass
-            return gid, 0
+            recorded = len(get_user_unlocked_quest_ids(email, gid))
+            total_game_unlocked = max(count, recorded)
+            max_ach = g.get("achievements_count", len(g.get("achievements", [])))
+            return gid, min(total_game_unlocked, max_ach)
 
-        with ThreadPoolExecutor(max_workers=8) as executor:
+        with ThreadPoolExecutor(max_workers=10) as executor:
             results = executor.map(check_single_game_progress, merged_games.items())
             for gid, count in results:
                 summary[gid] = count
 
-        USER_PROGRESS_CACHE[email] = {"timestamp": now, "summary": summary}
+        total_unlocked = sum(summary.values())
+        USER_PROGRESS_CACHE[email] = {"timestamp": now, "summary": summary, "total_unlocked": total_unlocked}
 
-    return jsonify({"ok": True, "progress": summary})
+    return jsonify({"ok": True, "progress": summary, "total_unlocked": sum(summary.values())})
 
 def format_profile(raw_profile: dict) -> dict:
     """Format Google Play Games profile into clean frontend structure"""

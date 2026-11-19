@@ -1377,9 +1377,12 @@
                 <img id="topAvatar" class="avatar-circle" src="https://lh3.googleusercontent.com/oSr9gh739dEkrcraGq9qXOOEbfNCznrRfKqeibAHEyIdCLHB-EQFDot-00Z4TsMAjRE" alt="Avatar" onerror="this.onerror=null; this.src='https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512';">
                 
                 <div class="account-meta">
-                    <div class="account-meta-top">
-                        <h4 id="topDisplayName">Mdd1457</h4>
+                    <div class="account-meta-top" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                        <h4 id="topDisplayName" style="margin:0;">Mdd1457</h4>
                         <span id="topLvlBadge" class="badge-lvl-pill">LVL 22</span>
+                        <span id="topAchievementsBadge" class="badge-lvl-pill" style="background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3); display:inline-flex; align-items:center; gap:5px; font-weight:800; font-size:11px;" title="Live Total Google Play Achievements Unlocked on this account">
+                            <span>🏆</span> <span id="topAchievementsCount">0</span> Achievements Unlocked
+                        </span>
                         <span id="topEmail" style="font-size:11.5px; color:var(--text-muted); font-family:'JetBrains Mono';">mdd145712@gmail.com</span>
                     </div>
 
@@ -2793,6 +2796,11 @@
     function setGameProgress(gameId, completedCount, totalCount) {
         liveGameProgressMap[gameId] = completedCount;
         updateGameCardProgressUI(gameId, completedCount, totalCount);
+
+        // Keep top bar total achievements counter in sync
+        const totalUnlocked = Object.values(liveGameProgressMap).reduce((acc, curr) => acc + (Number(curr) || 0), 0);
+        const achCountEl = document.getElementById("topAchievementsCount");
+        if (achCountEl) achCountEl.innerText = totalUnlocked.toLocaleString();
     }
 
     function updateGameCardProgressUI(gameId, completedCount, totalCount) {
@@ -2809,17 +2817,29 @@
         if (track) track.title = `${count} of ${tCount} Quests Synced (${pct}%)`;
     }
 
-    async function loadUserRemoteProgress() {
+    async function loadUserRemoteProgress(forceRefresh = false) {
         // Purge any stale localStorage progress cache permanently
         try { localStorage.removeItem("pp_game_progress"); } catch(e) {}
 
         const email = currentSession?.email || "";
         const emailParam = email ? `?email=${encodeURIComponent(email)}` : "";
+        const refreshParam = forceRefresh ? (emailParam ? `&refresh=1` : `?refresh=1`) : "";
         try {
-            const res = await fetch(`${API_BASE}/api/user/progress${emailParam}`);
+            const res = await fetch(`${API_BASE}/api/user/progress${emailParam}${refreshParam}`);
             const data = await res.json();
             if (data.ok && data.progress !== undefined) {
                 liveGameProgressMap = data.progress || {};
+                
+                // Calculate live total achievements unlocked across all games
+                const totalUnlocked = (data.total_unlocked !== undefined)
+                    ? data.total_unlocked
+                    : Object.values(liveGameProgressMap).reduce((acc, curr) => acc + (Number(curr) || 0), 0);
+                    
+                const achCountEl = document.getElementById("topAchievementsCount");
+                if (achCountEl) {
+                    achCountEl.innerText = totalUnlocked.toLocaleString();
+                }
+
                 if (gamesList && gamesList.length > 0) {
                     renderGamesCatalog(gamesList);
                 }
@@ -3388,6 +3408,11 @@
         document.getElementById("topXpText").innerText = `${curXp.toLocaleString()} / ${maxXp.toLocaleString()} XP`;
         document.getElementById("txtProgressPct").innerText = `${pct}% to Level ${(p.next_level || (p.current_level + 1))}`;
         document.getElementById("playProgressBar").style.width = `${pct}%`;
+
+        if (p.total_unlocked_achievements !== undefined) {
+            const achCountEl = document.getElementById("topAchievementsCount");
+            if (achCountEl) achCountEl.innerText = p.total_unlocked_achievements.toLocaleString();
+        }
     }
 
     // ================= AUTO SCANNER & ADD GAME =================
