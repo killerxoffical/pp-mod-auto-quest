@@ -2357,24 +2357,37 @@ def unlock_single_achievement():
     is_real_gpgs = ach_id.startswith("CgkI") and ("_quest_" not in ach_id) and ("_lvlup_" not in ach_id)
     gpgs_success = False
 
-    if is_real_gpgs and game_token:
-        try:
-            reveal_achievement(game_token, ach_id)
-            total_steps = data.get("total_steps")
-            ach_type = data.get("type", "STANDARD")
-            if ach_type == "INCREMENTAL" and total_steps:
-                res = set_achievement_steps(game_token, ach_id, int(total_steps))
-                if not res.get("ok") or not res.get("newly_unlocked"):
-                    res = unlock_achievement(game_token, ach_id)
-            else:
-                res = unlock_achievement(game_token, ach_id)
-            if res and res.get("ok"):
-                gpgs_success = True
-        except Exception as e:
-            print(f"[-] GPGS live unlock notice for {ach_id}: {e}")
+    if not is_real_gpgs or not game_token:
+        return jsonify({
+            "ok": False,
+            "error": "This game does not have official Google Play Games Services credentials registered. Only verified games (Games 1-12) can be synced live to your Google Play Games account."
+        }), 400
 
-    # 2. Persist in user quest progress (Always succeeds and awards XP cleanly!)
-    if email:
+    try:
+        reveal_achievement(game_token, ach_id)
+        total_steps = data.get("total_steps")
+        ach_type = data.get("type", "STANDARD")
+        if ach_type == "INCREMENTAL" and total_steps:
+            res = set_achievement_steps(game_token, ach_id, int(total_steps))
+            if not res.get("ok") or not res.get("newly_unlocked"):
+                res = unlock_achievement(game_token, ach_id)
+        else:
+            res = unlock_achievement(game_token, ach_id)
+        if res and res.get("ok"):
+            gpgs_success = True
+        else:
+            raw_err = res.get("error", "Google Play Games rejected unlock.") if res else "No response from Google."
+            try:
+                err_json = json.loads(raw_err)
+                clean_err = err_json.get("error", {}).get("message", raw_err)
+            except Exception:
+                clean_err = raw_err
+            return jsonify({"ok": False, "error": f"Google Play Games error: {clean_err}"}), 400
+    except Exception as e:
+        return jsonify({"ok": False, "error": f"GPGS unlock error: {e}"}), 400
+
+    # 2. Persist in user quest progress ONLY on authentic verified unlock
+    if email and gpgs_success:
         record_user_unlocked_quest(email, game_id, ach_id)
 
     # Invalidate cached progress so frontend updates immediately!
@@ -2545,26 +2558,37 @@ def unlock_game():
         total_steps = ach.get("totalSteps", 1)
         xp = int(ach.get("experiencePoints", 500) or 500)
 
-        # 1. If valid GPGS ID, attempt unlock on Google server
-        if game_token and ach_id.startswith("CgkI"):
+        # 1. Authentic Google Play Games achievement live unlock
+        is_real = ach_id.startswith("CgkI") and ("_quest_" not in ach_id) and ("_lvlup_" not in ach_id)
+        gpgs_ok = False
+        if game_token and is_real:
             try:
                 reveal_achievement(game_token, ach_id)
                 if ach_type == "INCREMENTAL" and total_steps:
                     res = set_achievement_steps(game_token, ach_id, total_steps)
                     if not res.get("ok") or not res.get("newly_unlocked"):
-                        unlock_achievement(game_token, ach_id)
+                        res = unlock_achievement(game_token, ach_id)
                 else:
-                    unlock_achievement(game_token, ach_id)
+                    res = unlock_achievement(game_token, ach_id)
+                if res and res.get("ok"):
+                    gpgs_ok = True
             except Exception:
                 pass
 
-        # 2. Persist in user quest progress
-        record_user_unlocked_quest(email, game_id, ach_id)
-        newly_count += 1
-        earned_xp += xp
-        unlocked_list.append({"id": ach_id, "name": ach_name, "xp": xp})
+        # 2. Persist in user quest progress ONLY on confirmed live Google unlock
+        if gpgs_ok:
+            record_user_unlocked_quest(email, game_id, ach_id)
+            newly_count += 1
+            earned_xp += xp
+            unlocked_list.append({"id": ach_id, "name": ach_name, "xp": xp})
 
         time.sleep(0.05)
+
+    if newly_count == 0 and not any(is_real for ach in targets):
+        return jsonify({
+            "ok": False,
+            "error": "This game does not have registered Google Play Games Services credentials. Only verified games (Games 1-12) can be synced live to your Google Play Games account."
+        }), 400
 
     # Fetch fresh updated profile
     fresh_profile = None
@@ -2805,17 +2829,30 @@ def get_user_progress_summary():
                     if tok_res.get("ok"):
                         if not tok_res.get("is_fallback") or gid == "1" or pkg == "com.google.android.play.games":
                             at = tok_res["access_token"]
-                            p_res = requests.get(f"{GAMES_API_BASE}/players/me/achievements?maxResults=100", headers=get_headers(at), timeout=5)
-                            if p_res.status_code == 200:
-                                unlocked = [a for a in p_res.json().get("items", []) if a.get("achievementState") == "UNLOCKED"]
-                                count = len(unlocked)
+                            headers = get_headers(at)
+                            unlocked_set = set()
+                            page_token = None
+                            while True:
+                                url = f"{GAMES_API_BASE}/players/me/achievements?maxResults=100"
+                                if page_token:
+                                    url += f"&pageToken={page_token}"
+                                p_res = requests.get(url, headers=headers, timeout=6)
+                                if p_res.status_code == 200:
+                                    p_data = p_res.json()
+                                    for a in p_data.get("items", []):
+                                        if a.get("achievementState") == "UNLOCKED":
+                                            unlocked_set.add(a.get("id"))
+                                    page_token = p_data.get("nextPageToken")
+                                    if not page_token:
+                                        break
+                                else:
+                                    break
+                            count = len(unlocked_set)
                 except Exception:
                     pass
 
-            recorded = len(get_user_unlocked_quest_ids(email, gid))
-            total_game_unlocked = max(count, recorded)
             max_ach = g.get("achievements_count", len(g.get("achievements", [])))
-            return gid, min(total_game_unlocked, max_ach)
+            return gid, min(count, max_ach)
 
         with ThreadPoolExecutor(max_workers=12) as executor:
             results = executor.map(check_single_game_progress, merged_games.items())
