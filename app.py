@@ -2216,7 +2216,7 @@ def get_game_achievements():
 
     # Fetch player achievements if authenticated session
     p_map = {}
-    if master_token or access_token:
+    if (master_token or access_token) and (not is_fallback_token or game_id == "1" or game.get("package") == "com.google.android.play.games"):
         try:
             page_token = None
             while True:
@@ -2251,16 +2251,16 @@ def get_game_achievements():
         xp = int(d.get("experiencePoints", 500) or 500)
         total_xp += xp
 
-        # Select authentic achievement icon (prioritize Google Play CDN or official game icon)
+        # Select authentic achievement icon (prioritize specific icon or high-res gaming badge)
         raw_icon = d.get("unlockedIconUrl") or d.get("revealedIconUrl") or d.get("icon") or ""
-        game_icon = game.get("icon", "")
-        if raw_icon and raw_icon.strip().startswith("http"):
+        badge_idx = (len(items) % 16) + 1
+        default_badge = f"/static/images/achievements/badge_{badge_idx}.svg"
+        if raw_icon and raw_icon.strip().startswith("http") and raw_icon.strip() != game.get("icon"):
             icon_url = raw_icon.strip()
-        elif game_icon and game_icon.strip().startswith("http"):
-            icon_url = game_icon.strip()
+        elif raw_icon and raw_icon.strip().startswith("/static/"):
+            icon_url = raw_icon.strip()
         else:
-            badge_idx = (len(items) % 16) + 1
-            icon_url = f"/static/images/achievements/badge_{badge_idx}.svg"
+            icon_url = default_badge
 
         p_info = p_map.get(ach_id, {})
         state = p_info.get("achievementState", "LOCKED")
@@ -2802,11 +2802,14 @@ def get_user_progress_summary():
             try:
                 tok_res = get_games_oauth_token(email, master_tok, "46e14d2451000000", pkg, sig)
                 if tok_res.get("ok"):
-                    at = tok_res["access_token"]
-                    p_res = requests.get(f"{GAMES_API_BASE}/players/me/achievements?maxResults=100", headers=get_headers(at), timeout=5)
-                    if p_res.status_code == 200:
-                        unlocked = [a for a in p_res.json().get("items", []) if a.get("achievementState") == "UNLOCKED"]
-                        count = len(unlocked)
+                    # Only count GPGS items if this is the actual game token or Game 1
+                    # Do NOT use fallback Play Games token to count other games' achievements!
+                    if not tok_res.get("is_fallback") or gid == "1" or pkg == "com.google.android.play.games":
+                        at = tok_res["access_token"]
+                        p_res = requests.get(f"{GAMES_API_BASE}/players/me/achievements?maxResults=100", headers=get_headers(at), timeout=5)
+                        if p_res.status_code == 200:
+                            unlocked = [a for a in p_res.json().get("items", []) if a.get("achievementState") == "UNLOCKED"]
+                            count = len(unlocked)
             except Exception:
                 pass
             recorded = len(get_user_unlocked_quest_ids(email, gid))
@@ -2878,20 +2881,47 @@ pinger_thread.start()
 @app.route("/api/portal/services", methods=["GET"])
 def get_portal_services():
     """
-    Returns list of all active/configured quest services for the Public Portal.
+    Returns list of all active/configured quest services for the Public Portal with section tagging.
     """
     services = load_portal_services()
     merged = get_merged_games()
     out = []
-    for gid, s in services.items():
-        if gid in merged:
-            g = merged[gid]
-            s["title"] = g.get("title", s.get("title"))
-            s["package"] = g.get("package", s.get("package"))
-            s["icon"] = g.get("icon", s.get("icon"))
-            s["category"] = g.get("category", s.get("category"))
-            s["developer"] = g.get("developer", s.get("developer"))
-        out.append(s)
+
+    # If no custom curated services configured yet, offer all catalog games by default
+    if not services:
+        for gid, g in merged.items():
+            achs = g.get("achievements", [])
+            out.append({
+                "game_id": str(gid),
+                "title": g.get("title"),
+                "package": g.get("package"),
+                "icon": g.get("icon"),
+                "category": g.get("category", "Games"),
+                "developer": g.get("developer", "Google Play Partner"),
+                "section": g.get("section", "quest_unlocker"),
+                "enabled": True,
+                "selected_quests_count": g.get("achievements_count", len(achs)),
+                "selected_quests": [
+                    {
+                        "id": a.get("id"),
+                        "name": a.get("name"),
+                        "experiencePoints": a.get("xp", 5000),
+                        "unlockedIconUrl": a.get("icon")
+                    } for a in achs[:5]
+                ]
+            })
+    else:
+        for gid, s in services.items():
+            if gid in merged:
+                g = merged[gid]
+                s["title"] = g.get("title", s.get("title"))
+                s["package"] = g.get("package", s.get("package"))
+                s["icon"] = g.get("icon", s.get("icon"))
+                s["category"] = g.get("category", s.get("category"))
+                s["developer"] = g.get("developer", s.get("developer"))
+                s["section"] = g.get("section", "quest_unlocker")
+            out.append(s)
+
     out.sort(key=lambda x: (not x.get("enabled", True), x.get("title", "")))
     return jsonify({"ok": True, "services": out, "total_services": len(out)})
 

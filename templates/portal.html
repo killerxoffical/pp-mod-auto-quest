@@ -301,6 +301,31 @@
             max-height: 220px;
             overflow-y: auto;
         }
+
+        .portal-section-pill {
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 12.5px;
+            font-weight: 800;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+        .portal-section-pill:hover {
+            color: var(--text-primary);
+            border-color: rgba(14, 165, 233, 0.4);
+        }
+        .portal-section-pill.active {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(16, 185, 129, 0.15));
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            box-shadow: 0 4px 14px rgba(14, 165, 233, 0.25);
+        }
         .quest-item {
             display: flex;
             align-items: center;
@@ -428,12 +453,25 @@
                 <div>
                     <h2 class="services-title">Available Quest Services</h2>
                     <p style="font-size:12.5px; color:var(--text-muted); margin-top:2px;">
-                        Only quests curated and configured by Admin are fulfilled.
+                        Curated Play Games achievement &amp; level-up services.
                     </p>
                 </div>
                 <span style="font-size:12px; font-weight:800; color:var(--accent-cyan); font-family:'JetBrains Mono';" id="serviceCountBadge">
                     Loading Services...
                 </span>
+            </div>
+
+            <!-- Public Portal 2 Sections: LEVEL-UP & QUEST UNLOCKER -->
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+                <button class="portal-section-pill active" id="portalPillAll" onclick="setPortalSection('all')">
+                    <span>🎮 All Services (<span id="portalCountAll">52</span>)</span>
+                </button>
+                <button class="portal-section-pill" id="portalPillLevelUp" onclick="setPortalSection('level_up')" style="color:#d97706; border-color:rgba(217,119,6,0.3); background:rgba(245,158,11,0.08);">
+                    <span>⚡ LEVEL-UP XP Boosters (<span id="portalCountLevelUp">11</span>)</span>
+                </button>
+                <button class="portal-section-pill" id="portalPillQuests" onclick="setPortalSection('quest_unlocker')">
+                    <span>🎯 Play Points Quests (<span id="portalCountQuests">41</span>)</span>
+                </button>
             </div>
 
             <div class="services-grid" id="portalServicesList">
@@ -484,76 +522,117 @@
         const savedTheme = localStorage.getItem("pp_portal_theme") || "dark";
         document.documentElement.setAttribute("data-theme", savedTheme);
 
+        let allPortalServices = [];
+        let activePortalSection = "all";
+
+        function setPortalSection(sec) {
+            activePortalSection = sec;
+            const pAll = document.getElementById("portalPillAll");
+            const pLvl = document.getElementById("portalPillLevelUp");
+            const pQst = document.getElementById("portalPillQuests");
+            if (pAll) pAll.classList.toggle("active", sec === "all");
+            if (pLvl) pLvl.classList.toggle("active", sec === "level_up");
+            if (pQst) pQst.classList.toggle("active", sec === "quest_unlocker");
+            renderPortalServices();
+        }
+
         async function loadPublicServices() {
-            const container = document.getElementById("portalServicesList");
-            const badge = document.getElementById("serviceCountBadge");
             try {
                 const res = await fetch("/api/portal/services");
                 const data = await res.json();
                 if (data.ok && Array.isArray(data.services)) {
-                    const activeServices = data.services.filter(s => s.enabled !== false);
-                    if (badge) badge.innerText = `${activeServices.length} Active Services`;
+                    allPortalServices = data.services.filter(s => s.enabled !== false);
 
-                    if (activeServices.length === 0) {
-                        container.innerHTML = `
-                            <div style="grid-column:1/-1; text-align:center; padding:60px 20px; background:var(--bg-card); border:1px dashed var(--border-color); border-radius:var(--radius-xl);">
-                                <span style="font-size:40px; display:block; margin-bottom:10px;">🛡️</span>
-                                <strong style="font-size:16px; color:var(--text-primary);">No Quest Services Currently Offered</strong>
-                                <p style="font-size:12.5px; color:var(--text-muted); margin-top:4px;">Please check back later or contact the administrator.</p>
-                            </div>
-                        `;
-                        return;
-                    }
+                    const lvlCount = allPortalServices.filter(s => (s.section || "quest_unlocker") === "level_up").length;
+                    const qstCount = allPortalServices.length - lvlCount;
 
-                    let html = "";
-                    activeServices.forEach(s => {
-                        const selCount = s.selected_quests_count || (s.selected_quests ? s.selected_quests.length : 0);
-                        const quests = s.selected_quests || [];
+                    const elAll = document.getElementById("portalCountAll");
+                    const elLvl = document.getElementById("portalCountLevelUp");
+                    const elQst = document.getElementById("portalCountQuests");
+                    if (elAll) elAll.innerText = allPortalServices.length;
+                    if (elLvl) elLvl.innerText = lvlCount;
+                    if (elQst) elQst.innerText = qstCount;
 
-                        let questsHtml = "";
-                        quests.forEach(q => {
-                            const iconSrc = q.unlockedIconUrl || '/static/images/achievements/badge_1.svg';
-                            questsHtml += `
-                                <div class="quest-item">
-                                    <img src="${iconSrc}" onerror="this.src='/static/images/achievements/badge_1.svg'" class="quest-icon">
-                                    <span class="quest-name">${q.name}</span>
-                                    <span class="quest-xp">+${(q.experiencePoints || 5000).toLocaleString()} XP</span>
-                                </div>
-                            `;
-                        });
-
-                        html += `
-                            <div class="service-card">
-                                <div>
-                                    <div class="service-top">
-                                        <img src="${s.icon || '/static/images/default_app.png'}" onerror="this.src='/static/images/default_app.png'" class="service-icon">
-                                        <div>
-                                            <div class="service-name">${s.title}</div>
-                                            <span class="service-badge">🎯 ${selCount} Curated Objectives</span>
-                                        </div>
-                                    </div>
-
-                                    <div style="margin-top:16px;">
-                                        <div style="font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; margin-bottom:8px;">
-                                            Included Objectives:
-                                        </div>
-                                        <div class="quests-list">
-                                            ${questsHtml}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <button class="btn-action" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="runServiceUnlock('${s.game_id}', '${s.title.replace(/'/g, "\\'")}')">
-                                    <span>⚡ Complete Quests Now</span>
-                                </button>
-                            </div>
-                        `;
-                    });
-                    container.innerHTML = html;
+                    renderPortalServices();
                 }
             } catch(e) {
-                container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:30px; color:#ef4444;">Error connecting to portal services node.</div>`;
+                const container = document.getElementById("portalServicesList");
+                if (container) container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:30px; color:#ef4444;">Error connecting to portal services node.</div>`;
             }
+        }
+
+        function renderPortalServices() {
+            const container = document.getElementById("portalServicesList");
+            const badge = document.getElementById("serviceCountBadge");
+            if (!container) return;
+
+            const filtered = (activePortalSection === "all")
+                ? allPortalServices
+                : allPortalServices.filter(s => (s.section || "quest_unlocker") === activePortalSection);
+
+            if (badge) badge.innerText = `${filtered.length} Active Services`;
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column:1/-1; text-align:center; padding:60px 20px; background:var(--bg-card); border:1px dashed var(--border-color); border-radius:var(--radius-xl);">
+                        <span style="font-size:40px; display:block; margin-bottom:10px;">🛡️</span>
+                        <strong style="font-size:16px; color:var(--text-primary);">No Quest Services In This Category</strong>
+                        <p style="font-size:12.5px; color:var(--text-muted); margin-top:4px;">Please switch to another section or check back later.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = "";
+            filtered.forEach(s => {
+                const selCount = s.selected_quests_count || (s.selected_quests ? s.selected_quests.length : 0);
+                const quests = s.selected_quests || [];
+                const isLevelUp = (s.section || "quest_unlocker") === "level_up";
+
+                const secBadge = isLevelUp
+                    ? `<span class="service-badge" style="background:rgba(245,158,11,0.15); color:#d97706; border-color:rgba(245,158,11,0.3);">⚡ LEVEL-UP (+100K XP)</span>`
+                    : `<span class="service-badge">🎯 ${selCount} Curated Objectives</span>`;
+
+                let questsHtml = "";
+                quests.forEach(q => {
+                    const iconSrc = q.unlockedIconUrl || '/static/images/achievements/badge_1.svg';
+                    questsHtml += `
+                        <div class="quest-item">
+                            <img src="${iconSrc}" onerror="this.src='/static/images/achievements/badge_1.svg'" class="quest-icon">
+                            <span class="quest-name">${q.name}</span>
+                            <span class="quest-xp">+${(q.experiencePoints || 5000).toLocaleString()} XP</span>
+                        </div>
+                    `;
+                });
+
+                html += `
+                    <div class="service-card">
+                        <div>
+                            <div class="service-top">
+                                <img src="${s.icon || '/static/images/default_app.png'}" onerror="this.src='/static/images/default_app.png'" class="service-icon">
+                                <div>
+                                    <div class="service-name">${s.title}</div>
+                                    ${secBadge}
+                                </div>
+                            </div>
+
+                            <div style="margin-top:16px;">
+                                <div style="font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; margin-bottom:8px;">
+                                    Included Objectives:
+                                </div>
+                                <div class="quests-list">
+                                    ${questsHtml}
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn-action" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="runServiceUnlock('${s.game_id}', '${s.title.replace(/'/g, "\\'")}')">
+                            <span>⚡ Complete Quests Now</span>
+                        </button>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
         }
 
         async function connectPortalAccount() {

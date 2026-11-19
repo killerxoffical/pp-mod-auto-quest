@@ -769,13 +769,115 @@
         .pkg-stealth-pill {
             font-family: 'JetBrains Mono', monospace;
             font-size: 10px;
-            padding: 2px 6px;
+            padding: 2px 7px;
             border-radius: 4px;
             background: var(--bg-card-subtle);
             border: 1px solid var(--border-color);
             color: var(--text-muted);
             margin-top: 5px;
             display: inline-block;
+            filter: blur(5px);
+            user-select: none;
+            cursor: pointer;
+            transition: filter 0.25s ease, background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .pkg-stealth-pill:hover {
+            filter: blur(2px);
+        }
+
+        .pkg-stealth-pill.revealed-temp {
+            filter: blur(0px) !important;
+            background: rgba(14, 165, 233, 0.16) !important;
+            border-color: rgba(14, 165, 233, 0.5) !important;
+            color: var(--accent-cyan) !important;
+            box-shadow: 0 0 10px rgba(14, 165, 233, 0.25);
+        }
+
+        /* Mobile-Style Vertical Alphabet Jump Rail */
+        .alphabet-rail {
+            position: fixed;
+            right: 8px;
+            top: 52%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.82);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            padding: 6px 3px;
+            z-index: 1000;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            user-select: none;
+            touch-action: none;
+        }
+
+        .rail-char {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10.5px;
+            font-weight: 800;
+            color: var(--text-muted);
+            width: 20px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+        }
+
+        .rail-char.has-games {
+            color: var(--text-primary);
+        }
+
+        .rail-char.disabled {
+            opacity: 0.22;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        .rail-char:hover, .rail-char.active-touch {
+            color: #fff;
+            background: linear-gradient(135deg, #06b6d4, #8b5cf6);
+            transform: scale(1.4) translateX(-4px);
+            box-shadow: 0 0 14px rgba(6, 182, 212, 0.85);
+            border-radius: 50%;
+            z-index: 1001;
+        }
+
+        .rail-magnifier-bubble {
+            position: fixed;
+            width: 48px;
+            height: 48px;
+            border-radius: 50% 50% 4px 50%;
+            background: linear-gradient(135deg, #06b6d4, #8b5cf6);
+            color: #ffffff;
+            font-size: 22px;
+            font-weight: 900;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 24px rgba(6, 182, 212, 0.7);
+            pointer-events: none;
+            transform: translateY(-50%) rotate(-45deg);
+            z-index: 1002;
+            transition: top 0.05s ease;
+        }
+        .rail-magnifier-bubble span {
+            transform: rotate(45deg);
+        }
+
+        .group-flash-highlight {
+            animation: groupHighlightPulse 0.9s ease-out;
+        }
+        @keyframes groupHighlightPulse {
+            0% { background: rgba(6, 182, 212, 0.2); border-radius: 12px; }
+            100% { background: transparent; }
         }
 
         .btn-card-edit {
@@ -1483,24 +1585,27 @@
             <div style="display:flex; align-items:center; justify-content:space-between; margin-top:14px; margin-bottom:18px; flex-wrap:wrap; gap:10px;">
                 <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                     <button class="catalog-filter-pill active" id="pillSectionAll" onclick="setCatalogSection('all')">
-                        <span>🎮 All Catalog (<span id="countAllGames">50</span>)</span>
+                        <span>🎮 All Catalog (<span id="countAllGames">52</span>)</span>
                     </button>
                     <button class="catalog-filter-pill" id="pillSectionLevelUp" onclick="setCatalogSection('level_up')" style="color:#d97706; border-color:rgba(217,119,6,0.3); background:rgba(245,158,11,0.08);">
-                        <span>⚡ LEVEL-UP XP Boosters (<span id="countLevelUpGames">10</span>)</span>
+                        <span>⚡ LEVEL-UP XP Boosters (<span id="countLevelUpGames">11</span>)</span>
                     </button>
                     <button class="catalog-filter-pill" id="pillSectionQuests" onclick="setCatalogSection('quest_unlocker')">
-                        <span>🎯 Play Point Quests (<span id="countQuestGames">40</span>)</span>
+                        <span>🎯 Play Point Quests (<span id="countQuestGames">41</span>)</span>
                     </button>
                 </div>
-                <button class="btn-sync-protocol" style="background:linear-gradient(135deg, #f59e0b, #d97706); padding:8px 16px; font-weight:800; font-size:12.5px;" onclick="boostAllLevelUpXp()">
-                    <span>⚡ Boost All Level-Up XP (+1,000,000 XP)</span>
-                </button>
             </div>
 
-            <!-- Games Grid -->
-            <div class="games-flow-grid" id="gamesFlowGrid">
-                <!-- Injected dynamically -->
+            <!-- Games Catalog Container (Grouped Alphabetically A-Z) -->
+            <div id="gamesCatalogContainer" style="width:100%; min-height:400px; position:relative;">
+                <div class="games-flow-grid" id="gamesFlowGrid">
+                    <!-- Injected dynamically -->
+                </div>
             </div>
+
+            <!-- Floating Vertical Alphabet Rail & Magnifier Bubble -->
+            <nav class="alphabet-rail" id="alphabetRail" aria-label="Alphabetical Fast Jump Rail"></nav>
+            <div class="rail-magnifier-bubble" id="railMagnifierBubble"><span id="railMagnifierText">A</span></div>
         </section>
 
         <!-- VIEW 2: Add New Game & GPGS Architecture Guide -->
@@ -2260,7 +2365,7 @@
                     <div style="display:flex; align-items:center; gap:8px; margin-top:2px;">
                         <span id="inspDev" style="font-size:11.5px; color:var(--accent-cyan); font-weight:600;">Developer</span>
                         <span style="color:var(--text-muted);">•</span>
-                        <span id="inspPackage" class="pkg-stealth-pill" style="font-family:'JetBrains Mono'; font-size:11px;">com.game.package</span>
+                        <span id="inspPackage" class="pkg-stealth-pill" onclick="handleStealthBlurClick(event, this)" title="Single-click: 5s reveal • Double-click: 30s reveal" style="font-family:'JetBrains Mono'; font-size:11px;">com.game.package</span>
                     </div>
                 </div>
             </div>
@@ -2698,16 +2803,11 @@
         await loadGames();
         await loadUserRemoteProgress();
 
-        // Global Double-Click Listener for Stealth Blur elements (Visible for 5 seconds)
-        document.addEventListener("dblclick", (e) => {
-            const el = e.target.closest(".stealth-blur");
+        // Global Single-Click (5s) and Double-Click (30s) Listener for Stealth Blur & Package elements
+        document.addEventListener("click", (e) => {
+            const el = e.target.closest(".stealth-blur, .pkg-stealth-pill");
             if (el) {
-                el.classList.add("unblurred-temp");
-                clearTimeout(el._unblurTimer);
-                el._unblurTimer = setTimeout(() => {
-                    el.classList.remove("unblurred-temp");
-                }, 5000);
-                showToast("Item revealed for 5 seconds.", "info");
+                handleStealthBlurClick(e, el);
             }
         });
     });
@@ -2903,85 +3003,275 @@
         handleSearchInput();
     }
 
-    // Render Games Flow Grid with BLURRED sensitive elements and STEALTH "Sync Protocol"
+    // ================= STEALTH BLUR REVEAL HANDLER (1 Click: 5s, 2 Clicks: 30s) =================
+    const blurTimersMap = new WeakMap();
+
+    function handleStealthBlurClick(e, el) {
+        if (!el) return;
+        if (e && e.stopPropagation) e.stopPropagation();
+
+        const now = Date.now();
+        const lastClick = el.dataset.lastBlurClick ? parseInt(el.dataset.lastBlurClick) : 0;
+        el.dataset.lastBlurClick = now;
+
+        // Double click detection (within 350ms)
+        if (now - lastClick < 350) {
+            // Cancel any pending single-click timeout
+            if (el.dataset.pendingSingleTimer) {
+                clearTimeout(parseInt(el.dataset.pendingSingleTimer));
+                delete el.dataset.pendingSingleTimer;
+            }
+            clearActiveBlurTimeout(el);
+            applyStealthReveal(el, 30);
+            showToast("🔓 Revealed for 30s (Double-Click)", "info");
+            el.dataset.lastBlurClick = "0";
+        } else {
+            // Single click (wait 250ms to ensure not a double-click)
+            const singleTimer = setTimeout(() => {
+                clearActiveBlurTimeout(el);
+                applyStealthReveal(el, 5);
+                showToast("🔓 Revealed for 5s (Single-Click)", "info");
+                delete el.dataset.pendingSingleTimer;
+            }, 250);
+            el.dataset.pendingSingleTimer = singleTimer;
+        }
+    }
+
+    function clearActiveBlurTimeout(el) {
+        if (blurTimersMap.has(el)) {
+            clearTimeout(blurTimersMap.get(el));
+            blurTimersMap.delete(el);
+        }
+    }
+
+    function applyStealthReveal(el, seconds) {
+        el.classList.add("revealed-temp");
+        const originalTitle = el.getAttribute("title") || "";
+        el.setAttribute("title", `Revealed (${seconds}s)`);
+
+        const timer = setTimeout(() => {
+            el.classList.remove("revealed-temp");
+            el.setAttribute("title", originalTitle);
+            blurTimersMap.delete(el);
+        }, seconds * 1000);
+
+        blurTimersMap.set(el, timer);
+    }
+
+    // ================= GAME CARD FACTORY =================
+    function createGameCardElement(g) {
+        const card = document.createElement("div");
+        card.className = "game-entry-card";
+        card.id = `card_game_${g.id}`;
+
+        const totalCount = g.achievements_count || 10;
+        const unlockedCount = getGameProgress(g.id, totalCount);
+        const pct = Math.round((unlockedCount / totalCount) * 100);
+        const isLevelUp = (g.section || 'quest_unlocker') === 'level_up';
+        const sectionBadge = isLevelUp
+            ? `<span style="display:inline-flex; align-items:center; gap:3px; font-size:10px; font-weight:800; padding:2px 7px; border-radius:3px; background:rgba(245,158,11,0.15); color:#d97706; border:1px solid rgba(245,158,11,0.3); letter-spacing:0.3px;">⚡ LEVEL-UP (+100K XP)</span>`
+            : `<span style="display:inline-flex; align-items:center; gap:3px; font-size:10px; font-weight:700; padding:2px 7px; border-radius:3px; background:rgba(6,182,212,0.12); color:#0891b2; border:1px solid rgba(6,182,212,0.25); letter-spacing:0.3px;">🎯 PLAY POINTS QUEST</span>`;
+
+        card.innerHTML = `
+            <button class="btn-card-edit" onclick="openEditGameModal('${g.id}')">
+                <span>✏️ Edit</span>
+            </button>
+
+            <div class="game-entry-top">
+                <img class="game-thumb-logo" src="${g.icon}" alt="${g.title}" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null; this.src='/static/images/default_app.png';">
+                <div class="game-heading" style="flex:1; min-width:0; padding-right:50px;">
+                    <div style="margin-bottom:3px;">${sectionBadge}</div>
+                    <h4 title="${g.title}" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin:0 0 2px 0;">${g.title}</h4>
+                    <div class="dev-tag">${g.developer} • ${g.category}</div>
+                    <div class="pkg-stealth-pill" onclick="handleStealthBlurClick(event, this)" title="Single-click: 5s reveal • Double-click: 30s reveal">${g.package}</div>
+                </div>
+            </div>
+
+            <div class="game-stats-ribbon">
+                <div class="stat-col" style="min-width:105px;">
+                    <span class="bold-val" id="quest_label_${g.id}" style="color:var(--text-primary); font-size:12.5px; font-weight:800;">Quests ${unlockedCount}/${totalCount}</span>
+                    <div class="card-quest-track" title="${unlockedCount} of ${totalCount} Quests Synced (${pct}%)">
+                        <div class="card-quest-fill" id="quest_fill_${g.id}" style="width:${pct}%;"></div>
+                    </div>
+                    <span class="sub-txt" style="margin-top:3px;">Total Count</span>
+                </div>
+                <div class="stat-col">
+                    <span class="bold-val" style="color:var(--accent-gold); font-family:'JetBrains Mono';">+${(g.total_xp || 16000).toLocaleString()} XP</span>
+                    <span class="sub-txt">Reward Pool</span>
+                </div>
+                <div class="stat-col" style="text-align:right;">
+                    <span class="bold-val" style="color:var(--accent-green);">100% Verified</span>
+                    <span class="sub-txt">API Status</span>
+                </div>
+            </div>
+
+            <div class="game-entry-actions">
+                <button class="btn-inspect-action" onclick="openGameInspector('${g.id}')">
+                    <svg style="width:13px; height:13px; fill:currentColor;" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                    <span>Inspect Quests</span>
+                </button>
+                <button class="btn-sync-protocol" id="btn_protocol_${g.id}" onclick="executeProtocolSingle('${g.id}')">
+                    <svg style="width:13px; height:13px; fill:currentColor;" viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+                    <span>Sync Protocol</span>
+                </button>
+            </div>
+        `;
+        return card;
+    }
+
+    // ================= ALPHABETICAL GROUPING & RENDER =================
     function renderGamesCatalog(games) {
-        const grid = document.getElementById("gamesFlowGrid");
-        grid.innerHTML = "";
+        const rootContainer = document.getElementById("gamesCatalogContainer") || document.getElementById("gamesFlowGrid");
+        rootContainer.innerHTML = "";
 
         const displayGames = (activeCatalogSection === "all")
-            ? games
+            ? [...games]
             : games.filter(g => (g.section || "quest_unlocker") === activeCatalogSection);
 
         if (displayGames.length === 0) {
-            grid.innerHTML = `
-                <div style="grid-column:1/-1; padding:40px; text-align:center; color:var(--text-secondary); background:var(--bg-card); border:1px dashed var(--border-color); border-radius:var(--radius-md);">
-                    <div style="font-size:32px; margin-bottom:8px;">🔍</div>
-                    <div style="font-weight:700; font-size:14px; color:var(--text-primary);">No games found in this category</div>
-                    <div style="font-size:12px; margin-top:4px;">Try selecting another section or changing your search keywords.</div>
+            rootContainer.innerHTML = `
+                <div style="padding:50px 20px; text-align:center; color:var(--text-secondary); background:var(--bg-card); border:1px dashed var(--border-color); border-radius:var(--radius-xl); margin:20px 0;">
+                    <div style="font-size:36px; margin-bottom:8px;">🔍</div>
+                    <div style="font-weight:800; font-size:15px; color:var(--text-primary);">No games found in this category</div>
+                    <div style="font-size:12.5px; margin-top:4px;">Try selecting another section or clearing your search keywords.</div>
                 </div>`;
+            renderAlphabetRail({});
             return;
         }
 
+        // Sort alphabetically by Title A-Z
+        displayGames.sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: 'base' }));
+
+        // Group by starting character
+        const groups = {};
         displayGames.forEach(g => {
-            const card = document.createElement("div");
-            card.className = "game-entry-card";
-            card.id = `card_game_${g.id}`;
+            let ch = (g.title.trim()[0] || '#').toUpperCase();
+            if (!/[A-Z]/.test(ch)) ch = '#';
+            if (!groups[ch]) groups[ch] = [];
+            groups[ch].push(g);
+        });
 
-            const totalCount = g.achievements_count || 16;
-            const unlockedCount = getGameProgress(g.id, totalCount);
-            const pct = Math.round((unlockedCount / totalCount) * 100);
-            const isLevelUp = (g.section || 'quest_unlocker') === 'level_up';
-            const sectionBadge = isLevelUp
-                ? `<span style="display:inline-flex; align-items:center; gap:3px; font-size:10px; font-weight:800; padding:2px 7px; border-radius:3px; background:rgba(245,158,11,0.15); color:#d97706; border:1px solid rgba(245,158,11,0.3); letter-spacing:0.3px;">⚡ LEVEL-UP (+100K XP)</span>`
-                : `<span style="display:inline-flex; align-items:center; gap:3px; font-size:10px; font-weight:700; padding:2px 7px; border-radius:3px; background:rgba(6,182,212,0.12); color:#0891b2; border:1px solid rgba(6,182,212,0.25); letter-spacing:0.3px;">🎯 PLAY POINTS QUEST</span>`;
+        const sortedLetters = Object.keys(groups).sort((a, b) => {
+            if (a === '#') return 1;
+            if (b === '#') return -1;
+            return a.localeCompare(b);
+        });
 
-            card.innerHTML = `
-                <button class="btn-card-edit" onclick="openEditGameModal('${g.id}')">
-                    <span>✏️ Edit</span>
-                </button>
+        sortedLetters.forEach(letter => {
+            const groupWrap = document.createElement("div");
+            groupWrap.className = "alphabet-group-block";
+            groupWrap.id = `letter_section_${letter}`;
+            groupWrap.style.marginBottom = "34px";
 
-                <div class="game-entry-top">
-                    <img class="game-thumb-logo" src="${g.icon}" alt="${g.title}" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null; this.src='/static/images/default_app.png';">
-                    <div class="game-heading" style="flex:1; min-width:0; padding-right:50px;">
-                        <div style="margin-bottom:3px;">${sectionBadge}</div>
-                        <h4 title="${g.title}" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin:0 0 2px 0;">${g.title}</h4>
-                        <div class="dev-tag">${g.developer} • ${g.category}</div>
-                        <div class="pkg-stealth-pill" style="font-family:'JetBrains Mono'; font-size:11px;">${g.package}</div>
-                    </div>
-                </div>
-
-                <div class="game-stats-ribbon">
-                    <div class="stat-col" style="min-width:105px;">
-                        <span class="bold-val" id="quest_label_${g.id}" style="color:var(--text-primary); font-size:12.5px; font-weight:800;">Quests ${unlockedCount}/${totalCount}</span>
-                        <div class="card-quest-track" title="${unlockedCount} of ${totalCount} Quests Synced (${pct}%)">
-                            <div class="card-quest-fill" id="quest_fill_${g.id}" style="width:${pct}%;"></div>
-                        </div>
-                        <span class="sub-txt" style="margin-top:3px;">GPGS Endpoints</span>
-                    </div>
-                    <div class="stat-col">
-                        <span class="bold-val" style="color:var(--accent-gold); font-family:'JetBrains Mono';">+${(g.total_xp || 16000).toLocaleString()} XP</span>
-                        <span class="sub-txt">Reward Pool</span>
-                    </div>
-                    <div class="stat-col" style="text-align:right;">
-                        <span class="bold-val" style="color:var(--accent-green);">100% Verified</span>
-                        <span class="sub-txt">API Status</span>
-                    </div>
-                </div>
-
-                <div class="game-entry-actions">
-                    <button class="btn-inspect-action" onclick="openGameInspector('${g.id}')">
-                        <svg style="width:13px; height:13px; fill:currentColor;" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                        <span>Inspect Quests</span>
-                    </button>
-                    <!-- STEALTH RENAMED: 'Sync Protocol' instead of 'Unlock All' -->
-                    <button class="btn-sync-protocol" id="btn_protocol_${g.id}" onclick="executeProtocolSingle('${g.id}')">
-                        <svg style="width:13px; height:13px; fill:currentColor;" viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
-                        <span>Sync Protocol</span>
-                    </button>
+            // Group Header with neon letter badge & count
+            groupWrap.innerHTML = `
+                <div class="alphabet-group-header" style="display:flex; align-items:center; gap:12px; margin-bottom:14px; position:sticky; top:64px; z-index:15; background:var(--bg-body); padding:10px 0;">
+                    <span class="alphabet-letter-badge" style="width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); color:#fff; display:flex; align-items:center; justify-content:center; font-size:17px; font-weight:900; box-shadow:0 4px 14px rgba(6,182,212,0.4);">${letter}</span>
+                    <span style="font-size:15px; font-weight:800; color:var(--text-primary); letter-spacing:0.3px;">Titles: '${letter}'</span>
+                    <span style="font-size:11px; font-weight:700; color:var(--text-muted); background:var(--bg-card); border:1px solid var(--border-color); padding:3px 10px; border-radius:12px; font-family:'JetBrains Mono';">${groups[letter].length} Games</span>
+                    <div style="flex:1; height:1px; background:linear-gradient(90deg, var(--border-color), transparent);"></div>
                 </div>
             `;
-            grid.appendChild(card);
+
+            const grid = document.createElement("div");
+            grid.className = "games-flow-grid";
+
+            groups[letter].forEach(g => {
+                grid.appendChild(createGameCardElement(g));
+            });
+
+            groupWrap.appendChild(grid);
+            rootContainer.appendChild(groupWrap);
         });
+
+        renderAlphabetRail(groups);
+    }
+
+    // ================= ALPHABET FAST RAIL (A-Z Fast Scroller) =================
+    function renderAlphabetRail(activeGroups) {
+        let rail = document.getElementById("alphabetRail");
+        if (!rail) return;
+
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ#".split("");
+        rail.innerHTML = "";
+
+        letters.forEach(ch => {
+            const hasGames = !!activeGroups[ch];
+            const item = document.createElement("div");
+            item.className = `rail-char ${hasGames ? 'has-games' : 'disabled'}`;
+            item.innerText = ch;
+            item.dataset.letter = ch;
+
+            if (hasGames) {
+                item.onclick = (e) => {
+                    e.stopPropagation();
+                    jumpToLetter(ch);
+                };
+                item.onmouseenter = (e) => showRailBubble(e.currentTarget, ch);
+                item.onmouseleave = () => hideRailBubble();
+            }
+
+            rail.appendChild(item);
+        });
+
+        setupRailTouchEvents(rail);
+    }
+
+    function jumpToLetter(letter) {
+        const el = document.getElementById(`letter_section_${letter}`);
+        if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "start" });
+            el.classList.add("group-flash-highlight");
+            setTimeout(() => el.classList.remove("group-flash-highlight"), 900);
+        }
+    }
+
+    function showRailBubble(targetEl, letter) {
+        const bubble = document.getElementById("railMagnifierBubble");
+        const txt = document.getElementById("railMagnifierText");
+        if (!bubble || !txt) return;
+
+        txt.innerText = letter;
+        const rect = targetEl.getBoundingClientRect();
+        bubble.style.top = `${rect.top + (rect.height / 2)}px`;
+        bubble.style.right = `${window.innerWidth - rect.left + 16}px`;
+        bubble.style.display = "flex";
+    }
+
+    function hideRailBubble() {
+        const bubble = document.getElementById("railMagnifierBubble");
+        if (bubble) bubble.style.display = "none";
+    }
+
+    let isRailTouching = false;
+    function setupRailTouchEvents(rail) {
+        rail.ontouchstart = (e) => {
+            isRailTouching = true;
+            handleRailTouchMove(e);
+        };
+        rail.ontouchmove = (e) => {
+            if (!isRailTouching) return;
+            handleRailTouchMove(e);
+        };
+        rail.ontouchend = () => {
+            isRailTouching = false;
+            hideRailBubble();
+        };
+        rail.ontouchcancel = () => {
+            isRailTouching = false;
+            hideRailBubble();
+        };
+    }
+
+    function handleRailTouchMove(e) {
+        if (!e.touches || !e.touches[0]) return;
+        const touch = e.touches[0];
+        const target = document.elementFromPoint(touch.clientX, touch.clientY);
+        if (target && target.classList.contains("rail-char") && target.classList.contains("has-games")) {
+            const letter = target.dataset.letter;
+            showRailBubble(target, letter);
+            jumpToLetter(letter);
+        }
     }
 
     function handleSearchInput() {
@@ -3011,6 +3301,8 @@
             const pkgPill = document.getElementById("inspPackage");
             pkgPill.innerText = game.package;
             pkgPill.className = "pkg-stealth-pill";
+            pkgPill.setAttribute("onclick", "handleStealthBlurClick(event, this)");
+            pkgPill.setAttribute("title", "Single-click: 5s reveal • Double-click: 30s reveal");
         }
 
         const scrollBox = document.getElementById("inspectorScrollList");
@@ -3282,40 +3574,7 @@
         }
     }
 
-    // Dedicated LEVEL-UP Booster for XP Games (10 Games, +1,000,000 XP)
-    async function boostAllLevelUpXp() {
-        if (!currentSession) {
-            showToast("Please connect an account with 6-digit code first.", "error");
-            revealPairCodeBox();
-            return;
-        }
 
-        showToast("⚡ Initiating 100% XP Level Booster across all 10 Level-Up Games (+1,000,000 XP)...", "info");
-
-        try {
-            const res = await fetch(`${API_BASE}/api/unlock/all`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    email: currentSession.email,
-                    master_token: currentSession.master_token,
-                    android_id: currentSession.android_id,
-                    section: "level_up"
-                })
-            });
-            const data = await res.json();
-            if (data.ok) {
-                await loadUserRemoteProgress();
-                triggerCelebration();
-                showToast(`🎉 Level-Up Boost Complete! ${data.total_unlocked} quests synced (+${data.total_xp.toLocaleString()} XP)!`, "success");
-                if (data.profile) updateProfileUI(data.profile);
-            } else {
-                showToast(data.error || "Level-up boost failed.", "error");
-            }
-        } catch (e) {
-            showToast("Connection error in Level-Up boost.", "error");
-        }
-    }
 
     // ================= 6-DIGIT CODE QUICK PAIRING =================
     async function connectWith6DigitCode() {
