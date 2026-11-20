@@ -3,31 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>PPM Cloud Node</title>
+    <title>PP Server • Light Portal Engine</title>
     <style>
         :root {
-            --bg-base: #060913;
-            --bg-card: rgba(15, 23, 42, 0.72);
-            --bg-card-hover: rgba(30, 41, 59, 0.85);
-            --bg-surface: #0b1120;
-            --border-glass: rgba(255, 255, 255, 0.09);
-            --border-glass-glow: rgba(56, 189, 248, 0.25);
-            --accent-cyan: #38bdf8;
-            --accent-blue: #3b82f6;
-            --accent-purple: #8b5cf6;
+            --bg-base: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-card-subtle: #f1f5f9;
+            --border-color: #e2e8f0;
+            --border-focus: #0284c7;
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --text-faint: #94a3b8;
+            --accent-cyan: #0284c7;
+            --accent-cyan-light: #e0f2fe;
             --accent-emerald: #10b981;
-            --accent-amber: #f59e0b;
-            --accent-rose: #f43f5e;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --text-faint: #64748b;
+            --accent-emerald-light: #d1fae5;
+            --accent-gold: #f59e0b;
+            --accent-gold-light: #fef3c7;
+            --accent-purple: #8b5cf6;
+            --accent-purple-light: #ede9fe;
+            --accent-rose: #ef4444;
+            --accent-rose-light: #fee2e2;
             --radius-sm: 8px;
-            --radius-md: 14px;
-            --radius-lg: 20px;
-            --radius-xl: 26px;
-            --glow-cyan: 0 0 24px rgba(56, 189, 248, 0.25);
-            --glow-purple: 0 0 24px rgba(139, 92, 246, 0.25);
-            --glow-emerald: 0 0 24px rgba(16, 185, 129, 0.25);
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 22px;
+            --shadow-card: 0 4px 18px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+            --shadow-elevated: 0 10px 25px -4px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
+            --shadow-glow: 0 4px 18px rgba(2, 132, 199, 0.2);
         }
 
         * {
@@ -41,27 +45,13 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: var(--bg-base);
-            color: var(--text-main);
+            color: var(--text-primary);
             min-height: 100vh;
             overflow-x: hidden;
             overflow-y: auto;
             position: relative;
-            padding-bottom: 90px;
-        }
-
-        /* Ambient glowing background gradients */
-        body::before {
-            content: "";
-            position: fixed;
-            top: -120px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 380px;
-            height: 380px;
-            background: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, rgba(56, 189, 248, 0.08) 50%, transparent 80%);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 0;
+            padding-bottom: 96px;
+            -webkit-font-smoothing: antialiased;
         }
 
         /* Top App Bar */
@@ -69,14 +59,15 @@
             position: sticky;
             top: 0;
             z-index: 50;
-            background: rgba(6, 9, 19, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-bottom: 1px solid var(--border-glass);
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--border-color);
             padding: 12px 18px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
         }
 
         .brand-box {
@@ -88,20 +79,21 @@
         .brand-icon {
             width: 38px;
             height: 38px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #0284c7, #8b5cf6);
+            border-radius: var(--radius-md);
+            background: linear-gradient(135deg, #0284c7, #10b981);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 19px;
-            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.28);
         }
 
         .brand-title {
             font-size: 16px;
             font-weight: 800;
             letter-spacing: -0.3px;
-            color: #ffffff;
+            color: var(--text-primary);
             display: flex;
             align-items: center;
             gap: 6px;
@@ -109,20 +101,14 @@
 
         .brand-badge {
             font-size: 10px;
-            font-weight: 700;
+            font-weight: 800;
             padding: 2px 7px;
             border-radius: 20px;
-            background: rgba(56, 189, 248, 0.15);
+            background: var(--accent-cyan-light);
             color: var(--accent-cyan);
-            border: 1px solid rgba(56, 189, 248, 0.3);
+            border: 1px solid rgba(2, 132, 199, 0.2);
             text-transform: uppercase;
             letter-spacing: 0.5px;
-        }
-
-        .brand-badge.dev {
-            background: rgba(245, 158, 11, 0.15);
-            color: var(--accent-amber);
-            border-color: rgba(245, 158, 11, 0.3);
         }
 
         .status-dot-pill {
@@ -130,12 +116,12 @@
             align-items: center;
             gap: 6px;
             font-size: 11px;
-            color: var(--accent-emerald);
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.25);
-            padding: 4px 10px;
+            color: #059669;
+            background: var(--accent-emerald-light);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 5px 11px;
             border-radius: 20px;
-            font-weight: 600;
+            font-weight: 700;
         }
 
         .dot-pulse {
@@ -143,13 +129,13 @@
             height: 7px;
             border-radius: 50%;
             background-color: var(--accent-emerald);
-            box-shadow: 0 0 8px var(--accent-emerald);
+            box-shadow: 0 0 6px var(--accent-emerald);
             animation: pulse-ring 2s infinite;
         }
 
         @keyframes pulse-ring {
             0% { transform: scale(0.95); opacity: 0.9; }
-            50% { transform: scale(1.2); opacity: 0.5; }
+            50% { transform: scale(1.25); opacity: 0.5; }
             100% { transform: scale(0.95); opacity: 0.9; }
         }
 
@@ -157,19 +143,34 @@
         .main-content {
             position: relative;
             z-index: 10;
-            padding: 18px 16px 24px;
+            padding: 16px 16px 20px;
             max-width: 520px;
             margin: 0 auto;
         }
 
-        /* Hero Banner */
+        /* Tab Panes */
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+            animation: fadeIn 0.22s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Hero / Info Card */
         .hero-card {
-            background: linear-gradient(145deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
-            border: 1px solid var(--border-glass-glow);
-            border-radius: var(--radius-xl);
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), var(--glow-cyan);
-            margin-bottom: 20px;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 18px 20px;
+            box-shadow: var(--shadow-card);
+            margin-bottom: 16px;
             position: relative;
             overflow: hidden;
         }
@@ -177,64 +178,34 @@
         .hero-card::after {
             content: "";
             position: absolute;
-            top: -50%;
+            top: -40%;
             right: -20%;
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, transparent 70%);
+            width: 180px;
+            height: 180px;
+            background: radial-gradient(circle, rgba(2, 132, 199, 0.08) 0%, transparent 70%);
             pointer-events: none;
         }
 
         .hero-title {
-            font-size: 19px;
+            font-size: 18px;
             font-weight: 800;
-            color: #ffffff;
-            margin-bottom: 6px;
-            line-height: 1.25;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            letter-spacing: -0.3px;
         }
 
         .hero-desc {
             font-size: 13px;
             color: var(--text-muted);
             line-height: 1.5;
-            margin-bottom: 18px;
-        }
-
-        /* Connect Button */
-        .btn-primary-action {
-            width: 100%;
-            padding: 14px 20px;
-            border-radius: var(--radius-md);
-            border: none;
-            background: linear-gradient(135deg, #0284c7 0%, #6366f1 50%, #8b5cf6 100%);
-            color: #ffffff;
-            font-size: 15px;
-            font-weight: 700;
-            letter-spacing: 0.2px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            box-shadow: 0 6px 20px rgba(2, 132, 199, 0.35);
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .btn-primary-action:active {
-            transform: scale(0.97);
-            filter: brightness(1.1);
-        }
-
-        .btn-dev-action {
-            background: linear-gradient(135deg, #d97706 0%, #b45309 50%, #4f46e5 100%);
-            box-shadow: 0 6px 20px rgba(217, 119, 6, 0.35);
+            margin-bottom: 0px;
         }
 
         /* Filter & Search Bar */
         .filter-section {
             display: flex;
             gap: 10px;
-            margin-bottom: 18px;
+            margin-bottom: 14px;
             align-items: center;
         }
 
@@ -246,17 +217,19 @@
         .search-input {
             width: 100%;
             padding: 10px 14px 10px 36px;
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid var(--border-glass);
+            background: #ffffff;
+            border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
-            color: #ffffff;
+            color: var(--text-primary);
             font-size: 13px;
             outline: none;
-            transition: border-color 0.2s;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
         }
 
         .search-input:focus {
             border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
         }
 
         .search-icon {
@@ -264,14 +237,14 @@
             left: 12px;
             top: 50%;
             transform: translateY(-50%);
-            color: var(--text-faint);
+            color: var(--text-muted);
             font-size: 14px;
         }
 
         .btn-filter-country {
             padding: 9px 14px;
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid var(--border-glass);
+            background: #ffffff;
+            border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
             color: var(--accent-cyan);
             font-size: 12px;
@@ -281,22 +254,23 @@
             gap: 6px;
             cursor: pointer;
             white-space: nowrap;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
         }
 
-        /* Accounts Header */
+        /* Section Header */
         .section-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 14px;
-            padding: 0 4px;
+            margin-bottom: 12px;
+            padding: 0 2px;
         }
 
         .section-title {
-            font-size: 14px;
-            font-weight: 700;
+            font-size: 13px;
+            font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 0.8px;
+            letter-spacing: 0.6px;
             color: var(--text-muted);
             display: flex;
             align-items: center;
@@ -304,7 +278,7 @@
         }
 
         .counter-badge {
-            background: rgba(56, 189, 248, 0.15);
+            background: var(--accent-cyan-light);
             color: var(--accent-cyan);
             font-size: 11px;
             font-weight: 800;
@@ -312,7 +286,7 @@
             border-radius: 12px;
         }
 
-        /* Account Cards List */
+        /* Accounts List */
         .accounts-list {
             display: flex;
             flex-direction: column;
@@ -320,27 +294,13 @@
         }
 
         .account-card {
-            background: var(--bg-card);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--border-glass);
+            background: #ffffff;
+            border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
-            padding: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+            padding: 16px 18px;
+            box-shadow: var(--shadow-card);
             transition: all 0.2s ease;
             position: relative;
-            overflow: hidden;
-        }
-
-        .account-card.just-added {
-            border-color: var(--accent-cyan);
-            box-shadow: 0 0 25px rgba(56, 189, 248, 0.4);
-            animation: highlight-card 1.2s ease-out;
-        }
-
-        @keyframes highlight-card {
-            0% { transform: scale(1.02); }
-            100% { transform: scale(1); }
         }
 
         .account-top {
@@ -353,20 +313,21 @@
         .account-identity {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             overflow: hidden;
+            flex: 1;
         }
 
         .avatar-circle {
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #1e293b, #334155);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+            border: 1px solid #7dd3fc;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 800;
             color: var(--accent-cyan);
             flex-shrink: 0;
@@ -374,35 +335,57 @@
 
         .email-details {
             overflow: hidden;
+            flex: 1;
         }
 
         .user-email {
             font-size: 14px;
-            font-weight: 700;
-            color: #ffffff;
+            font-weight: 800;
+            color: var(--text-primary);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 210px;
+            max-width: 220px;
+            cursor: pointer;
         }
 
-        .user-meta {
-            font-size: 11px;
-            color: var(--text-faint);
+        .user-balance-row {
             display: flex;
             align-items: center;
-            gap: 6px;
-            margin-top: 2px;
+            gap: 8px;
+            margin-top: 3px;
+            font-size: 12px;
+        }
+
+        .balance-pill {
+            font-weight: 800;
+            color: #059669;
+            background: var(--accent-emerald-light);
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        .points-pill {
+            font-weight: 800;
+            color: #d97706;
+            background: var(--accent-gold-light);
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
         }
 
         .badge-country {
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 800;
-            padding: 2px 6px;
-            border-radius: 4px;
-            background: rgba(255, 255, 255, 0.08);
-            color: var(--text-muted);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 6px;
+            background: var(--bg-card-subtle);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .btn-delete-account {
@@ -412,7 +395,7 @@
             padding: 6px;
             border-radius: 8px;
             cursor: pointer;
-            transition: color 0.2s;
+            transition: color 0.15s;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -420,20 +403,19 @@
 
         .btn-delete-account:active {
             color: var(--accent-rose);
-            background: rgba(244, 63, 94, 0.15);
+            background: var(--accent-rose-light);
         }
 
-        /* Star 6-Digit Code Box */
+        /* 6-Digit Code Box */
         .code-vault-box {
-            background: rgba(11, 17, 32, 0.85);
-            border: 1px solid rgba(56, 189, 248, 0.2);
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
             padding: 12px 14px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             margin-bottom: 12px;
-            position: relative;
         }
 
         .code-label-group {
@@ -443,26 +425,25 @@
 
         .code-caption {
             font-size: 10px;
-            font-weight: 700;
-            color: var(--text-faint);
-            letter-spacing: 0.8px;
+            font-weight: 800;
+            color: var(--text-muted);
+            letter-spacing: 0.6px;
             text-transform: uppercase;
         }
 
         .code-digits {
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "JetBrains Mono", monospace;
             font-size: 24px;
             font-weight: 900;
-            letter-spacing: 4px;
+            letter-spacing: 3px;
             color: var(--accent-cyan);
-            text-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
             margin-top: 2px;
         }
 
         .btn-copy-code {
-            padding: 9px 16px;
-            background: rgba(56, 189, 248, 0.15);
-            border: 1px solid rgba(56, 189, 248, 0.35);
+            padding: 8px 14px;
+            background: #ffffff;
+            border: 1px solid #bae6fd;
             border-radius: var(--radius-sm);
             color: var(--accent-cyan);
             font-size: 12px;
@@ -471,152 +452,338 @@
             align-items: center;
             gap: 6px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            transition: all 0.15s ease;
         }
 
         .btn-copy-code:active {
             transform: scale(0.95);
             background: var(--accent-cyan);
-            color: #0b1120;
-        }
-
-        /* Developer View Extensions */
-        .dev-token-box {
-            background: rgba(3, 7, 18, 0.85);
-            border: 1px solid rgba(245, 158, 11, 0.25);
-            border-radius: var(--radius-sm);
-            padding: 10px 12px;
-            margin-bottom: 10px;
-        }
-
-        .dev-token-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
-        }
-
-        .dev-token-title {
-            font-size: 10.5px;
-            font-weight: 700;
-            color: var(--accent-amber);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .dev-token-val {
-            font-family: monospace;
-            font-size: 11.5px;
-            color: #cbd5e1;
-            word-break: break-all;
-            line-height: 1.4;
-            max-height: 48px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .dev-actions-row {
-            display: flex;
-            gap: 8px;
-            margin-top: 10px;
-        }
-
-        .btn-dev-sub {
-            flex: 1;
-            padding: 8px 10px;
-            border-radius: var(--radius-sm);
-            font-size: 11px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            cursor: pointer;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            background: rgba(255, 255, 255, 0.05);
-            color: #e2e8f0;
-            transition: all 0.15s ease;
-        }
-
-        .btn-dev-sub:active {
-            background: rgba(255, 255, 255, 0.12);
-        }
-
-        .btn-portal-link {
-            width: 100%;
-            padding: 9px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px dashed rgba(255, 255, 255, 0.12);
-            border-radius: var(--radius-sm);
-            color: var(--text-muted);
-            font-size: 11.5px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            cursor: pointer;
-        }
-
-        .btn-portal-link:active {
-            background: rgba(255, 255, 255, 0.08);
             color: #ffffff;
+        }
+
+        /* Friday Weekly Perk Claim Box */
+        .perk-claim-box {
+            margin-top: 10px;
+            padding: 10px 14px;
+            border-radius: var(--radius-md);
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .perk-claim-box.locked {
+            background: #f8fafc;
+            border-color: var(--border-color);
+        }
+
+        .perk-info-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .perk-title {
+            font-size: 12px;
+            font-weight: 800;
+            color: #15803d;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .perk-title.locked {
+            color: var(--text-muted);
+        }
+
+        .perk-sub {
+            font-size: 10.5px;
+            color: #166534;
+            margin-top: 2px;
+        }
+
+        .perk-sub.locked {
+            color: var(--text-faint);
+        }
+
+        .btn-claim-perk {
+            padding: 7px 14px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #ffffff;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+            white-space: nowrap;
+        }
+
+        .btn-claim-perk:disabled {
+            background: #e2e8f0;
+            color: var(--text-muted);
+            box-shadow: none;
+            cursor: not-allowed;
         }
 
         /* Empty State */
         .empty-card {
-            background: var(--bg-card);
-            border: 1px dashed rgba(255, 255, 255, 0.15);
+            background: #ffffff;
+            border: 1px dashed var(--border-color);
             border-radius: var(--radius-xl);
-            padding: 36px 20px;
+            padding: 42px 24px;
             text-align: center;
             margin-top: 8px;
+            box-shadow: var(--shadow-card);
         }
 
         .empty-icon-wrap {
-            width: 64px;
-            height: 64px;
+            width: 68px;
+            height: 68px;
             border-radius: 20px;
-            background: rgba(56, 189, 248, 0.1);
-            border: 1px solid rgba(56, 189, 248, 0.2);
+            background: var(--accent-cyan-light);
+            border: 1px solid #bae6fd;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
+            font-size: 32px;
             margin: 0 auto 16px;
             color: var(--accent-cyan);
         }
 
         .empty-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: #ffffff;
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--text-primary);
             margin-bottom: 6px;
         }
 
         .empty-desc {
-            font-size: 12.5px;
+            font-size: 13px;
             color: var(--text-muted);
             line-height: 1.5;
-            max-width: 280px;
-            margin: 0 auto;
+            max-width: 320px;
+            margin: 0 auto 20px;
         }
 
-        /* Bottom Navigation Bar */
+        .btn-connect-empty {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #0284c7, #10b981);
+            color: #ffffff;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Coming Soon Feature Card (for Box & Sub tabs) */
+        .feature-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: 36px 24px;
+            text-align: center;
+            box-shadow: var(--shadow-card);
+            margin-bottom: 16px;
+        }
+
+        .feature-icon-wrap {
+            width: 72px;
+            height: 72px;
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 34px;
+            margin: 0 auto 18px;
+        }
+
+        .feature-icon-wrap.box {
+            background: var(--accent-gold-light);
+            border: 1px solid #fde68a;
+            color: #d97706;
+        }
+
+        .feature-icon-wrap.sub {
+            background: var(--accent-purple-light);
+            border: 1px solid #ddd6fe;
+            color: #7c3aed;
+        }
+
+        .feature-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .feature-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            max-width: 340px;
+            margin: 0 auto 20px;
+        }
+
+        .badge-coming-soon {
+            display: inline-block;
+            background: var(--accent-cyan-light);
+            color: var(--accent-cyan);
+            font-size: 11px;
+            font-weight: 800;
+            padding: 4px 14px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(2, 132, 199, 0.25);
+        }
+
+        /* Settings Card & Rows */
+        .info-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 18px;
+            margin-bottom: 14px;
+            box-shadow: var(--shadow-card);
+        }
+
+        .user-profile-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 12px;
+        }
+
+        .user-avatar-large {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0284c7, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+            flex-shrink: 0;
+        }
+
+        .profile-name {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .profile-email {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .profile-uid-pill {
+            font-size: 10.5px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            color: var(--accent-cyan);
+            background: var(--accent-cyan-light);
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 4px;
+            cursor: pointer;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .info-val {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        .btn-action-row {
+            width: 100%;
+            background: transparent;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--text-primary);
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .btn-action-row:last-child {
+            border-bottom: none;
+        }
+
+        .btn-logout-row {
+            color: var(--accent-rose);
+        }
+
+        /* Warning Banner */
+        .warning-card {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: var(--radius-md);
+            padding: 12px 14px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .warning-text {
+            font-size: 12px;
+            color: #b45309;
+            line-height: 1.4;
+            font-weight: 600;
+        }
+
+        /* Fixed Bottom Navigation (5 TABS) */
         .bottom-nav {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
             height: 66px;
-            background: rgba(6, 9, 19, 0.92);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
-            border-top: 1px solid var(--border-glass);
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-top: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: space-around;
             z-index: 40;
+            box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.04);
             padding-bottom: env(safe-area-inset-bottom, 0px);
         }
 
@@ -626,20 +793,16 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 4px;
+            gap: 3px;
             height: 100%;
-            color: var(--text-faint);
+            color: var(--text-muted);
             cursor: pointer;
-            transition: color 0.2s;
+            transition: color 0.15s ease;
             position: relative;
         }
 
         .nav-item.active {
             color: var(--accent-cyan);
-        }
-
-        .nav-item.active.dev {
-            color: var(--accent-amber);
         }
 
         .nav-icon {
@@ -648,103 +811,60 @@
         }
 
         .nav-label {
-            font-size: 10px;
+            font-size: 10.5px;
             font-weight: 700;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.2px;
         }
 
-        /* Tab Content Panes */
-        .tab-pane {
-            display: none;
-        }
-
-        .tab-pane.active {
-            display: block;
-            animation: fadeIn 0.2s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(4px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Guide Card */
-        .step-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-glass);
-            border-radius: var(--radius-lg);
-            padding: 16px;
-            margin-bottom: 12px;
-            display: flex;
-            gap: 14px;
-        }
-
-        .step-number {
-            width: 32px;
-            height: 32px;
-            border-radius: 10px;
-            background: rgba(56, 189, 248, 0.15);
-            color: var(--accent-cyan);
+        .nav-micro-badge {
+            position: absolute;
+            top: 6px;
+            right: 14%;
+            background: var(--accent-gold);
+            color: #ffffff;
+            font-size: 8px;
             font-weight: 800;
-            font-size: 14px;
+            padding: 1px 4px;
+            border-radius: 6px;
+            text-transform: uppercase;
+        }
+
+        /* Center Elevated '+' Button */
+        .nav-add-btn-wrap {
+            position: relative;
+            top: -12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            flex-shrink: 0;
         }
 
-        .step-title {
-            font-size: 14px;
-            font-weight: 700;
+        .nav-btn-add {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0284c7, #10b981);
+            border: 3px solid #ffffff;
+            box-shadow: 0 4px 16px rgba(2, 132, 199, 0.35);
             color: #ffffff;
-            margin-bottom: 4px;
-        }
-
-        .step-desc {
-            font-size: 12px;
-            color: var(--text-muted);
-            line-height: 1.4;
-        }
-
-        /* Settings Card */
-        .info-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-glass);
-            border-radius: var(--radius-lg);
-            padding: 16px;
-            margin-bottom: 12px;
-        }
-
-        .info-row {
+            font-size: 26px;
+            font-weight: 900;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .info-row:last-child {
-            border-bottom: none;
-        }
-
-        .info-label {
-            font-size: 12.5px;
-            color: var(--text-muted);
-        }
-
-        .info-val {
-            font-size: 12.5px;
-            font-weight: 700;
-            color: #ffffff;
-            font-family: monospace;
+        .nav-btn-add:active {
+            transform: scale(0.92);
         }
 
         /* Region Picker Modal Sheet */
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(8px);
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(6px);
             z-index: 100;
             display: none;
             align-items: flex-end;
@@ -756,14 +876,15 @@
         }
 
         .modal-sheet {
-            background: #0f172a;
-            border-top: 1px solid var(--border-glass);
+            background: #ffffff;
+            border-top: 1px solid var(--border-color);
             border-radius: 24px 24px 0 0;
             width: 100%;
             max-width: 520px;
             max-height: 80vh;
             overflow-y: auto;
             padding: 20px 20px 36px;
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.12);
             animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
@@ -782,13 +903,13 @@
         .sheet-title {
             font-size: 17px;
             font-weight: 800;
-            color: #ffffff;
+            color: var(--text-primary);
         }
 
         .sheet-close {
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--bg-card-subtle);
             border: none;
-            color: #ffffff;
+            color: var(--text-secondary);
             width: 32px;
             height: 32px;
             border-radius: 50%;
@@ -806,26 +927,26 @@
         }
 
         .region-btn {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid var(--border-glass);
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
             padding: 12px;
             display: flex;
             align-items: center;
             gap: 10px;
-            color: #ffffff;
+            color: var(--text-primary);
             cursor: pointer;
             transition: all 0.15s ease;
         }
 
         .region-btn:active {
-            background: rgba(56, 189, 248, 0.15);
+            background: var(--accent-cyan-light);
             border-color: var(--accent-cyan);
             transform: scale(0.98);
         }
 
         .region-flag {
-            font-size: 20px;
+            font-size: 22px;
         }
 
         .region-name {
@@ -834,28 +955,28 @@
         }
 
         .region-code {
-            font-size: 10px;
-            color: var(--text-faint);
+            font-size: 10.5px;
+            color: var(--text-muted);
             margin-top: 1px;
         }
 
-        /* Toast feedback */
+        /* Toast Feedback */
         .toast-banner {
             position: fixed;
             top: 70px;
             left: 50%;
             transform: translateX(-50%) translateY(-20px);
-            background: rgba(15, 23, 42, 0.95);
-            border: 1px solid var(--accent-cyan);
-            color: #ffffff;
-            padding: 10px 18px;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 10px 20px;
             border-radius: 30px;
-            font-size: 12.5px;
+            font-size: 13px;
             font-weight: 700;
             display: flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), var(--glow-cyan);
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12);
             opacity: 0;
             pointer-events: none;
             transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -873,39 +994,35 @@
     <!-- Top App Navigation -->
     <header class="top-nav">
         <div class="brand-box">
-            <div class="brand-icon" id="appIcon">⚡</div>
+            <div class="brand-icon">⚡</div>
             <div>
                 <div class="brand-title">
-                    <span id="appTitle">PPM Server</span>
-                    <span class="brand-badge" id="appBadge">USER</span>
+                    <span>PP SERVER</span>
+                    <span class="brand-badge" id="appBadge">PRO NODE</span>
                 </div>
             </div>
         </div>
         <div class="status-dot-pill">
             <span class="dot-pulse"></span>
-            <span id="statusText">Cloud Synced</span>
+            <span id="statusText">GPGS Live</span>
         </div>
     </header>
 
     <!-- Main Dynamic Content -->
     <main class="main-content">
 
-        <!-- TAB 1: ACCOUNTS (DEFAULT) -->
-        <section id="tabAccounts" class="tab-pane active">
+        <!-- TAB 1: HOME (ACCOUNTS & PERKS) -->
+        <section id="tabHome" class="tab-pane active">
 
-            <!-- Dynamic Hero Card -->
-            <div class="hero-card" id="heroCard">
-                <h1 class="hero-title" id="heroTitle">Connect Google Play Node</h1>
-                <p class="hero-desc" id="heroDesc">
-                    Securely link your Google account to extract your 6-digit Sync Code for instant quest & points unlocking.
+            <!-- Overview Banner -->
+            <div class="hero-card">
+                <h1 class="hero-title">Connected Google Nodes</h1>
+                <p class="hero-desc">
+                    Permanent Google Play session vault for automated quest unlocking and Google Play Points.
                 </p>
-                <button class="btn-primary-action" id="btnMainConnect" onclick="openRegionPicker()">
-                    <span style="font-size:18px;">＋</span>
-                    <span id="btnConnectText">Connect Google Account</span>
-                </button>
             </div>
 
-            <!-- Filter & Search (Shows when >= 1 account) -->
+            <!-- Filter & Search (Shown when >= 2 accounts) -->
             <div class="filter-section" id="filterSection" style="display:none;">
                 <div class="search-box">
                     <span class="search-icon">🔍</span>
@@ -916,170 +1033,150 @@
                 </button>
             </div>
 
-            <!-- Accounts Header -->
+            <!-- Section Title & Cloud Sync -->
             <div class="section-header">
                 <div class="section-title">
-                    <span id="sectionHeaderTitle">Connected Accounts</span>
+                    <span>Google Play Accounts</span>
                     <span class="counter-badge" id="accountCountBadge">0</span>
                 </div>
-                <button class="btn-filter-country" style="padding:4px 8px; font-size:10.5px;" onclick="syncWithCloud()">
+                <button class="btn-filter-country" style="padding:4px 10px; font-size:11px;" onclick="syncWithCloud()">
                     🔄 Sync Cloud
                 </button>
             </div>
 
-            <!-- Account Cards Container -->
-            <div class="accounts-list" id="accountsContainer">
-                <!-- Rendered dynamically via JavaScript -->
-            </div>
+            <!-- Real Dynamic Accounts Container -->
+            <div class="accounts-list" id="accountsContainer"></div>
 
-            <!-- Empty State Container -->
+            <!-- Clean Empty State (When no accounts exist) -->
             <div class="empty-card" id="emptyStateContainer">
-                <div class="empty-icon-wrap" id="emptyIcon">🎮</div>
-                <h3 class="empty-title" id="emptyTitle">No Accounts Linked</h3>
-                <p class="empty-desc" id="emptyDesc">
-                    Tap the button above to sign in with your Google Play account and generate your 6-digit Sync Code.
+                <div class="empty-icon-wrap">🎮</div>
+                <h3 class="empty-title">No Accounts Connected</h3>
+                <p class="empty-desc">
+                    Tap the ＋ button below to link your Google Play account and generate your permanent 6-digit Sync Code.
                 </p>
-            </div>
-        </section>
-
-        <!-- TAB 2: GUIDE / GPGS TESTER (DEPENDS ON MODE) -->
-        <section id="tabSecondary" class="tab-pane">
-            <!-- User Mode: Step-by-Step Guide -->
-            <div id="userGuideView">
-                <div class="section-header" style="margin-bottom:16px;">
-                    <div class="section-title">How It Works</div>
-                </div>
-
-                <div class="step-card">
-                    <div class="step-number">1</div>
-                    <div>
-                        <h4 class="step-title">Connect Google Account</h4>
-                        <p class="step-desc">Tap "＋ Connect Google Account" above and choose your Google Play country region.</p>
-                    </div>
-                </div>
-
-                <div class="step-card">
-                    <div class="step-number">2</div>
-                    <div>
-                        <h4 class="step-title">Secure Native Sign-In</h4>
-                        <p class="step-desc">Sign in with your Gmail and password in Google's official embedded auth screen.</p>
-                    </div>
-                </div>
-
-                <div class="step-card">
-                    <div class="step-number">3</div>
-                    <div>
-                        <h4 class="step-title">Copy 6-Digit Sync Code</h4>
-                        <p class="step-desc">The engine captures your master token and registers a unique 6-digit sync code.</p>
-                    </div>
-                </div>
-
-                <div class="step-card">
-                    <div class="step-number">4</div>
-                    <div>
-                        <h4 class="step-title">Paste in Web Portal</h4>
-                        <p class="step-desc">Enter the 6-digit code on the PP Mod Web Portal to automatically unlock quests & level up!</p>
-                    </div>
-                </div>
-
-                <button class="btn-primary-action" style="margin-top:16px;" onclick="openWebPortal()">
-                    🌐 Open PP Mod Web Portal
+                <button class="btn-connect-empty" onclick="openRegionPicker()">
+                    <span style="font-size:16px;">＋</span>
+                    <span>Connect Google Account</span>
                 </button>
             </div>
+        </section>
 
-            <!-- Dev Mode: GPGS Live Auth Tester -->
-            <div id="devTesterView" style="display:none;">
-                <div class="section-header" style="margin-bottom:16px;">
-                    <div class="section-title">Google Play Games Auth Tester</div>
-                </div>
-
-                <div class="info-card">
-                    <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:12px; line-height:1.5;">
-                        Test any Google master token (<code style="color:var(--accent-cyan);">aas_et/...</code>) against Google Play Games authentication servers.
-                    </p>
-                    <textarea id="testerInputToken" style="width:100%; height:90px; background:rgba(3,7,18,0.8); border:1px solid var(--border-glass); border-radius:var(--radius-sm); color:#e2e8f0; font-family:monospace; font-size:12px; padding:10px; resize:none; outline:none;" placeholder="Paste aas_et/... or select from vault"></textarea>
-
-                    <button class="btn-primary-action btn-dev-action" style="margin-top:12px;" onclick="runManualGpgsTest()">
-                        🧪 Test Play Games OAuth2 Session
-                    </button>
-
-                    <div id="testResultBox" style="display:none; margin-top:14px; padding:12px; border-radius:var(--radius-sm); font-size:12px; line-height:1.5;"></div>
-                </div>
+        <!-- TAB 2: BOX (COMING SOON) -->
+        <section id="tabBox" class="tab-pane">
+            <div class="feature-card">
+                <div class="feature-icon-wrap box">📦</div>
+                <h2 class="feature-title">Mystery Quest Box</h2>
+                <p class="feature-desc">
+                    Daily mystery loot chests, Play Points multipliers, level boosters, and limited-time partner quest drops will appear here.
+                </p>
+                <span class="badge-coming-soon">🚀 COMING SOON</span>
             </div>
         </section>
 
-        <!-- TAB 3: SETTINGS / EXPORT JSON (DEPENDS ON MODE) -->
-        <section id="tabSettings" class="tab-pane">
-            <!-- User Settings -->
-            <div id="userSettingsView">
-                <div class="section-header" style="margin-bottom:16px;">
-                    <div class="section-title">Device & Node Information</div>
-                </div>
+        <!-- TAB 4: SUB (COMING SOON) -->
+        <section id="tabSub" class="tab-pane">
+            <div class="feature-card">
+                <div class="feature-icon-wrap sub">👑</div>
+                <h2 class="feature-title">PP Mod VIP Pass</h2>
+                <p class="feature-desc">
+                    Automated Friday weekly perk auto-claims, dedicated cloud VPS execution, turbo quest sync, and zero captcha.
+                </p>
+                <span class="badge-coming-soon">🚀 COMING SOON</span>
+            </div>
+        </section>
 
-                <div class="info-card">
-                    <div class="info-row">
-                        <span class="info-label">Node Status</span>
-                        <span class="info-val" style="color:var(--accent-emerald);">● Online (D1 Cloud)</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">App Version</span>
-                        <span class="info-val" id="lblAppVersion">v4.0 Hybrid</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Device Hardware ID</span>
-                        <span class="info-val" id="lblDeviceId" style="cursor:pointer;" onclick="copyDeviceId()">Tap to Copy</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Security Engine</span>
-                        <span class="info-val" style="color:var(--accent-cyan);">Armored Guard</span>
-                    </div>
-                </div>
+        <!-- TAB 5: SETTING (PROFILE & SETTINGS) -->
+        <section id="tabSetting" class="tab-pane">
 
-                <div class="info-card" style="margin-top:14px;">
-                    <div class="info-row" style="cursor:pointer;" onclick="openWebPortal()">
-                        <span class="info-label" style="color:#ffffff; font-weight:700;">🌐 Open Web Portal</span>
-                        <span class="info-val">➔</span>
-                    </div>
-                    <div class="info-row" style="cursor:pointer;" onclick="syncWithCloud()">
-                        <span class="info-label" style="color:#ffffff; font-weight:700;">🔄 Refresh Accounts from Cloud</span>
-                        <span class="info-val">➔</span>
-                    </div>
+            <!-- Token Warning Alert (if any account revoked) -->
+            <div class="warning-card" id="warningAlertBox" style="display:none;">
+                <span style="font-size:18px;">⚠️</span>
+                <div class="warning-text">
+                    Security Notice: One of your accounts was removed from the server. Please disconnect and sign in again.
                 </div>
             </div>
 
-            <!-- Dev JSON Export View -->
-            <div id="devExportView" style="display:none;">
-                <div class="section-header" style="margin-bottom:16px;">
-                    <div class="section-title">Token Vault JSON Export</div>
+            <!-- PP Mod User Profile Card -->
+            <div class="info-card">
+                <div class="user-profile-header">
+                    <div class="user-avatar-large" id="profileAvatar">👤</div>
+                    <div>
+                        <div class="profile-name" id="profileName">PP Mod User</div>
+                        <div class="profile-email" id="profileEmail">user@ppmod.cloud</div>
+                        <div class="profile-uid-pill" id="profileUid" onclick="copyText(this.innerText, 'UID')">UID: pp_000000</div>
+                    </div>
                 </div>
 
-                <div class="info-card">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                        <span style="font-size:12px; color:var(--text-muted);">Full Structured Data:</span>
-                        <button class="btn-copy-code" style="padding:6px 12px; font-size:11px;" onclick="copyAllAccountsJson()">
-                            📋 Copy JSON
-                        </button>
-                    </div>
-                    <pre id="jsonDumpBox" style="background:#020617; border:1px solid var(--border-glass); border-radius:var(--radius-sm); padding:12px; max-height:280px; overflow-y:auto; font-size:11.5px; color:#38bdf8; font-family:monospace; white-space:pre-wrap; word-break:break-all;"></pre>
+                <div class="info-row">
+                    <span class="info-label">Account Balance</span>
+                    <span class="info-val" id="profileCoins" style="color:var(--accent-emerald);">🪙 0 Coins</span>
                 </div>
+                <div class="info-row">
+                    <span class="info-label">Cloud Status</span>
+                    <span class="info-val" style="color:var(--accent-cyan);">● VPS Node Live</span>
+                </div>
+            </div>
+
+            <!-- Device & Hardware Info Card -->
+            <div class="info-card">
+                <div class="info-row">
+                    <span class="info-label">Hardware Device ID</span>
+                    <span class="info-val" id="lblDeviceId" style="cursor:pointer;" onclick="copyDeviceId()">Tap to Copy</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">App Version</span>
+                    <span class="info-val" id="lblAppVersion">v3.8 Enterprise</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Architecture</span>
+                    <span class="info-val" style="color:var(--accent-emerald);">Light Hybrid Engine</span>
+                </div>
+            </div>
+
+            <!-- Navigation Actions Card -->
+            <div class="info-card">
+                <button class="btn-action-row" onclick="openWebPortal()">
+                    <span>🌐 Open PP Mod Web Portal</span>
+                    <span style="color:var(--accent-cyan);">➔</span>
+                </button>
+                <button class="btn-action-row" onclick="syncWithCloud()">
+                    <span>🔄 Refresh Accounts from Cloud</span>
+                    <span style="color:var(--accent-cyan);">➔</span>
+                </button>
+                <button class="btn-action-row btn-logout-row" onclick="confirmLogout()">
+                    <span>🚪 Log Out of PP Mod</span>
+                    <span>➔</span>
+                </button>
             </div>
         </section>
 
     </main>
 
-    <!-- Bottom Navigation Bar -->
+    <!-- Fixed Bottom Navigation (5 TABS) -->
     <nav class="bottom-nav">
-        <div class="nav-item active" id="navAccounts" onclick="switchNavTab('tabAccounts')">
-            <span class="nav-icon" id="navIconAccounts">📱</span>
-            <span class="nav-label" id="navLabelAccounts">Accounts</span>
+        <div class="nav-item active" id="navHome" onclick="switchNavTab('tabHome')">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label">Home</span>
         </div>
-        <div class="nav-item" id="navSecondary" onclick="switchNavTab('tabSecondary')">
-            <span class="nav-icon" id="navIconSecondary">📖</span>
-            <span class="nav-label" id="navLabelSecondary">Guide</span>
+        <div class="nav-item" id="navBox" onclick="switchNavTab('tabBox')">
+            <span class="nav-icon">📦</span>
+            <span class="nav-label">Box</span>
+            <span class="nav-micro-badge">Soon</span>
         </div>
-        <div class="nav-item" id="navSettings" onclick="switchNavTab('tabSettings')">
-            <span class="nav-icon" id="navIconSettings">⚙️</span>
-            <span class="nav-label" id="navLabelSettings">Settings</span>
+
+        <!-- Center Elevated '+' Action Button -->
+        <div class="nav-add-btn-wrap" onclick="openRegionPicker()">
+            <div class="nav-btn-add">＋</div>
+        </div>
+
+        <div class="nav-item" id="navSub" onclick="switchNavTab('tabSub')">
+            <span class="nav-icon">👑</span>
+            <span class="nav-label">Sub</span>
+            <span class="nav-micro-badge">Soon</span>
+        </div>
+        <div class="nav-item" id="navSetting" onclick="switchNavTab('tabSetting')">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-label">Setting</span>
         </div>
     </nav>
 
@@ -1090,16 +1187,14 @@
                 <h3 class="sheet-title" id="sheetModalTitle">Select Google Play Region</h3>
                 <button class="sheet-close" onclick="closeRegionPicker()">✕</button>
             </div>
-            <div class="region-grid" id="regionGrid">
-                <!-- Dynamically generated regions -->
-            </div>
+            <div class="region-grid" id="regionGrid"></div>
         </div>
     </div>
 
     <!-- Toast Notification Banner -->
     <div class="toast-banner" id="toastBanner">
         <span id="toastIcon">✓</span>
-        <span id="toastMsg">Sync Code Copied!</span>
+        <span id="toastMsg">Code Copied!</span>
     </div>
 
     <script>
@@ -1116,20 +1211,24 @@
             { code: "IN", name: "India", flag: "🇮🇳" },
             { code: "TR", name: "Turkey", flag: "🇹🇷" },
             { code: "BR", name: "Brazil", flag: "🇧🇷" },
-            { code: "GLOBAL", name: "Global Region", flag: "🌐" }
+            { code: "GLOBAL", name: "Global (Auto)", flag: "🌐" }
         ];
 
         // State
-        let isDevMode = false;
         let accounts = [];
         let selectedFilterCountry = "ALL";
         let isFilterPicking = false;
-        let revealedTokens = {};
+        let revealedEmails = {};
+        let currentTab = "tabHome";
         let appConfig = {
             appName: "PPM Server",
-            versionName: "v4.0 Hybrid",
+            versionName: "v3.8 Enterprise",
             deviceId: "DEV-HW-NODE",
-            portalUrl: "https://pp-mod-auto-quest.onrender.com"
+            portalUrl: "https://pp-mod-auto-quest.onrender.com",
+            userUid: "pp_000000",
+            userEmail: "user@ppmod.cloud",
+            userName: "PP Mod User",
+            userCoins: 0
         };
 
         // Initialize App
@@ -1137,368 +1236,343 @@
             initAppMode();
             renderRegionGrid();
             loadAccounts();
+            startPerkTimerClock();
         });
 
         function initAppMode() {
             try {
-                if (window.AndroidBridge) {
-                    if (window.AndroidBridge.isDeveloperMode) {
-                        isDevMode = window.AndroidBridge.isDeveloperMode();
-                    }
-                    if (window.AndroidBridge.getAppInfo) {
-                        const info = JSON.parse(window.AndroidBridge.getAppInfo());
+                if (window.AndroidBridge && window.AndroidBridge.getAppInfo) {
+                    const infoStr = window.AndroidBridge.getAppInfo();
+                    if (infoStr) {
+                        const info = JSON.parse(infoStr);
                         appConfig = { ...appConfig, ...info };
                     }
                 }
             } catch (e) {
-                console.warn("AndroidBridge init error", e);
+                console.error("initAppMode error", e);
             }
 
-            // Apply Developer vs User Mode styling & text
-            const appTitle = document.getElementById('appTitle');
-            const appBadge = document.getElementById('appBadge');
-            const appIcon = document.getElementById('appIcon');
-            const heroTitle = document.getElementById('heroTitle');
-            const heroDesc = document.getElementById('heroDesc');
-            const btnConnectText = document.getElementById('btnConnectText');
-            const btnMainConnect = document.getElementById('btnMainConnect');
-            const sectionHeaderTitle = document.getElementById('sectionHeaderTitle');
-            const navLabelSecondary = document.getElementById('navLabelSecondary');
-            const navIconSecondary = document.getElementById('navIconSecondary');
-            const navLabelSettings = document.getElementById('navLabelSettings');
-            const navIconSettings = document.getElementById('navIconSettings');
-            const userGuideView = document.getElementById('userGuideView');
-            const devTesterView = document.getElementById('devTesterView');
-            const userSettingsView = document.getElementById('userSettingsView');
-            const devExportView = document.getElementById('devExportView');
-            const lblAppVersion = document.getElementById('lblAppVersion');
-            const lblDeviceId = document.getElementById('lblDeviceId');
-
-            lblAppVersion.textContent = appConfig.versionName || "v4.0";
-            lblDeviceId.textContent = appConfig.deviceId || "UNKNOWN";
-
-            if (isDevMode) {
-                appTitle.textContent = "Token Finder";
-                appBadge.textContent = "DEV PRO";
-                appBadge.classList.add('dev');
-                appIcon.textContent = "🔑";
-                appIcon.style.background = "linear-gradient(135deg, #d97706, #6366f1)";
-
-                heroTitle.textContent = "Master Token Extraction Vault";
-                heroDesc.textContent = "Extract direct Google Play Games master tokens (aas_et/...), live auth testing, and bulk JSON export.";
-                btnConnectText.textContent = "Extract New Master Token";
-                btnMainConnect.classList.add('btn-dev-action');
-                sectionHeaderTitle.textContent = "Token Vault";
-
-                navLabelSecondary.textContent = "GPGS Tester";
-                navIconSecondary.textContent = "🧪";
-                navLabelSettings.textContent = "Export JSON";
-                navIconSettings.textContent = "📦";
-
-                userGuideView.style.display = "none";
-                devTesterView.style.display = "block";
-                userSettingsView.style.display = "none";
-                devExportView.style.display = "block";
-            } else {
-                appTitle.textContent = "PPM Server";
-                appBadge.textContent = "NODE";
-                appIcon.textContent = "⚡";
-                userGuideView.style.display = "block";
-                devTesterView.style.display = "none";
-                userSettingsView.style.display = "block";
-                devExportView.style.display = "none";
+            // Populate Settings View
+            const lblDev = document.getElementById("lblDeviceId");
+            if (lblDev) lblDev.innerText = appConfig.deviceId;
+            const lblVer = document.getElementById("lblAppVersion");
+            if (lblVer) lblVer.innerText = appConfig.versionName;
+            const pName = document.getElementById("profileName");
+            if (pName) pName.innerText = appConfig.userName;
+            const pEmail = document.getElementById("profileEmail");
+            if (pEmail) pEmail.innerText = appConfig.userEmail;
+            const pUid = document.getElementById("profileUid");
+            if (pUid) pUid.innerText = "UID: " + appConfig.userUid;
+            const pCoins = document.getElementById("profileCoins");
+            if (pCoins) pCoins.innerText = `🪙 ${Number(appConfig.userCoins || 0).toLocaleString()} Coins`;
+            const pAvatar = document.getElementById("profileAvatar");
+            if (pAvatar && appConfig.userName) {
+                pAvatar.innerText = appConfig.userName.charAt(0).toUpperCase();
             }
         }
 
-        function renderRegionGrid() {
-            const grid = document.getElementById('regionGrid');
-            grid.innerHTML = "";
+        // ================= BOTTOM TAB NAVIGATION =================
+        function switchNavTab(tabId) {
+            currentTab = tabId;
 
-            if (isFilterPicking) {
-                // Add "ALL" option
-                const allBtn = document.createElement('div');
-                allBtn.className = "region-btn";
-                allBtn.onclick = () => selectRegion("ALL");
-                allBtn.innerHTML = `
-                    <span class="region-flag">🌍</span>
-                    <div>
-                        <div class="region-name">All Regions</div>
-                        <div class="region-code">Filter: Show Everything</div>
-                    </div>
-                `;
-                grid.appendChild(allBtn);
-            }
+            // Update tab panes
+            document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+            const targetPane = document.getElementById(tabId);
+            if (targetPane) targetPane.classList.add('active');
 
-            REGIONS.forEach(reg => {
-                const btn = document.createElement('div');
-                btn.className = "region-btn";
-                btn.onclick = () => selectRegion(reg.code);
-                btn.innerHTML = `
-                    <span class="region-flag">${reg.flag}</span>
-                    <div>
-                        <div class="region-name">${reg.name}</div>
-                        <div class="region-code">${reg.code}</div>
-                    </div>
-                `;
-                grid.appendChild(btn);
-            });
+            // Update nav bar active state
+            document.querySelectorAll('.bottom-nav .nav-item').forEach(el => el.classList.remove('active'));
+            if (tabId === 'tabHome') document.getElementById('navHome')?.classList.add('active');
+            if (tabId === 'tabBox') document.getElementById('navBox')?.classList.add('active');
+            if (tabId === 'tabSub') document.getElementById('navSub')?.classList.add('active');
+            if (tabId === 'tabSetting') document.getElementById('navSetting')?.classList.add('active');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function openRegionPicker(forFilter = false) {
-            isFilterPicking = forFilter;
-            document.getElementById('sheetModalTitle').textContent = forFilter 
-                ? "Filter Accounts by Country" 
-                : "Select Account Play Region";
-            renderRegionGrid();
-            document.getElementById('regionModal').classList.add('open');
-        }
-
-        function closeRegionPicker() {
-            document.getElementById('regionModal').classList.remove('open');
-        }
-
-        function selectRegion(countryCode) {
-            closeRegionPicker();
-            if (isFilterPicking) {
-                selectedFilterCountry = countryCode;
-                document.getElementById('currentRegionPill').textContent = countryCode === "ALL" 
-                    ? "🌍 ALL" 
-                    : `${getFlag(countryCode)} ${countryCode}`;
-                filterAccounts();
-            } else {
-                // Launch Google Sign-In Native WebView
-                if (window.AndroidBridge && window.AndroidBridge.startGoogleLogin) {
-                    window.AndroidBridge.startGoogleLogin(countryCode);
-                } else {
-                    showToast("Simulating Google Login (" + countryCode + ")");
-                    setTimeout(() => {
-                        onAccountSyncComplete({
-                            id: "acc_" + Date.now(),
-                            email: "demo.user@gmail.com",
-                            code: String(Math.floor(100000 + Math.random() * 900000)),
-                            token: "aas_et/AK_DEMO_TOKEN_" + Math.random().toString(36).substring(2, 10),
-                            country: countryCode,
-                            timestamp: Date.now()
-                        });
-                    }, 1200);
-                }
-            }
-        }
-
+        // ================= ACCOUNTS MANAGEMENT =================
         function loadAccounts() {
             try {
                 if (window.AndroidBridge && window.AndroidBridge.getAccounts) {
                     const jsonStr = window.AndroidBridge.getAccounts();
-                    accounts = JSON.parse(jsonStr) || [];
+                    if (jsonStr) {
+                        accounts = JSON.parse(jsonStr);
+                    }
                 }
             } catch (e) {
-                console.warn("getAccounts error", e);
+                console.error("loadAccounts error", e);
             }
-            renderAccountsList(accounts);
-            updateJsonDump();
+
+            renderAccountsList();
         }
 
-        function filterAccounts() {
-            const query = (document.getElementById('searchAccount').value || "").toLowerCase().trim();
-            const filtered = accounts.filter(acc => {
-                const matchCountry = selectedFilterCountry === "ALL" || (acc.country || "GLOBAL").toUpperCase() === selectedFilterCountry;
-                const matchQuery = !query || 
-                    (acc.email && acc.email.toLowerCase().includes(query)) ||
-                    (acc.code && acc.code.includes(query)) ||
-                    (acc.token && acc.token.toLowerCase().includes(query));
-                return matchCountry && matchQuery;
+        window.refreshAccounts = function() {
+            loadAccounts();
+            initAppMode();
+        };
+
+        function renderAccountsList() {
+            const container = document.getElementById("accountsContainer");
+            const emptyState = document.getElementById("emptyStateContainer");
+            const filterSec = document.getElementById("filterSection");
+            const countBadge = document.getElementById("accountCountBadge");
+            const warningAlert = document.getElementById("warningAlertBox");
+
+            if (!container) return;
+
+            let hasRevoked = false;
+            accounts.forEach(a => {
+                if (a.is_revoked) hasRevoked = true;
             });
-            renderAccountsList(filtered);
-        }
+            if (warningAlert) {
+                warningAlert.style.display = hasRevoked ? "flex" : "none";
+            }
 
-        function renderAccountsList(list) {
-            const container = document.getElementById('accountsContainer');
-            const emptyState = document.getElementById('emptyStateContainer');
-            const filterSection = document.getElementById('filterSection');
-            const counter = document.getElementById('accountCountBadge');
-
-            counter.textContent = list.length;
-
-            if (!list || list.length === 0) {
+            if (!accounts || accounts.length === 0) {
                 container.innerHTML = "";
-                emptyState.style.display = "block";
-                if (accounts.length === 0) {
-                    filterSection.style.display = "none";
-                }
+                if (emptyState) emptyState.style.display = "block";
+                if (filterSec) filterSec.style.display = "none";
+                if (countBadge) countBadge.innerText = "0";
                 return;
             }
 
-            emptyState.style.display = "none";
-            filterSection.style.display = "flex";
+            if (emptyState) emptyState.style.display = "none";
+            if (filterSec) filterSec.style.display = (accounts.length >= 2) ? "flex" : "none";
+            if (countBadge) countBadge.innerText = accounts.length;
+
+            // Filter logic
+            const q = (document.getElementById("searchAccount")?.value || "").trim().toLowerCase();
+            let filtered = accounts.filter(acc => {
+                const matchCountry = (selectedFilterCountry === "ALL" || (acc.country || "GLOBAL").toUpperCase() === selectedFilterCountry);
+                const matchSearch = (!q || (acc.email || "").toLowerCase().includes(q) || (acc.code || "").includes(q));
+                return matchCountry && matchSearch;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div style="background:#ffffff; border:1px dashed var(--border-color); border-radius:var(--radius-lg); padding:28px 20px; text-align:center; color:var(--text-muted); font-size:13px;">
+                        No accounts match your search filter.
+                    </div>
+                `;
+                return;
+            }
 
             let html = "";
-            list.forEach(acc => {
-                const flag = getFlag(acc.country);
-                const codeFormatted = formatCode(acc.code);
-                const initial = (acc.email && acc.email.length > 0) ? acc.email[0].toUpperCase() : "G";
-                const isRevealed = revealedTokens[acc.code];
+            filtered.forEach(acc => {
+                const flagObj = REGIONS.find(r => r.code === (acc.country || "GLOBAL")) || { flag: "🌍", name: "Global" };
+                const isRevealed = !!revealedEmails[acc.code];
+                const displayEmail = isRevealed ? acc.email : maskEmail(acc.email);
+                const initial = (acc.email || "G").charAt(0).toUpperCase();
+
+                // Friday Weekly Perk calculation
+                const perkHtml = renderFridayPerkSection(acc);
 
                 html += `
-                    <div class="account-card" id="card-${acc.code}">
-                        <div class="account-top">
-                            <div class="account-identity">
-                                <div class="avatar-circle">${initial}</div>
-                                <div class="email-details">
-                                    <div class="user-email">${acc.email || "Google Play Account"}</div>
-                                    <div class="user-meta">
-                                        <span class="badge-country">${flag} ${acc.country || "GLOBAL"}</span>
-                                        <span>● Active Node</span>
-                                    </div>
+                <div class="account-card" id="card_${acc.code}">
+                    <div class="account-top">
+                        <div class="account-identity">
+                            <div class="avatar-circle">${initial}</div>
+                            <div class="email-details">
+                                <div class="user-email" onclick="revealEmail('${acc.code}')" title="Tap to reveal email">
+                                    ${escapeHtml(displayEmail)}
+                                </div>
+                                <div class="user-balance-row">
+                                    <span class="balance-pill">${acc.balance || "$0.00"}</span>
+                                    <span class="points-pill">⭐ ${Number(acc.points || 0).toLocaleString()} pts</span>
+                                    <span class="badge-country">${flagObj.flag} ${acc.country || 'GLOBAL'}</span>
                                 </div>
                             </div>
-                            <button class="btn-delete-account" onclick="confirmDeleteAccount('${acc.code}', '${acc.email}')" title="Disconnect">
-                                🗑️
-                            </button>
                         </div>
-
-                        <!-- 6-Digit Sync Code Vault Box -->
-                        <div class="code-vault-box">
-                            <div class="code-label-group">
-                                <span class="code-caption">6-Digit Sync Code</span>
-                                <span class="code-digits">${codeFormatted}</span>
-                            </div>
-                            <button class="btn-copy-code" onclick="copyCode('${acc.code}')">
-                                📋 Copy Code
-                            </button>
-                        </div>
-
-                        ${isDevMode ? `
-                            <!-- Developer Token Details -->
-                            <div class="dev-token-box">
-                                <div class="dev-token-header">
-                                    <span class="dev-token-title">Master Token (aas_et/...)</span>
-                                    <button style="background:transparent; border:none; color:var(--accent-amber); font-size:10.5px; font-weight:700; cursor:pointer;" onclick="toggleRevealToken('${acc.code}')">
-                                        ${isRevealed ? '🙈 Hide' : '👁️ Reveal'}
-                                    </button>
-                                </div>
-                                <div class="dev-token-val">
-                                    ${isRevealed ? acc.token : maskToken(acc.token)}
-                                </div>
-                                <div class="dev-actions-row">
-                                    <button class="btn-dev-sub" onclick="copyRawToken('${acc.token}')">
-                                        📋 Copy Token
-                                    </button>
-                                    <button class="btn-dev-sub" onclick="testAccountToken('${acc.token}')">
-                                        🧪 Test GPGS
-                                    </button>
-                                </div>
-                            </div>
-                        ` : `
-                            <!-- User Mode Quick Web Portal Link -->
-                            <button class="btn-portal-link" onclick="openWebPortal()">
-                                🌐 Open Web Portal to Paste Code ➔
-                            </button>
-                        `}
+                        <button class="btn-delete-account" title="Disconnect Account" onclick="confirmDeleteAccount('${acc.code}', '${escapeHtml(acc.email)}')">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                        </button>
                     </div>
+
+                    <!-- 6-Digit Sync Code Box -->
+                    <div class="code-vault-box">
+                        <div class="code-label-group">
+                            <span class="code-caption">YOUR 6-DIGIT SYNC CODE</span>
+                            <span class="code-digits">${acc.code}</span>
+                        </div>
+                        <button class="btn-copy-code" onclick="copySyncCode('${acc.code}')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            <span>Copy</span>
+                        </button>
+                    </div>
+
+                    <!-- Friday 9:00 AM BD Time Weekly Perk Button -->
+                    ${perkHtml}
+                </div>
                 `;
             });
 
             container.innerHTML = html;
         }
 
-        // Navigation Tabs
-        function switchNavTab(tabId) {
-            document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-
-            const targetTab = document.getElementById(tabId);
-            if (targetTab) targetTab.classList.add('active');
-
-            if (tabId === 'tabAccounts') document.getElementById('navAccounts').classList.add('active');
-            if (tabId === 'tabSecondary') document.getElementById('navSecondary').classList.add('active');
-            if (tabId === 'tabSettings') document.getElementById('navSettings').classList.add('active');
+        // ================= FRIDAY 9:00 AM BD TIME LOGIC =================
+        function getBangladeshTime() {
+            // Bangladesh is UTC+6
+            const now = new Date();
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            return new Date(utc + (3600000 * 6));
         }
 
-        // Native Bridge Callback when account is synced
-        window.onAccountSyncComplete = function(account) {
-            if (typeof account === 'string') {
-                try { account = JSON.parse(account); } catch(e){}
+        function renderFridayPerkSection(acc) {
+            const bdDate = getBangladeshTime();
+            const day = bdDate.getDay(); // 0: Sun, 1: Mon, ... 5: Friday, 6: Sat
+            const hour = bdDate.getHours();
+            const minutes = bdDate.getMinutes();
+
+            // STRICT REQUIREMENT: Only show on Friday AFTER 9:00 AM Bangladesh Time!
+            // If Monday to Thursday, or Saturday, or Friday before 9 AM: completely hidden!
+            if (day !== 5 || hour < 9) {
+                return '';
             }
-            // Add or replace account in memory
-            accounts = accounts.filter(a => a.code !== account.code && a.email !== account.email);
-            accounts.unshift(account);
 
-            renderAccountsList(accounts);
-            updateJsonDump();
-            showToast("Connected! Sync Code: " + account.code);
+            const todayStr = bdDate.toISOString().split('T')[0];
+            const alreadyClaimed = (acc.last_claim_date === todayStr);
 
-            // Highlight card
-            setTimeout(() => {
-                const el = document.getElementById('card-' + account.code);
-                if (el) {
-                    el.classList.add('just-added');
-                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (alreadyClaimed) {
+                const pts = acc.claimed_points || 10;
+                return `
+                <div class="perk-claim-box">
+                    <div class="perk-info-group">
+                        <span class="perk-title">✅ Weekly Perk Claimed</span>
+                        <span class="perk-sub">Received +${pts} Play Points today</span>
+                    </div>
+                    <span style="font-size:12px; font-weight:800; color:#059669; font-family:monospace;">+${pts} PTS</span>
+                </div>
+                `;
+            }
+
+            if (acc.has_perk === false) {
+                return `
+                <div class="perk-claim-box locked">
+                    <div class="perk-info-group">
+                        <span class="perk-title locked">🔒 Weekly Perk Locked</span>
+                        <span class="perk-sub locked">No active Play Points tier perks available</span>
+                    </div>
+                </div>
+                `;
+            }
+
+            // Google unlocks weekly perks around 12:00 AM US Pacific Time (which is 2:00 PM BD Time)
+            if (hour >= 9 && hour < 14) {
+                const hoursLeft = 13 - hour;
+                const minutesLeft = 59 - minutes;
+                return `
+                <div class="perk-claim-box">
+                    <div class="perk-info-group">
+                        <span class="perk-title">⏳ Google Unlock in ${hoursLeft}h ${minutesLeft}m</span>
+                        <span class="perk-sub">Perk unlocks at 2:00 PM BD Time</span>
+                    </div>
+                    <button class="btn-claim-perk" disabled>Unlock Pending</button>
+                </div>
+                `;
+            }
+
+            // At or after 2:00 PM BD Time: Active Claim Button!
+            return `
+            <div class="perk-claim-box">
+                <div class="perk-info-group">
+                    <span class="perk-title">🎁 Friday Weekly Perk Available</span>
+                    <span class="perk-sub">Tap to claim free Google Play Points</span>
+                </div>
+                <button class="btn-claim-perk" onclick="claimPerk('${acc.code}')">Claim Points</button>
+            </div>
+            `;
+        }
+
+        function startPerkTimerClock() {
+            setInterval(() => {
+                const bdDate = getBangladeshTime();
+                if (bdDate.getDay() === 5 && currentTab === "tabHome") {
+                    renderAccountsList();
                 }
-            }, 100);
-        };
+            }, 60000);
+        }
 
-        window.refreshAccounts = function() {
-            loadAccounts();
-        };
+        function claimPerk(code) {
+            if (window.AndroidBridge && window.AndroidBridge.claimWeeklyPerk) {
+                window.AndroidBridge.claimWeeklyPerk(code);
+            } else {
+                showToast("Claiming weekly perk...");
+                setTimeout(() => {
+                    const acc = accounts.find(a => a.code === code);
+                    if (acc) {
+                        acc.last_claim_date = getBangladeshTime().toISOString().split('T')[0];
+                        acc.points = (acc.points || 0) + 10;
+                        acc.claimed_points = (acc.claimed_points || 0) + 10;
+                    }
+                    renderAccountsList();
+                    showToast("🎁 +10 Play Points Claimed!");
+                }, 800);
+            }
+        }
 
-        function copyCode(code) {
+        // ================= ACTIONS =================
+        function copySyncCode(code) {
             if (window.AndroidBridge && window.AndroidBridge.copyToClipboard) {
                 window.AndroidBridge.copyToClipboard(code, "Sync Code");
             } else {
-                navigator.clipboard.writeText(code);
-                showToast("Sync Code Copied: " + code);
-            }
-        }
-
-        function copyRawToken(token) {
-            if (window.AndroidBridge && window.AndroidBridge.copyToClipboard) {
-                window.AndroidBridge.copyToClipboard(token, "Master Token");
-            } else {
-                navigator.clipboard.writeText(token);
-                showToast("Master Token Copied!");
+                navigator.clipboard?.writeText(code);
+                showToast(`Sync Code ${code} Copied!`);
             }
         }
 
         function copyDeviceId() {
-            const devId = appConfig.deviceId || "DEV-NODE";
+            const devId = appConfig.deviceId;
             if (window.AndroidBridge && window.AndroidBridge.copyToClipboard) {
-                window.AndroidBridge.copyToClipboard(devId, "Device ID");
+                window.AndroidBridge.copyToClipboard(devId, "Hardware Device ID");
             } else {
-                navigator.clipboard.writeText(devId);
+                navigator.clipboard?.writeText(devId);
                 showToast("Device ID Copied!");
             }
         }
 
-        function copyAllAccountsJson() {
-            const jsonText = JSON.stringify(accounts, null, 2);
+        function copyText(text, label) {
+            const clean = text.replace(/^UID:\s*/i, '').trim();
             if (window.AndroidBridge && window.AndroidBridge.copyToClipboard) {
-                window.AndroidBridge.copyToClipboard(jsonText, "Accounts JSON");
+                window.AndroidBridge.copyToClipboard(clean, label);
             } else {
-                navigator.clipboard.writeText(jsonText);
-                showToast("JSON Dump Copied!");
+                navigator.clipboard?.writeText(clean);
+                showToast(`${label} Copied!`);
             }
         }
 
-        function toggleRevealToken(code) {
-            revealedTokens[code] = !revealedTokens[code];
-            filterAccounts();
-        }
-
-        function maskToken(token) {
-            if (!token) return "No token";
-            if (token.length <= 16) return "••••••••••••••••";
-            return token.substring(0, 10) + "••••••••••••••••" + token.substring(token.length - 6);
+        function revealEmail(code) {
+            revealedEmails[code] = true;
+            renderAccountsList();
+            setTimeout(() => {
+                delete revealedEmails[code];
+                renderAccountsList();
+            }, 5000);
         }
 
         function confirmDeleteAccount(code, email) {
-            if (confirm("Disconnect '" + email + "' from this node?")) {
+            if (confirm(`Are you sure you want to disconnect ${email}?`)) {
                 if (window.AndroidBridge && window.AndroidBridge.deleteAccount) {
                     window.AndroidBridge.deleteAccount(code);
                 }
                 accounts = accounts.filter(a => a.code !== code);
-                renderAccountsList(accounts);
-                updateJsonDump();
-                showToast("Account disconnected.");
+                renderAccountsList();
+                showToast("Account Disconnected");
+            }
+        }
+
+        function confirmLogout() {
+            if (confirm("Are you sure you want to log out of PP Mod?")) {
+                if (window.AndroidBridge && window.AndroidBridge.logout) {
+                    window.AndroidBridge.logout();
+                } else {
+                    showToast("Logged out successfully");
+                }
             }
         }
 
@@ -1507,7 +1581,7 @@
             if (window.AndroidBridge && window.AndroidBridge.openBrowser) {
                 window.AndroidBridge.openBrowser(url);
             } else {
-                window.open(url, '_blank');
+                window.open(url, "_blank");
             }
         }
 
@@ -1518,87 +1592,92 @@
             } else {
                 setTimeout(() => {
                     loadAccounts();
-                    showToast("Accounts up to date!");
-                }, 800);
+                    showToast("Cloud sync complete!");
+                }, 1000);
             }
         }
 
-        function testAccountToken(token) {
-            switchNavTab('tabSecondary');
-            document.getElementById('testerInputToken').value = token;
-            runManualGpgsTest();
+        // ================= REGION PICKER =================
+        function renderRegionGrid() {
+            const grid = document.getElementById("regionGrid");
+            if (!grid) return;
+
+            grid.innerHTML = REGIONS.map(r => `
+                <div class="region-btn" onclick="selectRegion('${r.code}')">
+                    <span class="region-flag">${r.flag}</span>
+                    <div>
+                        <div class="region-name">${r.name}</div>
+                        <div class="region-code">${r.code}</div>
+                    </div>
+                </div>
+            `).join("");
         }
 
-        function runManualGpgsTest() {
-            const token = (document.getElementById('testerInputToken').value || "").trim();
-            const resBox = document.getElementById('testResultBox');
-            if (!token) {
-                showToast("Please enter or select a master token.");
-                return;
+        function openRegionPicker(isFilter = false) {
+            isFilterPicking = isFilter;
+            const modal = document.getElementById("regionModal");
+            const title = document.getElementById("sheetModalTitle");
+            if (title) {
+                title.innerText = isFilter ? "Filter Accounts by Region" : "Select Google Play Region";
             }
+            if (modal) modal.classList.add("open");
+        }
 
-            resBox.style.display = "block";
-            resBox.style.background = "rgba(56, 189, 248, 0.1)";
-            resBox.style.border = "1px solid var(--accent-cyan)";
-            resBox.style.color = "var(--accent-cyan)";
-            resBox.innerHTML = "⏳ Authenticating with Google Play Games servers...";
+        function closeRegionPicker() {
+            const modal = document.getElementById("regionModal");
+            if (modal) modal.classList.remove("open");
+        }
 
-            if (window.AndroidBridge && window.AndroidBridge.testGpgsToken) {
-                window.AndroidBridge.testGpgsToken(token);
+        function selectRegion(code) {
+            closeRegionPicker();
+            if (isFilterPicking) {
+                selectedFilterCountry = code;
+                const pill = document.getElementById("currentRegionPill");
+                if (pill) {
+                    const r = REGIONS.find(x => x.code === code);
+                    pill.innerText = r ? `${r.flag} ${r.code}` : code;
+                }
+                renderAccountsList();
             } else {
-                // Simulation for browser testing
-                setTimeout(() => {
-                    window.onGpgsTestResult(true, "Authentication Successful! Play Games OAuth2 session acquired. Master token is 100% active.");
-                }, 1200);
+                if (window.AndroidBridge && window.AndroidBridge.startGoogleLogin) {
+                    window.AndroidBridge.startGoogleLogin(code);
+                } else {
+                    showToast(`Starting Google login for ${code}...`);
+                }
             }
         }
 
-        window.onGpgsTestResult = function(success, message) {
-            const resBox = document.getElementById('testResultBox');
-            if (!resBox) return;
-            resBox.style.display = "block";
-            if (success) {
-                resBox.style.background = "rgba(16, 185, 129, 0.15)";
-                resBox.style.border = "1px solid var(--accent-emerald)";
-                resBox.style.color = "#34d399";
-                resBox.innerHTML = "✅ <b>ACTIVE SESSION</b><br>" + message;
-            } else {
-                resBox.style.background = "rgba(244, 63, 94, 0.15)";
-                resBox.style.border = "1px solid var(--accent-rose)";
-                resBox.style.color = "#fb7185";
-                resBox.innerHTML = "❌ <b>FAILED / EXPIRED</b><br>" + message;
-            }
-        };
-
-        function updateJsonDump() {
-            const dump = document.getElementById('jsonDumpBox');
-            if (dump) {
-                dump.textContent = JSON.stringify(accounts, null, 2);
-            }
+        function filterAccounts() {
+            renderAccountsList();
         }
 
-        function formatCode(code) {
-            if (!code) return "------";
-            if (code.length === 6) {
-                return code.substring(0, 3) + " " + code.substring(3);
-            }
-            return code;
+        // ================= UTILITIES =================
+        function maskEmail(email) {
+            if (!email || !email.includes("@")) return email || "Google Account";
+            const parts = email.split("@");
+            const name = parts[0];
+            const domain = parts[1];
+            if (name.length <= 2) return name + "@" + domain;
+            if (name.length <= 4) return name[0] + "•••" + name[name.length - 1] + "@" + domain;
+            return name.substring(0, 2) + "••••" + name.substring(name.length - 2) + "@" + domain;
         }
 
-        function getFlag(country) {
-            if (!country) return "🌐";
-            const match = REGIONS.find(r => r.code.toUpperCase() === country.toUpperCase());
-            return match ? match.flag : "🌐";
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         }
 
+        let toastTimer = null;
         function showToast(msg) {
-            const toast = document.getElementById('toastBanner');
-            const txt = document.getElementById('toastMsg');
-            txt.textContent = msg;
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 2400);
+            const toast = document.getElementById("toastBanner");
+            const msgEl = document.getElementById("toastMsg");
+            if (!toast || !msgEl) return;
+            msgEl.innerText = msg;
+            toast.classList.add("show");
+            if (toastTimer) clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toast.classList.remove("show");
+            }, 2500);
         }
     </script>
 </body>

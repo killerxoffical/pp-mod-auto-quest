@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    android:background="#060913">
+    android:background="#f8fafc">
 
     <!-- 1. The Main Hybrid WebApp UI (Always fills full screen) -->
     <WebView

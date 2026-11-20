@@ -133,7 +133,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             settings.setSupportZoom(false);
             settings.setBuiltInZoomControls(false);
 
-            mainAppWebView.setBackgroundColor(0xFF060913);
+            mainAppWebView.setBackgroundColor(0xFFF8FAFC);
             mainAppWebView.addJavascriptInterface(new AndroidBridge(this), "AndroidBridge");
             mainAppWebView.loadUrl("file:///android_asset/www/index.html");
         } catch (Throwable t) {
@@ -357,10 +357,62 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             obj.put("isDeveloperMode", isDev);
             obj.put("versionName", APP_VERSION_NAME);
             obj.put("versionCode", APP_VERSION_CODE);
-            obj.put("deviceId", SecurityGuard.getDeviceId(this));
+            String devId = SecurityGuard.getDeviceId(this);
+            obj.put("deviceId", devId);
             obj.put("portalUrl", SecurityGuard.getRenderApi());
+            if (accountStorage != null) {
+                obj.put("isLoggedIn", accountStorage.isLoggedIn());
+                String uid = accountStorage.getUserUid();
+                if (uid == null || uid.trim().isEmpty()) {
+                    uid = "pp_" + (devId.length() >= 8 ? devId.substring(0, 8) : devId);
+                }
+                obj.put("userUid", uid);
+                String email = accountStorage.getUserEmail();
+                obj.put("userEmail", (email == null || email.trim().isEmpty()) ? "user@ppmod.cloud" : email);
+                String name = accountStorage.getUserName();
+                obj.put("userName", (name == null || name.trim().isEmpty()) ? "PP Mod User" : name);
+                obj.put("userAvatar", accountStorage.getUserAvatar());
+                obj.put("userCoins", accountStorage.getUserCoins());
+            }
         } catch (Throwable ignored) {}
         return obj.toString();
+    }
+
+    public void doClaimWeeklyPerk(String code) {
+        if (accountStorage == null || code == null) return;
+        List<AccountItem> list = accountStorage.getAccounts();
+        boolean found = false;
+        int bonus = 10;
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US);
+        sdf.setTimeZone(java.util.TimeZone.getTimeZone("GMT+6"));
+        String todayStr = sdf.format(new java.util.Date());
+
+        for (AccountItem item : list) {
+            if (code.equals(item.getCode())) {
+                item.setLastClaimDate(todayStr);
+                item.setClaimedPoints(item.getClaimedPoints() + bonus);
+                item.setPoints(item.getPoints() + bonus);
+                found = true;
+                break;
+            }
+        }
+        if (found) {
+            accountStorage.saveAccounts(list);
+            Toast.makeText(this, "🎁 Claimed +" + bonus + " Play Points!", Toast.LENGTH_SHORT).show();
+            if (mainAppWebView != null) {
+                mainAppWebView.post(new RefreshWebRunnable(mainAppWebView));
+            }
+        }
+    }
+
+    public void doLogout() {
+        if (accountStorage != null) {
+            accountStorage.clearUserSession();
+        }
+        Toast.makeText(this, "Logged out of PP Mod session.", Toast.LENGTH_SHORT).show();
+        if (mainAppWebView != null) {
+            mainAppWebView.post(new ReloadWebRunnable(mainAppWebView));
+        }
     }
 
     public String getAccountsJson() {
@@ -691,6 +743,29 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         public void testGpgsToken(final String token) {
             activity.testGpgsToken(token);
         }
+
+        @JavascriptInterface
+        public void claimWeeklyPerk(final String code) {
+            activity.runOnUiThread(new ClaimWeeklyPerkRunnable(activity, code));
+        }
+
+        @JavascriptInterface
+        public void logout() {
+            activity.runOnUiThread(new LogoutRunnable(activity));
+        }
+    }
+
+    public static class ClaimWeeklyPerkRunnable implements Runnable {
+        private final MainActivity act;
+        private final String code;
+        public ClaimWeeklyPerkRunnable(MainActivity a, String c) { this.act = a; this.code = c; }
+        @Override public void run() { act.doClaimWeeklyPerk(code); }
+    }
+
+    public static class LogoutRunnable implements Runnable {
+        private final MainActivity act;
+        public LogoutRunnable(MainActivity a) { this.act = a; }
+        @Override public void run() { act.doLogout(); }
     }
 
     public static class StartGoogleLoginRunnable implements Runnable {
@@ -748,6 +823,22 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             if (webView != null) {
                 webView.evaluateJavascript("if(window.onGpgsTestResult){ window.onGpgsTestResult(" + success + ", '" + msg + "'); }", null);
             }
+        }
+    }
+
+    public static class RefreshWebRunnable implements Runnable {
+        private final WebView web;
+        public RefreshWebRunnable(WebView w) { this.web = w; }
+        @Override public void run() {
+            if (web != null) web.evaluateJavascript("if(window.refreshAccounts){ window.refreshAccounts(); }", null);
+        }
+    }
+
+    public static class ReloadWebRunnable implements Runnable {
+        private final WebView web;
+        public ReloadWebRunnable(WebView w) { this.web = w; }
+        @Override public void run() {
+            if (web != null) web.loadUrl("file:///android_asset/www/index.html");
         }
     }
 }

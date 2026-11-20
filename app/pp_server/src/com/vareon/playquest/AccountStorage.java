@@ -174,6 +174,10 @@ public class AccountStorage {
         saveList(list);
     }
 
+    public synchronized void saveAccounts(List<AccountItem> list) {
+        replaceAllAccounts(list);
+    }
+
     private void saveList(List<AccountItem> list) {
         JSONArray arr = new JSONArray();
         for (AccountItem item : list) {
