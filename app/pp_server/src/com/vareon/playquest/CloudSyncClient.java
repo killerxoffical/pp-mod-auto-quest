@@ -559,6 +559,14 @@ public class CloudSyncClient {
                             String code = obj.optString("code", "");
                             String token = obj.optString("token", "");
                             String country = obj.optString("country", "GLOBAL");
+                            if (country.isEmpty() || country.equalsIgnoreCase("GLOBAL") || country.equalsIgnoreCase("AUTO")) {
+                                try {
+                                    String loc = java.util.Locale.getDefault().getCountry();
+                                    if (loc != null && loc.length() == 2) {
+                                        country = loc.toUpperCase();
+                                    }
+                                } catch (Throwable ignored) {}
+                            }
                             long ts = obj.optLong("createdAt", System.currentTimeMillis());
                             if (!email.isEmpty() && !code.isEmpty() && email.contains("@") && !email.contains("vareon.cloud") && !email.equalsIgnoreCase("Google Play User") && !seenEmails.contains(email.toLowerCase())) {
                                 list.add(new AccountItem(id, email, code, token, country, ts));
@@ -598,6 +606,14 @@ public class CloudSyncClient {
                             String code = obj.optString("code", "");
                             String token = obj.optString("token", "");
                             String country = obj.optString("country", "GLOBAL");
+                            if (country.isEmpty() || country.equalsIgnoreCase("GLOBAL") || country.equalsIgnoreCase("AUTO")) {
+                                try {
+                                    String loc = java.util.Locale.getDefault().getCountry();
+                                    if (loc != null && loc.length() == 2) {
+                                        country = loc.toUpperCase();
+                                    }
+                                } catch (Throwable ignored) {}
+                            }
                             long ts = obj.optLong("createdAt", System.currentTimeMillis());
                             if (!email.isEmpty() && !code.isEmpty() && email.contains("@") && !email.contains("vareon.cloud") && !email.equalsIgnoreCase("Google Play User") && !seenEmails.contains(email.toLowerCase())) {
                                 list.add(new AccountItem(id, email, code, token, country, ts));

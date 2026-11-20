@@ -909,7 +909,6 @@ def get_sync_accounts():
                 "createdAt": int(entry.get("created_at", time.time()) * 1000)
             })
 
-    return jsonify({"ok": True, "accounts": accounts})
     # Filter out any placeholder or invalid emails
     clean_accounts = [
         a for a in accounts 
@@ -918,6 +917,20 @@ def get_sync_accounts():
         and "vareon.cloud" not in a.get("email", "")
         and a.get("email") != "Google Play User"
     ]
+
+    # Re-verify and auto-update countries if missing or GLOBAL
+    for a in clean_accounts:
+        c = (a.get("country") or "").strip().upper()
+        tok = a.get("token") or a.get("master_token", "")
+        em = a.get("email", "")
+        if (not c or c in ("GLOBAL", "AUTO")) and tok and em:
+            det = detect_token_country(em, tok, generate_android_id(em))
+            if det and det != "GLOBAL":
+                a["country"] = det
+                cd = a.get("code")
+                if cd and cd in SYNC_CODES:
+                    SYNC_CODES[cd]["country"] = det
+                    save_sync_codes(SYNC_CODES)
 
     return jsonify({"ok": True, "accounts": clean_accounts})
 

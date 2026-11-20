@@ -2323,13 +2323,11 @@
         }
 
         function startConnectAccount() {
-            // Auto-detect country from token - no country prompt
-            if (window.AndroidBridge && window.AndroidBridge.startGoogleSsoLogin) {
-                window.AndroidBridge.startGoogleSsoLogin();
-            } else if (window.AndroidBridge && window.AndroidBridge.startGoogleLogin) {
+            // Token Extraction: Directly open Google EmbeddedSetup to capture permanent token
+            if (window.AndroidBridge && window.AndroidBridge.startGoogleLogin) {
                 window.AndroidBridge.startGoogleLogin("AUTO");
             } else {
-                showToast("Connecting Google Account...");
+                showToast("Connecting Google Account for Token...");
             }
         }
 
@@ -2344,11 +2342,27 @@
 
         // ==================== HELPERS ====================
         function syncCloudAccounts() {
+            showToast("Syncing and updating accounts...");
+            var uidParam = (appInfo.userUid) ? ('?uid=' + encodeURIComponent(appInfo.userUid)) : '';
+            fetch((appInfo.portalUrl || 'https://pp-mod-auto-quest.onrender.com') + '/api/sync/accounts' + uidParam)
+                .then(function(r) { return r.json(); })
+                .then(function(d) {
+                    if (d.ok && Array.isArray(d.accounts)) {
+                        accounts = d.accounts.filter(function(a) {
+                            if (!a || !a.email) return false;
+                            var em = (a.email || '').toLowerCase().trim();
+                            return em.includes('@') && !em.includes('vareon.cloud') && em !== 'google play user' && !em.includes('google play user');
+                        });
+                        renderAccounts();
+                    }
+                })
+                .catch(function(e) {});
+
             if (window.AndroidBridge && window.AndroidBridge.syncCloudAccounts) {
                 window.AndroidBridge.syncCloudAccounts();
-                showToast("Syncing accounts with cloud vault...");
-            } else {
-                showToast("Synced with cloud.");
+            }
+            if (window.AndroidBridge && window.AndroidBridge.refreshUserData) {
+                window.AndroidBridge.refreshUserData();
             }
         }
 
