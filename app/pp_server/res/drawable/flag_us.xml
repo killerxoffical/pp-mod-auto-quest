@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="16dp"
+    android:viewportWidth="24"
+    android:viewportHeight="16">
+    <!-- Red Background -->
+    <path android:fillColor="#b91c1c" android:pathData="M0,0h24v16H0z" />
+    <!-- White Stripes -->
+    <path android:fillColor="#ffffff" android:pathData="M0,2.46h24v2.46H0z M0,7.38h24v2.46H0z M0,12.3h24v2.46H0z" />
+    <!-- Blue Canton -->
+    <path android:fillColor="#1e3a8a" android:pathData="M0,0h11v8.6H0z" />
+    <!-- Mini Star pattern dots -->
+    <path android:fillColor="#ffffff" android:pathData="M2,2h1v1H2z M5,2h1v1H5z M8,2h1v1H8z M3.5,4h1v1H3.5z M6.5,4h1v1H6.5z M2,6h1v1H2z M5,6h1v1H5z M8,6h1v1H8z" />
+</vector>

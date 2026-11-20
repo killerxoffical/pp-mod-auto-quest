@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>PPM Cloud Node</title>
+    <style>
+        :root {
+            --bg-base: #060913;
+            --bg-card: rgba(15, 23, 42, 0.72);
+            --bg-card-hover: rgba(30, 41, 59, 0.85);
+            --bg-surface: #0b1120;
+            --border-glass: rgba(255, 255, 255, 0.09);
+            --border-glass-glow: rgba(56, 189, 248, 0.25);
+            --accent-cyan: #38bdf8;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-emerald: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-rose: #f43f5e;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-faint: #64748b;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --radius-xl: 26px;
+            --glow-cyan: 0 0 24px rgba(56, 189, 248, 0.25);
+            --glow-purple: 0 0 24px rgba(139, 92, 246, 0.25);
+            --glow-emerald: 0 0 24px rgba(16, 185, 129, 0.25);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            overflow-y: auto;
+            position: relative;
+            padding-bottom: 90px;
+        }
+
+        /* Ambient glowing background gradients */
+        body::before {
+            content: "";
+            position: fixed;
+            top: -120px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 380px;
+            height: 380px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, rgba(56, 189, 248, 0.08) 50%, transparent 80%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Top App Bar */
+        .top-nav {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(6, 9, 19, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-glass);
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #0284c7, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 19px;
+            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+        }
+
+        .brand-title {
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .brand-badge {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 20px;
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .brand-badge.dev {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--accent-amber);
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        .status-dot-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--accent-emerald);
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .dot-pulse {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: var(--accent-emerald);
+            box-shadow: 0 0 8px var(--accent-emerald);
+            animation: pulse-ring 2s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.9; }
+            50% { transform: scale(1.2); opacity: 0.5; }
+            100% { transform: scale(0.95); opacity: 0.9; }
+        }
+
+        /* Main Container */
+        .main-content {
+            position: relative;
+            z-index: 10;
+            padding: 18px 16px 24px;
+            max-width: 520px;
+            margin: 0 auto;
+        }
+
+        /* Hero Banner */
+        .hero-card {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+            border: 1px solid var(--border-glass-glow);
+            border-radius: var(--radius-xl);
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), var(--glow-cyan);
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-card::after {
+            content: "";
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-title {
+            font-size: 19px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 6px;
+            line-height: 1.25;
+        }
+
+        .hero-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 18px;
+        }
+
+        /* Connect Button */
+        .btn-primary-action {
+            width: 100%;
+            padding: 14px 20px;
+            border-radius: var(--radius-md);
+            border: none;
+            background: linear-gradient(135deg, #0284c7 0%, #6366f1 50%, #8b5cf6 100%);
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 6px 20px rgba(2, 132, 199, 0.35);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-primary-action:active {
+            transform: scale(0.97);
+            filter: brightness(1.1);
+        }
+
+        .btn-dev-action {
+            background: linear-gradient(135deg, #d97706 0%, #b45309 50%, #4f46e5 100%);
+            box-shadow: 0 6px 20px rgba(217, 119, 6, 0.35);
+        }
+
+        /* Filter & Search Bar */
+        .filter-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 18px;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 14px 10px 36px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-md);
+            color: #ffffff;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-cyan);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-faint);
+            font-size: 14px;
+        }
+
+        .btn-filter-country {
+            padding: 9px 14px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-md);
+            color: var(--accent-cyan);
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        /* Accounts Header */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+            padding: 0 4px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .counter-badge {
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--accent-cyan);
+            font-size: 11px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        /* Account Cards List */
+        .accounts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .account-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .account-card.just-added {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.4);
+            animation: highlight-card 1.2s ease-out;
+        }
+
+        @keyframes highlight-card {
+            0% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .account-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .account-identity {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            overflow: hidden;
+        }
+
+        .avatar-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1e293b, #334155);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--accent-cyan);
+            flex-shrink: 0;
+        }
+
+        .email-details {
+            overflow: hidden;
+        }
+
+        .user-email {
+            font-size: 14px;
+            font-weight: 700;
+            color: #ffffff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 210px;
+        }
+
+        .user-meta {
+            font-size: 11px;
+            color: var(--text-faint);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 2px;
+        }
+
+        .badge-country {
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-muted);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-delete-account {
+            background: transparent;
+            border: none;
+            color: var(--text-faint);
+            padding: 6px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-delete-account:active {
+            color: var(--accent-rose);
+            background: rgba(244, 63, 94, 0.15);
+        }
+
+        /* Star 6-Digit Code Box */
+        .code-vault-box {
+            background: rgba(11, 17, 32, 0.85);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: var(--radius-md);
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .code-label-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .code-caption {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-faint);
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+        }
+
+        .code-digits {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: 4px;
+            color: var(--accent-cyan);
+            text-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+            margin-top: 2px;
+        }
+
+        .btn-copy-code {
+            padding: 9px 16px;
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            border-radius: var(--radius-sm);
+            color: var(--accent-cyan);
+            font-size: 12px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-copy-code:active {
+            transform: scale(0.95);
+            background: var(--accent-cyan);
+            color: #0b1120;
+        }
+
+        /* Developer View Extensions */
+        .dev-token-box {
+            background: rgba(3, 7, 18, 0.85);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            border-radius: var(--radius-sm);
+            padding: 10px 12px;
+            margin-bottom: 10px;
+        }
+
+        .dev-token-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .dev-token-title {
+            font-size: 10.5px;
+            font-weight: 700;
+            color: var(--accent-amber);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .dev-token-val {
+            font-family: monospace;
+            font-size: 11.5px;
+            color: #cbd5e1;
+            word-break: break-all;
+            line-height: 1.4;
+            max-height: 48px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .dev-actions-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .btn-dev-sub {
+            flex: 1;
+            padding: 8px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: #e2e8f0;
+            transition: all 0.15s ease;
+        }
+
+        .btn-dev-sub:active {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .btn-portal-link {
+            width: 100%;
+            padding: 9px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px dashed rgba(255, 255, 255, 0.12);
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+            font-size: 11.5px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .btn-portal-link:active {
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+        }
+
+        /* Empty State */
+        .empty-card {
+            background: var(--bg-card);
+            border: 1px dashed rgba(255, 255, 255, 0.15);
+            border-radius: var(--radius-xl);
+            padding: 36px 20px;
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        .empty-icon-wrap {
+            width: 64px;
+            height: 64px;
+            border-radius: 20px;
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin: 0 auto 16px;
+            color: var(--accent-cyan);
+        }
+
+        .empty-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 6px;
+        }
+
+        .empty-desc {
+            font-size: 12.5px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            max-width: 280px;
+            margin: 0 auto;
+        }
+
+        /* Bottom Navigation Bar */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 66px;
+            background: rgba(6, 9, 19, 0.92);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-top: 1px solid var(--border-glass);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            z-index: 40;
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            height: 100%;
+            color: var(--text-faint);
+            cursor: pointer;
+            transition: color 0.2s;
+            position: relative;
+        }
+
+        .nav-item.active {
+            color: var(--accent-cyan);
+        }
+
+        .nav-item.active.dev {
+            color: var(--accent-amber);
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            line-height: 1;
+        }
+
+        .nav-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        /* Tab Content Panes */
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Guide Card */
+        .step-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            gap: 14px;
+        }
+
+        .step-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--accent-cyan);
+            font-weight: 800;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .step-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .step-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* Settings Card */
+        .info-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-size: 12.5px;
+            color: var(--text-muted);
+        }
+
+        .info-val {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #ffffff;
+            font-family: monospace;
+        }
+
+        /* Region Picker Modal Sheet */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-sheet {
+            background: #0f172a;
+            border-top: 1px solid var(--border-glass);
+            border-radius: 24px 24px 0 0;
+            width: 100%;
+            max-width: 520px;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 20px 20px 36px;
+            animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .sheet-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .sheet-title {
+            font-size: 17px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .sheet-close {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #ffffff;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .region-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .region-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .region-btn:active {
+            background: rgba(56, 189, 248, 0.15);
+            border-color: var(--accent-cyan);
+            transform: scale(0.98);
+        }
+
+        .region-flag {
+            font-size: 20px;
+        }
+
+        .region-name {
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .region-code {
+            font-size: 10px;
+            color: var(--text-faint);
+            margin-top: 1px;
+        }
+
+        /* Toast feedback */
+        .toast-banner {
+            position: fixed;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid var(--accent-cyan);
+            color: #ffffff;
+            padding: 10px 18px;
+            border-radius: 30px;
+            font-size: 12.5px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), var(--glow-cyan);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 999;
+        }
+
+        .toast-banner.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top App Navigation -->
+    <header class="top-nav">
+        <div class="brand-box">
+            <div class="brand-icon" id="appIcon">⚡</div>
+            <div>
+                <div class="brand-title">
+                    <span id="appTitle">PPM Server</span>
+                    <span class="brand-badge" id="appBadge">USER</span>
+                </div>
+            </div>
+        </div>
+        <div class="status-dot-pill">
+            <span class="dot-pulse"></span>
+            <span id="statusText">Cloud Synced</span>
+        </div>
+    </header>
+
+    <!-- Main Dynamic Content -->
+    <main class="main-content">
+
+        <!-- TAB 1: ACCOUNTS (DEFAULT) -->
+        <section id="tabAccounts" class="tab-pane active">
+
+            <!-- Dynamic Hero Card -->
+            <div class="hero-card" id="heroCard">
+                <h1 class="hero-title" id="heroTitle">Connect Google Play Node</h1>
+                <p class="hero-desc" id="heroDesc">
+                    Securely link your Google account to extract your 6-digit Sync Code for instant quest & points unlocking.
+                </p>
+                <button class="btn-primary-action" id="btnMainConnect" onclick="openRegionPicker()">
+                    <span style="font-size:18px;">＋</span>
+                    <span id="btnConnectText">Connect Google Account</span>
+                </button>
+            </div>
+
+            <!-- Filter & Search (Shows when >= 1 account) -->
+            <div class="filter-section" id="filterSection" style="display:none;">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" class="search-input" id="searchAccount" placeholder="Search email or code..." oninput="filterAccounts()">
+                </div>
+                <button class="btn-filter-country" id="btnRegionFilter" onclick="openRegionPicker(true)">
+                    <span id="currentRegionPill">🌍 ALL</span>
+                </button>
+            </div>
+
+            <!-- Accounts Header -->
+            <div class="section-header">
+                <div class="section-title">
+                    <span id="sectionHeaderTitle">Connected Accounts</span>
+                    <span class="counter-badge" id="accountCountBadge">0</span>
+                </div>
+                <button class="btn-filter-country" style="padding:4px 8px; font-size:10.5px;" onclick="syncWithCloud()">
+                    🔄 Sync Cloud
+                </button>
+            </div>
+
+            <!-- Account Cards Container -->
+            <div class="accounts-list" id="accountsContainer">
+                <!-- Rendered dynamically via JavaScript -->
+            </div>
+
+            <!-- Empty State Container -->
+            <div class="empty-card" id="emptyStateContainer">
+                <div class="empty-icon-wrap" id="emptyIcon">🎮</div>
+                <h3 class="empty-title" id="emptyTitle">No Accounts Linked</h3>
+                <p class="empty-desc" id="emptyDesc">
+                    Tap the button above to sign in with your Google Play account and generate your 6-digit Sync Code.
+                </p>
+            </div>
+        </section>
+
+        <!-- TAB 2: GUIDE / GPGS TESTER (DEPENDS ON MODE) -->
+        <section id="tabSecondary" class="tab-pane">
+            <!-- User Mode: Step-by-Step Guide -->
+            <div id="userGuideView">
+                <div class="section-header" style="margin-bottom:16px;">
+                    <div class="section-title">How It Works</div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <div>
+                        <h4 class="step-title">Connect Google Account</h4>
+                        <p class="step-desc">Tap "＋ Connect Google Account" above and choose your Google Play country region.</p>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <div>
+                        <h4 class="step-title">Secure Native Sign-In</h4>
+                        <p class="step-desc">Sign in with your Gmail and password in Google's official embedded auth screen.</p>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <div>
+                        <h4 class="step-title">Copy 6-Digit Sync Code</h4>
+                        <p class="step-desc">The engine captures your master token and registers a unique 6-digit sync code.</p>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <div>
+                        <h4 class="step-title">Paste in Web Portal</h4>
+                        <p class="step-desc">Enter the 6-digit code on the PP Mod Web Portal to automatically unlock quests & level up!</p>
+                    </div>
+                </div>
+
+                <button class="btn-primary-action" style="margin-top:16px;" onclick="openWebPortal()">
+                    🌐 Open PP Mod Web Portal
+                </button>
+            </div>
+
+            <!-- Dev Mode: GPGS Live Auth Tester -->
+            <div id="devTesterView" style="display:none;">
+                <div class="section-header" style="margin-bottom:16px;">
+                    <div class="section-title">Google Play Games Auth Tester</div>
+                </div>
+
+                <div class="info-card">
+                    <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:12px; line-height:1.5;">
+                        Test any Google master token (<code style="color:var(--accent-cyan);">aas_et/...</code>) against Google Play Games authentication servers.
+                    </p>
+                    <textarea id="testerInputToken" style="width:100%; height:90px; background:rgba(3,7,18,0.8); border:1px solid var(--border-glass); border-radius:var(--radius-sm); color:#e2e8f0; font-family:monospace; font-size:12px; padding:10px; resize:none; outline:none;" placeholder="Paste aas_et/... or select from vault"></textarea>
+
+                    <button class="btn-primary-action btn-dev-action" style="margin-top:12px;" onclick="runManualGpgsTest()">
+                        🧪 Test Play Games OAuth2 Session
+                    </button>
+
+                    <div id="testResultBox" style="display:none; margin-top:14px; padding:12px; border-radius:var(--radius-sm); font-size:12px; line-height:1.5;"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: SETTINGS / EXPORT JSON (DEPENDS ON MODE) -->
+        <section id="tabSettings" class="tab-pane">
+            <!-- User Settings -->
+            <div id="userSettingsView">
+                <div class="section-header" style="margin-bottom:16px;">
+                    <div class="section-title">Device & Node Information</div>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-row">
+                        <span class="info-label">Node Status</span>
+                        <span class="info-val" style="color:var(--accent-emerald);">● Online (D1 Cloud)</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">App Version</span>
+                        <span class="info-val" id="lblAppVersion">v4.0 Hybrid</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Device Hardware ID</span>
+                        <span class="info-val" id="lblDeviceId" style="cursor:pointer;" onclick="copyDeviceId()">Tap to Copy</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Security Engine</span>
+                        <span class="info-val" style="color:var(--accent-cyan);">Armored Guard</span>
+                    </div>
+                </div>
+
+                <div class="info-card" style="margin-top:14px;">
+                    <div class="info-row" style="cursor:pointer;" onclick="openWebPortal()">
+                        <span class="info-label" style="color:#ffffff; font-weight:700;">🌐 Open Web Portal</span>
+                        <span class="info-val">➔</span>
+                    </div>
+                    <div class="info-row" style="cursor:pointer;" onclick="syncWithCloud()">
+                        <span class="info-label" style="color:#ffffff; font-weight:700;">🔄 Refresh Accounts from Cloud</span>
+                        <span class="info-val">➔</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dev JSON Export View -->
+            <div id="devExportView" style="display:none;">
+                <div class="section-header" style="margin-bottom:16px;">
+                    <div class="section-title">Token Vault JSON Export</div>
+                </div>
+
+                <div class="info-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <span style="font-size:12px; color:var(--text-muted);">Full Structured Data:</span>
+                        <button class="btn-copy-code" style="padding:6px 12px; font-size:11px;" onclick="copyAllAccountsJson()">
+                            📋 Copy JSON
+                        </button>
+                    </div>
+                    <pre id="jsonDumpBox" style="background:#020617; border:1px solid var(--border-glass); border-radius:var(--radius-sm); padding:12px; max-height:280px; overflow-y:auto; font-size:11.5px; color:#38bdf8; font-family:monospace; white-space:pre-wrap; word-break:break-all;"></pre>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+        <div class="nav-item active" id="navAccounts" onclick="switchNavTab('tabAccounts')">
+            <span class="nav-icon" id="navIconAccounts">📱</span>
+            <span class="nav-label" id="navLabelAccounts">Accounts</span>
+        </div>
+        <div class="nav-item" id="navSecondary" onclick="switchNavTab('tabSecondary')">
+            <span class="nav-icon" id="navIconSecondary">📖</span>
+            <span class="nav-label" id="navLabelSecondary">Guide</span>
+        </div>
+        <div class="nav-item" id="navSettings" onclick="switchNavTab('tabSettings')">
+            <span class="nav-icon" id="navIconSettings">⚙️</span>
+            <span class="nav-label" id="navLabelSettings">Settings</span>
+        </div>
+    </nav>
+
+    <!-- Region Selector Modal Sheet -->
+    <div class="modal-overlay" id="regionModal">
+        <div class="modal-sheet">
+            <div class="sheet-header">
+                <h3 class="sheet-title" id="sheetModalTitle">Select Google Play Region</h3>
+                <button class="sheet-close" onclick="closeRegionPicker()">✕</button>
+            </div>
+            <div class="region-grid" id="regionGrid">
+                <!-- Dynamically generated regions -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Banner -->
+    <div class="toast-banner" id="toastBanner">
+        <span id="toastIcon">✓</span>
+        <span id="toastMsg">Sync Code Copied!</span>
+    </div>
+
+    <script>
+        // Supported Google Play Regions
+        const REGIONS = [
+            { code: "US", name: "United States", flag: "🇺🇸" },
+            { code: "JP", name: "Japan", flag: "🇯🇵" },
+            { code: "KR", name: "South Korea", flag: "🇰🇷" },
+            { code: "TW", name: "Taiwan", flag: "🇹🇼" },
+            { code: "GB", name: "United Kingdom", flag: "🇬🇧" },
+            { code: "DE", name: "Germany", flag: "🇩🇪" },
+            { code: "FR", name: "France", flag: "🇫🇷" },
+            { code: "AU", name: "Australia", flag: "🇦🇺" },
+            { code: "IN", name: "India", flag: "🇮🇳" },
+            { code: "TR", name: "Turkey", flag: "🇹🇷" },
+            { code: "BR", name: "Brazil", flag: "🇧🇷" },
+            { code: "GLOBAL", name: "Global Region", flag: "🌐" }
+        ];
+
+        // State
+        let isDevMode = false;
+        let accounts = [];
+        let selectedFilterCountry = "ALL";
+        let isFilterPicking = false;
+        let revealedTokens = {};
+        let appConfig = {
+            appName: "PPM Server",
+            versionName: "v4.0 Hybrid",
+            deviceId: "DEV-HW-NODE",
+            portalUrl: "https://pp-mod-auto-quest.onrender.com"
+        };
+
+        // Initialize App
+        window.addEventListener('DOMContentLoaded', () => {
+            initAppMode();
+            renderRegionGrid();
+            loadAccounts();
+        });
+
+        function initAppMode() {
+            try {
+                if (window.AndroidBridge) {
+                    if (window.AndroidBridge.isDeveloperMode) {
+                        isDevMode = window.AndroidBridge.isDeveloperMode();
+                    }
+                    if (window.AndroidBridge.getAppInfo) {
+                        const info = JSON.parse(window.AndroidBridge.getAppInfo());
+                        appConfig = { ...appConfig, ...info };
+                    }
+                }
+            } catch (e) {
+                console.warn("AndroidBridge init error", e);
+            }
+
+            // Apply Developer vs User Mode styling & text
+            const appTitle = document.getElementById('appTitle');
+            const appBadge = document.getElementById('appBadge');
+            const appIcon = document.getElementById('appIcon');
+            const heroTitle = document.getElementById('heroTitle');
+            const heroDesc = document.getElementById('heroDesc');
+            const btnConnectText = document.getElementById('btnConnectText');
+            const btnMainConnect = document.getElementById('btnMainConnect');
+            const sectionHeaderTitle = document.getElementById('sectionHeaderTitle');
+            const navLabelSecondary = document.getElementById('navLabelSecondary');
+            const navIconSecondary = document.getElementById('navIconSecondary');
+            const navLabelSettings = document.getElementById('navLabelSettings');
+            const navIconSettings = document.getElementById('navIconSettings');
+            const userGuideView = document.getElementById('userGuideView');
+            const devTesterView = document.getElementById('devTesterView');
+            const userSettingsView = document.getElementById('userSettingsView');
+            const devExportView = document.getElementById('devExportView');
+            const lblAppVersion = document.getElementById('lblAppVersion');
+            const lblDeviceId = document.getElementById('lblDeviceId');
+
+            lblAppVersion.textContent = appConfig.versionName || "v4.0";
+            lblDeviceId.textContent = appConfig.deviceId || "UNKNOWN";
+
+            if (isDevMode) {
+                appTitle.textContent = "Token Finder";
+                appBadge.textContent = "DEV PRO";
+                appBadge.classList.add('dev');
+                appIcon.textContent = "🔑";
+                appIcon.style.background = "linear-gradient(135deg, #d97706, #6366f1)";
+
+                heroTitle.textContent = "Master Token Extraction Vault";
+                heroDesc.textContent = "Extract direct Google Play Games master tokens (aas_et/...), live auth testing, and bulk JSON export.";
+                btnConnectText.textContent = "Extract New Master Token";
+                btnMainConnect.classList.add('btn-dev-action');
+                sectionHeaderTitle.textContent = "Token Vault";
+
+                navLabelSecondary.textContent = "GPGS Tester";
+                navIconSecondary.textContent = "🧪";
+                navLabelSettings.textContent = "Export JSON";
+                navIconSettings.textContent = "📦";
+
+                userGuideView.style.display = "none";
+                devTesterView.style.display = "block";
+                userSettingsView.style.display = "none";
+                devExportView.style.display = "block";
+            } else {
+                appTitle.textContent = "PPM Server";
+                appBadge.textContent = "NODE";
+                appIcon.textContent = "⚡";
+                userGuideView.style.display = "block";
+                devTesterView.style.display = "none";
+                userSettingsView.style.display = "block";
+                devExportView.style.display = "none";
+            }
+        }
+
+        function renderRegionGrid() {
+            const grid = document.getElementById('regionGrid');
+            grid.innerHTML = "";
+
+            if (isFilterPicking) {
+                // Add "ALL" option
+                const allBtn = document.createElement('div');
+                allBtn.className = "region-btn";
+                allBtn.onclick = () => selectRegion("ALL");
+                allBtn.innerHTML = `
+                    <span class="region-flag">🌍</span>
+                    <div>
+                        <div class="region-name">All Regions</div>
+                        <div class="region-code">Filter: Show Everything</div>
+                    </div>
+                `;
+                grid.appendChild(allBtn);
+            }
+
+            REGIONS.forEach(reg => {
+                const btn = document.createElement('div');
+                btn.className = "region-btn";
+                btn.onclick = () => selectRegion(reg.code);
+                btn.innerHTML = `
+                    <span class="region-flag">${reg.flag}</span>
+                    <div>
+                        <div class="region-name">${reg.name}</div>
+                        <div class="region-code">${reg.code}</div>
+                    </div>
+                `;
+                grid.appendChild(btn);
+            });
+        }
+
+        function openRegionPicker(forFilter = false) {
+            isFilterPicking = forFilter;
+            document.getElementById('sheetModalTitle').textContent = forFilter 
+                ? "Filter Accounts by Country" 
+                : "Select Account Play Region";
+            renderRegionGrid();
+            document.getElementById('regionModal').classList.add('open');
+        }
+
+        function closeRegionPicker() {
+            document.getElementById('regionModal').classList.remove('open');
+        }
+
+        function selectRegion(countryCode) {
+            closeRegionPicker();
+            if (isFilterPicking) {
+                selectedFilterCountry = countryCode;
+                document.getElementById('currentRegionPill').textContent = countryCode === "ALL" 
+                    ? "🌍 ALL" 
+                    : `${getFlag(countryCode)} ${countryCode}`;
+                filterAccounts();
+            } else {
+                // Launch Google Sign-In Native WebView
+                if (window.AndroidBridge && window.AndroidBridge.startGoogleLogin) {
+                    window.AndroidBridge.startGoogleLogin(countryCode);
+                } else {
+                    showToast("Simulating Google Login (" + countryCode + ")");
+                    setTimeout(() => {
+                        onAccountSyncComplete({
+                            id: "acc_" + Date.now(),
+                            email: "demo.user@gmail.com",
+                            code: String(Math.floor(100000 + Math.random() * 900000)),
+                            token: "aas_et/AK_DEMO_TOKEN_" + Math.random().toString(36).substring(2, 10),
+                            country: countryCode,
+                            timestamp: Date.now()
+                        });
+                    }, 1200);
+                }
+            }
+        }
+
+        function loadAccounts() {
+            try {
+                if (window.AndroidBridge && window.AndroidBridge.getAccounts) {
+                    const jsonStr = window.AndroidBridge.getAccounts();
+                    accounts = JSON.parse(jsonStr) || [];
+                }
+            } catch (e) {
+                console.warn("getAccounts error", e);
+            }
+            renderAccountsList(accounts);
+            updateJsonDump();
+        }
+
+        function filterAccounts() {
+            const query = (document.getElementById('searchAccount').value || "").toLowerCase().trim();
+            const filtered = accounts.filter(acc => {
+                const matchCountry = selectedFilterCountry === "ALL" || (acc.country || "GLOBAL").toUpperCase() === selectedFilterCountry;
+                const matchQuery = !query || 
+                    (acc.email && acc.email.toLowerCase().includes(query)) ||
+                    (acc.code && acc.code.includes(query)) ||
+                    (acc.token && acc.token.toLowerCase().includes(query));
+                return matchCountry && matchQuery;
+            });
+            renderAccountsList(filtered);
+        }
+
+        function renderAccountsList(list) {
+            const container = document.getElementById('accountsContainer');
+            const emptyState = document.getElementById('emptyStateContainer');
+            const filterSection = document.getElementById('filterSection');
+            const counter = document.getElementById('accountCountBadge');
+
+            counter.textContent = list.length;
+
+            if (!list || list.length === 0) {
+                container.innerHTML = "";
+                emptyState.style.display = "block";
+                if (accounts.length === 0) {
+                    filterSection.style.display = "none";
+                }
+                return;
+            }
+
+            emptyState.style.display = "none";
+            filterSection.style.display = "flex";
+
+            let html = "";
+            list.forEach(acc => {
+                const flag = getFlag(acc.country);
+                const codeFormatted = formatCode(acc.code);
+                const initial = (acc.email && acc.email.length > 0) ? acc.email[0].toUpperCase() : "G";
+                const isRevealed = revealedTokens[acc.code];
+
+                html += `
+                    <div class="account-card" id="card-${acc.code}">
+                        <div class="account-top">
+                            <div class="account-identity">
+                                <div class="avatar-circle">${initial}</div>
+                                <div class="email-details">
+                                    <div class="user-email">${acc.email || "Google Play Account"}</div>
+                                    <div class="user-meta">
+                                        <span class="badge-country">${flag} ${acc.country || "GLOBAL"}</span>
+                                        <span>● Active Node</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="btn-delete-account" onclick="confirmDeleteAccount('${acc.code}', '${acc.email}')" title="Disconnect">
+                                🗑️
+                            </button>
+                        </div>
+
+                        <!-- 6-Digit Sync Code Vault Box -->
+                        <div class="code-vault-box">
+                            <div class="code-label-group">
+                                <span class="code-caption">6-Digit Sync Code</span>
+                                <span class="code-digits">${codeFormatted}</span>
+                            </div>
+                            <button class="btn-copy-code" onclick="copyCode('${acc.code}')">
+                                📋 Copy Code
+                            </button>
+                        </div>
+
+                        ${isDevMode ? `
+                            <!-- Developer Token Details -->
+                            <div class="dev-token-box">
+                                <div class="dev-token-header">
+                                    <span class="dev-token-title">Master Token (aas_et/...)</span>
+                                    <button style="background:transparent; border:none; color:var(--accent-amber); font-size:10.5px; font-weight:700; cursor:pointer;" onclick="toggleRevealToken('${acc.code}')">
+                                        ${isRevealed ? '🙈 Hide' : '👁️ Reveal'}
+                                    </button>
+                                </div>
+                                <div class="dev-token-val">
+                                    ${isRevealed ? acc.token : maskToken(acc.token)}
+                                </div>
+                                <div class="dev-actions-row">
+                                    <button class="btn-dev-sub" onclick="copyRawToken('${acc.token}')">
+                                        📋 Copy Token
+                                    </button>
+                                    <button class="btn-dev-sub" onclick="testAccountToken('${acc.token}')">
+                                        🧪 Test GPGS
+                                    </button>
+                                </div>
+                            </div>
+                        ` : `
+                            <!-- User Mode Quick Web Portal Link -->
+                            <button class="btn-portal-link" onclick="openWebPortal()">
+                                🌐 Open Web Portal to Paste Code ➔
+                            </button>
+                        `}
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Navigation Tabs
+        function switchNavTab(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+            const targetTab = document.getElementById(tabId);
+            if (targetTab) targetTab.classList.add('active');
+
+            if (tabId === 'tabAccounts') document.getElementById('navAccounts').classList.add('active');
+            if (tabId === 'tabSecondary') document.getElementById('navSecondary').classList.add('active');
+            if (tabId === 'tabSettings') document.getElementById('navSettings').classList.add('active');
+        }
+
+        // Native Bridge Callback when account is synced
+        window.onAccountSyncComplete = function(account) {
+            if (typeof account === 'string') {
+                try { account = JSON.parse(account); } catch(e){}
+            }
+            // Add or replace account in memory
+            accounts = accounts.filter(a => a.code !== account.code && a.email !== account.email);
+            accounts.unshift(account);
+
+            renderAccountsList(accounts);
+            updateJsonDump();
+            showToast("Connected! Sync Code: " + account.code);
+
+            // Highlight card
+            setTimeout(() => {
+                const el = document.getElementById('card-' + account.code);
+                if (el) {
+                    el.classList.add('just-added');
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
+        };
+
+        window.refreshAccounts = function() {
+            loadAccounts();
+        };
+
+        function copyCode(code) {
+            if (window.AndroidBridge && window.AndroidBridge.copyToClipboard) {
+                window.AndroidBridge.copyToClipboard(code, "Sync Code");
+            } else {
+                navigator.clipboard.writeText(code);
+                showToast("Sync Code Copied: " + code);
+            }
+        }
+
+        function copyRawToken(token) {
+            if (window.AndroidBridge && window.AndroidBridge.copyToClipboard) {
+                window.AndroidBridge.copyToClipboard(token, "Master Token");
+            } else {
+                navigator.clipboard.writeText(token);
+                showToast("Master Token Copied!");
+            }
+        }
+
+        function copyDeviceId() {
+            const devId = appConfig.deviceId || "DEV-NODE";
+            if (window.AndroidBridge && window.AndroidBridge.copyToClipboard) {
+                window.AndroidBridge.copyToClipboard(devId, "Device ID");
+            } else {
+                navigator.clipboard.writeText(devId);
+                showToast("Device ID Copied!");
+            }
+        }
+
+        function copyAllAccountsJson() {
+            const jsonText = JSON.stringify(accounts, null, 2);
+            if (window.AndroidBridge && window.AndroidBridge.copyToClipboard) {
+                window.AndroidBridge.copyToClipboard(jsonText, "Accounts JSON");
+            } else {
+                navigator.clipboard.writeText(jsonText);
+                showToast("JSON Dump Copied!");
+            }
+        }
+
+        function toggleRevealToken(code) {
+            revealedTokens[code] = !revealedTokens[code];
+            filterAccounts();
+        }
+
+        function maskToken(token) {
+            if (!token) return "No token";
+            if (token.length <= 16) return "••••••••••••••••";
+            return token.substring(0, 10) + "••••••••••••••••" + token.substring(token.length - 6);
+        }
+
+        function confirmDeleteAccount(code, email) {
+            if (confirm("Disconnect '" + email + "' from this node?")) {
+                if (window.AndroidBridge && window.AndroidBridge.deleteAccount) {
+                    window.AndroidBridge.deleteAccount(code);
+                }
+                accounts = accounts.filter(a => a.code !== code);
+                renderAccountsList(accounts);
+                updateJsonDump();
+                showToast("Account disconnected.");
+            }
+        }
+
+        function openWebPortal() {
+            const url = appConfig.portalUrl || "https://pp-mod-auto-quest.onrender.com";
+            if (window.AndroidBridge && window.AndroidBridge.openBrowser) {
+                window.AndroidBridge.openBrowser(url);
+            } else {
+                window.open(url, '_blank');
+            }
+        }
+
+        function syncWithCloud() {
+            showToast("Syncing with cloud...");
+            if (window.AndroidBridge && window.AndroidBridge.syncCloudAccounts) {
+                window.AndroidBridge.syncCloudAccounts();
+            } else {
+                setTimeout(() => {
+                    loadAccounts();
+                    showToast("Accounts up to date!");
+                }, 800);
+            }
+        }
+
+        function testAccountToken(token) {
+            switchNavTab('tabSecondary');
+            document.getElementById('testerInputToken').value = token;
+            runManualGpgsTest();
+        }
+
+        function runManualGpgsTest() {
+            const token = (document.getElementById('testerInputToken').value || "").trim();
+            const resBox = document.getElementById('testResultBox');
+            if (!token) {
+                showToast("Please enter or select a master token.");
+                return;
+            }
+
+            resBox.style.display = "block";
+            resBox.style.background = "rgba(56, 189, 248, 0.1)";
+            resBox.style.border = "1px solid var(--accent-cyan)";
+            resBox.style.color = "var(--accent-cyan)";
+            resBox.innerHTML = "⏳ Authenticating with Google Play Games servers...";
+
+            if (window.AndroidBridge && window.AndroidBridge.testGpgsToken) {
+                window.AndroidBridge.testGpgsToken(token);
+            } else {
+                // Simulation for browser testing
+                setTimeout(() => {
+                    window.onGpgsTestResult(true, "Authentication Successful! Play Games OAuth2 session acquired. Master token is 100% active.");
+                }, 1200);
+            }
+        }
+
+        window.onGpgsTestResult = function(success, message) {
+            const resBox = document.getElementById('testResultBox');
+            if (!resBox) return;
+            resBox.style.display = "block";
+            if (success) {
+                resBox.style.background = "rgba(16, 185, 129, 0.15)";
+                resBox.style.border = "1px solid var(--accent-emerald)";
+                resBox.style.color = "#34d399";
+                resBox.innerHTML = "✅ <b>ACTIVE SESSION</b><br>" + message;
+            } else {
+                resBox.style.background = "rgba(244, 63, 94, 0.15)";
+                resBox.style.border = "1px solid var(--accent-rose)";
+                resBox.style.color = "#fb7185";
+                resBox.innerHTML = "❌ <b>FAILED / EXPIRED</b><br>" + message;
+            }
+        };
+
+        function updateJsonDump() {
+            const dump = document.getElementById('jsonDumpBox');
+            if (dump) {
+                dump.textContent = JSON.stringify(accounts, null, 2);
+            }
+        }
+
+        function formatCode(code) {
+            if (!code) return "------";
+            if (code.length === 6) {
+                return code.substring(0, 3) + " " + code.substring(3);
+            }
+            return code;
+        }
+
+        function getFlag(country) {
+            if (!country) return "🌐";
+            const match = REGIONS.find(r => r.code.toUpperCase() === country.toUpperCase());
+            return match ? match.flag : "🌐";
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toastBanner');
+            const txt = document.getElementById('toastMsg');
+            txt.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2400);
+        }
+    </script>
+</body>
+</html>
