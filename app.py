@@ -185,26 +185,26 @@ def save_push_notifications(data):
         print(f"[-] Error saving push notifications: {e}")
 
 def load_known_tokens():
-    default_tokens = {
-        "mdd145712@gmail.com": "aas_et/AKppINbXkKsnvT1uCfWaJiRBhXUEBdJv6j7kEDRcNamr3myR6ujaj3_qGraZHflKQKsQyLQ3KVX1W6kL3GykE4XCHlLXqBwAR352E7nkJ5SQKwzRH6ZdzU6OeHyhPEqU6rcFpbGH0w9A45I2rzndt1wgh60Dut-0q2bMLBfaKOBIH6kWHToAjOOUrLw1Cf2nNwOMpqrcv6_staeZ22EdFjSf2Vx7xa3in-kKoE_deo8S"
-    }
+    tokens = {}
     if os.path.exists(TOKENS_FILE):
         try:
             with open(TOKENS_FILE, "r", encoding="utf-8") as f:
-                saved = json.load(f)
-                default_tokens.update(saved)
+                tokens = json.load(f)
         except Exception:
             pass
-    return default_tokens
+    return tokens
+
+def save_known_tokens(tokens):
+    try:
+        with open(TOKENS_FILE, "w", encoding="utf-8") as f:
+            json.dump(tokens, f, indent=2)
+    except Exception as e:
+        print(f"[-] Error saving tokens: {e}")
 
 def save_known_token(email, token):
     tokens = load_known_tokens()
     tokens[email.strip().lower()] = token.strip()
-    try:
-        with open(TOKENS_FILE, "w", encoding="utf-8") as f:
-            json.dump(tokens, f, indent=2)
-    except Exception:
-        pass
+    save_known_tokens(tokens)
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
 CORS(app)
