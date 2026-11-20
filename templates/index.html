@@ -1451,6 +1451,22 @@
             box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
         }
 
+        .portal-game-picker-card.game-card-shadowed {
+            background: rgba(15, 23, 42, 0.45) !important;
+            opacity: 0.62 !important;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+            border: 1px dashed rgba(16, 185, 129, 0.45) !important;
+            filter: grayscale(25%) !important;
+        }
+
+        .portal-game-picker-card.game-card-shadowed:hover {
+            opacity: 0.96 !important;
+            filter: grayscale(0%) !important;
+            border-color: var(--accent-cyan) !important;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3), 0 4px 14px rgba(14, 165, 233, 0.25) !important;
+            transform: translateY(-1px);
+        }
+
         .portal-quest-row-item:hover {
             border-color: var(--accent-green) !important;
             background: var(--bg-card-subtle) !important;
@@ -6136,12 +6152,39 @@
             container.innerHTML = filtered.map(g => {
                 const iconSrc = g.icon || '/static/images/default_app.png';
                 const isSelected = (selectedGameId === g.id);
+
+                // Check if this game is already added to Public Portal
+                const existingSrv = (portalAllServices || []).find(s => 
+                    String(s.id) === String(g.id) || 
+                    String(s.game_id) === String(g.id) || 
+                    (s.package && g.package && s.package.toLowerCase() === g.package.toLowerCase())
+                );
+                const isAlreadyAdded = !!existingSrv || !!g.is_added;
+                const addedQuestsCount = existingSrv 
+                    ? (existingSrv.selected_quests_count || (existingSrv.selected_quest_ids ? existingSrv.selected_quest_ids.length : 0))
+                    : (g.selected_count || 0);
+
+                const cardStyle = isAlreadyAdded
+                    ? "display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 14px; background:rgba(15,23,42,0.45); opacity:0.62; box-shadow:inset 0 2px 10px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.25); border:1px dashed rgba(16,185,129,0.45); border-radius:var(--radius-md); cursor:pointer; transition:all 0.2s ease; filter:grayscale(25%);"
+                    : `display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 14px; background:var(--bg-card); border:1px solid ${isSelected ? 'var(--accent-cyan)' : 'var(--border-color)'}; border-radius:var(--radius-md); cursor:pointer; transition:all 0.2s ease;`;
+
+                const actionBtnHtml = isAlreadyAdded
+                    ? `<button type="button" class="btn-inspect-action" style="padding:5px 12px; font-size:11.5px; font-weight:800; color:var(--accent-cyan); border-color:rgba(14,165,233,0.35); background:rgba(14,165,233,0.1);" onclick="event.stopPropagation(); selectPortalGame('${g.id}')">✏️ Edit Quests</button>`
+                    : `<button type="button" class="btn-sync-protocol" style="padding:5px 12px; font-size:11.5px; font-weight:700;" onclick="event.stopPropagation(); selectPortalGame('${g.id}')">Select ➔</button>`;
+
+                const addedBadgeHtml = isAlreadyAdded
+                    ? `<span class="badge-status active" style="font-size:10px; font-weight:800; padding:2px 7px; background:rgba(16,185,129,0.18); color:var(--accent-green); border:1px solid rgba(16,185,129,0.35); white-space:nowrap;">✓ Added (${addedQuestsCount} Quests)</span>`
+                    : '';
+
                 return `
-                <div class="portal-game-picker-card" onclick="selectPortalGame('${g.id}')" style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 14px; background:var(--bg-card); border:1px solid ${isSelected ? 'var(--accent-cyan)' : 'var(--border-color)'}; border-radius:var(--radius-md); cursor:pointer; transition:all 0.2s ease;">
+                <div class="portal-game-picker-card ${isAlreadyAdded ? 'game-card-shadowed' : ''}" onclick="selectPortalGame('${g.id}')" style="${cardStyle}" title="${isAlreadyAdded ? 'Already configured on Public Portal. Click to view or edit quest selection.' : 'Click to select game'}">
                     <div style="display:flex; align-items:center; gap:12px; min-width:0; flex:1;">
                         <img src="${iconSrc}" onerror="this.src='/static/images/default_app.png'" style="width:40px; height:40px; border-radius:var(--radius-sm); object-fit:cover; border:1px solid var(--border-color); flex-shrink:0;">
                         <div style="min-width:0; flex:1;">
-                            <strong style="font-size:13.5px; color:var(--text-primary); display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(g.title)}</strong>
+                            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                <strong style="font-size:13.5px; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(g.title)}</strong>
+                                ${addedBadgeHtml}
+                            </div>
                             <div style="display:flex; align-items:center; gap:6px; margin-top:2px;">
                                 <span style="font-size:10.5px; color:var(--accent-cyan); font-weight:700; background:rgba(14,165,233,0.1); padding:1px 6px; border-radius:4px; border:1px solid rgba(14,165,233,0.2);">${escapeHtml(g.category || 'Game')}</span>
                                 <span style="font-size:11px; font-family:'JetBrains Mono'; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(g.developer || g.package || '')}</span>
@@ -6152,9 +6195,7 @@
                         <span style="font-size:11px; font-weight:800; font-family:'JetBrains Mono'; color:var(--accent-green); background:rgba(16,185,129,0.1); padding:3px 8px; border-radius:4px; border:1px solid rgba(16,185,129,0.25);">
                             ${g.achievements_count || 10} Quests
                         </span>
-                        <button type="button" class="btn-sync-protocol" style="padding:5px 12px; font-size:11.5px; font-weight:700;" onclick="event.stopPropagation(); selectPortalGame('${g.id}')">
-                            Select ➔
-                        </button>
+                        ${actionBtnHtml}
                     </div>
                 </div>
             `;
@@ -6211,14 +6252,12 @@
             if (questSearchInput) questSearchInput.value = "";
             btnSave.disabled = true;
 
-            // Fetch all catalog games if not fetched yet
+            // Fetch latest catalog games so is_added flags and quest counts are accurate
             try {
-                if (!portalAllGames || portalAllGames.length === 0) {
-                    const res = await fetch(`${API_BASE}/api/portal/games`);
-                    const data = await res.json();
-                    if (data.ok && Array.isArray(data.games)) {
-                        portalAllGames = data.games;
-                    }
+                const res = await fetch(`${API_BASE}/api/portal/games`);
+                const data = await res.json();
+                if (data.ok && Array.isArray(data.games)) {
+                    portalAllGames = data.games;
                 }
             } catch (e) { }
 
@@ -6588,122 +6627,37 @@
                 : (document.getElementById("smartQuestTextInput")?.value || "").trim();
 
             if (!rawText) {
-                showToast("Please paste quest text first (e.g. Game Name on Line 1, Quests below).", "error");
+                showToast("Please paste quest or game text first.", "error");
                 return;
             }
 
             const btn = document.getElementById("btnSmartAutoMatch");
             if (btn && !customText) {
                 btn.disabled = true;
-                btn.innerHTML = `<span>⏳ Searching Catalog...</span>`;
+                btn.innerHTML = `<span>⏳ Searching Quests &amp; Catalog...</span>`;
             }
 
             try {
-                // Ensure catalog is loaded
-                if (!portalAllGames || portalAllGames.length === 0) {
-                    const res = await fetch(`${API_BASE}/api/portal/games`);
-                    const data = await res.json();
-                    if (data.ok && Array.isArray(data.games)) {
-                        portalAllGames = data.games;
-                    }
-                }
-
-                if (!portalAllGames || portalAllGames.length === 0) {
-                    showToast("Failed to load games catalog from server.", "error");
-                    return;
-                }
-
-                // Parse and clean lines
-                const lines = rawText.split(/\r?\n/)
-                    .map(l => l.replace(/^[\s•\-\*#\d\.\)]+/, '').trim())
-                    .filter(l => l.length > 0);
-
-                if (lines.length === 0) {
-                    showToast("No valid text lines found in input.", "error");
-                    return;
-                }
-
-                // 1. Detect Game with Scoring
-                let bestGame = null;
-                let bestScore = 0;
-                let bestLineIdx = 0;
-
-                lines.forEach((line, idx) => {
-                    const nLine = normalizeSearchText(line);
-                    if (!nLine || nLine.length < 2) return;
-
-                    portalAllGames.forEach(g => {
-                        const nTitle = normalizeSearchText(g.title);
-                        const nPkg = normalizeSearchText(g.package);
-                        let score = 0;
-
-                        if (nLine === nTitle || nLine === nPkg) {
-                            score = 100;
-                        } else if (nTitle.includes(nLine) || nLine.includes(nTitle)) {
-                            score = 80;
-                        } else {
-                            const lineWords = nLine.split(" ").filter(w => w.length > 2);
-                            const matchedWords = lineWords.filter(w => nTitle.includes(w));
-                            if (matchedWords.length > 0) {
-                                score = (matchedWords.length / lineWords.length) * 60;
-                            }
-                        }
-
-                        if (score > bestScore) {
-                            bestScore = score;
-                            bestGame = g;
-                            bestLineIdx = idx;
-                        }
-                    });
+                const res = await fetch(`${API_BASE}/api/portal/smart-detect`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ text: rawText })
                 });
-
-                if (!bestGame || bestScore < 30) {
-                    showToast(`Could not find a matching game for "${lines[0]}". Please check title or select from catalog.`, "error");
-                    openPortalServiceModal();
-                    return;
-                }
-
-                // 2. Fetch Quests for Matched Game
-                const qRes = await fetch(`${API_BASE}/api/portal/game/${bestGame.id}/quests`);
-                const qData = await qRes.json();
-                if (!qData.ok || !Array.isArray(qData.quests)) {
-                    showToast(`Failed to load quests for '${bestGame.title}'.`, "error");
-                    return;
-                }
-
-                // 3. Match Quest Objectives
-                const candidateQuestLines = lines.filter((_, idx) => idx !== bestLineIdx);
-                const matchedQuestIds = [];
-
-                qData.quests.forEach(q => {
-                    const nqName = normalizeSearchText(q.name);
-                    const nqDesc = normalizeSearchText(q.description);
-
-                    for (const ql of candidateQuestLines) {
-                        const nql = normalizeSearchText(ql);
-                        if (nql.length < 3) continue;
-
-                        if (nqName === nql || nqName.includes(nql) || nql.includes(nqName)) {
-                            matchedQuestIds.push(q.id);
-                            break;
-                        } else if (nqDesc && (nqDesc.includes(nql) || nql.includes(nqDesc))) {
-                            matchedQuestIds.push(q.id);
-                            break;
-                        }
+                const data = await res.json();
+                if (data.ok && data.game_id) {
+                    await openPortalServiceModal(data.game_id, data.matched_quest_ids || []);
+                    if (data.matched_count > 0) {
+                        showToast(`🎯 ${data.reason}: "${data.title}" (${data.matched_count} quest objectives auto-matched)! Review & Save.`, "success");
+                    } else {
+                        showToast(`🎮 Found "${data.title}"! Please select desired quests and click Save.`, "info");
                     }
-                });
-
-                // 4. Open Modal Pre-Configured with matched game and checked quests
-                await openPortalServiceModal(bestGame.id, matchedQuestIds);
-
-                if (matchedQuestIds.length > 0) {
-                    showToast(`🎯 Auto-matched "${bestGame.title}" with ${matchedQuestIds.length} quest objective(s)! Review & Save.`, "success");
                 } else {
-                    showToast(`🎮 Found game "${bestGame.title}"! Please check desired quests and click Save.`, "info");
+                    showToast(data.error || "Could not detect game or quests. Opening game picker...", "error");
+                    openPortalServiceModal();
                 }
-
             } catch (e) {
                 showToast("Auto-detect error: " + e.message, "error");
+                openPortalServiceModal();
             } finally {
                 if (btn && !customText) {
                     btn.disabled = false;

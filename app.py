@@ -31,7 +31,7 @@ PORTAL_SERVICES_CACHE = None
 
 def load_portal_services():
     global PORTAL_SERVICES_CACHE
-    if PORTAL_SERVICES_CACHE is not None and len(PORTAL_SERVICES_CACHE) > 0:
+    if PORTAL_SERVICES_CACHE is not None:
         return PORTAL_SERVICES_CACHE
 
     data = None
@@ -41,14 +41,14 @@ def load_portal_services():
         try:
             with open(PORTAL_SERVICES_FILE, "r", encoding="utf-8") as f:
                 content = json.load(f)
-                if isinstance(content, dict) and len(content) > 0:
+                if isinstance(content, dict):
                     data = content
                     print(f"[+] Loaded {len(data)} portal services from local {PORTAL_SERVICES_FILE}")
         except Exception as e:
             print(f"[-] Error reading local portal_services: {e}")
 
     # 2. Second Priority: Cloudflare D1 persistent cloud store (survives Render restarts)
-    if not data:
+    if data is None:
         try:
             cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", timeout=8, verify=False)
             if cf_res.status_code == 200:
@@ -56,18 +56,17 @@ def load_portal_services():
                 if isinstance(cloud_data, dict):
                     if "data" in cloud_data and isinstance(cloud_data["data"], dict):
                         cloud_data = cloud_data["data"]
-                    if len(cloud_data) > 0:
-                        data = cloud_data
-                        print(f"[+] Loaded {len(data)} portal services from Cloudflare D1.")
+                    data = cloud_data
+                    print(f"[+] Loaded {len(data)} portal services from Cloudflare D1.")
         except Exception as e:
             print(f"[-] Cloudflare D1 boot fetch note: {e}")
 
     # 3. Third Priority: Local backup file
-    if not data and os.path.exists(PORTAL_SERVICES_BACKUP_FILE):
+    if data is None and os.path.exists(PORTAL_SERVICES_BACKUP_FILE):
         try:
             with open(PORTAL_SERVICES_BACKUP_FILE, "r", encoding="utf-8") as bf:
                 b_content = json.load(bf)
-                if isinstance(b_content, dict) and len(b_content) > 0:
+                if isinstance(b_content, dict):
                     data = b_content
         except Exception:
             pass
@@ -76,19 +75,18 @@ def load_portal_services():
     if data is None:
         data = {}
 
-    # Mirror to local files if we have data
-    if data:
-        try:
-            with open(PORTAL_SERVICES_FILE, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, ensure_ascii=False)
-        except Exception:
-            pass
+    # Mirror to local files if initialized
+    try:
+        with open(PORTAL_SERVICES_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+    except Exception:
+        pass
 
-        try:
-            with open(PORTAL_SERVICES_BACKUP_FILE, "w", encoding="utf-8") as bf:
-                json.dump(data, bf, indent=2, ensure_ascii=False)
-        except Exception:
-            pass
+    try:
+        with open(PORTAL_SERVICES_BACKUP_FILE, "w", encoding="utf-8") as bf:
+            json.dump(data, bf, indent=2, ensure_ascii=False)
+    except Exception:
+        pass
 
     PORTAL_SERVICES_CACHE = data
     return data
@@ -103,17 +101,23 @@ def save_portal_services(data):
         print(f"[-] Error saving portal services: {e}")
 
     try:
-        with open(PORTAL_SERVICES_BACKUP_FILE, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
+        with open(PORTAL_SERVICES_BACKUP_FILE, "w", encoding="utf-8") as bf:
+            json.dump(data, bf, indent=2, ensure_ascii=False)
     except Exception:
         pass
 
-    # Sync to Cloudflare D1 persistent cloud store immediately
+    # Sync to Cloudflare D1 persistent cloud store immediately with retries
     def _sync_cf():
-        try:
-            requests.post("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", json={"data": data}, timeout=8, verify=False)
-        except Exception as e:
-            print(f"[-] Cloudflare D1 portal sync error: {e}")
+        for attempt in range(3):
+            try:
+                res = requests.post("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", json={"data": data}, timeout=8, verify=False)
+                if res.status_code == 200:
+                    print(f"[+] Synced {len(data)} portal services to Cloudflare D1 cloud store.")
+                    break
+            except Exception as e:
+                print(f"[-] Cloudflare D1 portal sync attempt {attempt+1} error: {e}")
+                time.sleep(1)
+
     threading.Thread(target=_sync_cf, daemon=True).start()
 
 def find_portal_service(services, query_id):
@@ -3883,6 +3887,160 @@ def get_portal_game_quests(game_id):
         "quests": all_quests,
         "total_count": len(all_quests),
         "selected_count": len(selected_ids)
+    })
+
+@app.route("/api/portal/smart-detect", methods=["POST"])
+def smart_detect_game_and_quests():
+    """
+    Intelligent Quest Auto-Detection Engine.
+    Detects target game and specific quest objectives from pasted raw text.
+    PRIORITY RULE: Achievement matching takes higher precedence than game title ("game er name er theke achivment beshi etar kore").
+    If game name is not found or ambiguous, detects which game contains those achievements.
+    """
+    data = request.get_json() or {}
+    raw_text = str(data.get("text", "")).strip()
+    if not raw_text:
+        return jsonify({"ok": False, "error": "No text provided for detection."}), 400
+
+    def clean_search_str(s):
+        if not s:
+            return ""
+        s = s.lower()
+        s = re.sub(r"\+?\d+[\d,]*\s*(?:xp|pts?|points?)", " ", s, flags=re.I)
+        s = re.sub(r"[\(\[\{][^\)\]\}]*[\)\]\}]", " ", s)
+        s = re.sub(r"^[\s•\-\*#\d\.\)\:]+", " ", s)
+        s = re.sub(r"[^\w\s]", " ", s)
+        s = re.sub(r"\s+", " ", s).strip()
+        return s
+
+    def extract_id_tokens(s):
+        # Extract digits or Roman numerals (i, ii, iii, iv, v, vi, vii, viii, ix, x)
+        return re.findall(r"\b(?:\d+|i{1,3}|i[vx]|v|v?i{1,3}|ix|x)\b", s.lower())
+
+    raw_lines = raw_text.splitlines()
+    clean_lines = []
+    for l in raw_lines:
+        c = clean_search_str(l)
+        if len(c) >= 2:
+            clean_lines.append(c)
+
+    if not clean_lines:
+        return jsonify({"ok": False, "error": "No recognizable quest or game text found."}), 400
+
+    merged = get_merged_games()
+    
+    game_scores = {}
+    game_matched_quests = {}
+    game_match_reasons = {}
+
+    for gid, g in merged.items():
+        gid_str = str(gid)
+        g_title_clean = clean_search_str(g.get("title", ""))
+        g_pkg_clean = clean_search_str(g.get("package", ""))
+        g_title_words = [w for w in g_title_clean.split() if len(w) > 2]
+        
+        all_quests = get_game_quest_definitions(g)
+        quest_scores = 0
+        matched_qids = []
+        ach_match_count = 0
+        title_matched = False
+
+        # 1. Title/package matching
+        title_score = 0
+        for line in clean_lines:
+            if line == g_title_clean or (g_pkg_clean and line == g_pkg_clean):
+                title_score = max(title_score, 250)
+                title_matched = True
+            elif g_title_clean and (line in g_title_clean or g_title_clean in line):
+                if len(line) >= 4 and len(line) / max(len(g_title_clean), 1) >= 0.4:
+                    title_score = max(title_score, 120)
+                    title_matched = True
+            elif g_title_words and len(line.split()) <= 4:
+                line_words = [w for w in line.split() if len(w) > 2]
+                overlap = [w for w in line_words if w in g_title_words]
+                if len(overlap) >= 2 or (len(overlap) == 1 and len(line_words) == 1 and len(overlap[0]) >= 5):
+                    title_score = max(title_score, 60)
+                    title_matched = True
+
+        # 2. Achievement matches (ACHIEVEMENTS GET HIGHEST PRIORITY)
+        for q in all_quests:
+            qid = q.get("id")
+            q_name_clean = clean_search_str(q.get("name", ""))
+            q_desc_clean = clean_search_str(q.get("description", ""))
+            q_name_words = [w for w in q_name_clean.split() if len(w) > 2]
+            id_q = extract_id_tokens(q_name_clean)
+
+            quest_matched = False
+            for line in clean_lines:
+                id_l = extract_id_tokens(line)
+                # If both line and quest have distinct number/Roman ID tokens, they MUST match
+                if id_l and id_q and id_l != id_q:
+                    continue
+
+                if line == q_name_clean:
+                    quest_scores += 200
+                    quest_matched = True
+                    break
+                elif len(line) >= 5 and (line in q_name_clean or q_name_clean in line) and (not id_l or id_l == id_q):
+                    quest_scores += 150
+                    quest_matched = True
+                    break
+                elif q_name_words and len(line.split()) >= 2:
+                    l_words = [w for w in line.split() if len(w) > 2]
+                    overlap = [w for w in l_words if w in q_name_words]
+                    if len(overlap) >= 2 and len(overlap) / max(len(l_words), 1) >= 0.6 and (not id_l or id_l == id_q):
+                        quest_scores += 100
+                        quest_matched = True
+                        break
+                elif q_desc_clean and len(line) >= 6 and (line in q_desc_clean or q_desc_clean in line) and (not id_l or id_l == id_q):
+                    quest_scores += 70
+                    quest_matched = True
+                    break
+
+            if quest_matched and qid and qid not in matched_qids:
+                matched_qids.append(qid)
+                ach_match_count += 1
+
+        total_game_score = quest_scores + title_score
+
+        if total_game_score > 0:
+            game_scores[gid_str] = total_game_score
+            game_matched_quests[gid_str] = matched_qids
+            if ach_match_count > 0 and title_matched:
+                game_match_reasons[gid_str] = f"Matched '{g.get('title')}' & {ach_match_count} quest(s)"
+            elif ach_match_count > 0:
+                game_match_reasons[gid_str] = f"Detected game by {ach_match_count} matching achievement(s)"
+            else:
+                game_match_reasons[gid_str] = f"Matched '{g.get('title')}'"
+
+    if not game_scores:
+        return jsonify({
+            "ok": False,
+            "error": "Could not identify any game or achievements from the pasted text."
+        }), 404
+
+    best_gid = max(game_scores.keys(), key=lambda k: game_scores[k])
+    best_score = game_scores[best_gid]
+
+    if best_score < 35:
+        return jsonify({
+            "ok": False,
+            "error": "Detection confidence too low. Please select the game manually from catalog."
+        }), 404
+
+    best_game = merged[best_gid]
+    matched_ids = game_matched_quests.get(best_gid, [])
+    reason = game_match_reasons.get(best_gid, "Detected")
+
+    return jsonify({
+        "ok": True,
+        "game_id": best_gid,
+        "title": best_game.get("title"),
+        "package": best_game.get("package"),
+        "matched_quest_ids": matched_ids,
+        "matched_count": len(matched_ids),
+        "score": best_score,
+        "reason": reason
     })
 
 @app.route("/api/portal/services/save", methods=["POST"])
