@@ -1,6 +1,8 @@
 package com.vareon.playquest;
 
 import android.net.Uri;
+import android.os.Build;
+import android.webkit.RenderProcessGoneDetail;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -35,6 +37,12 @@ public class AppWebClient extends WebViewClient {
         activity.checkUrlForToken(url);
         handleUrl(url);
         activity.extractEmailFromPage();
+    }
+
+    @Override
+    public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
+        // Prevent Chromium renderer crash from killing entire app process
+        return true;
     }
 
     private void handleUrl(String url) {

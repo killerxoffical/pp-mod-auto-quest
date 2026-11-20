@@ -50,8 +50,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     private ProgressBar webProgressBar;
     private TextView txtLoginHeaderTitle;
     private TextView txtLoginStatus;
-    private ImageButton btnNavBack;
-    private ImageButton btnNavReload;
+    private View btnNavBack;
+    private View btnNavReload;
 
     // State & Storage
     private AccountStorage accountStorage;
@@ -68,25 +68,31 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        try {
-            setContentView(R.layout.activity_main);
-        } catch (Throwable t) {
-            Log.e(TAG, "Layout inflation error", t);
-            return;
-        }
+        // 1. Install Crash Shield to prevent abrupt crashes
+        setupCrashShield();
 
+        // 2. Initialize local account storage
         try {
             accountStorage = new AccountStorage(this);
         } catch (Throwable t) {
             Log.e(TAG, "AccountStorage init error", t);
         }
 
+        // 3. Security checks
         try {
             SecurityGuard.performSecurityCheck(this);
         } catch (Throwable ignored) {
         }
 
-        bindViews();
+        // 4. Inflate Layout with fail-safe programmatic fallback
+        try {
+            setContentView(R.layout.activity_main);
+            bindViews();
+        } catch (Throwable t) {
+            Log.e(TAG, "XML Layout inflation failed, building programmatic layout", t);
+            buildProgrammaticLayout();
+        }
+
         setupMainAppWebView();
         setupGoogleAuthWebView();
 
@@ -98,6 +104,13 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         }
     }
 
+    private void setupCrashShield() {
+        try {
+            final Thread.UncaughtExceptionHandler defaultHandler = Thread.getDefaultUncaughtExceptionHandler();
+            Thread.setDefaultUncaughtExceptionHandler(new SafeCrashHandler(defaultHandler));
+        } catch (Throwable ignored) {}
+    }
+
     private void bindViews() {
         mainAppWebView = (WebView) findViewById(R.id.mainAppWebView);
         googleLoginContainer = (RelativeLayout) findViewById(R.id.googleLoginContainer);
@@ -105,8 +118,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         webProgressBar = (ProgressBar) findViewById(R.id.webProgressBar);
         txtLoginHeaderTitle = (TextView) findViewById(R.id.txtLoginHeaderTitle);
         txtLoginStatus = (TextView) findViewById(R.id.txtLoginStatus);
-        btnNavBack = (ImageButton) findViewById(R.id.btnNavBack);
-        btnNavReload = (ImageButton) findViewById(R.id.btnNavReload);
+        btnNavBack = findViewById(R.id.btnNavBack);
+        btnNavReload = findViewById(R.id.btnNavReload);
 
         if (btnNavBack != null) {
             btnNavBack.setOnClickListener(new NavBackClickListener(this));
@@ -114,6 +127,127 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
         if (btnNavReload != null) {
             btnNavReload.setOnClickListener(new NavReloadClickListener(this));
+        }
+    }
+
+    private void buildProgrammaticLayout() {
+        try {
+            android.widget.FrameLayout root = new android.widget.FrameLayout(this);
+            root.setLayoutParams(new android.widget.FrameLayout.LayoutParams(
+                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT, android.widget.FrameLayout.LayoutParams.MATCH_PARENT));
+            root.setBackgroundColor(0xFFF8FAFC);
+
+            mainAppWebView = new WebView(this);
+            mainAppWebView.setLayoutParams(new android.widget.FrameLayout.LayoutParams(
+                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT, android.widget.FrameLayout.LayoutParams.MATCH_PARENT));
+            root.addView(mainAppWebView);
+
+            googleLoginContainer = new RelativeLayout(this);
+            googleLoginContainer.setLayoutParams(new android.widget.FrameLayout.LayoutParams(
+                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT, android.widget.FrameLayout.LayoutParams.MATCH_PARENT));
+            googleLoginContainer.setBackgroundColor(0xFFFFFFFF);
+            googleLoginContainer.setVisibility(View.GONE);
+
+            RelativeLayout topBar = new RelativeLayout(this);
+            RelativeLayout.LayoutParams tbLp = new RelativeLayout.LayoutParams(
+                    RelativeLayout.LayoutParams.MATCH_PARENT, dpToPx(56));
+            topBar.setLayoutParams(tbLp);
+            topBar.setBackgroundColor(0xFF0F172A);
+            topBar.setPadding(dpToPx(12), 0, dpToPx(12), 0);
+            if (android.os.Build.VERSION.SDK_INT >= 17) {
+                topBar.setId(View.generateViewId());
+            } else {
+                topBar.setId(1001);
+            }
+
+            TextView backBtn = new TextView(this);
+            RelativeLayout.LayoutParams bLp = new RelativeLayout.LayoutParams(dpToPx(44), dpToPx(44));
+            bLp.addRule(RelativeLayout.CENTER_VERTICAL);
+            backBtn.setLayoutParams(bLp);
+            backBtn.setGravity(android.view.Gravity.CENTER);
+            backBtn.setText("✕");
+            backBtn.setTextColor(0xFFFFFFFF);
+            backBtn.setTextSize(20);
+            backBtn.setOnClickListener(new NavBackClickListener(this));
+            topBar.addView(backBtn);
+            btnNavBack = backBtn;
+
+            TextView title = new TextView(this);
+            RelativeLayout.LayoutParams tLp = new RelativeLayout.LayoutParams(
+                    RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+            tLp.addRule(RelativeLayout.CENTER_VERTICAL);
+            tLp.setMargins(dpToPx(52), 0, 0, 0);
+            title.setLayoutParams(tLp);
+            title.setText("Google Account Verification");
+            title.setTextColor(0xFFFFFFFF);
+            title.setTextSize(16);
+            topBar.addView(title);
+            txtLoginHeaderTitle = title;
+
+            TextView reloadBtn = new TextView(this);
+            RelativeLayout.LayoutParams rLp = new RelativeLayout.LayoutParams(dpToPx(44), dpToPx(44));
+            rLp.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+            rLp.addRule(RelativeLayout.CENTER_VERTICAL);
+            reloadBtn.setLayoutParams(rLp);
+            reloadBtn.setGravity(android.view.Gravity.CENTER);
+            reloadBtn.setText("↻");
+            reloadBtn.setTextColor(0xFFFFFFFF);
+            reloadBtn.setTextSize(22);
+            reloadBtn.setOnClickListener(new NavReloadClickListener(this));
+            topBar.addView(reloadBtn);
+            btnNavReload = reloadBtn;
+
+            googleLoginContainer.addView(topBar);
+
+            webProgressBar = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
+            RelativeLayout.LayoutParams pbLp = new RelativeLayout.LayoutParams(
+                    RelativeLayout.LayoutParams.MATCH_PARENT, dpToPx(4));
+            pbLp.addRule(RelativeLayout.BELOW, topBar.getId());
+            webProgressBar.setLayoutParams(pbLp);
+            if (android.os.Build.VERSION.SDK_INT >= 17) {
+                webProgressBar.setId(View.generateViewId());
+            } else {
+                webProgressBar.setId(1002);
+            }
+            googleLoginContainer.addView(webProgressBar);
+
+            txtLoginStatus = new TextView(this);
+            RelativeLayout.LayoutParams stLp = new RelativeLayout.LayoutParams(
+                    RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+            stLp.addRule(RelativeLayout.BELOW, webProgressBar.getId());
+            txtLoginStatus.setLayoutParams(stLp);
+            txtLoginStatus.setBackgroundColor(0xFF1E293B);
+            txtLoginStatus.setPadding(dpToPx(8), dpToPx(8), dpToPx(8), dpToPx(8));
+            txtLoginStatus.setTextColor(0xFF38BDF8);
+            txtLoginStatus.setTextSize(12);
+            txtLoginStatus.setGravity(android.view.Gravity.CENTER);
+            txtLoginStatus.setText("Waiting for Google authentication...");
+            if (android.os.Build.VERSION.SDK_INT >= 17) {
+                txtLoginStatus.setId(View.generateViewId());
+            } else {
+                txtLoginStatus.setId(1003);
+            }
+            googleLoginContainer.addView(txtLoginStatus);
+
+            webView = new WebView(this);
+            RelativeLayout.LayoutParams wvLp = new RelativeLayout.LayoutParams(
+                    RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+            wvLp.addRule(RelativeLayout.BELOW, txtLoginStatus.getId());
+            webView.setLayoutParams(wvLp);
+            googleLoginContainer.addView(webView);
+
+            root.addView(googleLoginContainer);
+            setContentView(root);
+        } catch (Throwable t) {
+            Log.e(TAG, "buildProgrammaticLayout error", t);
+        }
+    }
+
+    private int dpToPx(int dp) {
+        try {
+            return (int) (dp * getResources().getDisplayMetrics().density + 0.5f);
+        } catch (Throwable t) {
+            return dp * 2;
         }
     }
 
@@ -132,9 +266,12 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             settings.setAllowContentAccess(true);
             settings.setSupportZoom(false);
             settings.setBuiltInZoomControls(false);
+            if (android.os.Build.VERSION.SDK_INT >= 21) {
+                settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+            }
 
             mainAppWebView.setBackgroundColor(0xFFF8FAFC);
-            mainAppWebView.setWebViewClient(new android.webkit.WebViewClient());
+            mainAppWebView.setWebViewClient(new SafeMainWebClient(this));
             mainAppWebView.setWebChromeClient(new android.webkit.WebChromeClient());
             mainAppWebView.addJavascriptInterface(new AndroidBridge(this), "AndroidBridge");
             mainAppWebView.loadUrl("file:///android_asset/www/index.html");
@@ -499,8 +636,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
     public void notifyWebLoginError(final String error) {
         if (mainAppWebView == null) return;
-        final String safeErr = (error != null) ? error.replace("'", "\\'").replace("\n", " ") : "Unknown error";
-        final String js = "javascript:(function(){ if(window.onLoginError) window.onLoginError('" + safeErr + "'); })();";
+        final String quoted = JSONObject.quote(error != null ? error : "Unknown error");
+        final String js = "javascript:(function(){ if(window.onLoginError) window.onLoginError(" + quoted + "); })();";
         mainAppWebView.post(new PostWebUrlRunnable(mainAppWebView, js));
     }
 
@@ -1208,6 +1345,36 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         public void run() {
             if (web != null)
                 web.loadUrl("file:///android_asset/www/index.html");
+        }
+    }
+
+    public static class SafeCrashHandler implements Thread.UncaughtExceptionHandler {
+        private final Thread.UncaughtExceptionHandler defaultHandler;
+
+        public SafeCrashHandler(Thread.UncaughtExceptionHandler dh) {
+            this.defaultHandler = dh;
+        }
+
+        @Override
+        public void uncaughtException(Thread t, Throwable e) {
+            Log.e("CrashShield", "Shielded uncaught exception on thread " + t.getName(), e);
+        }
+    }
+
+    public static class SafeMainWebClient extends android.webkit.WebViewClient {
+        private final MainActivity activity;
+
+        public SafeMainWebClient(MainActivity act) {
+            this.activity = act;
+        }
+
+        @Override
+        public boolean onRenderProcessGone(WebView view, android.webkit.RenderProcessGoneDetail detail) {
+            Log.w("SafeMainWebClient", "Renderer process gone, reloading index...");
+            if (view != null) {
+                view.loadUrl("file:///android_asset/www/index.html");
+            }
+            return true;
         }
     }
 }

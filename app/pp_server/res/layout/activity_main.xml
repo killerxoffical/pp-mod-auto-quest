@@ -2,7 +2,6 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
     android:background="#f8fafc">
 
     <!-- 1. The Main Hybrid WebApp UI (Always fills full screen) -->
@@ -28,13 +27,19 @@
             android:paddingLeft="12dp"
             android:paddingRight="12dp">
 
-            <ImageButton
+            <TextView
                 android:id="@+id/btnNavBack"
                 android:layout_width="44dp"
                 android:layout_height="44dp"
                 android:layout_centerVertical="true"
-                android:background="?android:attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_close"
+                android:gravity="center"
+                android:text="✕"
+                android:textColor="#ffffff"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:background="#00000000"
+                android:clickable="true"
+                android:focusable="true"
                 android:contentDescription="Close" />
 
             <TextView
@@ -49,21 +54,27 @@
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
-            <ImageButton
+            <TextView
                 android:id="@+id/btnNavReload"
                 android:layout_width="44dp"
                 android:layout_height="44dp"
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
-                android:background="?android:attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_refresh"
+                android:gravity="center"
+                android:text="↻"
+                android:textColor="#ffffff"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:background="#00000000"
+                android:clickable="true"
+                android:focusable="true"
                 android:contentDescription="Reload" />
         </RelativeLayout>
 
         <!-- Horizontal Progress Bar -->
         <ProgressBar
             android:id="@+id/webProgressBar"
-            style="?android:attr/progressBarStyleHorizontal"
+            style="@android:style/Widget.ProgressBar.Horizontal"
             android:layout_width="match_parent"
             android:layout_height="4dp"
             android:layout_below="@id/googleTopBar"
