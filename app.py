@@ -50,12 +50,15 @@ def load_portal_services():
     # 2. Second Priority: Cloudflare D1 persistent cloud store (survives Render restarts)
     if not data:
         try:
-            cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", timeout=8)
+            cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", timeout=8, verify=False)
             if cf_res.status_code == 200:
                 cloud_data = cf_res.json()
-                if isinstance(cloud_data, dict) and len(cloud_data) > 0:
-                    data = cloud_data
-                    print(f"[+] Loaded {len(data)} portal services from Cloudflare D1.")
+                if isinstance(cloud_data, dict):
+                    if "data" in cloud_data and isinstance(cloud_data["data"], dict):
+                        cloud_data = cloud_data["data"]
+                    if len(cloud_data) > 0:
+                        data = cloud_data
+                        print(f"[+] Loaded {len(data)} portal services from Cloudflare D1.")
         except Exception as e:
             print(f"[-] Cloudflare D1 boot fetch note: {e}")
 
@@ -108,7 +111,7 @@ def save_portal_services(data):
     # Sync to Cloudflare D1 persistent cloud store immediately
     def _sync_cf():
         try:
-            requests.post("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", json=data, timeout=8)
+            requests.post("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", json={"data": data}, timeout=8, verify=False)
         except Exception as e:
             print(f"[-] Cloudflare D1 portal sync error: {e}")
     threading.Thread(target=_sync_cf, daemon=True).start()
