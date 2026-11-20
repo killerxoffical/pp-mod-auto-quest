@@ -2115,7 +2115,8 @@
                                 <div
                                     style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
                                     <span id="fullPanelAppVersion"
-                                        style="font-family:'JetBrains Mono'; font-size:12px; font-weight:800; color:#0284c7; word-break:break-all;">v3.8 Enterprise (Code 4)</span>
+                                        style="font-family:'JetBrains Mono'; font-size:12px; font-weight:800; color:#0284c7; word-break:break-all;">v3.8
+                                        Enterprise (Code 4)</span>
                                 </div>
                             </div>
 
@@ -2229,16 +2230,21 @@
                     <!-- SMART QUEST AUTO-DETECT BOX (Paste & Auto-Match) -->
                     <div id="smartQuestAutoBox"
                         style="padding:18px 24px; background:linear-gradient(180deg, rgba(14,165,233,0.04), rgba(16,185,129,0.04)); border-bottom:1px solid var(--border-color); transition:all 0.3s ease;">
-                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+                        <div
+                            style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
                             <div style="display:flex; align-items:center; gap:10px;">
-                                <div style="width:28px; height:28px; border-radius:var(--radius-sm); background:linear-gradient(135deg, #8b5cf6, #0ea5e9); display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px; font-weight:900;">
+                                <div
+                                    style="width:28px; height:28px; border-radius:var(--radius-sm); background:linear-gradient(135deg, #8b5cf6, #0ea5e9); display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px; font-weight:900;">
                                     ⚡
                                 </div>
                                 <div>
-                                    <strong style="font-size:13.5px; color:var(--text-primary); text-transform:uppercase; letter-spacing:0.3px;">
+                                    <strong
+                                        style="font-size:13.5px; color:var(--text-primary); text-transform:uppercase; letter-spacing:0.3px;">
                                         Smart Quest Auto-Detect (Paste &amp; Auto-Configure)
                                     </strong>
-                                    <span style="font-size:11px; color:var(--text-muted); display:block;">Paste game name &amp; quests to auto-find the game and pre-select achievements in one click</span>
+                                    <span style="font-size:11px; color:var(--text-muted); display:block;">Paste game
+                                        name &amp; quests to auto-find the game and pre-select achievements in one
+                                        click</span>
                                 </div>
                             </div>
                             <div style="display:flex; align-items:center; gap:8px;">
@@ -2260,9 +2266,13 @@
                                 style="width:100%; font-family:'JetBrains Mono', monospace; font-size:12.5px; line-height:1.55; padding:10px 14px; resize:vertical; border-radius:var(--radius-md); border-color:rgba(14,165,233,0.35);"
                                 placeholder="Paste quest text here... Example:&#10;Pokémon Masters EX&#10;Complete the designated area 2&#10;Complete the designated area 3"></textarea>
 
-                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                                <span style="font-size:11.5px; color:var(--text-muted); display:inline-flex; align-items:center; gap:4px;">
-                                    <span>💡</span> <b>Quick Flow:</b> Click the button below, system matches the game &amp; quests, then pops up the editor for you to review, edit as needed, and confirm!
+                            <div
+                                style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                                <span
+                                    style="font-size:11.5px; color:var(--text-muted); display:inline-flex; align-items:center; gap:4px;">
+                                    <span>💡</span> <b>Quick Flow:</b> Click the button below, system matches the game
+                                    &amp; quests, then pops up the editor for you to review, edit as needed, and
+                                    confirm!
                                 </span>
                                 <button type="button" id="btnSmartAutoMatch" class="btn-sync-protocol"
                                     style="padding:10px 24px; font-size:13px; font-weight:800; display:inline-flex; align-items:center; gap:8px; background:linear-gradient(135deg, #0ea5e9, #10b981); box-shadow:0 4px 14px rgba(14,165,233,0.25);"
@@ -3292,18 +3302,24 @@
                             style="font-size:11px; font-weight:800;">51 Games Available</span>
                     </div>
                     <!-- Quick Text Auto-Detect Inside Modal -->
-                    <div style="margin-bottom:12px; padding:10px 14px; background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md);">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                            <span style="font-size:11.5px; font-weight:800; color:var(--text-primary); display:flex; align-items:center; gap:5px;">
+                    <div
+                        style="margin-bottom:12px; padding:10px 14px; background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md);">
+                        <div
+                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                            <span
+                                style="font-size:11.5px; font-weight:800; color:var(--text-primary); display:flex; align-items:center; gap:5px;">
                                 <span>⚡</span> Quick Paste: Auto-Match Game &amp; Quests
                             </span>
-                            <button type="button" class="btn-inspect-action" style="padding:2px 8px; font-size:10.5px;" onclick="loadModalSampleText()">Try Pokémon Sample</button>
+                            <button type="button" class="btn-inspect-action" style="padding:2px 8px; font-size:10.5px;"
+                                onclick="loadModalSampleText()">Try Pokémon Sample</button>
                         </div>
                         <div style="display:flex; gap:8px;">
                             <textarea id="modalSmartTextInput" rows="2" class="form-input"
                                 placeholder="Paste e.g. Pokémon Masters EX and quest names on new lines..."
                                 style="flex:1; font-size:11.5px; padding:6px 10px; font-family:'JetBrains Mono', monospace; resize:vertical;"></textarea>
-                            <button type="button" id="btnModalSmartDetect" class="btn-sync-protocol" style="padding:6px 14px; font-size:11.5px; font-weight:800; white-space:nowrap; align-self:stretch; display:flex; align-items:center; justify-content:center;" onclick="runModalSmartDetect()">
+                            <button type="button" id="btnModalSmartDetect" class="btn-sync-protocol"
+                                style="padding:6px 14px; font-size:11.5px; font-weight:800; white-space:nowrap; align-self:stretch; display:flex; align-items:center; justify-content:center;"
+                                onclick="runModalSmartDetect()">
                                 Match ➔
                             </button>
                         </div>
@@ -3354,23 +3370,33 @@
                     </div>
 
                     <!-- Service Category / Section Selector (Level Up vs Quest) -->
-                    <div style="padding:12px 14px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-md);">
-                        <label style="font-size:11.5px; font-weight:800; color:var(--text-primary); display:block; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.3px;">
+                    <div
+                        style="padding:12px 14px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-md);">
+                        <label
+                            style="font-size:11.5px; font-weight:800; color:var(--text-primary); display:block; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.3px;">
                             📌 Public Portal Category:
                         </label>
                         <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                            <label style="display:flex; align-items:center; gap:8px; padding:8px 12px; border:1px solid var(--border-color); border-radius:var(--radius-sm); cursor:pointer; background:var(--bg-card-subtle); flex:1; min-width:180px;">
-                                <input type="radio" name="portalServiceSection" value="quest_unlocker" checked style="accent-color:var(--accent-cyan); width:16px; height:16px;">
+                            <label
+                                style="display:flex; align-items:center; gap:8px; padding:8px 12px; border:1px solid var(--border-color); border-radius:var(--radius-sm); cursor:pointer; background:var(--bg-card-subtle); flex:1; min-width:180px;">
+                                <input type="radio" name="portalServiceSection" value="quest_unlocker" checked
+                                    style="accent-color:var(--accent-cyan); width:16px; height:16px;">
                                 <div>
-                                    <strong style="font-size:12px; display:block; color:var(--text-primary);">🎯 Play Points Quest</strong>
-                                    <span style="font-size:10.5px; color:var(--text-muted);">Points booster quest for users</span>
+                                    <strong style="font-size:12px; display:block; color:var(--text-primary);">🎯 Play
+                                        Points Quest</strong>
+                                    <span style="font-size:10.5px; color:var(--text-muted);">Points booster quest for
+                                        users</span>
                                 </div>
                             </label>
-                            <label style="display:flex; align-items:center; gap:8px; padding:8px 12px; border:1px solid var(--border-color); border-radius:var(--radius-sm); cursor:pointer; background:var(--bg-card-subtle); flex:1; min-width:180px;">
-                                <input type="radio" name="portalServiceSection" value="level_up" style="accent-color:#d97706; width:16px; height:16px;">
+                            <label
+                                style="display:flex; align-items:center; gap:8px; padding:8px 12px; border:1px solid var(--border-color); border-radius:var(--radius-sm); cursor:pointer; background:var(--bg-card-subtle); flex:1; min-width:180px;">
+                                <input type="radio" name="portalServiceSection" value="level_up"
+                                    style="accent-color:#d97706; width:16px; height:16px;">
                                 <div>
-                                    <strong style="font-size:12px; display:block; color:#d97706;">⚡ Level-Up XP Booster</strong>
-                                    <span style="font-size:10.5px; color:var(--text-muted);">High XP achievements to level up</span>
+                                    <strong style="font-size:12px; display:block; color:#d97706;">⚡ Level-Up XP
+                                        Booster</strong>
+                                    <span style="font-size:10.5px; color:var(--text-muted);">High XP achievements to
+                                        level up</span>
                                 </div>
                             </label>
                         </div>
@@ -6449,7 +6475,7 @@
                 });
                 const data = await res.json();
                 if (data.ok) {
-                    try { localStorage.removeItem("pp_portal_services_backup"); } catch(e){}
+                    try { localStorage.removeItem("pp_portal_services_backup"); } catch (e) { }
                     showToast(data.message || "All portal services cleared successfully.", "success");
                     loadPortalServices();
                 } else {
