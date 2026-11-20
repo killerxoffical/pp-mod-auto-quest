@@ -696,6 +696,40 @@ def save_banned_users(banned_set):
     except Exception as e:
         print(f"[-] Error saving banned users: {e}")
 
+def detect_token_country(email, master_token, android_id, fallback="GLOBAL"):
+    """
+    Auto-detects country from token via Google userinfo profile locale or Google Play services.
+    """
+    try:
+        import gpsoauth
+        res = gpsoauth.perform_oauth(
+            email.strip(), master_token.strip(), android_id,
+            service="oauth2:https://www.googleapis.com/auth/userinfo.profile",
+            app="com.google.android.gms",
+            client_sig="38918a453d07199354f8b19af05ec6562ced5788"
+        )
+        if res and res.get("Auth"):
+            ur = requests.get(
+                "https://www.googleapis.com/oauth2/v3/userinfo",
+                headers={"Authorization": f"Bearer {res['Auth']}"},
+                timeout=5
+            )
+            if ur.status_code == 200:
+                loc = ur.json().get("locale", "")
+                if "-" in loc:
+                    c = loc.split("-")[-1].upper()
+                    if len(c) == 2:
+                        return c
+                elif loc.lower() == "ja":
+                    return "JP"
+                elif loc.lower() == "ko":
+                    return "KR"
+    except Exception as e:
+        print(f"[-] Token country auto-detect error: {e}")
+    if fallback and fallback.upper() not in ("AUTO", "GLOBAL"):
+        return fallback.upper()
+    return "GLOBAL"
+
 @app.route("/api/sync/create", methods=["POST"])
 def create_sync_code():
     data = request.get_json() or {}
@@ -704,7 +738,8 @@ def create_sync_code():
     if not token:
         return jsonify({"ok": False, "error": "Token required"}), 400
     
-    country = data.get("country", "GLOBAL")
+    country = data.get("country", "").strip()
+    device_country = data.get("device_country", "").strip()
     uid = data.get("uid", "")
     android_id = data.get("android_id", "").strip() or generate_android_id(email if email else None)
 
@@ -728,6 +763,11 @@ def create_sync_code():
             if email and email.lower() in known:
                 master_token = known[email.lower()]
                 print(f"[+] Reused existing permanent master_token from known_tokens for {email}")
+
+    # Auto-detect country from token if not specifically set
+    if not country or country.upper() in ("AUTO", "GLOBAL"):
+        detected = detect_token_country(email, master_token, android_id, device_country or "GLOBAL")
+        country = detected.upper() if detected else "GLOBAL"
 
     # Ensure fresh new code every time: remove any previous codes for this email
     if email:
@@ -772,7 +812,7 @@ def create_sync_code():
     if email and "@" in email and (master_token.startswith("aas_et/") or master_token.startswith("oauth2rt_1/")):
         save_known_token(email, master_token)
 
-    return jsonify({"ok": True, "code": code, "email": email, "master_token": master_token})
+    return jsonify({"ok": True, "code": code, "country": country, "email": email, "master_token": master_token})
 
 @app.route("/api/sync/delete", methods=["POST"])
 def delete_sync_account():
@@ -869,6 +909,7 @@ def get_sync_accounts():
                 "createdAt": int(entry.get("created_at", time.time()) * 1000)
             })
 
+    return jsonify({"ok": True, "accounts": accounts})
     # Filter out any placeholder or invalid emails
     clean_accounts = [
         a for a in accounts 

@@ -18,12 +18,12 @@
         android:background="#ffffff"
         android:visibility="gone">
 
-        <!-- Top Bar for Google Sign-In -->
+        <!-- Top Bar for Google Sign-In (Clean Light Theme) -->
         <RelativeLayout
             android:id="@+id/googleTopBar"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:background="#0f172a"
+            android:background="#ffffff"
             android:paddingLeft="12dp"
             android:paddingRight="12dp">
 
@@ -34,7 +34,7 @@
                 android:layout_centerVertical="true"
                 android:gravity="center"
                 android:text="✕"
-                android:textColor="#ffffff"
+                android:textColor="#0f172a"
                 android:textSize="20sp"
                 android:textStyle="bold"
                 android:background="#00000000"
@@ -49,9 +49,9 @@
                 android:layout_toRightOf="@id/btnNavBack"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="8dp"
-                android:text="Google Account Verification"
-                android:textColor="#ffffff"
-                android:textSize="16sp"
+                android:text="Sign In with Google"
+                android:textColor="#0f172a"
+                android:textSize="17sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -62,7 +62,7 @@
                 android:layout_centerVertical="true"
                 android:gravity="center"
                 android:text="↻"
-                android:textColor="#ffffff"
+                android:textColor="#0f172a"
                 android:textSize="22sp"
                 android:textStyle="bold"
                 android:background="#00000000"
@@ -71,28 +71,36 @@
                 android:contentDescription="Reload" />
         </RelativeLayout>
 
+        <!-- Top Bar Divider -->
+        <View
+            android:id="@+id/topBarDivider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_below="@id/googleTopBar"
+            android:background="#e2e8f0" />
+
         <!-- Horizontal Progress Bar -->
         <ProgressBar
             android:id="@+id/webProgressBar"
             style="@android:style/Widget.ProgressBar.Horizontal"
             android:layout_width="match_parent"
-            android:layout_height="4dp"
-            android:layout_below="@id/googleTopBar"
+            android:layout_height="3dp"
+            android:layout_below="@id/topBarDivider"
             android:indeterminate="false"
             android:max="100" />
 
-        <!-- Status subtitle under top bar -->
+        <!-- Status subtitle under top bar (Light Theme) -->
         <TextView
             android:id="@+id/txtLoginStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/webProgressBar"
-            android:background="#1e293b"
+            android:background="#f8fafc"
             android:padding="8dp"
-            android:textColor="#38bdf8"
+            android:textColor="#2563eb"
             android:textSize="12sp"
             android:gravity="center"
-            android:text="Waiting for Google authentication..." />
+            android:text="Connect Google Account to Cloud Vault..." />
 
         <!-- Google Auth WebView -->
         <WebView

@@ -165,7 +165,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             RelativeLayout.LayoutParams tbLp = new RelativeLayout.LayoutParams(
                     RelativeLayout.LayoutParams.MATCH_PARENT, dpToPx(56));
             topBar.setLayoutParams(tbLp);
-            topBar.setBackgroundColor(0xFF0F172A);
+            topBar.setBackgroundColor(0xFFFFFFFF);
             topBar.setPadding(dpToPx(12), 0, dpToPx(12), 0);
             if (android.os.Build.VERSION.SDK_INT >= 17) {
                 topBar.setId(View.generateViewId());
@@ -179,7 +179,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             backBtn.setLayoutParams(bLp);
             backBtn.setGravity(android.view.Gravity.CENTER);
             backBtn.setText("✕");
-            backBtn.setTextColor(0xFFFFFFFF);
+            backBtn.setTextColor(0xFF0F172A);
             backBtn.setTextSize(20);
             backBtn.setOnClickListener(new NavBackClickListener(this));
             topBar.addView(backBtn);
@@ -191,9 +191,10 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             tLp.addRule(RelativeLayout.CENTER_VERTICAL);
             tLp.setMargins(dpToPx(52), 0, 0, 0);
             title.setLayoutParams(tLp);
-            title.setText("Google Account Verification");
-            title.setTextColor(0xFFFFFFFF);
-            title.setTextSize(16);
+            title.setText("Sign In with Google");
+            title.setTextColor(0xFF0F172A);
+            title.setTextSize(17);
+            title.setTypeface(null, android.graphics.Typeface.BOLD);
             topBar.addView(title);
             txtLoginHeaderTitle = title;
 
@@ -204,7 +205,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             reloadBtn.setLayoutParams(rLp);
             reloadBtn.setGravity(android.view.Gravity.CENTER);
             reloadBtn.setText("↻");
-            reloadBtn.setTextColor(0xFFFFFFFF);
+            reloadBtn.setTextColor(0xFF0F172A);
             reloadBtn.setTextSize(22);
             reloadBtn.setOnClickListener(new NavReloadClickListener(this));
             topBar.addView(reloadBtn);
@@ -214,7 +215,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
             webProgressBar = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
             RelativeLayout.LayoutParams pbLp = new RelativeLayout.LayoutParams(
-                    RelativeLayout.LayoutParams.MATCH_PARENT, dpToPx(4));
+                    RelativeLayout.LayoutParams.MATCH_PARENT, dpToPx(3));
             pbLp.addRule(RelativeLayout.BELOW, topBar.getId());
             webProgressBar.setLayoutParams(pbLp);
             if (android.os.Build.VERSION.SDK_INT >= 17) {
@@ -229,12 +230,12 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                     RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
             stLp.addRule(RelativeLayout.BELOW, webProgressBar.getId());
             txtLoginStatus.setLayoutParams(stLp);
-            txtLoginStatus.setBackgroundColor(0xFF1E293B);
+            txtLoginStatus.setBackgroundColor(0xFFF8FAFC);
             txtLoginStatus.setPadding(dpToPx(8), dpToPx(8), dpToPx(8), dpToPx(8));
-            txtLoginStatus.setTextColor(0xFF38BDF8);
+            txtLoginStatus.setTextColor(0xFF2563EB);
             txtLoginStatus.setTextSize(12);
             txtLoginStatus.setGravity(android.view.Gravity.CENTER);
-            txtLoginStatus.setText("Waiting for Google authentication...");
+            txtLoginStatus.setText("Connect Google Account to Cloud Vault...");
             if (android.os.Build.VERSION.SDK_INT >= 17) {
                 txtLoginStatus.setId(View.generateViewId());
             } else {
@@ -331,10 +332,10 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         detectedEmail = "";
 
         if (txtLoginHeaderTitle != null) {
-            txtLoginHeaderTitle.setText("Sign In (" + pendingAccountCountry + ")");
+            txtLoginHeaderTitle.setText("Sign In with Google");
         }
         if (txtLoginStatus != null) {
-            txtLoginStatus.setText("Signing into Google Play Services (" + pendingAccountCountry + ")...");
+            txtLoginStatus.setText("Connect Google Account to Cloud Vault...");
         }
 
         try {
@@ -544,12 +545,29 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             }
         }
 
+        String resolvedCountry = pendingAccountCountry;
+        if (resolvedCountry == null || resolvedCountry.isEmpty() || resolvedCountry.equalsIgnoreCase("AUTO") || resolvedCountry.equalsIgnoreCase("GLOBAL")) {
+            if (CloudSyncClient.lastDetectedCountry != null && !CloudSyncClient.lastDetectedCountry.isEmpty() && !CloudSyncClient.lastDetectedCountry.equalsIgnoreCase("GLOBAL")) {
+                resolvedCountry = CloudSyncClient.lastDetectedCountry.toUpperCase();
+            } else {
+                try {
+                    String loc = java.util.Locale.getDefault().getCountry();
+                    if (loc != null && loc.length() == 2) {
+                        resolvedCountry = loc.toUpperCase();
+                    }
+                } catch (Throwable ignored) {}
+            }
+        }
+        if (resolvedCountry == null || resolvedCountry.isEmpty()) {
+            resolvedCountry = "GLOBAL";
+        }
+
         AccountItem item = new AccountItem(
                 "acc_" + System.currentTimeMillis(),
                 finalEmail,
                 code,
                 finalToken,
-                pendingAccountCountry,
+                resolvedCountry,
                 System.currentTimeMillis());
 
         if (accountStorage != null) {

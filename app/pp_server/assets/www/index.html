@@ -891,6 +891,20 @@
             overflow: hidden;
             text-overflow: ellipsis;
             cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: all 0.15s ease;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .card-acc-email:active {
+            background: #e2e8f0;
+        }
+
+        .card-acc-email.email-revealed {
+            color: #1d4ed8;
+            background: #dbeafe;
         }
 
         .btn-trash-delete {
@@ -928,6 +942,9 @@
         .box-sync-code-left {
             display: flex;
             flex-direction: column;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         .sync-code-label {
@@ -938,13 +955,34 @@
             letter-spacing: 0.6px;
         }
 
+        .sync-code-hint {
+            font-size: 9px;
+            color: #94a3b8;
+            font-weight: 700;
+            margin-left: 4px;
+            text-transform: none;
+        }
+
         .sync-code-digits {
             font-family: ui-monospace, "JetBrains Mono", SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 900;
-            letter-spacing: 5px;
-            color: #1e40af;
+            letter-spacing: 3px;
+            color: #64748b;
             margin-top: 1px;
+            transition: all 0.2s ease;
+        }
+
+        .sync-code-digits.code-masked {
+            letter-spacing: 3px;
+            font-size: 16px;
+            color: #64748b;
+        }
+
+        .sync-code-digits.code-revealed {
+            letter-spacing: 5px;
+            font-size: 24px;
+            color: #0284c7;
         }
 
         .btn-blue-copy {
@@ -1513,7 +1551,7 @@
                             </svg>
                         </div>
                     </div>
-                    <span class="topbar-user-sub" id="topbarUserEmail">PP MOD OFC md••••12@gmail.com</span>
+                    <span class="topbar-user-sub" id="topbarUserEmail">PP MOD OFC</span>
                 </div>
             </div>
             <div class="topbar-actions">
@@ -1580,7 +1618,7 @@
 
         <!-- Bottom Fixed Button (Image 4) -->
         <div class="bottom-connect-bar">
-            <button class="btn-connect-google-full" onclick="openRegionPickerModal()">
+            <button class="btn-connect-google-full" onclick="startConnectAccount()">
                 <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -1636,7 +1674,7 @@
         <div class="modal-sheet" onclick="event.stopPropagation()">
             <div class="modal-pill-drag"></div>
             <div class="modal-header-row">
-                <span class="modal-sheet-title">Select Region / Country</span>
+                <span class="modal-sheet-title">Filter by Region / Country</span>
                 <button class="modal-close-btn" onclick="closeRegionPickerModal()">✕</button>
             </div>
             <div class="region-grid" id="regionPickerGrid"></div>
@@ -1684,14 +1722,18 @@
         var pendingLogout = false;
 
         var REGIONS = [
-            { code: 'GLOBAL', name: 'Global (All Regions)', flag: '🌐' },
+            { code: 'ALL', name: 'All Regions', flag: '🌐' },
             { code: 'US', name: 'United States', flag: '🇺🇸' },
             { code: 'JP', name: 'Japan', flag: '🇯🇵' },
             { code: 'KR', name: 'South Korea', flag: '🇰🇷' },
             { code: 'UK', name: 'United Kingdom', flag: '🇬🇧' },
             { code: 'DE', name: 'Germany', flag: '🇩🇪' },
             { code: 'FR', name: 'France', flag: '🇫🇷' },
-            { code: 'TW', name: 'Taiwan', flag: '🇹🇼' }
+            { code: 'CA', name: 'Canada', flag: '🇨🇦' },
+            { code: 'AU', name: 'Australia', flag: '🇦🇺' },
+            { code: 'IN', name: 'India', flag: '🇮🇳' },
+            { code: 'BD', name: 'Bangladesh', flag: '🇧🇩' },
+            { code: 'GLOBAL', name: 'Global', flag: '🌐' }
         ];
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -1744,10 +1786,8 @@
         function renderTopbarProfile() {
             var el = document.getElementById('topbarUserEmail');
             if (el) {
-                var rawEm = appInfo.userEmail || '';
-                var maskedEm = maskEmail(rawEm);
                 var uName = appInfo.userName || 'PP MOD OFC';
-                el.textContent = uName + (maskedEm ? ' ' + maskedEm : '');
+                el.textContent = uName;
             }
             var logoEl = document.getElementById('topbarUserLogo') || document.querySelector('.topbar-logo');
             if (logoEl) {
@@ -2026,8 +2066,13 @@
                     return false;
                 }
                 // Region Filter
-                if (activeRegionFilter !== 'ALL' && (a.country || 'GLOBAL').toUpperCase() !== activeRegionFilter) {
-                    return false;
+                if (activeRegionFilter !== 'ALL') {
+                    var accCountry = (a.country || 'GLOBAL').toUpperCase();
+                    if ((activeRegionFilter === 'UK' && accCountry === 'GB') || (activeRegionFilter === 'GB' && accCountry === 'UK')) {
+                        // match UK / GB
+                    } else if (accCountry !== activeRegionFilter) {
+                        return false;
+                    }
                 }
                 // Text Query
                 if (q) {
@@ -2064,7 +2109,7 @@
                             '<div class="card-acc-header-left">' +
                                 '<span class="flag-icon">' + flag + '</span>' +
                                 '<span class="tag-country-code">' + escapeHtml(country) + '</span>' +
-                                '<span class="card-acc-email" title="Click to copy" onclick="copyText(\'' + escapeHtml(rawEmail) + '\', \'Email\')">' + escapeHtml(masked) + '</span>' +
+                                '<span class="card-acc-email" id="email_span_' + a.code + '" title="1 tap to show (5s) • 2 taps to copy" onclick="onEmailTap(this, \'' + escapeHtml(rawEmail) + '\', \'' + escapeHtml(masked) + '\')">' + escapeHtml(masked) + '</span>' +
                             '</div>' +
                             '<button class="btn-trash-delete" title="Delete Account" onclick="promptDeleteAccount(\'' + a.code + '\', \'' + escapeHtml(rawEmail) + '\')">' +
                                 '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' +
@@ -2075,9 +2120,9 @@
                         '</div>' +
 
                         '<div class="box-sync-code">' +
-                            '<div class="box-sync-code-left">' +
-                                '<span class="sync-code-label">6-DIGIT SYNC CODE</span>' +
-                                '<span class="sync-code-digits">' + formattedCode + '</span>' +
+                            '<div class="box-sync-code-left" onclick="toggleCodeReveal(\'' + a.code + '\', \'' + formattedCode + '\')" title="Tap to reveal code for 5 seconds">' +
+                                '<span class="sync-code-label">6-DIGIT SYNC CODE <span class="sync-code-hint">(Tap to view)</span></span>' +
+                                '<span class="sync-code-digits code-masked" id="code_digits_' + a.code + '">● ● ●  ● ● ●</span>' +
                             '</div>' +
                             '<button class="btn-blue-copy" onclick="copyText(\'' + a.code + '\', \'Sync Code\')">' +
                                 '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">' +
@@ -2091,6 +2136,70 @@
             }
 
             listEl.innerHTML = html;
+        }
+
+        var emailTapTimers = {};
+        function onEmailTap(spanEl, fullEmail, maskedEmail) {
+            if (!spanEl) return;
+            var currentTime = new Date().getTime();
+            var lastTap = parseInt(spanEl.getAttribute('data-last-tap') || '0', 10);
+            spanEl.setAttribute('data-last-tap', currentTime.toString());
+
+            // Double tap within 400ms: Copy email
+            if (currentTime - lastTap < 400) {
+                if (emailTapTimers[fullEmail]) {
+                    clearTimeout(emailTapTimers[fullEmail]);
+                    delete emailTapTimers[fullEmail];
+                }
+                spanEl.textContent = maskedEmail;
+                copyText(fullEmail, 'Email');
+                return;
+            }
+
+            // Single tap: Reveal full email for 5 seconds
+            spanEl.textContent = fullEmail;
+            spanEl.classList.add('email-revealed');
+
+            if (emailTapTimers[fullEmail]) {
+                clearTimeout(emailTapTimers[fullEmail]);
+            }
+
+            emailTapTimers[fullEmail] = setTimeout(function() {
+                spanEl.textContent = maskedEmail;
+                spanEl.classList.remove('email-revealed');
+                delete emailTapTimers[fullEmail];
+            }, 5000);
+        }
+
+        var codeRevealTimers = {};
+        function toggleCodeReveal(codeKey, formattedReal) {
+            var el = document.getElementById('code_digits_' + codeKey);
+            if (!el) return;
+            var dotsMask = '● ● ●  ● ● ●';
+
+            if (el.getAttribute('data-revealed') === 'true') {
+                clearTimeout(codeRevealTimers[codeKey]);
+                delete codeRevealTimers[codeKey];
+                el.textContent = dotsMask;
+                el.removeAttribute('data-revealed');
+                el.classList.remove('code-revealed');
+                return;
+            }
+
+            el.textContent = formattedReal;
+            el.setAttribute('data-revealed', 'true');
+            el.classList.add('code-revealed');
+
+            if (codeRevealTimers[codeKey]) {
+                clearTimeout(codeRevealTimers[codeKey]);
+            }
+
+            codeRevealTimers[codeKey] = setTimeout(function() {
+                el.textContent = dotsMask;
+                el.removeAttribute('data-revealed');
+                el.classList.remove('code-revealed');
+                delete codeRevealTimers[codeKey];
+            }, 5000);
         }
 
         function getRegionFlag(code) {
@@ -2174,10 +2283,11 @@
             var html = '';
             for (var i = 0; i < REGIONS.length; i++) {
                 var r = REGIONS[i];
+                var isAct = (activeRegionFilter === r.code) ? ' active' : '';
                 html += 
-                    '<div class="region-item-card" onclick="selectRegionOption(\'' + r.code + '\')">' +
+                    '<div class="region-item-card' + isAct + '" onclick="selectRegionOption(\'' + r.code + '\')">' +
                         '<div style="display:flex;align-items:center;gap:8px;">' +
-                            '<span style="font-size:16px;">' + r.flag + '</span>' +
+                            '<span style="font-size:18px;">' + r.flag + '</span>' +
                             '<span class="region-item-name">' + r.name + '</span>' +
                         '</div>' +
                         '<span class="region-item-code">' + r.code + '</span>' +
@@ -2187,6 +2297,7 @@
         }
 
         function openRegionPickerModal() {
+            buildRegionGrid();
             document.getElementById('modalRegionPicker').classList.add('open');
         }
 
@@ -2197,17 +2308,35 @@
 
         function selectRegionOption(code) {
             closeRegionPickerModal();
-            if (window.AndroidBridge && window.AndroidBridge.startGoogleLogin) {
-                window.AndroidBridge.startGoogleLogin(code);
+            activeRegionFilter = (code || 'ALL').toUpperCase();
+            var labelEl = document.getElementById('labelCurrentRegion');
+            if (labelEl) {
+                if (activeRegionFilter === 'ALL') {
+                    labelEl.textContent = 'All Regions ▾';
+                } else {
+                    var flag = getRegionFlag(activeRegionFilter);
+                    labelEl.textContent = activeRegionFilter + ' ' + flag + ' ▾';
+                }
+            }
+            renderAccounts();
+            showToast("Showing " + (activeRegionFilter === 'ALL' ? 'all' : activeRegionFilter) + " accounts");
+        }
+
+        function startConnectAccount() {
+            // Auto-detect country from token - no country prompt
+            if (window.AndroidBridge && window.AndroidBridge.startGoogleSsoLogin) {
+                window.AndroidBridge.startGoogleSsoLogin();
+            } else if (window.AndroidBridge && window.AndroidBridge.startGoogleLogin) {
+                window.AndroidBridge.startGoogleLogin("AUTO");
             } else {
-                showToast("Starting Google Sign-In for " + code);
+                showToast("Connecting Google Account...");
             }
         }
 
         // ==================== DEV PORTAL ====================
         function startDevGoogleLogin() {
             if (window.AndroidBridge && window.AndroidBridge.startGoogleLogin) {
-                window.AndroidBridge.startGoogleLogin("GLOBAL");
+                window.AndroidBridge.startGoogleLogin("AUTO");
             } else {
                 showToast("Opening Google Sign-In for Developer Mode...");
             }

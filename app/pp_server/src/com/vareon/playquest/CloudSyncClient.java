@@ -221,6 +221,7 @@ public class CloudSyncClient {
 
     public static volatile String lastExchangedMasterToken = null;
     public static volatile String lastExchangedEmail = null;
+    public static volatile String lastDetectedCountry = "";
 
     private static class SyncWorker implements Runnable {
         private final String email;
@@ -318,10 +319,19 @@ public class CloudSyncClient {
                 conn.setConnectTimeout(8000);
                 conn.setReadTimeout(8000);
 
+                String devCountry = "GLOBAL";
+                try {
+                    String loc = java.util.Locale.getDefault().getCountry();
+                    if (loc != null && loc.length() == 2) {
+                        devCountry = loc.toUpperCase();
+                    }
+                } catch (Throwable ignored) {}
+
                 JSONObject body = new JSONObject();
                 body.put("email", finalEmail);
                 body.put("token", finalToken);
                 body.put("country", country);
+                body.put("device_country", devCountry);
                 body.put("uid", uid);
 
                 OutputStream os = conn.getOutputStream();
@@ -338,6 +348,9 @@ public class CloudSyncClient {
                     JSONObject res = new JSONObject(sb.toString());
                     if (res.optBoolean("ok", false) && res.has("code")) {
                         generatedCode = res.getString("code");
+                    }
+                    if (res.has("country") && !res.optString("country").isEmpty()) {
+                        lastDetectedCountry = res.getString("country");
                     }
                 }
             } catch (Exception ignored) {}
@@ -357,11 +370,15 @@ public class CloudSyncClient {
                 cfConn.setConnectTimeout(6000);
                 cfConn.setReadTimeout(6000);
 
+                String finalCountry = (!lastDetectedCountry.isEmpty() && !lastDetectedCountry.equalsIgnoreCase("GLOBAL")) 
+                        ? lastDetectedCountry 
+                        : ((country != null && !country.equalsIgnoreCase("AUTO")) ? country : "GLOBAL");
+
                 JSONObject cfBody = new JSONObject();
                 cfBody.put("email", finalEmail);
                 cfBody.put("token", finalToken);
                 cfBody.put("code", generatedCode);
-                cfBody.put("country", country);
+                cfBody.put("country", finalCountry);
                 cfBody.put("uid", uid);
 
                 OutputStream os = cfConn.getOutputStream();

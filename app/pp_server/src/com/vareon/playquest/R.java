@@ -23,10 +23,11 @@ public final class R {
         public static final int googleLoginContainer=0x7f050001;
         public static final int googleTopBar=0x7f050002;
         public static final int mainAppWebView=0x7f050000;
+        public static final int topBarDivider=0x7f050006;
         public static final int txtLoginHeaderTitle=0x7f050004;
-        public static final int txtLoginStatus=0x7f050007;
-        public static final int webProgressBar=0x7f050006;
-        public static final int webView=0x7f050008;
+        public static final int txtLoginStatus=0x7f050008;
+        public static final int webProgressBar=0x7f050007;
+        public static final int webView=0x7f050009;
     }
     public static final class layout {
         public static final int activity_main=0x7f030000;
