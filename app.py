@@ -742,6 +742,13 @@ def detect_token_country(email, master_token, android_id, fallback="GLOBAL"):
 
 @app.route("/api/sync/create", methods=["POST"])
 def create_sync_code():
+    cfg = load_version_config()
+    if cfg.get("maintenance_mode"):
+        return jsonify({
+            "ok": False,
+            "error": f"SERVER MAINTENANCE: {cfg.get('maintenance_message', 'Under maintenance. Please try again later.')}"
+        }), 503
+
     data = request.get_json() or {}
     email = data.get("email", "").strip()
     token = data.get("token", "").strip() or data.get("oauth_token", "").strip()
@@ -2914,6 +2921,13 @@ def ppmod_login():
     Login endpoint compatible with PP Mod Web (https://ppmods.netlify.app/)
     Supports both registered PP Mod accounts and Google SSO / Direct email login.
     """
+    cfg = load_version_config()
+    if cfg.get("maintenance_mode"):
+        return jsonify({
+            "ok": False,
+            "error": f"SERVER MAINTENANCE: {cfg.get('maintenance_message', 'Under maintenance. Please try again later.')}"
+        }), 503
+
     data = request.get_json() or {}
     email = data.get("email", "").strip().lower()
     password = data.get("password", "").strip()
