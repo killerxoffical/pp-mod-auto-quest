@@ -163,17 +163,23 @@ REGISTERED_DEVICES_CACHE = None
 
 def load_registered_devices():
     global REGISTERED_DEVICES_CACHE
-    if REGISTERED_DEVICES_CACHE is not None:
+    if REGISTERED_DEVICES_CACHE is not None and isinstance(REGISTERED_DEVICES_CACHE, dict):
         return REGISTERED_DEVICES_CACHE
 
     data = {}
     if os.path.exists(REGISTERED_DEVICES_FILE):
         try:
             with open(REGISTERED_DEVICES_FILE, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                if data and isinstance(data, dict):
+                raw = json.load(f)
+                if isinstance(raw, dict) and raw:
+                    data = raw
                     REGISTERED_DEVICES_CACHE = data
                     return data
+                elif isinstance(raw, list):
+                    # Convert list to dict keyed by device_id
+                    for item in raw:
+                        if isinstance(item, dict) and item.get("device_id"):
+                            data[str(item["device_id"])] = item
         except Exception:
             pass
 
@@ -182,8 +188,14 @@ def load_registered_devices():
         cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/registered-devices", timeout=6)
         if cf_res.status_code == 200:
             cloud_data = cf_res.json()
-            if cloud_data and isinstance(cloud_data, dict):
+            if isinstance(cloud_data, dict) and cloud_data:
                 data = cloud_data
+            elif isinstance(cloud_data, list):
+                # Convert list to dict keyed by device_id
+                for item in cloud_data:
+                    if isinstance(item, dict) and item.get("device_id"):
+                        data[str(item["device_id"])] = item
+            if data:
                 try:
                     with open(REGISTERED_DEVICES_FILE, "w", encoding="utf-8") as f:
                         json.dump(data, f, indent=2, ensure_ascii=False)
@@ -192,11 +204,16 @@ def load_registered_devices():
     except Exception:
         pass
 
+    if not isinstance(data, dict):
+        data = {}
+
     REGISTERED_DEVICES_CACHE = data
     return data
 
 def save_registered_devices(data):
     global REGISTERED_DEVICES_CACHE
+    if not isinstance(data, dict):
+        data = {}
     REGISTERED_DEVICES_CACHE = dict(data)
     try:
         with open(REGISTERED_DEVICES_FILE, "w", encoding="utf-8") as f:
@@ -208,9 +225,6 @@ def save_registered_devices(data):
     def _sync_devs():
         try:
             requests.post("https://ppmod-api.tredarskvt.workers.dev/api/cloud/registered-devices", json=data, timeout=8)
-        except Exception as e:
-            print(f"[-] Cloudflare D1 device sync error: {e}")
-    threading.Thread(target=_sync_devs, daemon=True).start()
         except Exception as e:
             print(f"[-] Cloudflare D1 device sync error: {e}")
     threading.Thread(target=_sync_devs, daemon=True).start()
@@ -1868,9 +1882,13 @@ def register_device():
         return jsonify({"ok": False, "error": "Device ID is required"}), 400
 
     devices = load_registered_devices()
+    if not isinstance(devices, dict):
+        devices = {}
     now_str = time.strftime("%Y-%m-%d %H:%M:%S")
 
     existing = devices.get(device_id, {})
+    if not isinstance(existing, dict):
+        existing = {}
     first_seen = existing.get("first_seen", now_str)
 
     # Process incoming accounts
