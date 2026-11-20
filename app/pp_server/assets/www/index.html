@@ -3,35 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>PP Server • Light Portal Engine</title>
+    <title>PP Server</title>
     <style>
         :root {
             --bg-base: #f8fafc;
             --bg-card: #ffffff;
             --bg-card-subtle: #f1f5f9;
             --border-color: #e2e8f0;
+            --border-subtle: #edf2f7;
             --border-focus: #0284c7;
             --text-primary: #0f172a;
             --text-secondary: #334155;
             --text-muted: #64748b;
             --text-faint: #94a3b8;
-            --accent-cyan: #0284c7;
-            --accent-cyan-light: #e0f2fe;
-            --accent-emerald: #10b981;
-            --accent-emerald-light: #d1fae5;
-            --accent-gold: #f59e0b;
-            --accent-gold-light: #fef3c7;
-            --accent-purple: #8b5cf6;
-            --accent-purple-light: #ede9fe;
-            --accent-rose: #ef4444;
-            --accent-rose-light: #fee2e2;
+            --primary: #0284c7;
+            --primary-light: #e0f2fe;
+            --success: #10b981;
+            --success-light: #ecfdf5;
+            --warning: #f59e0b;
+            --warning-light: #fffbeb;
+            --danger: #ef4444;
+            --danger-light: #fef2f2;
+            --purple: #8b5cf6;
+            --purple-light: #f5f3ff;
+            --radius-xs: 6px;
             --radius-sm: 8px;
             --radius-md: 12px;
             --radius-lg: 16px;
-            --radius-xl: 22px;
-            --shadow-card: 0 4px 18px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
-            --shadow-elevated: 0 10px 25px -4px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
-            --shadow-glow: 0 4px 18px rgba(2, 132, 199, 0.2);
+            --radius-xl: 20px;
+            --shadow-subtle: 0 1px 3px rgba(15,23,42,0.04);
+            --shadow-card: 0 1px 8px rgba(15,23,42,0.06);
+            --shadow-float: 0 8px 24px rgba(2,132,199,0.3);
         }
 
         * {
@@ -39,254 +41,203 @@
             margin: 0;
             padding: 0;
             -webkit-tap-highlight-color: transparent;
-            user-select: none;
+        }
+
+        html, body {
+            overscroll-behavior: none;
+            -webkit-overflow-scrolling: touch;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: var(--bg-base);
+            background: var(--bg-base);
             color: var(--text-primary);
             min-height: 100vh;
             overflow-x: hidden;
             overflow-y: auto;
-            position: relative;
-            padding-bottom: 96px;
+            padding-bottom: 88px;
             -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
-        /* Top App Bar */
-        .top-nav {
+        /* ========== HEADER ========== */
+        .header {
             position: sticky;
             top: 0;
             z-index: 50;
-            background: rgba(255, 255, 255, 0.94);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border-color);
             padding: 12px 18px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
         }
 
-        .brand-box {
+        .header-left {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
-        .brand-icon {
-            width: 38px;
-            height: 38px;
-            border-radius: var(--radius-md);
+        .header-logo {
+            width: 34px;
+            height: 34px;
+            border-radius: var(--radius-sm);
             background: linear-gradient(135deg, #0284c7, #10b981);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 19px;
-            color: #ffffff;
-            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.28);
+            color: #fff;
+            flex-shrink: 0;
         }
 
-        .brand-title {
-            font-size: 16px;
-            font-weight: 800;
-            letter-spacing: -0.3px;
+        .header-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .header-name {
+            font-size: 15px;
+            font-weight: 700;
             color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            letter-spacing: -0.2px;
         }
 
-        .brand-badge {
-            font-size: 10px;
-            font-weight: 800;
-            padding: 2px 7px;
-            border-radius: 20px;
-            background: var(--accent-cyan-light);
-            color: var(--accent-cyan);
-            border: 1px solid rgba(2, 132, 199, 0.2);
+        .header-badge {
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 10px;
+            background: var(--primary-light);
+            color: var(--primary);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.4px;
         }
 
-        .status-dot-pill {
+        .status-chip {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
             font-size: 11px;
             color: #059669;
-            background: var(--accent-emerald-light);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            padding: 5px 11px;
-            border-radius: 20px;
-            font-weight: 700;
+            background: var(--success-light);
+            border: 1px solid #a7f3d0;
+            padding: 4px 10px;
+            border-radius: 14px;
+            font-weight: 600;
         }
 
-        .dot-pulse {
-            width: 7px;
-            height: 7px;
+        .status-dot {
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
-            background-color: var(--accent-emerald);
-            box-shadow: 0 0 6px var(--accent-emerald);
-            animation: pulse-ring 2s infinite;
+            background: var(--success);
+            animation: blink 2s infinite;
         }
 
-        @keyframes pulse-ring {
-            0% { transform: scale(0.95); opacity: 0.9; }
-            50% { transform: scale(1.25); opacity: 0.5; }
-            100% { transform: scale(0.95); opacity: 0.9; }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
         }
 
-        /* Main Container */
-        .main-content {
-            position: relative;
-            z-index: 10;
-            padding: 16px 16px 20px;
-            max-width: 520px;
+        /* ========== MAIN CONTAINER ========== */
+        .container {
+            width: 100%;
+            max-width: 560px;
             margin: 0 auto;
+            padding: 16px 16px 20px;
         }
 
-        /* Tab Panes */
-        .tab-pane {
-            display: none;
-        }
-
+        /* ========== TAB SYSTEM ========== */
+        .tab-pane { display: none; }
         .tab-pane.active {
             display: block;
-            animation: fadeIn 0.22s ease-out;
+            animation: fadeIn 0.18s ease;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
+            from { opacity: 0; transform: translateY(3px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Hero / Info Card */
+        /* ========== HERO BANNER ========== */
         .hero-card {
-            background: #ffffff;
+            background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
-            padding: 18px 20px;
-            box-shadow: var(--shadow-card);
+            padding: 18px;
             margin-bottom: 16px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero-card::after {
-            content: "";
-            position: absolute;
-            top: -40%;
-            right: -20%;
-            width: 180px;
-            height: 180px;
-            background: radial-gradient(circle, rgba(2, 132, 199, 0.08) 0%, transparent 70%);
-            pointer-events: none;
+            box-shadow: var(--shadow-card);
         }
 
         .hero-title {
-            font-size: 18px;
-            font-weight: 800;
+            font-size: 16px;
+            font-weight: 700;
             color: var(--text-primary);
             margin-bottom: 4px;
-            letter-spacing: -0.3px;
         }
 
         .hero-desc {
-            font-size: 13px;
+            font-size: 12.5px;
             color: var(--text-muted);
             line-height: 1.5;
-            margin-bottom: 0px;
         }
 
-        /* Filter & Search Bar */
-        .filter-section {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 14px;
-            align-items: center;
-        }
-
-        .search-box {
-            flex: 1;
-            position: relative;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 10px 14px 10px 36px;
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            color: var(--text-primary);
-            font-size: 13px;
-            outline: none;
-            transition: all 0.2s;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-        }
-
-        .search-input:focus {
-            border-color: var(--accent-cyan);
-            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-            font-size: 14px;
-        }
-
-        .btn-filter-country {
-            padding: 9px 14px;
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            color: var(--accent-cyan);
-            font-size: 12px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            cursor: pointer;
-            white-space: nowrap;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-        }
-
-        /* Section Header */
-        .section-header {
+        /* ========== CONTROLS ROW ========== */
+        .controls-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 12px;
-            padding: 0 2px;
+            margin-bottom: 14px;
         }
 
-        .section-title {
-            font-size: 13px;
-            font-weight: 800;
+        .section-label {
+            font-size: 11px;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.6px;
             color: var(--text-muted);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
-        .counter-badge {
-            background: var(--accent-cyan-light);
-            color: var(--accent-cyan);
+        .count-badge {
+            background: var(--primary-light);
+            color: var(--primary);
+            font-size: 10px;
+            font-weight: 700;
+            padding: 1px 7px;
+            border-radius: 10px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        .btn-outline {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 6px 10px;
             font-size: 11px;
-            font-weight: 800;
-            padding: 2px 8px;
-            border-radius: 12px;
+            font-weight: 600;
+            color: var(--primary);
+            cursor: pointer;
+            transition: all 0.12s;
         }
 
-        /* Accounts List */
+        .btn-outline:active {
+            transform: scale(0.96);
+            background: var(--primary-light);
+        }
+
+        /* ========== ACCOUNT CARDS ========== */
         .accounts-list {
             display: flex;
             flex-direction: column;
@@ -294,120 +245,118 @@
         }
 
         .account-card {
-            background: #ffffff;
+            background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
-            padding: 16px 18px;
+            padding: 16px;
             box-shadow: var(--shadow-card);
-            transition: all 0.2s ease;
-            position: relative;
         }
 
-        .account-top {
+        .acc-top {
             display: flex;
             align-items: center;
             justify-content: space-between;
             margin-bottom: 12px;
         }
 
-        .account-identity {
+        .acc-user {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             overflow: hidden;
             flex: 1;
+            min-width: 0;
         }
 
-        .avatar-circle {
-            width: 40px;
-            height: 40px;
+        .acc-avatar {
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
             background: linear-gradient(135deg, #e0f2fe, #bae6fd);
             border: 1px solid #7dd3fc;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
-            font-weight: 800;
-            color: var(--accent-cyan);
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--primary);
             flex-shrink: 0;
         }
 
-        .email-details {
+        .acc-meta {
             overflow: hidden;
             flex: 1;
+            min-width: 0;
         }
 
-        .user-email {
-            font-size: 14px;
-            font-weight: 800;
+        .acc-email {
+            font-size: 13.5px;
+            font-weight: 700;
             color: var(--text-primary);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 220px;
-            cursor: pointer;
         }
 
-        .user-balance-row {
+        .acc-tags {
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-top: 3px;
-            font-size: 12px;
+            gap: 6px;
+            margin-top: 4px;
+            flex-wrap: wrap;
         }
 
-        .balance-pill {
-            font-weight: 800;
-            color: #059669;
-            background: var(--accent-emerald-light);
+        .tag {
+            font-size: 10.5px;
+            font-weight: 700;
             padding: 2px 7px;
-            border-radius: 4px;
+            border-radius: 5px;
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
         }
 
-        .points-pill {
-            font-weight: 800;
-            color: #d97706;
-            background: var(--accent-gold-light);
-            padding: 2px 7px;
-            border-radius: 4px;
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        .tag-green {
+            background: var(--success-light);
+            color: #047857;
+            border: 1px solid #a7f3d0;
         }
 
-        .badge-country {
-            font-size: 11px;
-            font-weight: 800;
-            padding: 2px 8px;
-            border-radius: 6px;
+        .tag-amber {
+            background: var(--warning-light);
+            color: #b45309;
+            border: 1px solid #fde68a;
+        }
+
+        .tag-gray {
             background: var(--bg-card-subtle);
             color: var(--text-secondary);
             border: 1px solid var(--border-color);
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
         }
 
-        .btn-delete-account {
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-xs);
             background: transparent;
             border: none;
             color: var(--text-faint);
-            padding: 6px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: color 0.15s;
             display: flex;
             align-items: center;
             justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.12s;
         }
 
-        .btn-delete-account:active {
-            color: var(--accent-rose);
-            background: var(--accent-rose-light);
+        .btn-icon:active {
+            background: var(--danger-light);
+            color: var(--danger);
         }
 
-        /* 6-Digit Code Box */
-        .code-vault-box {
+        /* Code Display */
+        .code-box {
             background: var(--bg-card-subtle);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
@@ -415,271 +364,283 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 12px;
         }
 
-        .code-label-group {
+        .code-info {
             display: flex;
             flex-direction: column;
         }
 
-        .code-caption {
-            font-size: 10px;
-            font-weight: 800;
+        .code-label {
+            font-size: 9.5px;
+            font-weight: 700;
             color: var(--text-muted);
             letter-spacing: 0.6px;
             text-transform: uppercase;
         }
 
-        .code-digits {
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "JetBrains Mono", monospace;
-            font-size: 24px;
-            font-weight: 900;
-            letter-spacing: 3px;
-            color: var(--accent-cyan);
-            margin-top: 2px;
+        .code-value {
+            font-family: ui-monospace, "JetBrains Mono", SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: 5px;
+            color: var(--primary);
+            margin-top: 1px;
         }
 
-        .btn-copy-code {
-            padding: 8px 14px;
-            background: #ffffff;
-            border: 1px solid #bae6fd;
-            border-radius: var(--radius-sm);
-            color: var(--accent-cyan);
-            font-size: 12px;
-            font-weight: 800;
+        .btn-copy-sm {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
+            padding: 6px 10px;
+            background: var(--bg-card);
+            border: 1px solid #bae6fd;
+            border-radius: var(--radius-sm);
+            color: var(--primary);
+            font-size: 11px;
+            font-weight: 700;
             cursor: pointer;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-            transition: all 0.15s ease;
+            transition: all 0.12s;
         }
 
-        .btn-copy-code:active {
+        .btn-copy-sm:active {
             transform: scale(0.95);
-            background: var(--accent-cyan);
-            color: #ffffff;
+            background: var(--primary);
+            color: #fff;
         }
 
-        /* Friday Weekly Perk Claim Box */
-        .perk-claim-box {
+        /* ========== FRIDAY PERK ========== */
+        .perk-row {
             margin-top: 10px;
-            padding: 10px 14px;
+            padding: 10px 12px;
             border-radius: var(--radius-md);
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 10px;
         }
 
-        .perk-claim-box.locked {
-            background: #f8fafc;
-            border-color: var(--border-color);
+        .perk-active {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
         }
 
-        .perk-info-group {
+        .perk-locked {
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-color);
+        }
+
+        .perk-claimed {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+        }
+
+        .perk-info {
             display: flex;
             flex-direction: column;
+            gap: 1px;
         }
 
         .perk-title {
             font-size: 12px;
-            font-weight: 800;
-            color: #15803d;
+            font-weight: 700;
             display: flex;
             align-items: center;
             gap: 5px;
         }
 
-        .perk-title.locked {
-            color: var(--text-muted);
-        }
+        .perk-title-green { color: #15803d; }
+        .perk-title-muted { color: var(--text-muted); }
 
         .perk-sub {
             font-size: 10.5px;
-            color: #166534;
-            margin-top: 2px;
         }
 
-        .perk-sub.locked {
-            color: var(--text-faint);
-        }
+        .perk-sub-green { color: #166534; }
+        .perk-sub-muted { color: var(--text-faint); }
 
-        .btn-claim-perk {
-            padding: 7px 14px;
+        .btn-claim {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 7px 12px;
             background: linear-gradient(135deg, #10b981, #059669);
-            color: #ffffff;
+            color: #fff;
             border: none;
             border-radius: var(--radius-sm);
-            font-size: 12px;
-            font-weight: 800;
+            font-size: 11px;
+            font-weight: 700;
             cursor: pointer;
-            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
             white-space: nowrap;
         }
 
-        .btn-claim-perk:disabled {
+        .btn-claim:disabled {
             background: #e2e8f0;
             color: var(--text-muted);
             box-shadow: none;
             cursor: not-allowed;
         }
 
-        /* Empty State */
+        .perk-pts-badge {
+            font-size: 11px;
+            font-weight: 700;
+            color: #059669;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        /* ========== EMPTY STATE ========== */
         .empty-card {
-            background: #ffffff;
+            background: var(--bg-card);
             border: 1px dashed var(--border-color);
             border-radius: var(--radius-xl);
-            padding: 42px 24px;
+            padding: 44px 20px;
             text-align: center;
-            margin-top: 8px;
             box-shadow: var(--shadow-card);
         }
 
-        .empty-icon-wrap {
-            width: 68px;
-            height: 68px;
-            border-radius: 20px;
-            background: var(--accent-cyan-light);
+        .empty-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--primary-light);
             border: 1px solid #bae6fd;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 32px;
             margin: 0 auto 16px;
-            color: var(--accent-cyan);
+            color: var(--primary);
         }
 
         .empty-title {
-            font-size: 17px;
-            font-weight: 800;
+            font-size: 16px;
+            font-weight: 700;
             color: var(--text-primary);
             margin-bottom: 6px;
         }
 
         .empty-desc {
-            font-size: 13px;
+            font-size: 12.5px;
             color: var(--text-muted);
             line-height: 1.5;
-            max-width: 320px;
+            max-width: 300px;
             margin: 0 auto 20px;
         }
 
-        .btn-connect-empty {
-            padding: 12px 24px;
-            background: linear-gradient(135deg, #0284c7, #10b981);
-            color: #ffffff;
-            border: none;
-            border-radius: var(--radius-md);
-            font-size: 14px;
-            font-weight: 800;
-            cursor: pointer;
-            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
+        .btn-primary {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 7px;
+            padding: 11px 22px;
+            background: linear-gradient(135deg, #0284c7, #10b981);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: var(--shadow-float);
+            transition: transform 0.12s;
         }
 
-        /* Coming Soon Feature Card (for Box & Sub tabs) */
+        .btn-primary:active {
+            transform: scale(0.96);
+        }
+
+        /* ========== COMING SOON CARDS ========== */
         .feature-card {
-            background: #ffffff;
+            background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-xl);
-            padding: 36px 24px;
+            padding: 40px 20px;
             text-align: center;
             box-shadow: var(--shadow-card);
-            margin-bottom: 16px;
         }
 
-        .feature-icon-wrap {
-            width: 72px;
-            height: 72px;
-            border-radius: 22px;
+        .feature-icon {
+            width: 68px;
+            height: 68px;
+            border-radius: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 34px;
-            margin: 0 auto 18px;
+            margin: 0 auto 16px;
         }
 
-        .feature-icon-wrap.box {
-            background: var(--accent-gold-light);
+        .feature-icon-box {
+            background: var(--warning-light);
             border: 1px solid #fde68a;
             color: #d97706;
         }
 
-        .feature-icon-wrap.sub {
-            background: var(--accent-purple-light);
+        .feature-icon-sub {
+            background: var(--purple-light);
             border: 1px solid #ddd6fe;
             color: #7c3aed;
         }
 
         .feature-title {
-            font-size: 18px;
-            font-weight: 800;
+            font-size: 17px;
+            font-weight: 700;
             color: var(--text-primary);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .feature-desc {
-            font-size: 13px;
+            font-size: 12.5px;
             color: var(--text-muted);
-            line-height: 1.6;
-            max-width: 340px;
-            margin: 0 auto 20px;
+            line-height: 1.5;
+            max-width: 320px;
+            margin: 0 auto 18px;
         }
 
-        .badge-coming-soon {
+        .pill-soon {
             display: inline-block;
-            background: var(--accent-cyan-light);
-            color: var(--accent-cyan);
-            font-size: 11px;
-            font-weight: 800;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-size: 10px;
+            font-weight: 700;
             padding: 4px 14px;
-            border-radius: 20px;
+            border-radius: 14px;
             letter-spacing: 0.5px;
-            border: 1px solid rgba(2, 132, 199, 0.25);
+            text-transform: uppercase;
         }
 
-        /* Settings Card & Rows */
-        .info-card {
-            background: #ffffff;
+        /* ========== SETTINGS ========== */
+        .settings-card {
+            background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
-            padding: 18px;
+            padding: 16px 18px;
             margin-bottom: 14px;
             box-shadow: var(--shadow-card);
         }
 
-        .user-profile-header {
+        .profile-header {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 12px;
             padding-bottom: 14px;
             border-bottom: 1px solid var(--border-color);
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
-        .user-avatar-large {
-            width: 50px;
-            height: 50px;
+        .profile-avatar {
+            width: 46px;
+            height: 46px;
             border-radius: 50%;
             background: linear-gradient(135deg, #0284c7, #8b5cf6);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
-            color: #ffffff;
-            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
             flex-shrink: 0;
         }
 
         .profile-name {
-            font-size: 16px;
-            font-weight: 800;
+            font-size: 15px;
+            font-weight: 700;
             color: var(--text-primary);
         }
 
@@ -689,19 +650,21 @@
             margin-top: 2px;
         }
 
-        .profile-uid-pill {
-            font-size: 10.5px;
+        .profile-uid {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 10px;
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            color: var(--accent-cyan);
-            background: var(--accent-cyan-light);
-            padding: 2px 6px;
+            color: var(--primary);
+            background: var(--primary-light);
+            padding: 2px 7px;
             border-radius: 4px;
-            display: inline-block;
-            margin-top: 4px;
+            margin-top: 5px;
             cursor: pointer;
         }
 
-        .info-row {
+        .data-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -709,24 +672,22 @@
             border-bottom: 1px solid var(--border-color);
         }
 
-        .info-row:last-child {
-            border-bottom: none;
-        }
+        .data-row:last-child { border-bottom: none; }
 
-        .info-label {
-            font-size: 13px;
+        .data-label {
+            font-size: 12.5px;
             color: var(--text-muted);
-            font-weight: 500;
+            font-weight: 600;
         }
 
-        .info-val {
-            font-size: 13px;
+        .data-value {
+            font-size: 12.5px;
             font-weight: 700;
             color: var(--text-primary);
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
         }
 
-        .btn-action-row {
+        .menu-btn {
             width: 100%;
             background: transparent;
             border: none;
@@ -734,24 +695,26 @@
             align-items: center;
             justify-content: space-between;
             padding: 12px 0;
-            font-size: 13.5px;
-            font-weight: 700;
+            font-size: 13px;
+            font-weight: 600;
             color: var(--text-primary);
             cursor: pointer;
             border-bottom: 1px solid var(--border-color);
         }
 
-        .btn-action-row:last-child {
-            border-bottom: none;
+        .menu-btn:last-child { border-bottom: none; }
+
+        .menu-btn-danger { color: var(--danger); }
+
+        .menu-btn-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .btn-logout-row {
-            color: var(--accent-rose);
-        }
-
-        /* Warning Banner */
-        .warning-card {
-            background: #fffbeb;
+        /* ========== WARNING BANNER ========== */
+        .warn-box {
+            background: var(--warning-light);
             border: 1px solid #fde68a;
             border-radius: var(--radius-md);
             padding: 12px 14px;
@@ -761,29 +724,28 @@
             gap: 10px;
         }
 
-        .warning-text {
+        .warn-text {
             font-size: 12px;
-            color: #b45309;
+            color: #92400e;
             line-height: 1.4;
             font-weight: 600;
         }
 
-        /* Fixed Bottom Navigation (5 TABS) */
-        .bottom-nav {
+        /* ========== BOTTOM NAV ========== */
+        .nav-bar {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            height: 66px;
-            background: rgba(255, 255, 255, 0.96);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            height: 64px;
+            background: rgba(255,255,255,0.97);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
             border-top: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: space-around;
             z-index: 40;
-            box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.04);
             padding-bottom: env(safe-area-inset-bottom, 0px);
         }
 
@@ -797,40 +759,38 @@
             height: 100%;
             color: var(--text-muted);
             cursor: pointer;
-            transition: color 0.15s ease;
+            transition: color 0.12s;
             position: relative;
         }
 
-        .nav-item.active {
-            color: var(--accent-cyan);
-        }
+        .nav-item.active { color: var(--primary); }
 
         .nav-icon {
-            font-size: 20px;
-            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .nav-label {
-            font-size: 10.5px;
-            font-weight: 700;
-            letter-spacing: 0.2px;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.1px;
         }
 
-        .nav-micro-badge {
+        .nav-soon-tag {
             position: absolute;
-            top: 6px;
-            right: 14%;
-            background: var(--accent-gold);
-            color: #ffffff;
-            font-size: 8px;
-            font-weight: 800;
+            top: 5px;
+            right: 16%;
+            background: var(--warning);
+            color: #fff;
+            font-size: 7px;
+            font-weight: 700;
             padding: 1px 4px;
-            border-radius: 6px;
+            border-radius: 5px;
             text-transform: uppercase;
         }
 
-        /* Center Elevated '+' Button */
-        .nav-add-btn-wrap {
+        .nav-center-wrap {
             position: relative;
             top: -12px;
             display: flex;
@@ -838,54 +798,48 @@
             justify-content: center;
         }
 
-        .nav-btn-add {
-            width: 52px;
-            height: 52px;
+        .nav-center-btn {
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             background: linear-gradient(135deg, #0284c7, #10b981);
-            border: 3px solid #ffffff;
-            box-shadow: 0 4px 16px rgba(2, 132, 199, 0.35);
-            color: #ffffff;
-            font-size: 26px;
-            font-weight: 900;
+            border: 3px solid #fff;
+            box-shadow: var(--shadow-float);
+            color: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: transform 0.12s;
         }
 
-        .nav-btn-add:active {
-            transform: scale(0.92);
-        }
+        .nav-center-btn:active { transform: scale(0.92); }
 
-        /* Region Picker Modal Sheet */
-        .modal-overlay {
+        /* ========== MODAL SHEET ========== */
+        .modal-bg {
             position: fixed;
             inset: 0;
-            background: rgba(15, 23, 42, 0.45);
-            backdrop-filter: blur(6px);
+            background: rgba(15,23,42,0.4);
+            backdrop-filter: blur(4px);
             z-index: 100;
             display: none;
             align-items: flex-end;
             justify-content: center;
         }
 
-        .modal-overlay.open {
-            display: flex;
-        }
+        .modal-bg.open { display: flex; }
 
         .modal-sheet {
-            background: #ffffff;
+            background: #fff;
             border-top: 1px solid var(--border-color);
-            border-radius: 24px 24px 0 0;
+            border-radius: 20px 20px 0 0;
             width: 100%;
-            max-width: 520px;
-            max-height: 80vh;
+            max-width: 540px;
+            max-height: 75vh;
             overflow-y: auto;
-            padding: 20px 20px 36px;
-            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.12);
-            animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            padding: 14px 18px 32px;
+            box-shadow: 0 -8px 30px rgba(0,0,0,0.1);
+            animation: slideUp 0.22s cubic-bezier(0.16,1,0.3,1);
         }
 
         @keyframes slideUp {
@@ -893,607 +847,734 @@
             to { transform: translateY(0); }
         }
 
-        .sheet-header {
+        .modal-pill {
+            width: 32px;
+            height: 4px;
+            border-radius: 2px;
+            background: #cbd5e1;
+            margin: 0 auto 14px;
+        }
+
+        .modal-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
 
-        .sheet-title {
-            font-size: 17px;
-            font-weight: 800;
+        .modal-title {
+            font-size: 15px;
+            font-weight: 700;
             color: var(--text-primary);
         }
 
-        .sheet-close {
+        .modal-close {
             background: var(--bg-card-subtle);
             border: none;
             color: var(--text-secondary);
-            width: 32px;
-            height: 32px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
             cursor: pointer;
         }
 
-        .region-grid {
+        .regions-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
+            gap: 8px;
         }
 
-        .region-btn {
+        .region-item {
             background: var(--bg-card-subtle);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
-            padding: 12px;
+            padding: 10px 12px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            color: var(--text-primary);
+            justify-content: space-between;
             cursor: pointer;
-            transition: all 0.15s ease;
+            transition: all 0.12s;
         }
 
-        .region-btn:active {
-            background: var(--accent-cyan-light);
-            border-color: var(--accent-cyan);
+        .region-item:active {
+            background: var(--primary-light);
+            border-color: var(--primary);
             transform: scale(0.98);
         }
 
-        .region-flag {
-            font-size: 22px;
-        }
-
         .region-name {
-            font-size: 13px;
-            font-weight: 700;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--text-primary);
         }
 
         .region-code {
-            font-size: 10.5px;
+            font-size: 10px;
             color: var(--text-muted);
             margin-top: 1px;
         }
 
-        /* Toast Feedback */
-        .toast-banner {
+        /* ========== CONFIRM DIALOG ========== */
+        .dialog-bg {
             position: fixed;
-            top: 70px;
+            inset: 0;
+            background: rgba(15,23,42,0.5);
+            backdrop-filter: blur(4px);
+            z-index: 200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .dialog-bg.open { display: flex; }
+
+        .dialog-box {
+            background: #fff;
+            border-radius: var(--radius-lg);
+            padding: 24px 20px 18px;
+            width: 100%;
+            max-width: 340px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+            animation: scaleIn 0.18s ease;
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .dialog-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .dialog-desc {
+            font-size: 12.5px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 18px;
+        }
+
+        .dialog-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .dialog-btn {
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: all 0.12s;
+        }
+
+        .dialog-btn-cancel {
+            background: var(--bg-card-subtle);
+            color: var(--text-secondary);
+        }
+
+        .dialog-btn-danger {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        .dialog-btn:active { transform: scale(0.96); }
+
+        /* ========== TOAST ========== */
+        .toast {
+            position: fixed;
+            top: 60px;
             left: 50%;
-            transform: translateX(-50%) translateY(-20px);
-            background: #ffffff;
+            transform: translateX(-50%) translateY(-16px);
+            background: #fff;
             border: 1px solid var(--border-color);
             color: var(--text-primary);
-            padding: 10px 20px;
-            border-radius: 30px;
-            font-size: 13px;
-            font-weight: 700;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 8px;
-            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12);
+            gap: 6px;
+            box-shadow: 0 8px 20px rgba(15,23,42,0.1);
             opacity: 0;
             pointer-events: none;
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.22s cubic-bezier(0.16,1,0.3,1);
             z-index: 999;
         }
 
-        .toast-banner.show {
+        .toast.show {
             opacity: 1;
             transform: translateX(-50%) translateY(0);
+        }
+
+        /* ========== LOADING ========== */
+        .loading-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: var(--text-muted);
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
 
-    <!-- Top App Navigation -->
-    <header class="top-nav">
-        <div class="brand-box">
-            <div class="brand-icon">⚡</div>
-            <div>
-                <div class="brand-title">
-                    <span>PP SERVER</span>
-                    <span class="brand-badge" id="appBadge">PRO NODE</span>
-                </div>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <div class="header-logo">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+            </div>
+            <div class="header-info">
+                <span class="header-name">PP Server</span>
+                <span class="header-badge">Enterprise</span>
             </div>
         </div>
-        <div class="status-dot-pill">
-            <span class="dot-pulse"></span>
-            <span id="statusText">GPGS Live</span>
+        <div class="status-chip">
+            <span class="status-dot"></span>
+            <span>Cloud Live</span>
         </div>
     </header>
 
-    <!-- Main Dynamic Content -->
-    <main class="main-content">
+    <!-- Main Content -->
+    <main class="container">
 
-        <!-- TAB 1: HOME (ACCOUNTS & PERKS) -->
+        <!-- TAB: HOME -->
         <section id="tabHome" class="tab-pane active">
-
-            <!-- Overview Banner -->
             <div class="hero-card">
-                <h1 class="hero-title">Connected Google Nodes</h1>
-                <p class="hero-desc">
-                    Permanent Google Play session vault for automated quest unlocking and Google Play Points.
-                </p>
+                <h1 class="hero-title">Google Play Quest Node</h1>
+                <p class="hero-desc">Permanent GPGS session vault for automated quest synchronization and Google Play Points.</p>
             </div>
 
-            <!-- Filter & Search (Shown when >= 2 accounts) -->
-            <div class="filter-section" id="filterSection" style="display:none;">
-                <div class="search-box">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" class="search-input" id="searchAccount" placeholder="Search email or code..." oninput="filterAccounts()">
+            <div class="controls-row">
+                <div class="section-label">
+                    <span>Active Accounts</span>
+                    <span class="count-badge" id="accountCount">0</span>
                 </div>
-                <button class="btn-filter-country" id="btnRegionFilter" onclick="openRegionPicker(true)">
-                    <span id="currentRegionPill">🌍 ALL</span>
+                <button class="btn-outline" onclick="syncCloud()">
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 4 23 10 17 10"/>
+                        <polyline points="1 20 1 14 7 14"/>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                    </svg>
+                    <span>Sync</span>
                 </button>
             </div>
 
-            <!-- Section Title & Cloud Sync -->
-            <div class="section-header">
-                <div class="section-title">
-                    <span>Google Play Accounts</span>
-                    <span class="counter-badge" id="accountCountBadge">0</span>
+            <div class="accounts-list" id="accountsList"></div>
+
+            <div class="empty-card" id="emptyState">
+                <div class="empty-icon">
+                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
                 </div>
-                <button class="btn-filter-country" style="padding:4px 10px; font-size:11px;" onclick="syncWithCloud()">
-                    🔄 Sync Cloud
-                </button>
-            </div>
-
-            <!-- Real Dynamic Accounts Container -->
-            <div class="accounts-list" id="accountsContainer"></div>
-
-            <!-- Clean Empty State (When no accounts exist) -->
-            <div class="empty-card" id="emptyStateContainer">
-                <div class="empty-icon-wrap">🎮</div>
                 <h3 class="empty-title">No Accounts Connected</h3>
-                <p class="empty-desc">
-                    Tap the ＋ button below to link your Google Play account and generate your permanent 6-digit Sync Code.
-                </p>
-                <button class="btn-connect-empty" onclick="openRegionPicker()">
-                    <span style="font-size:16px;">＋</span>
+                <p class="empty-desc">Connect your Google Play account to generate a permanent 6-digit Sync Code for instant quest and points unlocking.</p>
+                <button class="btn-primary" onclick="openRegionPicker()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"/>
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
                     <span>Connect Google Account</span>
                 </button>
             </div>
         </section>
 
-        <!-- TAB 2: BOX (COMING SOON) -->
+        <!-- TAB: BOX -->
         <section id="tabBox" class="tab-pane">
             <div class="feature-card">
-                <div class="feature-icon-wrap box">📦</div>
+                <div class="feature-icon feature-icon-box">
+                    <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="21 8 21 21 3 21 3 8"/>
+                        <rect x="1" y="3" width="22" height="5"/>
+                        <line x1="10" y1="12" x2="14" y2="12"/>
+                    </svg>
+                </div>
                 <h2 class="feature-title">Mystery Quest Box</h2>
-                <p class="feature-desc">
-                    Daily mystery loot chests, Play Points multipliers, level boosters, and limited-time partner quest drops will appear here.
-                </p>
-                <span class="badge-coming-soon">🚀 COMING SOON</span>
+                <p class="feature-desc">Daily mystery loot chests, Play Points multipliers, level boosters, and limited-time partner drops will appear here.</p>
+                <span class="pill-soon">Coming Soon</span>
             </div>
         </section>
 
-        <!-- TAB 4: SUB (COMING SOON) -->
+        <!-- TAB: SUB -->
         <section id="tabSub" class="tab-pane">
             <div class="feature-card">
-                <div class="feature-icon-wrap sub">👑</div>
+                <div class="feature-icon feature-icon-sub">
+                    <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/>
+                    </svg>
+                </div>
                 <h2 class="feature-title">PP Mod VIP Pass</h2>
-                <p class="feature-desc">
-                    Automated Friday weekly perk auto-claims, dedicated cloud VPS execution, turbo quest sync, and zero captcha.
-                </p>
-                <span class="badge-coming-soon">🚀 COMING SOON</span>
+                <p class="feature-desc">Automated Friday weekly perk auto-claims, dedicated cloud VPS execution, turbo quest sync, and zero captcha.</p>
+                <span class="pill-soon">Coming Soon</span>
             </div>
         </section>
 
-        <!-- TAB 5: SETTING (PROFILE & SETTINGS) -->
+        <!-- TAB: SETTINGS -->
         <section id="tabSetting" class="tab-pane">
 
-            <!-- Token Warning Alert (if any account revoked) -->
-            <div class="warning-card" id="warningAlertBox" style="display:none;">
-                <span style="font-size:18px;">⚠️</span>
-                <div class="warning-text">
-                    Security Notice: One of your accounts was removed from the server. Please disconnect and sign in again.
-                </div>
+            <!-- Warning Alert (hidden by default) -->
+            <div class="warn-box" id="warnBox" style="display:none;">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                <div class="warn-text">An account token has been revoked. Please remove and re-connect the affected account.</div>
             </div>
 
-            <!-- PP Mod User Profile Card -->
-            <div class="info-card">
-                <div class="user-profile-header">
-                    <div class="user-avatar-large" id="profileAvatar">👤</div>
+            <!-- Profile Card -->
+            <div class="settings-card">
+                <div class="profile-header">
+                    <div class="profile-avatar" id="settAvatar">P</div>
                     <div>
-                        <div class="profile-name" id="profileName">PP Mod User</div>
-                        <div class="profile-email" id="profileEmail">user@ppmod.cloud</div>
-                        <div class="profile-uid-pill" id="profileUid" onclick="copyText(this.innerText, 'UID')">UID: pp_000000</div>
+                        <div class="profile-name" id="settName">Loading...</div>
+                        <div class="profile-email" id="settEmail">loading...</div>
+                        <div class="profile-uid" id="settUid" onclick="copyUid()">UID: ...</div>
                     </div>
                 </div>
-
-                <div class="info-row">
-                    <span class="info-label">Account Balance</span>
-                    <span class="info-val" id="profileCoins" style="color:var(--accent-emerald);">🪙 0 Coins</span>
+                <div class="data-row">
+                    <span class="data-label">Account Balance</span>
+                    <span class="data-value" id="settCoins" style="color:var(--success);">0 Coins</span>
                 </div>
-                <div class="info-row">
-                    <span class="info-label">Cloud Status</span>
-                    <span class="info-val" style="color:var(--accent-cyan);">● VPS Node Live</span>
-                </div>
-            </div>
-
-            <!-- Device & Hardware Info Card -->
-            <div class="info-card">
-                <div class="info-row">
-                    <span class="info-label">Hardware Device ID</span>
-                    <span class="info-val" id="lblDeviceId" style="cursor:pointer;" onclick="copyDeviceId()">Tap to Copy</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">App Version</span>
-                    <span class="info-val" id="lblAppVersion">v3.8 Enterprise</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Architecture</span>
-                    <span class="info-val" style="color:var(--accent-emerald);">Light Hybrid Engine</span>
+                <div class="data-row">
+                    <span class="data-label">Cloud Status</span>
+                    <span class="data-value" style="color:var(--primary);">Active</span>
                 </div>
             </div>
 
-            <!-- Navigation Actions Card -->
-            <div class="info-card">
-                <button class="btn-action-row" onclick="openWebPortal()">
-                    <span>🌐 Open PP Mod Web Portal</span>
-                    <span style="color:var(--accent-cyan);">➔</span>
+            <!-- Device Info -->
+            <div class="settings-card">
+                <div class="data-row">
+                    <span class="data-label">Hardware Device ID</span>
+                    <span class="data-value" id="settDevId" style="cursor:pointer;font-size:11px;" onclick="copyDeviceId()">Tap to Copy</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">App Version</span>
+                    <span class="data-value" id="settVersion">v4.0 Hybrid</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Architecture</span>
+                    <span class="data-value" style="color:var(--success);">Hybrid Native</span>
+                </div>
+            </div>
+
+            <!-- Menu Links -->
+            <div class="settings-card">
+                <button class="menu-btn" onclick="syncCloud()">
+                    <span class="menu-btn-left">
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="23 4 23 10 17 10"/>
+                            <polyline points="1 20 1 14 7 14"/>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                        </svg>
+                        <span>Refresh Cloud Sync</span>
+                    </span>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"/>
+                    </svg>
                 </button>
-                <button class="btn-action-row" onclick="syncWithCloud()">
-                    <span>🔄 Refresh Accounts from Cloud</span>
-                    <span style="color:var(--accent-cyan);">➔</span>
+                <button class="menu-btn" onclick="openPortal()">
+                    <span class="menu-btn-left">
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                            <polyline points="15 3 21 3 21 9"/>
+                            <line x1="10" y1="14" x2="21" y2="3"/>
+                        </svg>
+                        <span>Open Web Portal</span>
+                    </span>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"/>
+                    </svg>
                 </button>
-                <button class="btn-action-row btn-logout-row" onclick="confirmLogout()">
-                    <span>🚪 Log Out of PP Mod</span>
-                    <span>➔</span>
+                <button class="menu-btn menu-btn-danger" onclick="showLogoutDialog()">
+                    <span class="menu-btn-left">
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                            <polyline points="16 17 21 12 16 7"/>
+                            <line x1="21" y1="12" x2="9" y2="12"/>
+                        </svg>
+                        <span>Sign Out</span>
+                    </span>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"/>
+                    </svg>
                 </button>
             </div>
         </section>
 
     </main>
 
-    <!-- Fixed Bottom Navigation (5 TABS) -->
-    <nav class="bottom-nav">
-        <div class="nav-item active" id="navHome" onclick="switchNavTab('tabHome')">
-            <span class="nav-icon">🏠</span>
+    <!-- Bottom Navigation -->
+    <nav class="nav-bar">
+        <div class="nav-item active" id="navHome" onclick="switchTab('tabHome')">
+            <div class="nav-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+            </div>
             <span class="nav-label">Home</span>
         </div>
-        <div class="nav-item" id="navBox" onclick="switchNavTab('tabBox')">
-            <span class="nav-icon">📦</span>
+
+        <div class="nav-item" id="navBox" onclick="switchTab('tabBox')">
+            <div class="nav-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="21 8 21 21 3 21 3 8"/>
+                    <rect x="1" y="3" width="22" height="5"/>
+                    <line x1="10" y1="12" x2="14" y2="12"/>
+                </svg>
+            </div>
             <span class="nav-label">Box</span>
-            <span class="nav-micro-badge">Soon</span>
+            <span class="nav-soon-tag">Soon</span>
         </div>
 
-        <!-- Center Elevated '+' Action Button -->
-        <div class="nav-add-btn-wrap" onclick="openRegionPicker()">
-            <div class="nav-btn-add">＋</div>
+        <div class="nav-center-wrap" onclick="openRegionPicker()">
+            <div class="nav-center-btn">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+            </div>
         </div>
 
-        <div class="nav-item" id="navSub" onclick="switchNavTab('tabSub')">
-            <span class="nav-icon">👑</span>
+        <div class="nav-item" id="navSub" onclick="switchTab('tabSub')">
+            <div class="nav-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/>
+                </svg>
+            </div>
             <span class="nav-label">Sub</span>
-            <span class="nav-micro-badge">Soon</span>
+            <span class="nav-soon-tag">Soon</span>
         </div>
-        <div class="nav-item" id="navSetting" onclick="switchNavTab('tabSetting')">
-            <span class="nav-icon">⚙️</span>
+
+        <div class="nav-item" id="navSetting" onclick="switchTab('tabSetting')">
+            <div class="nav-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+            </div>
             <span class="nav-label">Setting</span>
         </div>
     </nav>
 
-    <!-- Region Selector Modal Sheet -->
-    <div class="modal-overlay" id="regionModal">
-        <div class="modal-sheet">
-            <div class="sheet-header">
-                <h3 class="sheet-title" id="sheetModalTitle">Select Google Play Region</h3>
-                <button class="sheet-close" onclick="closeRegionPicker()">✕</button>
+    <!-- Region Picker Modal -->
+    <div class="modal-bg" id="regionModal" onclick="closeRegionPicker(event)">
+        <div class="modal-sheet" onclick="event.stopPropagation()">
+            <div class="modal-pill"></div>
+            <div class="modal-header">
+                <h3 class="modal-title">Select Google Play Region</h3>
+                <button class="modal-close" onclick="closeRegionPicker()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
             </div>
-            <div class="region-grid" id="regionGrid"></div>
+            <div class="regions-grid" id="regionGrid"></div>
         </div>
     </div>
 
-    <!-- Toast Notification Banner -->
-    <div class="toast-banner" id="toastBanner">
-        <span id="toastIcon">✓</span>
-        <span id="toastMsg">Code Copied!</span>
+    <!-- Confirm Dialog -->
+    <div class="dialog-bg" id="confirmDialog">
+        <div class="dialog-box">
+            <div class="dialog-title" id="dialogTitle">Disconnect Account</div>
+            <div class="dialog-desc" id="dialogDesc">Are you sure?</div>
+            <div class="dialog-actions">
+                <button class="dialog-btn dialog-btn-cancel" onclick="closeDialog()">Cancel</button>
+                <button class="dialog-btn dialog-btn-danger" id="dialogConfirmBtn" onclick="closeDialog()">Remove</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <span id="toastMsg">Done</span>
     </div>
 
     <script>
-        // Supported Google Play Regions
+        // ==================== REGIONS ====================
         const REGIONS = [
-            { code: "US", name: "United States", flag: "🇺🇸" },
-            { code: "JP", name: "Japan", flag: "🇯🇵" },
-            { code: "KR", name: "South Korea", flag: "🇰🇷" },
-            { code: "TW", name: "Taiwan", flag: "🇹🇼" },
-            { code: "GB", name: "United Kingdom", flag: "🇬🇧" },
-            { code: "DE", name: "Germany", flag: "🇩🇪" },
-            { code: "FR", name: "France", flag: "🇫🇷" },
-            { code: "AU", name: "Australia", flag: "🇦🇺" },
-            { code: "IN", name: "India", flag: "🇮🇳" },
-            { code: "TR", name: "Turkey", flag: "🇹🇷" },
-            { code: "BR", name: "Brazil", flag: "🇧🇷" },
-            { code: "GLOBAL", name: "Global (Auto)", flag: "🌐" }
+            { code: "US", name: "United States" },
+            { code: "JP", name: "Japan" },
+            { code: "KR", name: "South Korea" },
+            { code: "TW", name: "Taiwan" },
+            { code: "GB", name: "United Kingdom" },
+            { code: "DE", name: "Germany" },
+            { code: "FR", name: "France" },
+            { code: "AU", name: "Australia" },
+            { code: "IN", name: "India" },
+            { code: "TR", name: "Turkey" },
+            { code: "BR", name: "Brazil" },
+            { code: "GLOBAL", name: "Global (Auto)" }
         ];
 
-        // State
+        // ==================== STATE ====================
         let accounts = [];
-        let selectedFilterCountry = "ALL";
-        let isFilterPicking = false;
         let revealedEmails = {};
         let currentTab = "tabHome";
-        let appConfig = {
-            appName: "PPM Server",
-            versionName: "v3.8 Enterprise",
-            deviceId: "DEV-HW-NODE",
-            portalUrl: "https://pp-mod-auto-quest.onrender.com",
-            userUid: "pp_000000",
-            userEmail: "user@ppmod.cloud",
-            userName: "PP Mod User",
-            userCoins: 0
-        };
+        let appInfo = null;
 
-        // Initialize App
-        window.addEventListener('DOMContentLoaded', () => {
-            initAppMode();
-            renderRegionGrid();
+        // ==================== INIT ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAppInfo();
+            buildRegionGrid();
             loadAccounts();
-            startPerkTimerClock();
+            startPerkTimer();
         });
 
-        function initAppMode() {
+        function loadAppInfo() {
             try {
                 if (window.AndroidBridge && window.AndroidBridge.getAppInfo) {
-                    const infoStr = window.AndroidBridge.getAppInfo();
-                    if (infoStr) {
-                        const info = JSON.parse(infoStr);
-                        appConfig = { ...appConfig, ...info };
-                    }
+                    var raw = window.AndroidBridge.getAppInfo();
+                    if (raw) appInfo = JSON.parse(raw);
                 }
-            } catch (e) {
-                console.error("initAppMode error", e);
-            }
+            } catch (e) {}
 
-            // Populate Settings View
-            const lblDev = document.getElementById("lblDeviceId");
-            if (lblDev) lblDev.innerText = appConfig.deviceId;
-            const lblVer = document.getElementById("lblAppVersion");
-            if (lblVer) lblVer.innerText = appConfig.versionName;
-            const pName = document.getElementById("profileName");
-            if (pName) pName.innerText = appConfig.userName;
-            const pEmail = document.getElementById("profileEmail");
-            if (pEmail) pEmail.innerText = appConfig.userEmail;
-            const pUid = document.getElementById("profileUid");
-            if (pUid) pUid.innerText = "UID: " + appConfig.userUid;
-            const pCoins = document.getElementById("profileCoins");
-            if (pCoins) pCoins.innerText = `🪙 ${Number(appConfig.userCoins || 0).toLocaleString()} Coins`;
-            const pAvatar = document.getElementById("profileAvatar");
-            if (pAvatar && appConfig.userName) {
-                pAvatar.innerText = appConfig.userName.charAt(0).toUpperCase();
-            }
+            if (!appInfo) return;
+
+            // Settings profile
+            var el;
+            el = document.getElementById('settName');
+            if (el) el.textContent = appInfo.userName || 'PP Mod User';
+
+            el = document.getElementById('settEmail');
+            if (el) el.textContent = appInfo.userEmail || '';
+
+            el = document.getElementById('settUid');
+            if (el) el.textContent = 'UID: ' + (appInfo.userUid || '');
+
+            el = document.getElementById('settCoins');
+            if (el) el.textContent = Number(appInfo.userCoins || 0).toLocaleString() + ' Coins';
+
+            el = document.getElementById('settAvatar');
+            if (el && appInfo.userName) el.textContent = appInfo.userName.charAt(0).toUpperCase();
+
+            el = document.getElementById('settDevId');
+            if (el) el.textContent = appInfo.deviceId || '';
+
+            el = document.getElementById('settVersion');
+            if (el) el.textContent = appInfo.versionName || 'v4.0 Hybrid';
         }
 
-        // ================= BOTTOM TAB NAVIGATION =================
-        function switchNavTab(tabId) {
-            currentTab = tabId;
-
-            // Update tab panes
-            document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
-            const targetPane = document.getElementById(tabId);
-            if (targetPane) targetPane.classList.add('active');
-
-            // Update nav bar active state
-            document.querySelectorAll('.bottom-nav .nav-item').forEach(el => el.classList.remove('active'));
-            if (tabId === 'tabHome') document.getElementById('navHome')?.classList.add('active');
-            if (tabId === 'tabBox') document.getElementById('navBox')?.classList.add('active');
-            if (tabId === 'tabSub') document.getElementById('navSub')?.classList.add('active');
-            if (tabId === 'tabSetting') document.getElementById('navSetting')?.classList.add('active');
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        // ================= ACCOUNTS MANAGEMENT =================
+        // ==================== ACCOUNTS ====================
         function loadAccounts() {
             try {
                 if (window.AndroidBridge && window.AndroidBridge.getAccounts) {
-                    const jsonStr = window.AndroidBridge.getAccounts();
-                    if (jsonStr) {
-                        accounts = JSON.parse(jsonStr);
-                    }
+                    var raw = window.AndroidBridge.getAccounts();
+                    if (raw) accounts = JSON.parse(raw);
                 }
-            } catch (e) {
-                console.error("loadAccounts error", e);
-            }
-
-            renderAccountsList();
+            } catch (e) {}
+            renderAccounts();
         }
 
+        // Java callbacks
         window.refreshAccounts = function() {
             loadAccounts();
-            initAppMode();
+            loadAppInfo();
         };
 
-        function renderAccountsList() {
-            const container = document.getElementById("accountsContainer");
-            const emptyState = document.getElementById("emptyStateContainer");
-            const filterSec = document.getElementById("filterSection");
-            const countBadge = document.getElementById("accountCountBadge");
-            const warningAlert = document.getElementById("warningAlertBox");
-
-            if (!container) return;
-
-            let hasRevoked = false;
-            accounts.forEach(a => {
-                if (a.is_revoked) hasRevoked = true;
-            });
-            if (warningAlert) {
-                warningAlert.style.display = hasRevoked ? "flex" : "none";
+        window.onAccountSyncComplete = function(accObj) {
+            if (accObj) {
+                // Remove duplicate by code
+                var code = accObj.code;
+                accounts = accounts.filter(function(a) { return a.code !== code; });
+                accounts.unshift(accObj);
             }
+            renderAccounts();
+            loadAppInfo();
+            showToast('Account connected successfully');
+        };
+
+        function renderAccounts() {
+            var list = document.getElementById('accountsList');
+            var empty = document.getElementById('emptyState');
+            var badge = document.getElementById('accountCount');
+            var warn = document.getElementById('warnBox');
+
+            if (!list) return;
+
+            // Check revoked
+            var hasRevoked = false;
+            for (var i = 0; i < accounts.length; i++) {
+                if (accounts[i].is_revoked) hasRevoked = true;
+            }
+            if (warn) warn.style.display = hasRevoked ? 'flex' : 'none';
 
             if (!accounts || accounts.length === 0) {
-                container.innerHTML = "";
-                if (emptyState) emptyState.style.display = "block";
-                if (filterSec) filterSec.style.display = "none";
-                if (countBadge) countBadge.innerText = "0";
+                list.innerHTML = '';
+                if (empty) empty.style.display = 'block';
+                if (badge) badge.textContent = '0';
                 return;
             }
 
-            if (emptyState) emptyState.style.display = "none";
-            if (filterSec) filterSec.style.display = (accounts.length >= 2) ? "flex" : "none";
-            if (countBadge) countBadge.innerText = accounts.length;
+            if (empty) empty.style.display = 'none';
+            if (badge) badge.textContent = accounts.length;
 
-            // Filter logic
-            const q = (document.getElementById("searchAccount")?.value || "").trim().toLowerCase();
-            let filtered = accounts.filter(acc => {
-                const matchCountry = (selectedFilterCountry === "ALL" || (acc.country || "GLOBAL").toUpperCase() === selectedFilterCountry);
-                const matchSearch = (!q || (acc.email || "").toLowerCase().includes(q) || (acc.code || "").includes(q));
-                return matchCountry && matchSearch;
-            });
-
-            if (filtered.length === 0) {
-                container.innerHTML = `
-                    <div style="background:#ffffff; border:1px dashed var(--border-color); border-radius:var(--radius-lg); padding:28px 20px; text-align:center; color:var(--text-muted); font-size:13px;">
-                        No accounts match your search filter.
-                    </div>
-                `;
-                return;
+            var html = '';
+            for (var i = 0; i < accounts.length; i++) {
+                var acc = accounts[i];
+                html += buildAccountCard(acc);
             }
-
-            let html = "";
-            filtered.forEach(acc => {
-                const flagObj = REGIONS.find(r => r.code === (acc.country || "GLOBAL")) || { flag: "🌍", name: "Global" };
-                const isRevealed = !!revealedEmails[acc.code];
-                const displayEmail = isRevealed ? acc.email : maskEmail(acc.email);
-                const initial = (acc.email || "G").charAt(0).toUpperCase();
-
-                // Friday Weekly Perk calculation
-                const perkHtml = renderFridayPerkSection(acc);
-
-                html += `
-                <div class="account-card" id="card_${acc.code}">
-                    <div class="account-top">
-                        <div class="account-identity">
-                            <div class="avatar-circle">${initial}</div>
-                            <div class="email-details">
-                                <div class="user-email" onclick="revealEmail('${acc.code}')" title="Tap to reveal email">
-                                    ${escapeHtml(displayEmail)}
-                                </div>
-                                <div class="user-balance-row">
-                                    <span class="balance-pill">${acc.balance || "$0.00"}</span>
-                                    <span class="points-pill">⭐ ${Number(acc.points || 0).toLocaleString()} pts</span>
-                                    <span class="badge-country">${flagObj.flag} ${acc.country || 'GLOBAL'}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <button class="btn-delete-account" title="Disconnect Account" onclick="confirmDeleteAccount('${acc.code}', '${escapeHtml(acc.email)}')">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="3 6 5 6 21 6"></polyline>
-                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                            </svg>
-                        </button>
-                    </div>
-
-                    <!-- 6-Digit Sync Code Box -->
-                    <div class="code-vault-box">
-                        <div class="code-label-group">
-                            <span class="code-caption">YOUR 6-DIGIT SYNC CODE</span>
-                            <span class="code-digits">${acc.code}</span>
-                        </div>
-                        <button class="btn-copy-code" onclick="copySyncCode('${acc.code}')">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                            </svg>
-                            <span>Copy</span>
-                        </button>
-                    </div>
-
-                    <!-- Friday 9:00 AM BD Time Weekly Perk Button -->
-                    ${perkHtml}
-                </div>
-                `;
-            });
-
-            container.innerHTML = html;
+            list.innerHTML = html;
         }
 
-        // ================= FRIDAY 9:00 AM BD TIME LOGIC =================
-        function getBangladeshTime() {
-            // Bangladesh is UTC+6
-            const now = new Date();
-            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+        function buildAccountCard(acc) {
+            var email = acc.email || 'Google Account';
+            var revealed = !!revealedEmails[acc.code];
+            var display = revealed ? esc(email) : esc(maskEmail(email));
+            var initial = email.charAt(0).toUpperCase();
+            var balance = acc.balance || '$0.00';
+            var points = Number(acc.points || 0).toLocaleString();
+            var country = acc.country || 'GLOBAL';
+            var perkHtml = buildPerkSection(acc);
+
+            return '<div class="account-card" id="card_' + acc.code + '">' +
+                '<div class="acc-top">' +
+                    '<div class="acc-user">' +
+                        '<div class="acc-avatar">' + initial + '</div>' +
+                        '<div class="acc-meta">' +
+                            '<div class="acc-email" onclick="toggleEmail(\'' + acc.code + '\')">' + display + '</div>' +
+                            '<div class="acc-tags">' +
+                                '<span class="tag tag-green">' + esc(balance) + '</span>' +
+                                '<span class="tag tag-amber">' + points + ' pts</span>' +
+                                '<span class="tag tag-gray">' + esc(country) + '</span>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<button class="btn-icon" onclick="showDeleteDialog(\'' + acc.code + '\', \'' + esc(email) + '\')" title="Disconnect">' +
+                        '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+                            '<polyline points="3 6 5 6 21 6"/>' +
+                            '<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>' +
+                        '</svg>' +
+                    '</button>' +
+                '</div>' +
+                '<div class="code-box">' +
+                    '<div class="code-info">' +
+                        '<span class="code-label">Sync Code</span>' +
+                        '<span class="code-value">' + acc.code + '</span>' +
+                    '</div>' +
+                    '<button class="btn-copy-sm" onclick="copyCode(\'' + acc.code + '\')">' +
+                        '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' +
+                            '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>' +
+                            '<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>' +
+                        '</svg>' +
+                        '<span>Copy</span>' +
+                    '</button>' +
+                '</div>' +
+                perkHtml +
+            '</div>';
+        }
+
+        // ==================== FRIDAY PERK LOGIC ====================
+        function getBDTime() {
+            var now = new Date();
+            var utc = now.getTime() + (now.getTimezoneOffset() * 60000);
             return new Date(utc + (3600000 * 6));
         }
 
-        function renderFridayPerkSection(acc) {
-            const bdDate = getBangladeshTime();
-            const day = bdDate.getDay(); // 0: Sun, 1: Mon, ... 5: Friday, 6: Sat
-            const hour = bdDate.getHours();
-            const minutes = bdDate.getMinutes();
+        function buildPerkSection(acc) {
+            var bd = getBDTime();
+            var day = bd.getDay();
+            var hour = bd.getHours();
+            var mins = bd.getMinutes();
 
-            // STRICT REQUIREMENT: Only show on Friday AFTER 9:00 AM Bangladesh Time!
-            // If Monday to Thursday, or Saturday, or Friday before 9 AM: completely hidden!
-            if (day !== 5 || hour < 9) {
-                return '';
-            }
+            // Only show on Friday after 9:00 AM BD Time
+            if (day !== 5 || hour < 9) return '';
 
-            const todayStr = bdDate.toISOString().split('T')[0];
-            const alreadyClaimed = (acc.last_claim_date === todayStr);
+            var todayStr = bd.toISOString().split('T')[0];
+            var claimed = (acc.last_claim_date === todayStr);
 
-            if (alreadyClaimed) {
-                const pts = acc.claimed_points || 10;
-                return `
-                <div class="perk-claim-box">
-                    <div class="perk-info-group">
-                        <span class="perk-title">✅ Weekly Perk Claimed</span>
-                        <span class="perk-sub">Received +${pts} Play Points today</span>
-                    </div>
-                    <span style="font-size:12px; font-weight:800; color:#059669; font-family:monospace;">+${pts} PTS</span>
-                </div>
-                `;
+            if (claimed) {
+                var pts = acc.claimed_points || 10;
+                return '<div class="perk-row perk-claimed">' +
+                    '<div class="perk-info">' +
+                        '<span class="perk-title perk-title-green">' +
+                            '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
+                            ' Weekly Perk Claimed' +
+                        '</span>' +
+                        '<span class="perk-sub perk-sub-green">Received +' + pts + ' Play Points today</span>' +
+                    '</div>' +
+                    '<span class="perk-pts-badge">+' + pts + ' PTS</span>' +
+                '</div>';
             }
 
             if (acc.has_perk === false) {
-                return `
-                <div class="perk-claim-box locked">
-                    <div class="perk-info-group">
-                        <span class="perk-title locked">🔒 Weekly Perk Locked</span>
-                        <span class="perk-sub locked">No active Play Points tier perks available</span>
-                    </div>
-                </div>
-                `;
+                return '<div class="perk-row perk-locked">' +
+                    '<div class="perk-info">' +
+                        '<span class="perk-title perk-title-muted">' +
+                            '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>' +
+                            ' Weekly Perk Locked' +
+                        '</span>' +
+                        '<span class="perk-sub perk-sub-muted">Perk not active on this account</span>' +
+                    '</div>' +
+                '</div>';
             }
 
-            // Google unlocks weekly perks around 12:00 AM US Pacific Time (which is 2:00 PM BD Time)
             if (hour >= 9 && hour < 14) {
-                const hoursLeft = 13 - hour;
-                const minutesLeft = 59 - minutes;
-                return `
-                <div class="perk-claim-box">
-                    <div class="perk-info-group">
-                        <span class="perk-title">⏳ Google Unlock in ${hoursLeft}h ${minutesLeft}m</span>
-                        <span class="perk-sub">Perk unlocks at 2:00 PM BD Time</span>
-                    </div>
-                    <button class="btn-claim-perk" disabled>Unlock Pending</button>
-                </div>
-                `;
+                var hLeft = 13 - hour;
+                var mLeft = 59 - mins;
+                return '<div class="perk-row perk-active">' +
+                    '<div class="perk-info">' +
+                        '<span class="perk-title perk-title-green">' +
+                            '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' +
+                            ' Unlock in ' + hLeft + 'h ' + mLeft + 'm' +
+                        '</span>' +
+                        '<span class="perk-sub perk-sub-green">Unlocks at 2:00 PM BD Time</span>' +
+                    '</div>' +
+                    '<button class="btn-claim" disabled>Pending</button>' +
+                '</div>';
             }
 
-            // At or after 2:00 PM BD Time: Active Claim Button!
-            return `
-            <div class="perk-claim-box">
-                <div class="perk-info-group">
-                    <span class="perk-title">🎁 Friday Weekly Perk Available</span>
-                    <span class="perk-sub">Tap to claim free Google Play Points</span>
-                </div>
-                <button class="btn-claim-perk" onclick="claimPerk('${acc.code}')">Claim Points</button>
-            </div>
-            `;
+            // 2:00 PM+ BD: Active claim
+            return '<div class="perk-row perk-active">' +
+                '<div class="perk-info">' +
+                    '<span class="perk-title perk-title-green">' +
+                        '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>' +
+                        ' Weekly Perk Available' +
+                    '</span>' +
+                    '<span class="perk-sub perk-sub-green">Claim your weekly Play Points</span>' +
+                '</div>' +
+                '<button class="btn-claim" onclick="claimPerk(\'' + acc.code + '\')">Claim</button>' +
+            '</div>';
         }
 
-        function startPerkTimerClock() {
-            setInterval(() => {
-                const bdDate = getBangladeshTime();
-                if (bdDate.getDay() === 5 && currentTab === "tabHome") {
-                    renderAccountsList();
+        function startPerkTimer() {
+            setInterval(function() {
+                var bd = getBDTime();
+                if (bd.getDay() === 5 && currentTab === 'tabHome') {
+                    renderAccounts();
                 }
             }, 60000);
         }
@@ -1502,183 +1583,214 @@
             if (window.AndroidBridge && window.AndroidBridge.claimWeeklyPerk) {
                 window.AndroidBridge.claimWeeklyPerk(code);
             } else {
-                showToast("Claiming weekly perk...");
-                setTimeout(() => {
-                    const acc = accounts.find(a => a.code === code);
-                    if (acc) {
-                        acc.last_claim_date = getBangladeshTime().toISOString().split('T')[0];
-                        acc.points = (acc.points || 0) + 10;
-                        acc.claimed_points = (acc.claimed_points || 0) + 10;
+                showToast('Claiming weekly perk...');
+                setTimeout(function() {
+                    for (var i = 0; i < accounts.length; i++) {
+                        if (accounts[i].code === code) {
+                            accounts[i].last_claim_date = getBDTime().toISOString().split('T')[0];
+                            accounts[i].points = (accounts[i].points || 0) + 10;
+                            accounts[i].claimed_points = (accounts[i].claimed_points || 0) + 10;
+                            break;
+                        }
                     }
-                    renderAccountsList();
-                    showToast("🎁 +10 Play Points Claimed!");
+                    renderAccounts();
+                    showToast('10 Play Points Claimed');
                 }, 800);
             }
         }
 
-        // ================= ACTIONS =================
-        function copySyncCode(code) {
+        // ==================== ACTIONS ====================
+        function copyCode(code) {
             if (window.AndroidBridge && window.AndroidBridge.copyToClipboard) {
-                window.AndroidBridge.copyToClipboard(code, "Sync Code");
+                window.AndroidBridge.copyToClipboard(code, 'Sync Code');
             } else {
-                navigator.clipboard?.writeText(code);
-                showToast(`Sync Code ${code} Copied!`);
+                try { navigator.clipboard.writeText(code); } catch(e) {}
+                showToast('Code ' + code + ' copied');
             }
         }
 
         function copyDeviceId() {
-            const devId = appConfig.deviceId;
+            var devId = appInfo ? appInfo.deviceId : '';
+            if (!devId) return;
             if (window.AndroidBridge && window.AndroidBridge.copyToClipboard) {
-                window.AndroidBridge.copyToClipboard(devId, "Hardware Device ID");
+                window.AndroidBridge.copyToClipboard(devId, 'Device ID');
             } else {
-                navigator.clipboard?.writeText(devId);
-                showToast("Device ID Copied!");
+                try { navigator.clipboard.writeText(devId); } catch(e) {}
+                showToast('Device ID copied');
             }
         }
 
-        function copyText(text, label) {
-            const clean = text.replace(/^UID:\s*/i, '').trim();
+        function copyUid() {
+            var el = document.getElementById('settUid');
+            if (!el) return;
+            var uid = el.textContent.replace(/^UID:\s*/i, '').trim();
             if (window.AndroidBridge && window.AndroidBridge.copyToClipboard) {
-                window.AndroidBridge.copyToClipboard(clean, label);
+                window.AndroidBridge.copyToClipboard(uid, 'UID');
             } else {
-                navigator.clipboard?.writeText(clean);
-                showToast(`${label} Copied!`);
+                try { navigator.clipboard.writeText(uid); } catch(e) {}
+                showToast('UID copied');
             }
         }
 
-        function revealEmail(code) {
-            revealedEmails[code] = true;
-            renderAccountsList();
-            setTimeout(() => {
+        function toggleEmail(code) {
+            if (revealedEmails[code]) {
                 delete revealedEmails[code];
-                renderAccountsList();
-            }, 5000);
-        }
-
-        function confirmDeleteAccount(code, email) {
-            if (confirm(`Are you sure you want to disconnect ${email}?`)) {
-                if (window.AndroidBridge && window.AndroidBridge.deleteAccount) {
-                    window.AndroidBridge.deleteAccount(code);
-                }
-                accounts = accounts.filter(a => a.code !== code);
-                renderAccountsList();
-                showToast("Account Disconnected");
+            } else {
+                revealedEmails[code] = true;
+                setTimeout(function() {
+                    delete revealedEmails[code];
+                    renderAccounts();
+                }, 5000);
             }
+            renderAccounts();
         }
 
-        function confirmLogout() {
-            if (confirm("Are you sure you want to log out of PP Mod?")) {
+        // ==================== DELETE DIALOG ====================
+        var pendingDeleteCode = '';
+
+        function showDeleteDialog(code, email) {
+            pendingDeleteCode = code;
+            document.getElementById('dialogTitle').textContent = 'Disconnect Account';
+            document.getElementById('dialogDesc').textContent = 'Remove ' + email + ' from this device? The sync code will be invalidated.';
+            document.getElementById('dialogConfirmBtn').onclick = function() {
+                doDelete(pendingDeleteCode);
+                closeDialog();
+            };
+            document.getElementById('confirmDialog').classList.add('open');
+        }
+
+        function doDelete(code) {
+            if (window.AndroidBridge && window.AndroidBridge.deleteAccount) {
+                window.AndroidBridge.deleteAccount(code);
+            }
+            accounts = accounts.filter(function(a) { return a.code !== code; });
+            renderAccounts();
+            showToast('Account disconnected');
+        }
+
+        function closeDialog() {
+            document.getElementById('confirmDialog').classList.remove('open');
+        }
+
+        // ==================== LOGOUT DIALOG ====================
+        function showLogoutDialog() {
+            document.getElementById('dialogTitle').textContent = 'Sign Out';
+            document.getElementById('dialogDesc').textContent = 'Are you sure you want to sign out of PP Mod? You can sign in again anytime.';
+            document.getElementById('dialogConfirmBtn').textContent = 'Sign Out';
+            document.getElementById('dialogConfirmBtn').onclick = function() {
                 if (window.AndroidBridge && window.AndroidBridge.logout) {
                     window.AndroidBridge.logout();
                 } else {
-                    showToast("Logged out successfully");
+                    showToast('Signed out');
                 }
-            }
+                closeDialog();
+            };
+            document.getElementById('confirmDialog').classList.add('open');
         }
 
-        function openWebPortal() {
-            const url = appConfig.portalUrl || "https://pp-mod-auto-quest.onrender.com";
+        function openPortal() {
+            var url = (appInfo && appInfo.portalUrl) ? appInfo.portalUrl : 'https://pp-mod-auto-quest.onrender.com';
             if (window.AndroidBridge && window.AndroidBridge.openBrowser) {
                 window.AndroidBridge.openBrowser(url);
             } else {
-                window.open(url, "_blank");
+                window.open(url, '_blank');
             }
         }
 
-        function syncWithCloud() {
-            showToast("Syncing with cloud...");
+        function syncCloud() {
+            showToast('Syncing with cloud...');
             if (window.AndroidBridge && window.AndroidBridge.syncCloudAccounts) {
                 window.AndroidBridge.syncCloudAccounts();
             } else {
-                setTimeout(() => {
+                setTimeout(function() {
                     loadAccounts();
-                    showToast("Cloud sync complete!");
+                    showToast('Cloud sync complete');
                 }, 1000);
             }
         }
 
-        // ================= REGION PICKER =================
-        function renderRegionGrid() {
-            const grid = document.getElementById("regionGrid");
+        // ==================== NAVIGATION ====================
+        function switchTab(tabId) {
+            currentTab = tabId;
+
+            var panes = document.querySelectorAll('.tab-pane');
+            for (var i = 0; i < panes.length; i++) panes[i].classList.remove('active');
+            var target = document.getElementById(tabId);
+            if (target) target.classList.add('active');
+
+            var navs = document.querySelectorAll('.nav-bar .nav-item');
+            for (var i = 0; i < navs.length; i++) navs[i].classList.remove('active');
+
+            var navMap = { tabHome: 'navHome', tabBox: 'navBox', tabSub: 'navSub', tabSetting: 'navSetting' };
+            var navEl = document.getElementById(navMap[tabId]);
+            if (navEl) navEl.classList.add('active');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ==================== REGION PICKER ====================
+        function buildRegionGrid() {
+            var grid = document.getElementById('regionGrid');
             if (!grid) return;
-
-            grid.innerHTML = REGIONS.map(r => `
-                <div class="region-btn" onclick="selectRegion('${r.code}')">
-                    <span class="region-flag">${r.flag}</span>
-                    <div>
-                        <div class="region-name">${r.name}</div>
-                        <div class="region-code">${r.code}</div>
-                    </div>
-                </div>
-            `).join("");
-        }
-
-        function openRegionPicker(isFilter = false) {
-            isFilterPicking = isFilter;
-            const modal = document.getElementById("regionModal");
-            const title = document.getElementById("sheetModalTitle");
-            if (title) {
-                title.innerText = isFilter ? "Filter Accounts by Region" : "Select Google Play Region";
+            var html = '';
+            for (var i = 0; i < REGIONS.length; i++) {
+                var r = REGIONS[i];
+                html += '<div class="region-item" onclick="selectRegion(\'' + r.code + '\')">' +
+                    '<div>' +
+                        '<div class="region-name">' + r.name + '</div>' +
+                        '<div class="region-code">' + r.code + '</div>' +
+                    '</div>' +
+                    '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>' +
+                '</div>';
             }
-            if (modal) modal.classList.add("open");
+            grid.innerHTML = html;
         }
 
-        function closeRegionPicker() {
-            const modal = document.getElementById("regionModal");
-            if (modal) modal.classList.remove("open");
+        function openRegionPicker() {
+            document.getElementById('regionModal').classList.add('open');
+        }
+
+        function closeRegionPicker(e) {
+            if (e && e.target !== e.currentTarget) return;
+            document.getElementById('regionModal').classList.remove('open');
         }
 
         function selectRegion(code) {
-            closeRegionPicker();
-            if (isFilterPicking) {
-                selectedFilterCountry = code;
-                const pill = document.getElementById("currentRegionPill");
-                if (pill) {
-                    const r = REGIONS.find(x => x.code === code);
-                    pill.innerText = r ? `${r.flag} ${r.code}` : code;
-                }
-                renderAccountsList();
+            document.getElementById('regionModal').classList.remove('open');
+            if (window.AndroidBridge && window.AndroidBridge.startGoogleLogin) {
+                window.AndroidBridge.startGoogleLogin(code);
             } else {
-                if (window.AndroidBridge && window.AndroidBridge.startGoogleLogin) {
-                    window.AndroidBridge.startGoogleLogin(code);
-                } else {
-                    showToast(`Starting Google login for ${code}...`);
-                }
+                showToast('Starting Google login for ' + code);
             }
         }
 
-        function filterAccounts() {
-            renderAccountsList();
-        }
-
-        // ================= UTILITIES =================
+        // ==================== UTILITIES ====================
         function maskEmail(email) {
-            if (!email || !email.includes("@")) return email || "Google Account";
-            const parts = email.split("@");
-            const name = parts[0];
-            const domain = parts[1];
-            if (name.length <= 2) return name + "@" + domain;
-            if (name.length <= 4) return name[0] + "•••" + name[name.length - 1] + "@" + domain;
-            return name.substring(0, 2) + "••••" + name.substring(name.length - 2) + "@" + domain;
+            if (!email || email.indexOf('@') === -1) return email || 'Google Account';
+            var parts = email.split('@');
+            var name = parts[0];
+            var domain = parts[1];
+            if (name.length <= 2) return name + '@' + domain;
+            if (name.length <= 4) return name[0] + '\u2022\u2022\u2022' + name[name.length - 1] + '@' + domain;
+            return name.substring(0, 2) + '\u2022\u2022\u2022\u2022' + name.substring(name.length - 2) + '@' + domain;
         }
 
-        function escapeHtml(str) {
+        function esc(str) {
             if (!str) return '';
-            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         }
 
-        let toastTimer = null;
+        var toastTimer = null;
         function showToast(msg) {
-            const toast = document.getElementById("toastBanner");
-            const msgEl = document.getElementById("toastMsg");
-            if (!toast || !msgEl) return;
-            msgEl.innerText = msg;
-            toast.classList.add("show");
+            var t = document.getElementById('toast');
+            var m = document.getElementById('toastMsg');
+            if (!t || !m) return;
+            m.textContent = msg;
+            t.classList.add('show');
             if (toastTimer) clearTimeout(toastTimer);
-            toastTimer = setTimeout(() => {
-                toast.classList.remove("show");
-            }, 2500);
+            toastTimer = setTimeout(function() { t.classList.remove('show'); }, 2200);
         }
     </script>
+
 </body>
 </html>
