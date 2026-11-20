@@ -2110,6 +2110,18 @@
                             <div
                                 style="padding:12px; background:var(--bg-card-subtle); border-radius:var(--radius-sm); border:1px solid var(--border-color);">
                                 <span
+                                    style="font-size:10.5px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">🚀
+                                    App Engine Version</span>
+                                <div
+                                    style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+                                    <span id="fullPanelAppVersion"
+                                        style="font-family:'JetBrains Mono'; font-size:12px; font-weight:800; color:#0284c7; word-break:break-all;">v3.8 Enterprise (Code 4)</span>
+                                </div>
+                            </div>
+
+                            <div
+                                style="padding:12px; background:var(--bg-card-subtle); border-radius:var(--radius-sm); border:1px solid var(--border-color);">
+                                <span
                                     style="font-size:10.5px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">📱
                                     Hardware Device ID</span>
                                 <div
@@ -4762,6 +4774,11 @@
                     <div class="user-clickable-cell" onclick="openUserFullPanel(${actualIndex})" title="Click to view full profile">
                         <strong style="color:var(--text-primary); display:block; font-size:13px;">📱 ${u.model || 'Android Device'}</strong>
                         <span style="font-size:10.5px; font-family:'JetBrains Mono'; color:var(--text-secondary);">${(u.device_id || '').substring(0, 16)}...</span>
+                        <div style="margin-top:3px;">
+                            <span style="font-size:10px; font-weight:700; color:#0284c7; background:rgba(2,132,199,0.08); border:1px solid rgba(2,132,199,0.25); border-radius:4px; padding:1px 6px;">
+                                🚀 ${u.app_version || 'v3.8 Enterprise (Code 4)'}
+                            </span>
+                        </div>
                     </div>
                 </td>
                 <td>
@@ -5195,6 +5212,8 @@
             // Fill Header & Overview
             document.getElementById("fullPanelUserName").innerText = u.display_name || "PP Mod User";
             document.getElementById("fullPanelDeviceTitle").innerText = "📱 " + (u.model || "Android Device");
+            const appVerEl = document.getElementById("fullPanelAppVersion");
+            if (appVerEl) appVerEl.innerText = u.app_version || "v3.8 Enterprise (Code 4)";
             document.getElementById("fullPanelEmailSub").innerText = u.email || "No Email";
             document.getElementById("fullPanelDeviceId").innerText = u.device_id || "DEV-Node";
             document.getElementById("fullPanelUid").innerText = u.uid || "UID-N/A";
