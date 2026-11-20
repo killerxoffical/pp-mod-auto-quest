@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>PP Server</title>
+    <title>PP Server - Enterprise Vault</title>
     <style>
         :root {
             --bg-base: #f8fafc;
+            --bg-base-alt: #f1f5f9;
             --bg-card: #ffffff;
-            --bg-card-subtle: #f1f5f9;
+            --bg-card-subtle: #f8fafc;
             --border-color: #e2e8f0;
             --border-subtle: #edf2f7;
             --border-focus: #0284c7;
@@ -17,6 +18,7 @@
             --text-muted: #64748b;
             --text-faint: #94a3b8;
             --primary: #0284c7;
+            --primary-hover: #0369a1;
             --primary-light: #e0f2fe;
             --success: #10b981;
             --success-light: #ecfdf5;
@@ -27,13 +29,14 @@
             --purple: #8b5cf6;
             --purple-light: #f5f3ff;
             --radius-xs: 6px;
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --radius-xl: 20px;
+            --radius-sm: 10px;
+            --radius-md: 14px;
+            --radius-lg: 18px;
+            --radius-xl: 22px;
             --shadow-subtle: 0 1px 3px rgba(15,23,42,0.04);
-            --shadow-card: 0 1px 8px rgba(15,23,42,0.06);
-            --shadow-float: 0 8px 24px rgba(2,132,199,0.3);
+            --shadow-card: 0 4px 20px -2px rgba(15,23,42,0.06), 0 2px 6px -1px rgba(15,23,42,0.04);
+            --shadow-float: 0 10px 25px -3px rgba(2,132,199,0.3);
+            --shadow-modal: 0 25px 50px -12px rgba(15,23,42,0.25);
         }
 
         * {
@@ -55,201 +58,515 @@
             min-height: 100vh;
             overflow-x: hidden;
             overflow-y: auto;
-            padding-bottom: 88px;
+            padding-bottom: 96px;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             user-select: none;
             -webkit-user-select: none;
         }
 
-        /* ========== HEADER ========== */
-        .header {
+        /* ========== TOP NAVBAR ========== */
+        .navbar {
             position: sticky;
             top: 0;
             z-index: 50;
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border-bottom: 1px solid var(--border-color);
             padding: 12px 18px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            transition: all 0.2s ease;
         }
 
-        .header-left {
+        .nav-brand {
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .header-logo {
-            width: 34px;
-            height: 34px;
+        .brand-logo {
+            width: 36px;
+            height: 36px;
             border-radius: var(--radius-sm);
-            background: linear-gradient(135deg, #0284c7, #10b981);
+            background: linear-gradient(135deg, #0284c7, #06b6d4);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #fff;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
             flex-shrink: 0;
         }
 
-        .header-info {
+        .brand-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand-row {
             display: flex;
             align-items: center;
             gap: 6px;
         }
 
-        .header-name {
+        .brand-title {
             font-size: 15px;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+
+        .brand-badge {
+            font-size: 9px;
             font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 6px;
+            background: var(--primary-light);
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .brand-sub {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cloud-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #047857;
+            background: var(--success-light);
+            border: 1px solid #a7f3d0;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+
+        .pulse-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--success);
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            animation: pulse-ring 2s infinite cubic-bezier(0.45, 0, 0.2, 1);
+        }
+
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .nav-user-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            padding: 4px 10px 4px 6px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .nav-user-pill:active {
+            transform: scale(0.96);
+            background: var(--bg-base-alt);
+        }
+
+        .nav-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0284c7, #8b5cf6);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-coins-badge {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 11px;
+            font-weight: 800;
+            color: #d97706;
+        }
+
+        .btn-nav-login {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11.5px;
+            font-weight: 700;
+            color: #ffffff;
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+            transition: all 0.15s ease;
+        }
+
+        .btn-nav-login:active {
+            transform: scale(0.96);
+        }
+
+        /* ========== CONTAINER ========== */
+        .container {
+            width: 100%;
+            max-width: 580px;
+            margin: 0 auto;
+            padding: 16px 16px 24px;
+        }
+
+        /* ========== TAB PANES ========== */
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+            animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ========== USER STATUS BANNER ========== */
+        .user-status-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-card);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .user-profile-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .user-profile-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0284c7, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 17px;
+            font-weight: 800;
+            box-shadow: 0 4px 10px rgba(139, 92, 246, 0.25);
+            flex-shrink: 0;
+        }
+
+        .user-profile-info {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .user-profile-name {
+            font-size: 14.5px;
+            font-weight: 800;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-profile-meta {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 2px;
+        }
+
+        .user-uid-pill {
+            font-size: 10px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-weight: 700;
+            color: var(--primary);
+            background: var(--primary-light);
+            padding: 1px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .user-coins-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 11px;
+            font-weight: 800;
+            color: #b45309;
+            background: var(--warning-light);
+            border: 1px solid #fde68a;
+            padding: 1px 7px;
+            border-radius: 12px;
+        }
+
+        .user-profile-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-logout-sm {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 7px 12px;
+            border-radius: var(--radius-sm);
+            background: var(--danger-light);
+            border: 1px solid #fecaca;
+            color: var(--danger);
+            font-size: 11.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.12s;
+        }
+
+        .btn-logout-sm:active {
+            transform: scale(0.95);
+            background: var(--danger);
+            color: #ffffff;
+        }
+
+        /* Non-logged in notice */
+        .auth-prompt-card {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border: 1px solid #bae6fd;
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .auth-prompt-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .auth-prompt-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #ffffff;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.15);
+        }
+
+        .auth-prompt-text h4 {
+            font-size: 13.5px;
+            font-weight: 800;
+            color: #0369a1;
+        }
+
+        .auth-prompt-text p {
+            font-size: 11.5px;
+            color: #0284c7;
+            margin-top: 1px;
+            line-height: 1.35;
+        }
+
+        .btn-prompt-login {
+            padding: 8px 14px;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 800;
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
+            box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25);
+            transition: all 0.15s ease;
+        }
+
+        .btn-prompt-login:active {
+            transform: scale(0.95);
+        }
+
+        /* ========== STATS ROW ========== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 12px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .stat-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 6px;
+        }
+
+        .stat-icon-blue { background: var(--primary-light); color: var(--primary); }
+        .stat-icon-green { background: var(--success-light); color: var(--success); }
+        .stat-icon-amber { background: var(--warning-light); color: var(--warning); }
+
+        .stat-val {
+            font-size: 16px;
+            font-weight: 800;
             color: var(--text-primary);
             letter-spacing: -0.2px;
         }
 
-        .header-badge {
-            font-size: 9px;
+        .stat-label {
+            font-size: 10px;
             font-weight: 700;
-            padding: 2px 6px;
-            border-radius: 10px;
-            background: var(--primary-light);
-            color: var(--primary);
+            color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.4px;
+            margin-top: 2px;
         }
 
-        .status-chip {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 11px;
-            color: #059669;
-            background: var(--success-light);
-            border: 1px solid #a7f3d0;
-            padding: 4px 10px;
-            border-radius: 14px;
-            font-weight: 600;
-        }
-
-        .status-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--success);
-            animation: blink 2s infinite;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
-        }
-
-        /* ========== MAIN CONTAINER ========== */
-        .container {
-            width: 100%;
-            max-width: 560px;
-            margin: 0 auto;
-            padding: 16px 16px 20px;
-        }
-
-        /* ========== TAB SYSTEM ========== */
-        .tab-pane { display: none; }
-        .tab-pane.active {
-            display: block;
-            animation: fadeIn 0.18s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(3px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* ========== HERO BANNER ========== */
-        .hero-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 18px;
-            margin-bottom: 16px;
-            box-shadow: var(--shadow-card);
-        }
-
-        .hero-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 4px;
-        }
-
-        .hero-desc {
-            font-size: 12.5px;
-            color: var(--text-muted);
-            line-height: 1.5;
-        }
-
-        /* ========== CONTROLS ROW ========== */
-        .controls-row {
+        /* ========== SECTION CONTROLS ========== */
+        .section-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
         }
 
-        .section-label {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            color: var(--text-muted);
+        .section-title-wrap {
             display: flex;
             align-items: center;
             gap: 6px;
+        }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text-muted);
         }
 
         .count-badge {
             background: var(--primary-light);
             color: var(--primary);
-            font-size: 10px;
-            font-weight: 700;
+            font-size: 10.5px;
+            font-weight: 800;
             padding: 1px 7px;
             border-radius: 10px;
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
         }
 
-        .btn-outline {
+        .section-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-action-outline {
             display: flex;
             align-items: center;
             gap: 5px;
-            background: var(--bg-card);
+            background: #ffffff;
             border: 1px solid var(--border-color);
             border-radius: var(--radius-sm);
             padding: 6px 10px;
-            font-size: 11px;
-            font-weight: 600;
+            font-size: 11.5px;
+            font-weight: 700;
             color: var(--primary);
             cursor: pointer;
             transition: all 0.12s;
         }
 
-        .btn-outline:active {
-            transform: scale(0.96);
+        .btn-action-outline:active {
+            transform: scale(0.95);
             background: var(--primary-light);
         }
 
-        /* ========== ACCOUNT CARDS ========== */
+        .btn-add-primary {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: linear-gradient(135deg, #0284c7, #10b981);
+            color: #ffffff;
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 6px 12px;
+            font-size: 11.5px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+            transition: all 0.15s ease;
+        }
+
+        .btn-add-primary:active {
+            transform: scale(0.95);
+        }
+
+        /* ========== ACCOUNTS LIST ========== */
         .accounts-list {
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 12px;
         }
 
         .account-card {
-            background: var(--bg-card);
+            background: #ffffff;
             border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
             padding: 16px;
             box-shadow: var(--shadow-card);
+            transition: all 0.15s ease;
         }
 
         .acc-top {
@@ -272,15 +589,13 @@
             width: 38px;
             height: 38px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #e0f2fe, #bae6fd);
-            border: 1px solid #7dd3fc;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--primary);
             flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
         }
 
         .acc-meta {
@@ -291,7 +606,7 @@
 
         .acc-email {
             font-size: 13.5px;
-            font-weight: 700;
+            font-weight: 800;
             color: var(--text-primary);
             white-space: nowrap;
             overflow: hidden;
@@ -301,20 +616,20 @@
         .acc-tags {
             display: flex;
             align-items: center;
-            gap: 6px;
-            margin-top: 4px;
+            gap: 5px;
+            margin-top: 3px;
             flex-wrap: wrap;
         }
 
         .tag {
-            font-size: 10.5px;
+            font-size: 10px;
             font-weight: 700;
-            padding: 2px 7px;
-            border-radius: 5px;
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            padding: 2px 6px;
+            border-radius: 4px;
             display: inline-flex;
             align-items: center;
             gap: 3px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
         }
 
         .tag-green {
@@ -323,19 +638,19 @@
             border: 1px solid #a7f3d0;
         }
 
+        .tag-blue {
+            background: var(--primary-light);
+            color: #0369a1;
+            border: 1px solid #bae6fd;
+        }
+
         .tag-amber {
             background: var(--warning-light);
             color: #b45309;
             border: 1px solid #fde68a;
         }
 
-        .tag-gray {
-            background: var(--bg-card-subtle);
-            color: var(--text-secondary);
-            border: 1px solid var(--border-color);
-        }
-
-        .btn-icon {
+        .btn-delete-acc {
             width: 32px;
             height: 32px;
             border-radius: var(--radius-xs);
@@ -346,24 +661,25 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            flex-shrink: 0;
             transition: all 0.12s;
+            flex-shrink: 0;
         }
 
-        .btn-icon:active {
+        .btn-delete-acc:active {
             background: var(--danger-light);
             color: var(--danger);
         }
 
-        /* Code Display */
+        /* 6-DIGIT CODE DISPLAY */
         .code-box {
-            background: var(--bg-card-subtle);
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
             padding: 12px 14px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            margin-bottom: 10px;
         }
 
         .code-info {
@@ -373,7 +689,7 @@
 
         .code-label {
             font-size: 9.5px;
-            font-weight: 700;
+            font-weight: 800;
             color: var(--text-muted);
             letter-spacing: 0.6px;
             text-transform: uppercase;
@@ -382,120 +698,83 @@
         .code-value {
             font-family: ui-monospace, "JetBrains Mono", SFMono-Regular, Menlo, Monaco, Consolas, monospace;
             font-size: 22px;
-            font-weight: 800;
-            letter-spacing: 5px;
+            font-weight: 900;
+            letter-spacing: 4px;
             color: var(--primary);
             margin-top: 1px;
         }
 
-        .btn-copy-sm {
+        .btn-copy-code {
             display: flex;
             align-items: center;
             gap: 4px;
-            padding: 6px 10px;
-            background: var(--bg-card);
+            padding: 7px 12px;
+            background: #ffffff;
             border: 1px solid #bae6fd;
             border-radius: var(--radius-sm);
             color: var(--primary);
             font-size: 11px;
-            font-weight: 700;
+            font-weight: 800;
             cursor: pointer;
+            box-shadow: 0 1px 3px rgba(2, 132, 199, 0.1);
             transition: all 0.12s;
         }
 
-        .btn-copy-sm:active {
+        .btn-copy-code:active {
             transform: scale(0.95);
             background: var(--primary);
-            color: #fff;
+            color: #ffffff;
         }
 
-        /* ========== FRIDAY PERK ========== */
-        .perk-row {
-            margin-top: 10px;
-            padding: 10px 12px;
-            border-radius: var(--radius-md);
+        /* PERK ROW IN CARD */
+        .perk-mini-row {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: var(--radius-sm);
+            padding: 8px 12px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 10px;
+            gap: 8px;
         }
 
-        .perk-active {
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-        }
-
-        .perk-locked {
-            background: var(--bg-card-subtle);
-            border: 1px solid var(--border-color);
-        }
-
-        .perk-claimed {
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-        }
-
-        .perk-info {
+        .perk-mini-info {
             display: flex;
-            flex-direction: column;
-            gap: 1px;
-        }
-
-        .perk-title {
-            font-size: 12px;
+            align-items: center;
+            gap: 6px;
+            font-size: 11.5px;
             font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 5px;
+            color: #166534;
         }
 
-        .perk-title-green { color: #15803d; }
-        .perk-title-muted { color: var(--text-muted); }
-
-        .perk-sub {
-            font-size: 10.5px;
-        }
-
-        .perk-sub-green { color: #166534; }
-        .perk-sub-muted { color: var(--text-faint); }
-
-        .btn-claim {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 7px 12px;
+        .btn-perk-claim {
+            padding: 5px 10px;
             background: linear-gradient(135deg, #10b981, #059669);
-            color: #fff;
+            color: #ffffff;
             border: none;
-            border-radius: var(--radius-sm);
+            border-radius: 6px;
             font-size: 11px;
-            font-weight: 700;
+            font-weight: 800;
             cursor: pointer;
             white-space: nowrap;
+            transition: all 0.12s;
         }
 
-        .btn-claim:disabled {
+        .btn-perk-claim:disabled {
             background: #e2e8f0;
             color: var(--text-muted);
-            box-shadow: none;
             cursor: not-allowed;
+            box-shadow: none;
         }
 
-        .perk-pts-badge {
-            font-size: 11px;
-            font-weight: 700;
-            color: #059669;
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-        }
-
-        /* ========== EMPTY STATE ========== */
-        .empty-card {
-            background: var(--bg-card);
-            border: 1px dashed var(--border-color);
+        /* EMPTY STATE */
+        .empty-state {
+            background: #ffffff;
+            border: 2px dashed var(--border-color);
             border-radius: var(--radius-xl);
             padding: 44px 20px;
             text-align: center;
-            box-shadow: var(--shadow-card);
+            box-shadow: var(--shadow-subtle);
         }
 
         .empty-icon {
@@ -513,7 +792,7 @@
 
         .empty-title {
             font-size: 16px;
-            font-weight: 700;
+            font-weight: 800;
             color: var(--text-primary);
             margin-bottom: 6px;
         }
@@ -522,92 +801,69 @@
             font-size: 12.5px;
             color: var(--text-muted);
             line-height: 1.5;
-            max-width: 300px;
+            max-width: 320px;
             margin: 0 auto 20px;
         }
 
-        .btn-primary {
+        .btn-empty-add {
             display: inline-flex;
             align-items: center;
             gap: 7px;
             padding: 11px 22px;
             background: linear-gradient(135deg, #0284c7, #10b981);
-            color: #fff;
+            color: #ffffff;
             border: none;
             border-radius: var(--radius-md);
             font-size: 13px;
-            font-weight: 700;
+            font-weight: 800;
             cursor: pointer;
             box-shadow: var(--shadow-float);
-            transition: transform 0.12s;
+            transition: all 0.15s ease;
         }
 
-        .btn-primary:active {
+        .btn-empty-add:active {
             transform: scale(0.96);
         }
 
-        /* ========== COMING SOON CARDS ========== */
-        .feature-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-xl);
-            padding: 40px 20px;
+        /* ========== TAB 2: FRIDAY PERKS ========== */
+        .perks-hero {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            border: 1px solid #a7f3d0;
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-bottom: 16px;
             text-align: center;
-            box-shadow: var(--shadow-card);
         }
 
-        .feature-icon {
-            width: 68px;
-            height: 68px;
-            border-radius: 18px;
+        .perks-hero-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #ffffff;
+            color: #059669;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 16px;
+            margin: 0 auto 10px;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
         }
 
-        .feature-icon-box {
-            background: var(--warning-light);
-            border: 1px solid #fde68a;
-            color: #d97706;
+        .perks-hero h2 {
+            font-size: 16px;
+            font-weight: 800;
+            color: #065f46;
         }
 
-        .feature-icon-sub {
-            background: var(--purple-light);
-            border: 1px solid #ddd6fe;
-            color: #7c3aed;
+        .perks-hero p {
+            font-size: 12px;
+            color: #047857;
+            margin-top: 4px;
+            line-height: 1.4;
         }
 
-        .feature-title {
-            font-size: 17px;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 6px;
-        }
-
-        .feature-desc {
-            font-size: 12.5px;
-            color: var(--text-muted);
-            line-height: 1.5;
-            max-width: 320px;
-            margin: 0 auto 18px;
-        }
-
-        .pill-soon {
-            display: inline-block;
-            background: var(--primary-light);
-            color: var(--primary);
-            font-size: 10px;
-            font-weight: 700;
-            padding: 4px 14px;
-            border-radius: 14px;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-
-        /* ========== SETTINGS ========== */
+        /* ========== TAB 3: NODE & SETTINGS ========== */
         .settings-card {
-            background: var(--bg-card);
+            background: #ffffff;
             border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
             padding: 16px 18px;
@@ -615,138 +871,109 @@
             box-shadow: var(--shadow-card);
         }
 
-        .profile-header {
+        .settings-header {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding-bottom: 14px;
-            border-bottom: 1px solid var(--border-color);
-            margin-bottom: 10px;
+            gap: 6px;
         }
 
-        .profile-avatar {
-            width: 46px;
-            height: 46px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #0284c7, #8b5cf6);
+        .info-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 9px 0;
+            border-bottom: 1px solid var(--border-subtle);
+            font-size: 12.5px;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .info-val {
+            color: var(--text-primary);
+            font-weight: 700;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            text-align: right;
+            max-width: 220px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .btn-setting-row {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.12s;
+        }
+
+        .btn-setting-row:active {
+            background: var(--primary-light);
+            border-color: var(--primary);
+        }
+
+        .btn-logout-full {
+            width: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #fff;
-            font-size: 18px;
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
-        .profile-name {
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-
-        .profile-email {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
-
-        .profile-uid {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 10px;
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            color: var(--primary);
-            background: var(--primary-light);
-            padding: 2px 7px;
-            border-radius: 4px;
-            margin-top: 5px;
-            cursor: pointer;
-        }
-
-        .data-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .data-row:last-child { border-bottom: none; }
-
-        .data-label {
-            font-size: 12.5px;
-            color: var(--text-muted);
-            font-weight: 600;
-        }
-
-        .data-value {
-            font-size: 12.5px;
-            font-weight: 700;
-            color: var(--text-primary);
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-        }
-
-        .menu-btn {
-            width: 100%;
-            background: transparent;
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 0;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-primary);
-            cursor: pointer;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .menu-btn:last-child { border-bottom: none; }
-
-        .menu-btn-danger { color: var(--danger); }
-
-        .menu-btn-left {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* ========== WARNING BANNER ========== */
-        .warn-box {
-            background: var(--warning-light);
-            border: 1px solid #fde68a;
+            gap: 7px;
+            padding: 12px 16px;
             border-radius: var(--radius-md);
-            padding: 12px 14px;
-            margin-bottom: 14px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            background: var(--danger-light);
+            border: 1px solid #fecaca;
+            color: var(--danger);
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: all 0.15s ease;
         }
 
-        .warn-text {
-            font-size: 12px;
-            color: #92400e;
-            line-height: 1.4;
-            font-weight: 600;
+        .btn-logout-full:active {
+            background: var(--danger);
+            color: #ffffff;
+            transform: scale(0.98);
         }
 
-        /* ========== BOTTOM NAV ========== */
-        .nav-bar {
+        /* ========== BOTTOM NAVIGATION BAR ========== */
+        .bottom-nav {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            height: 64px;
-            background: rgba(255,255,255,0.97);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
+            z-index: 60;
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border-top: 1px solid var(--border-color);
             display: flex;
-            align-items: center;
             justify-content: space-around;
-            z-index: 40;
-            padding-bottom: env(safe-area-inset-bottom, 0px);
+            padding: 6px 12px (8px + env(safe-area-inset-bottom, 8px));
+            max-width: 580px;
+            margin: 0 auto;
         }
 
         .nav-item {
@@ -756,90 +983,63 @@
             align-items: center;
             justify-content: center;
             gap: 3px;
-            height: 100%;
-            color: var(--text-muted);
+            background: transparent;
+            border: none;
+            padding: 6px 4px;
             cursor: pointer;
-            transition: color 0.12s;
+            color: var(--text-muted);
+            transition: all 0.15s ease;
             position: relative;
         }
 
-        .nav-item.active { color: var(--primary); }
+        .nav-item.active {
+            color: var(--primary);
+        }
 
-        .nav-icon {
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            width: 16px;
+            height: 3px;
+            border-radius: 2px;
+            background: var(--primary);
         }
 
         .nav-label {
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: 0.1px;
-        }
-
-        .nav-soon-tag {
-            position: absolute;
-            top: 5px;
-            right: 16%;
-            background: var(--warning);
-            color: #fff;
-            font-size: 7px;
+            font-size: 10.5px;
             font-weight: 700;
-            padding: 1px 4px;
-            border-radius: 5px;
-            text-transform: uppercase;
         }
 
-        .nav-center-wrap {
-            position: relative;
-            top: -12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .nav-center-btn {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #0284c7, #10b981);
-            border: 3px solid #fff;
-            box-shadow: var(--shadow-float);
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: transform 0.12s;
-        }
-
-        .nav-center-btn:active { transform: scale(0.92); }
-
-        /* ========== MODAL SHEET ========== */
-        .modal-bg {
+        /* ========== MODAL SHEET (REGION / LOGIN / CONFIRM) ========== */
+        .modal-backdrop {
             position: fixed;
             inset: 0;
-            background: rgba(15,23,42,0.4);
-            backdrop-filter: blur(4px);
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
             z-index: 100;
             display: none;
             align-items: flex-end;
             justify-content: center;
+            transition: opacity 0.2s ease;
         }
 
-        .modal-bg.open { display: flex; }
+        .modal-backdrop.open {
+            display: flex;
+        }
 
         .modal-sheet {
-            background: #fff;
+            background: #ffffff;
             border-top: 1px solid var(--border-color);
-            border-radius: 20px 20px 0 0;
+            border-radius: 24px 24px 0 0;
             width: 100%;
             max-width: 540px;
-            max-height: 75vh;
+            max-height: 82vh;
             overflow-y: auto;
-            padding: 14px 18px 32px;
-            box-shadow: 0 -8px 30px rgba(0,0,0,0.1);
-            animation: slideUp 0.22s cubic-bezier(0.16,1,0.3,1);
+            padding: 16px 20px 36px;
+            box-shadow: var(--shadow-modal);
+            animation: slideUp 0.24s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         @keyframes slideUp {
@@ -847,51 +1047,57 @@
             to { transform: translateY(0); }
         }
 
-        .modal-pill {
-            width: 32px;
+        .modal-drag-pill {
+            width: 36px;
             height: 4px;
             border-radius: 2px;
             background: #cbd5e1;
-            margin: 0 auto 14px;
+            margin: 0 auto 16px;
         }
 
-        .modal-header {
+        .modal-title-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 14px;
+            margin-bottom: 16px;
         }
 
-        .modal-title {
-            font-size: 15px;
-            font-weight: 700;
+        .modal-heading {
+            font-size: 16px;
+            font-weight: 800;
             color: var(--text-primary);
         }
 
-        .modal-close {
+        .modal-btn-close {
             background: var(--bg-card-subtle);
             border: none;
             color: var(--text-secondary);
-            width: 30px;
-            height: 30px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
+            transition: all 0.12s;
         }
 
+        .modal-btn-close:active {
+            background: #e2e8f0;
+        }
+
+        /* REGIONS GRID */
         .regions-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
+            gap: 10px;
         }
 
-        .region-item {
+        .region-card {
             background: var(--bg-card-subtle);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
-            padding: 10px 12px;
+            padding: 12px 14px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -899,29 +1105,187 @@
             transition: all 0.12s;
         }
 
-        .region-item:active {
+        .region-card:active {
             background: var(--primary-light);
             border-color: var(--primary);
             transform: scale(0.98);
         }
 
+        .region-info {
+            display: flex;
+            flex-direction: column;
+        }
+
         .region-name {
-            font-size: 12.5px;
-            font-weight: 600;
+            font-size: 13px;
+            font-weight: 700;
             color: var(--text-primary);
         }
 
-        .region-code {
+        .region-code-badge {
             font-size: 10px;
+            font-weight: 800;
+            color: var(--primary);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            margin-top: 2px;
+        }
+
+        /* ========== LOGIN FORM IN MODAL ========== */
+        .login-banner {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .login-logo {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #0284c7, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            margin: 0 auto 10px;
+            box-shadow: 0 6px 18px rgba(2, 132, 199, 0.25);
+        }
+
+        .login-title {
+            font-size: 18px;
+            font-weight: 900;
+            color: var(--text-primary);
+        }
+
+        .login-sub {
+            font-size: 12.5px;
             color: var(--text-muted);
-            margin-top: 1px;
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-label {
+            font-size: 11.5px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+        }
+
+        .input-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            color: var(--text-muted);
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-input {
+            width: 100%;
+            height: 46px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            background: #ffffff;
+            padding: 0 42px 0 42px;
+            font-size: 14px;
+            color: var(--text-primary);
+            outline: none;
+            transition: all 0.15s ease;
+        }
+
+        .form-input:focus {
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+        }
+
+        .input-toggle-pw {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-submit-login {
+            height: 48px;
+            border-radius: var(--radius-md);
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            color: #ffffff;
+            border: none;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: var(--shadow-float);
+            margin-top: 6px;
+            transition: all 0.15s ease;
+        }
+
+        .btn-submit-login:active {
+            transform: scale(0.98);
+        }
+
+        .btn-submit-login:disabled {
+            background: #cbd5e1;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .login-error-box {
+            display: none;
+            background: var(--danger-light);
+            border: 1px solid #fecaca;
+            color: var(--danger);
+            font-size: 12px;
+            font-weight: 600;
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            line-height: 1.4;
+        }
+
+        .login-footer {
+            margin-top: 14px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .login-footer a {
+            color: var(--primary);
+            font-weight: 700;
+            text-decoration: none;
         }
 
         /* ========== CONFIRM DIALOG ========== */
-        .dialog-bg {
+        .dialog-backdrop {
             position: fixed;
             inset: 0;
-            background: rgba(15,23,42,0.5);
+            background: rgba(15, 23, 42, 0.5);
             backdrop-filter: blur(4px);
             z-index: 200;
             display: none;
@@ -930,15 +1294,17 @@
             padding: 24px;
         }
 
-        .dialog-bg.open { display: flex; }
+        .dialog-backdrop.open {
+            display: flex;
+        }
 
-        .dialog-box {
-            background: #fff;
+        .dialog-card {
+            background: #ffffff;
             border-radius: var(--radius-lg);
             padding: 24px 20px 18px;
             width: 100%;
-            max-width: 340px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+            max-width: 360px;
+            box-shadow: var(--shadow-modal);
             animation: scaleIn 0.18s ease;
         }
 
@@ -948,8 +1314,8 @@
         }
 
         .dialog-title {
-            font-size: 15px;
-            font-weight: 700;
+            font-size: 16px;
+            font-weight: 800;
             color: var(--text-primary);
             margin-bottom: 6px;
         }
@@ -963,15 +1329,15 @@
 
         .dialog-actions {
             display: flex;
-            gap: 8px;
+            gap: 10px;
             justify-content: flex-end;
         }
 
         .dialog-btn {
-            padding: 8px 16px;
+            padding: 9px 16px;
             border-radius: var(--radius-sm);
             font-size: 12.5px;
-            font-weight: 700;
+            font-weight: 800;
             cursor: pointer;
             border: none;
             transition: all 0.12s;
@@ -980,35 +1346,38 @@
         .dialog-btn-cancel {
             background: var(--bg-card-subtle);
             color: var(--text-secondary);
+            border: 1px solid var(--border-color);
         }
 
         .dialog-btn-danger {
             background: var(--danger);
-            color: #fff;
+            color: #ffffff;
         }
 
-        .dialog-btn:active { transform: scale(0.96); }
+        .dialog-btn:active {
+            transform: scale(0.96);
+        }
 
-        /* ========== TOAST ========== */
+        /* ========== TOAST NOTIFICATION ========== */
         .toast {
             position: fixed;
-            top: 60px;
+            top: 64px;
             left: 50%;
             transform: translateX(-50%) translateY(-16px);
-            background: #fff;
+            background: #ffffff;
             border: 1px solid var(--border-color);
             color: var(--text-primary);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
+            padding: 10px 18px;
+            border-radius: 30px;
+            font-size: 12.5px;
+            font-weight: 700;
             display: flex;
             align-items: center;
-            gap: 6px;
-            box-shadow: 0 8px 20px rgba(15,23,42,0.1);
+            gap: 8px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
             opacity: 0;
             pointer-events: none;
-            transition: all 0.22s cubic-bezier(0.16,1,0.3,1);
+            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
             z-index: 999;
         }
 
@@ -1017,20 +1386,11 @@
             transform: translateX(-50%) translateY(0);
         }
 
-        /* ========== LOADING ========== */
-        .loading-wrap {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
-            color: var(--text-muted);
-        }
-
         .spinner {
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--border-color);
-            border-top-color: var(--primary);
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #ffffff;
             border-radius: 50%;
             animation: spin 0.6s linear infinite;
         }
@@ -1042,353 +1402,685 @@
 </head>
 <body>
 
-    <!-- Header -->
-    <header class="header">
-        <div class="header-left">
-            <div class="header-logo">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- TOP NAVBAR -->
+    <header class="navbar">
+        <div class="nav-brand">
+            <div class="brand-logo">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
                     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
                 </svg>
             </div>
-            <div class="header-info">
-                <span class="header-name">PP Server</span>
-                <span class="header-badge">Enterprise</span>
+            <div class="brand-info">
+                <div class="brand-row">
+                    <span class="brand-title">PP Server</span>
+                    <span class="brand-badge">Vault</span>
+                </div>
+                <span class="brand-sub">PlayQuest Cloud Node</span>
             </div>
         </div>
-        <div class="status-chip">
-            <span class="status-dot"></span>
-            <span>Cloud Live</span>
+        <div class="nav-actions">
+            <div class="cloud-pill">
+                <span class="pulse-dot"></span>
+                <span>Cloud Live</span>
+            </div>
+            <div id="navUserArea">
+                <!-- Dynamically filled with User Pill or Sign In Button -->
+            </div>
         </div>
     </header>
 
-    <!-- Main Content -->
+    <!-- MAIN CONTAINER -->
     <main class="container">
 
-        <!-- TAB: HOME -->
-        <section id="tabHome" class="tab-pane active">
-            <div class="hero-card">
-                <h1 class="hero-title">Google Play Quest Node</h1>
-                <p class="hero-desc">Permanent GPGS session vault for automated quest synchronization and Google Play Points.</p>
-            </div>
+        <!-- TAB 1: CONNECTED ACCOUNTS & HOME -->
+        <section id="tabAccounts" class="tab-pane active">
 
-            <div class="controls-row">
-                <div class="section-label">
-                    <span>Active Accounts</span>
-                    <span class="count-badge" id="accountCount">0</span>
+            <!-- Dynamic User / Login Prompt Card -->
+            <div id="topUserBanner"></div>
+
+            <!-- Stats Row -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-blue">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                    </div>
+                    <span class="stat-val" id="statAccCount">0</span>
+                    <span class="stat-label">Accounts</span>
                 </div>
-                <button class="btn-outline" onclick="syncCloud()">
-                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="23 4 23 10 17 10"/>
-                        <polyline points="1 20 1 14 7 14"/>
-                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-                    </svg>
-                    <span>Sync</span>
-                </button>
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-green">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </div>
+                    <span class="stat-val" style="color:#059669;font-size:13px;margin-top:2px;">SECURE</span>
+                    <span class="stat-label">Cloud Vault</span>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-amber">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                    </div>
+                    <span class="stat-val" id="statUserCoins" style="color:#d97706;">500</span>
+                    <span class="stat-label">PP Points</span>
+                </div>
             </div>
 
+            <!-- Section Controls -->
+            <div class="section-header">
+                <div class="section-title-wrap">
+                    <span class="section-title">Connected Google Vault</span>
+                    <span class="count-badge" id="badgeAccCount">0</span>
+                </div>
+                <div class="section-actions">
+                    <button class="btn-action-outline" onclick="syncCloudAccounts()">
+                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <polyline points="1 20 1 14 7 14"></polyline>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>
+                        <span>Sync</span>
+                    </button>
+                    <button class="btn-add-primary" onclick="openRegionPicker()">
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        <span>Add Gmail</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Accounts Card Container -->
             <div class="accounts-list" id="accountsList"></div>
 
-            <div class="empty-card" id="emptyState">
+            <!-- Empty State -->
+            <div class="empty-state" id="emptyState">
                 <div class="empty-icon">
-                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                        <circle cx="12" cy="7" r="4"/>
+                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                     </svg>
                 </div>
-                <h3 class="empty-title">No Accounts Connected</h3>
-                <p class="empty-desc">Connect your Google Play account to generate a permanent 6-digit Sync Code for instant quest and points unlocking.</p>
-                <button class="btn-primary" onclick="openRegionPicker()">
+                <h3 class="empty-title">No Google Accounts Connected</h3>
+                <p class="empty-desc">Connect your Google Play account to capture a permanent master token and receive a 6-digit sync code for auto-quest completion.</p>
+                <button class="btn-empty-add" onclick="openRegionPicker()">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="5" x2="12" y2="19"/>
-                        <line x1="5" y1="12" x2="19" y2="12"/>
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
                     </svg>
                     <span>Connect Google Account</span>
                 </button>
             </div>
+
         </section>
 
-        <!-- TAB: BOX -->
-        <section id="tabBox" class="tab-pane">
-            <div class="feature-card">
-                <div class="feature-icon feature-icon-box">
-                    <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="21 8 21 21 3 21 3 8"/>
-                        <rect x="1" y="3" width="22" height="5"/>
-                        <line x1="10" y1="12" x2="14" y2="12"/>
+        <!-- TAB 2: FRIDAY PERKS -->
+        <section id="tabPerks" class="tab-pane">
+            <div class="perks-hero">
+                <div class="perks-hero-icon">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 12 20 22 4 22 4 12"></polyline>
+                        <rect x="2" y="7" width="20" height="5"></rect>
+                        <line x1="12" y1="22" x2="12" y2="7"></line>
+                        <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
+                        <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
                     </svg>
                 </div>
-                <h2 class="feature-title">Mystery Quest Box</h2>
-                <p class="feature-desc">Daily mystery loot chests, Play Points multipliers, level boosters, and limited-time partner drops will appear here.</p>
-                <span class="pill-soon">Coming Soon</span>
+                <h2>Friday Play Points Perks Hub</h2>
+                <p>Claim free Google Play Points weekly perks across all your connected Google accounts automatically.</p>
             </div>
-        </section>
 
-        <!-- TAB: SUB -->
-        <section id="tabSub" class="tab-pane">
-            <div class="feature-card">
-                <div class="feature-icon feature-icon-sub">
-                    <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/>
+            <div class="section-header">
+                <span class="section-title">Weekly Perks Manager</span>
+                <button class="btn-add-primary" onclick="claimAllPerks()">
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
                     </svg>
-                </div>
-                <h2 class="feature-title">PP Mod VIP Pass</h2>
-                <p class="feature-desc">Automated Friday weekly perk auto-claims, dedicated cloud VPS execution, turbo quest sync, and zero captcha.</p>
-                <span class="pill-soon">Coming Soon</span>
-            </div>
-        </section>
-
-        <!-- TAB: SETTINGS -->
-        <section id="tabSetting" class="tab-pane">
-
-            <!-- Warning Alert (hidden by default) -->
-            <div class="warn-box" id="warnBox" style="display:none;">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                    <line x1="12" y1="9" x2="12" y2="13"/>
-                    <line x1="12" y1="17" x2="12.01" y2="17"/>
-                </svg>
-                <div class="warn-text">An account token has been revoked. Please remove and re-connect the affected account.</div>
-            </div>
-
-            <!-- Profile Card -->
-            <div class="settings-card">
-                <div class="profile-header">
-                    <div class="profile-avatar" id="settAvatar">P</div>
-                    <div>
-                        <div class="profile-name" id="settName">Loading...</div>
-                        <div class="profile-email" id="settEmail">loading...</div>
-                        <div class="profile-uid" id="settUid" onclick="copyUid()">UID: ...</div>
-                    </div>
-                </div>
-                <div class="data-row">
-                    <span class="data-label">Cloud Status</span>
-                    <span class="data-value" style="color:var(--primary);">Active</span>
-                </div>
-            </div>
-
-            <!-- Device Info -->
-            <div class="settings-card">
-                <div class="data-row">
-                    <span class="data-label">Hardware Device ID</span>
-                    <span class="data-value" id="settDevId" style="cursor:pointer;font-size:11px;" onclick="copyDeviceId()">Tap to Copy</span>
-                </div>
-                <div class="data-row">
-                    <span class="data-label">App Version</span>
-                    <span class="data-value" id="settVersion">v4.0</span>
-                </div>
-            </div>
-
-            <!-- Menu Links -->
-            <div class="settings-card">
-                <button class="menu-btn" onclick="syncCloud()">
-                    <span class="menu-btn-left">
-                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="23 4 23 10 17 10"/>
-                            <polyline points="1 20 1 14 7 14"/>
-                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-                        </svg>
-                        <span>Refresh Cloud Sync</span>
-                    </span>
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="9 18 15 12 9 6"/>
-                    </svg>
+                    <span>Claim All Perks</span>
                 </button>
-                <button class="menu-btn menu-btn-danger" onclick="showLogoutDialog()">
-                    <span class="menu-btn-left">
-                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                            <polyline points="16 17 21 12 16 7"/>
-                            <line x1="21" y1="12" x2="9" y2="12"/>
-                        </svg>
-                        <span>Sign Out</span>
-                    </span>
+            </div>
+
+            <div class="accounts-list" id="perksAccountsList"></div>
+        </section>
+
+        <!-- TAB 3: NODE & SETTINGS -->
+        <section id="tabSettings" class="tab-pane">
+
+            <!-- Profile Overview Card -->
+            <div class="settings-card" id="settingsProfileCard">
+                <div class="settings-header">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <span>PP Mod Account Session</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Status</span>
+                    <span class="info-val" id="settAuthStatus" style="color:#059669;">Logged In</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Name</span>
+                    <span class="info-val" id="settName">PP Mod User</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Email</span>
+                    <span class="info-val" id="settEmail">user@ppmod.com</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">PP UID</span>
+                    <span class="info-val" id="settUid" style="color:#0284c7;cursor:pointer;" onclick="copyText(this.textContent, 'PP UID')">UID-123456</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Play Points Balance</span>
+                    <span class="info-val" id="settBalance" style="color:#d97706;">500 Points</span>
+                </div>
+
+                <button class="btn-setting-row" onclick="refreshUserData()">
+                    <span>Refresh Balance & Profile</span>
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="9 18 15 12 9 6"/>
+                        <polyline points="23 4 23 10 17 10"></polyline>
+                        <polyline points="1 20 1 14 7 14"></polyline>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
                     </svg>
                 </button>
             </div>
+
+            <!-- Node Diagnostics -->
+            <div class="settings-card">
+                <div class="settings-header">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                        <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                        <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                        <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                    </svg>
+                    <span>Node Infrastructure</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Device Hardware ID</span>
+                    <span class="info-val" id="settDevId" onclick="copyText(this.textContent, 'Device ID')" style="cursor:pointer;">Loading...</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">App Client Version</span>
+                    <span class="info-val" id="settVersion">v4.0 Enterprise</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Cloud Vault Edge</span>
+                    <span class="info-val" style="color:#059669;">Cloudflare D1 + Render</span>
+                </div>
+
+                <button class="btn-setting-row" onclick="syncCloudAccounts()">
+                    <span>Force Full Cloud Vault Sync</span>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+
+                <button class="btn-setting-row" onclick="openPpModWeb()">
+                    <span>Visit PP Mod Web Portal</span>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                </button>
+
+                <!-- Logout Button -->
+                <button class="btn-logout-full" id="btnFullLogout" onclick="confirmLogout()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    <span>Log Out of PP Mod Account</span>
+                </button>
+            </div>
+
         </section>
 
     </main>
 
-    <!-- Bottom Navigation -->
-    <nav class="nav-bar">
-        <div class="nav-item active" id="navHome" onclick="switchTab('tabHome')">
-            <div class="nav-icon">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                    <polyline points="9 22 9 12 15 12 15 22"/>
-                </svg>
-            </div>
-            <span class="nav-label">Home</span>
-        </div>
-
-        <div class="nav-item" id="navBox" onclick="switchTab('tabBox')">
-            <div class="nav-icon">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="21 8 21 21 3 21 3 8"/>
-                    <rect x="1" y="3" width="22" height="5"/>
-                    <line x1="10" y1="12" x2="14" y2="12"/>
-                </svg>
-            </div>
-            <span class="nav-label">Box</span>
-            <span class="nav-soon-tag">Soon</span>
-        </div>
-
-        <div class="nav-center-wrap" onclick="openRegionPicker()">
-            <div class="nav-center-btn">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="12" y1="5" x2="12" y2="19"/>
-                    <line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-            </div>
-        </div>
-
-        <div class="nav-item" id="navSub" onclick="switchTab('tabSub')">
-            <div class="nav-icon">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/>
-                </svg>
-            </div>
-            <span class="nav-label">Sub</span>
-            <span class="nav-soon-tag">Soon</span>
-        </div>
-
-        <div class="nav-item" id="navSetting" onclick="switchTab('tabSetting')">
-            <div class="nav-icon">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="3"/>
-                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                </svg>
-            </div>
-            <span class="nav-label">Setting</span>
-        </div>
+    <!-- BOTTOM TAB NAVIGATION -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="switchTab('tabAccounts', this)">
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <span class="nav-label">Vault</span>
+        </button>
+        <button class="nav-item" onclick="switchTab('tabPerks', this)">
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 12 20 22 4 22 4 12"></polyline>
+                <rect x="2" y="7" width="20" height="5"></rect>
+                <line x1="12" y1="22" x2="12" y2="7"></line>
+                <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
+                <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
+            </svg>
+            <span class="nav-label">Perks</span>
+        </button>
+        <button class="nav-item" onclick="switchTab('tabSettings', this)">
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            <span class="nav-label">Node &amp; Profile</span>
+        </button>
     </nav>
 
-    <!-- Region Picker Modal -->
-    <div class="modal-bg" id="regionModal" onclick="closeRegionPicker(event)">
+    <!-- MODAL 1: REGION PICKER -->
+    <div class="modal-backdrop" id="regionModal" onclick="closeRegionPicker(event)">
         <div class="modal-sheet" onclick="event.stopPropagation()">
-            <div class="modal-pill"></div>
-            <div class="modal-header">
-                <h3 class="modal-title">Select Google Play Region</h3>
-                <button class="modal-close" onclick="closeRegionPicker()">
+            <div class="modal-drag-pill"></div>
+            <div class="modal-title-row">
+                <h3 class="modal-heading">Select Google Play Region</h3>
+                <button class="modal-btn-close" onclick="closeRegionPicker()">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18"/>
-                        <line x1="6" y1="6" x2="18" y2="18"/>
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
                     </svg>
                 </button>
             </div>
-            <div class="regions-grid" id="regionGrid"></div>
+            <div class="regions-grid" id="regionsGrid"></div>
         </div>
     </div>
 
-    <!-- Confirm Dialog -->
-    <div class="dialog-bg" id="confirmDialog">
-        <div class="dialog-box">
-            <div class="dialog-title" id="dialogTitle">Disconnect Account</div>
-            <div class="dialog-desc" id="dialogDesc">Are you sure?</div>
-            <div class="dialog-actions">
-                <button class="dialog-btn dialog-btn-cancel" onclick="closeDialog()">Cancel</button>
-                <button class="dialog-btn dialog-btn-danger" id="dialogConfirmBtn" onclick="closeDialog()">Remove</button>
+    <!-- MODAL 2: PP MOD ACCOUNT LOGIN -->
+    <div class="modal-backdrop" id="loginModal" onclick="closeLoginModal(event)">
+        <div class="modal-sheet" onclick="event.stopPropagation()">
+            <div class="modal-drag-pill"></div>
+            <div class="modal-title-row">
+                <h3 class="modal-heading">PP Mod Account</h3>
+                <button class="modal-btn-close" onclick="closeLoginModal()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="login-banner">
+                <div class="login-logo">
+                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+                </div>
+                <h2 class="login-title">Sign In to PP Mod</h2>
+                <p class="login-sub">Enter your PP Mod account credentials (ppmods.netlify.app) to permanently sync your tokens to the cloud.</p>
+            </div>
+
+            <div class="login-error-box" id="loginErrorBox"></div>
+
+            <form class="login-form" onsubmit="submitLogin(event)">
+                <div class="form-group">
+                    <label class="form-label">Email or Username</label>
+                    <div class="input-wrap">
+                        <div class="input-icon">
+                            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                <polyline points="22,6 12,13 2,6"></polyline>
+                            </svg>
+                        </div>
+                        <input type="text" id="loginEmailInput" class="form-input" placeholder="user@gmail.com" required autocomplete="username">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <div class="input-wrap">
+                        <div class="input-icon">
+                            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                        </div>
+                        <input type="password" id="loginPassInput" class="form-input" placeholder="Enter your password" required autocomplete="current-password">
+                        <button type="button" class="input-toggle-pw" onclick="togglePasswordVisibility()">
+                            <svg id="eyeIcon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit-login" id="btnSubmitLogin">
+                    <span id="btnSubmitLoginText">Sign In to PP Mod</span>
+                    <div class="spinner" id="loginSpinner" style="display:none;"></div>
+                </button>
+            </form>
+
+            <div class="login-footer">
+                <span>Don't have an account? </span>
+                <a href="javascript:void(0)" onclick="openPpModWeb()">Register on PP Mod Portal</a>
             </div>
         </div>
     </div>
 
-    <!-- Toast -->
-    <div class="toast" id="toast">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12"/>
-        </svg>
-        <span id="toastMsg">Done</span>
+    <!-- MODAL 3: CONFIRM DIALOG -->
+    <div class="dialog-backdrop" id="confirmDialog">
+        <div class="dialog-card">
+            <h4 class="dialog-title" id="dialogTitle">Confirm Action</h4>
+            <p class="dialog-desc" id="dialogDesc">Are you sure you want to proceed?</p>
+            <div class="dialog-actions">
+                <button class="dialog-btn dialog-btn-cancel" onclick="closeConfirmDialog()">Cancel</button>
+                <button class="dialog-btn dialog-btn-danger" id="dialogBtnConfirm">Confirm</button>
+            </div>
+        </div>
     </div>
 
+    <!-- TOAST NOTIFICATION -->
+    <div class="toast" id="toast">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <span id="toastMsg">Operation successful</span>
+    </div>
+
+    <!-- JAVASCRIPT ENGINE -->
     <script>
-        // ==================== REGIONS ====================
-        const REGIONS = [
-            { code: "US", name: "United States" },
-            { code: "JP", name: "Japan" },
-            { code: "KR", name: "South Korea" },
-            { code: "TW", name: "Taiwan" },
-            { code: "GB", name: "United Kingdom" },
-            { code: "DE", name: "Germany" },
-            { code: "FR", name: "France" },
-            { code: "AU", name: "Australia" },
-            { code: "IN", name: "India" },
-            { code: "TR", name: "Turkey" },
-            { code: "BR", name: "Brazil" },
-            { code: "GLOBAL", name: "Global (Auto)" }
+        // State
+        var appInfo = {
+            appName: 'PP Server',
+            versionName: 'v4.0',
+            deviceId: '46e14d2451d85c3f',
+            isLoggedIn: false,
+            userUid: '',
+            userEmail: '',
+            userName: 'PP Mod User',
+            userAvatar: '',
+            userCoins: 500
+        };
+
+        var accounts = [];
+        var pendingDeleteCode = null;
+        var pendingLogoutAction = false;
+
+        var REGIONS = [
+            { code: 'GLOBAL', name: 'Global (All Regions)' },
+            { code: 'US', name: 'United States' },
+            { code: 'JP', name: 'Japan' },
+            { code: 'KR', name: 'South Korea' },
+            { code: 'UK', name: 'United Kingdom' },
+            { code: 'DE', name: 'Germany' },
+            { code: 'FR', name: 'France' },
+            { code: 'TW', name: 'Taiwan' }
         ];
 
-        // ==================== STATE ====================
-        let accounts = [];
-        let revealedEmails = {};
-        let currentTab = "tabHome";
-        let appInfo = null;
-
-        // ==================== INIT ====================
+        // Init
         document.addEventListener('DOMContentLoaded', function() {
-            loadAppInfo();
             buildRegionGrid();
+            loadAppInfo();
             loadAccounts();
-            startPerkTimer();
         });
+
+        function switchTab(tabId, el) {
+            document.querySelectorAll('.tab-pane').forEach(function(p) { p.classList.remove('active'); });
+            var target = document.getElementById(tabId);
+            if (target) target.classList.add('active');
+
+            document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
+            if (el) el.classList.add('active');
+
+            if (tabId === 'tabPerks') {
+                renderPerksList();
+            }
+        }
 
         function loadAppInfo() {
             try {
                 if (window.AndroidBridge && window.AndroidBridge.getAppInfo) {
                     var raw = window.AndroidBridge.getAppInfo();
-                    if (raw) appInfo = JSON.parse(raw);
+                    if (raw) {
+                        var parsed = JSON.parse(raw);
+                        for (var k in parsed) {
+                            appInfo[k] = parsed[k];
+                        }
+                    }
                 }
             } catch (e) {}
 
-            if (!appInfo) return;
-
-            // Settings profile
-            var el;
-            el = document.getElementById('settName');
-            if (el) {
-                if (appInfo.isLoggedIn && appInfo.userName) {
-                    el.textContent = appInfo.userName;
-                } else {
-                    el.textContent = 'Device Node';
-                }
-            }
-
-            el = document.getElementById('settEmail');
-            if (el) {
-                if (appInfo.isLoggedIn && appInfo.userEmail) {
-                    el.textContent = appInfo.userEmail;
-                } else {
-                    el.textContent = appInfo.deviceId || '';
-                }
-            }
-
-            el = document.getElementById('settUid');
-            if (el) {
-                if (appInfo.isLoggedIn && appInfo.userUid) {
-                    el.textContent = 'UID: ' + appInfo.userUid;
-                } else {
-                    el.style.display = 'none';
-                }
-            }
-
-            el = document.getElementById('settAvatar');
-            if (el) {
-                if (appInfo.isLoggedIn && appInfo.userName) {
-                    el.textContent = appInfo.userName.charAt(0).toUpperCase();
-                } else {
-                    el.textContent = 'D';
-                }
-            }
-
-            el = document.getElementById('settDevId');
-            if (el) el.textContent = appInfo.deviceId || '';
-
-            el = document.getElementById('settVersion');
-            if (el) el.textContent = appInfo.versionName || 'v4.0';
+            renderUserUI();
         }
 
-        // ==================== ACCOUNTS ====================
+        function renderUserUI() {
+            var navArea = document.getElementById('navUserArea');
+            var topBanner = document.getElementById('topUserBanner');
+            var statCoins = document.getElementById('statUserCoins');
+            var settCard = document.getElementById('settingsProfileCard');
+            var fullLogoutBtn = document.getElementById('btnFullLogout');
+
+            if (statCoins) statCoins.textContent = appInfo.userCoins || 0;
+
+            if (appInfo.isLoggedIn && appInfo.userEmail) {
+                // Nav Bar User Pill
+                var initial = (appInfo.userName ? appInfo.userName.charAt(0) : 'U').toUpperCase();
+                navArea.innerHTML = 
+                    '<div class="nav-user-pill" onclick="switchTab(\'tabSettings\', document.querySelectorAll(\'.nav-item\')[2])">' +
+                        '<div class="nav-avatar">' + initial + '</div>' +
+                        '<span style="font-size:12px;font-weight:800;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(appInfo.userName || 'User') + '</span>' +
+                        '<div class="nav-coins-badge">' +
+                            '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>' +
+                            '<span>' + (appInfo.userCoins || 0) + '</span>' +
+                        '</div>' +
+                    '</div>';
+
+                // Top Banner User Card
+                topBanner.innerHTML = 
+                    '<div class="user-status-card">' +
+                        '<div class="user-profile-left">' +
+                            '<div class="user-profile-avatar">' + initial + '</div>' +
+                            '<div class="user-profile-info">' +
+                                '<span class="user-profile-name">' + escapeHtml(appInfo.userName) + '</span>' +
+                                '<div class="user-profile-meta">' +
+                                    '<span class="user-uid-pill" onclick="copyText(\'' + escapeHtml(appInfo.userUid) + '\', \'UID\')">UID: ' + escapeHtml(appInfo.userUid) + '</span>' +
+                                    '<span class="user-coins-pill">' + (appInfo.userCoins || 0) + ' Points</span>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="user-profile-right">' +
+                            '<button class="btn-logout-sm" onclick="confirmLogout()">' +
+                                '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' +
+                                    '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>' +
+                                    '<polyline points="16 17 21 12 16 7"></polyline>' +
+                                    '<line x1="21" y1="12" x2="9" y2="12"></line>' +
+                                '</svg>' +
+                                '<span>Logout</span>' +
+                            '</button>' +
+                        '</div>' +
+                    '</div>';
+
+                // Settings Screen
+                document.getElementById('settAuthStatus').textContent = 'Active (Authenticated)';
+                document.getElementById('settAuthStatus').style.color = '#059669';
+                document.getElementById('settName').textContent = appInfo.userName || 'PP Mod User';
+                document.getElementById('settEmail').textContent = appInfo.userEmail || '';
+                document.getElementById('settUid').textContent = appInfo.userUid || 'UID-';
+                document.getElementById('settBalance').textContent = (appInfo.userCoins || 0) + ' Points';
+                if (fullLogoutBtn) fullLogoutBtn.style.display = 'flex';
+
+            } else {
+                // Not Logged In
+                navArea.innerHTML = 
+                    '<button class="btn-nav-login" onclick="openLoginModal()">' +
+                        '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' +
+                            '<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>' +
+                            '<polyline points="10 17 15 12 10 7"></polyline>' +
+                            '<line x1="15" y1="12" x2="3" y2="12"></line>' +
+                        '</svg>' +
+                        '<span>Sign In</span>' +
+                    '</button>';
+
+                topBanner.innerHTML = 
+                    '<div class="auth-prompt-card">' +
+                        '<div class="auth-prompt-content">' +
+                            '<div class="auth-prompt-icon">' +
+                                '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' +
+                                    '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>' +
+                                '</svg>' +
+                            '</div>' +
+                            '<div class="auth-prompt-text">' +
+                                '<h4>PP Mod Account Login</h4>' +
+                                '<p>Sign in to sync your Google quest tokens permanently to the cloud vault.</p>' +
+                            '</div>' +
+                        '</div>' +
+                        '<button class="btn-prompt-login" onclick="openLoginModal()">Login</button>' +
+                    '</div>';
+
+                document.getElementById('settAuthStatus').textContent = 'Guest Node (Not Logged In)';
+                document.getElementById('settAuthStatus').style.color = '#d97706';
+                document.getElementById('settName').textContent = 'Device Node';
+                document.getElementById('settEmail').textContent = appInfo.deviceId || '';
+                document.getElementById('settUid').textContent = 'Tap to sign in';
+                document.getElementById('settBalance').textContent = '0 Points';
+                if (fullLogoutBtn) fullLogoutBtn.style.display = 'none';
+            }
+
+            document.getElementById('settDevId').textContent = appInfo.deviceId || '46e14d2451d85c3f';
+            document.getElementById('settVersion').textContent = appInfo.versionName || 'v4.0 Enterprise';
+        }
+
+        // ==================== LOGIN HANDLING ====================
+        function openLoginModal() {
+            document.getElementById('loginErrorBox').style.display = 'none';
+            document.getElementById('loginModal').classList.add('open');
+            setTimeout(function() {
+                var el = document.getElementById('loginEmailInput');
+                if (el) el.focus();
+            }, 300);
+        }
+
+        function closeLoginModal(e) {
+            if (e && e.target !== e.currentTarget) return;
+            document.getElementById('loginModal').classList.remove('open');
+        }
+
+        function togglePasswordVisibility() {
+            var f = document.getElementById('loginPassInput');
+            var icon = document.getElementById('eyeIcon');
+            if (f.type === 'password') {
+                f.type = 'text';
+                icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
+            } else {
+                f.type = 'password';
+                icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+            }
+        }
+
+        function submitLogin(e) {
+            if (e) e.preventDefault();
+            var email = document.getElementById('loginEmailInput').value.trim();
+            var pass = document.getElementById('loginPassInput').value.trim();
+
+            if (!email) {
+                showLoginError('Please enter your email or username.');
+                return;
+            }
+
+            var btn = document.getElementById('btnSubmitLogin');
+            var btnText = document.getElementById('btnSubmitLoginText');
+            var spinner = document.getElementById('loginSpinner');
+            btn.disabled = true;
+            btnText.style.display = 'none';
+            spinner.style.display = 'block';
+            document.getElementById('loginErrorBox').style.display = 'none';
+
+            if (window.AndroidBridge && window.AndroidBridge.login) {
+                window.AndroidBridge.login(email, pass);
+            } else {
+                // Direct Web Fetch Fallback
+                fetch('https://pp-mod-auto-quest.onrender.com/api/login/ppmod', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, password: pass })
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(d) {
+                    if (d.ok) {
+                        window.onLoginSuccess(d);
+                    } else {
+                        window.onLoginError(d.error || 'Authentication failed.');
+                    }
+                })
+                .catch(function(err) {
+                    window.onLoginError('Network error: ' + err.message);
+                });
+            }
+        }
+
+        function showLoginError(msg) {
+            var box = document.getElementById('loginErrorBox');
+            box.textContent = msg;
+            box.style.display = 'block';
+            var btn = document.getElementById('btnSubmitLogin');
+            var btnText = document.getElementById('btnSubmitLoginText');
+            var spinner = document.getElementById('loginSpinner');
+            btn.disabled = false;
+            btnText.style.display = 'inline';
+            spinner.style.display = 'none';
+        }
+
+        // Bridge Callbacks
+        window.onLoginSuccess = function(u) {
+            var btn = document.getElementById('btnSubmitLogin');
+            var btnText = document.getElementById('btnSubmitLoginText');
+            var spinner = document.getElementById('loginSpinner');
+            if (btn) btn.disabled = false;
+            if (btnText) btnText.style.display = 'inline';
+            if (spinner) spinner.style.display = 'none';
+
+            appInfo.isLoggedIn = true;
+            if (u) {
+                if (u.uid) appInfo.userUid = u.uid;
+                if (u.email) appInfo.userEmail = u.email;
+                if (u.name) appInfo.userName = u.name;
+                if (u.display_name) appInfo.userName = u.display_name;
+                if (u.coins !== undefined) appInfo.userCoins = u.coins;
+                if (u.balance !== undefined) appInfo.userCoins = u.balance;
+            }
+
+            closeLoginModal();
+            renderUserUI();
+            loadAccounts();
+            showToast('Welcome back, ' + (appInfo.userName || 'User') + '!');
+        };
+
+        window.onLoginError = function(err) {
+            showLoginError(err || 'Invalid username or password.');
+            showToast('Login Failed: ' + (err || 'Error'));
+        };
+
+        window.onLogoutSuccess = function() {
+            appInfo.isLoggedIn = false;
+            appInfo.userUid = '';
+            appInfo.userEmail = '';
+            appInfo.userName = 'PP Mod User';
+            appInfo.userCoins = 0;
+            accounts = [];
+            renderUserUI();
+            renderAccounts();
+            showToast('Logged out of PP Mod session.');
+        };
+
+        function confirmLogout() {
+            pendingLogoutAction = true;
+            pendingDeleteCode = null;
+            document.getElementById('dialogTitle').textContent = 'Log Out of PP Mod?';
+            document.getElementById('dialogDesc').textContent = 'Are you sure you want to log out? Your local session and cloud tokens cache will be cleared on this device.';
+            document.getElementById('dialogBtnConfirm').textContent = 'Log Out';
+            document.getElementById('confirmDialog').classList.add('open');
+        }
+
+        // ==================== ACCOUNTS HANDLING ====================
         function loadAccounts() {
             try {
                 if (window.AndroidBridge && window.AndroidBridge.getAccounts) {
@@ -1399,338 +2091,228 @@
             renderAccounts();
         }
 
-        // Java callbacks
+        function renderAccounts() {
+            var listEl = document.getElementById('accountsList');
+            var emptyEl = document.getElementById('emptyState');
+            var countEl = document.getElementById('statAccCount');
+            var badgeEl = document.getElementById('badgeAccCount');
+
+            var total = accounts.length;
+            if (countEl) countEl.textContent = total;
+            if (badgeEl) badgeEl.textContent = total;
+
+            if (total === 0) {
+                listEl.style.display = 'none';
+                emptyEl.style.display = 'block';
+                return;
+            }
+
+            listEl.style.display = 'flex';
+            emptyEl.style.display = 'none';
+
+            var html = '';
+            for (var i = 0; i < accounts.length; i++) {
+                var a = accounts[i];
+                var email = a.email || 'Google Play User';
+                var code = a.code || '000000';
+                var formattedCode = code.length === 6 ? (code.substring(0, 3) + ' ' + code.substring(3)) : code;
+                var country = a.country || 'GLOBAL';
+
+                html += 
+                    '<div class="account-card" id="acc_card_' + a.code + '">' +
+                        '<div class="acc-top">' +
+                            '<div class="acc-user">' +
+                                '<div class="acc-avatar">' +
+                                    '<svg viewBox="0 0 24 24" width="20" height="20">' +
+                                        '<path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>' +
+                                        '<path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>' +
+                                        '<path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>' +
+                                        '<path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>' +
+                                    '</svg>' +
+                                '</div>' +
+                                '<div class="acc-meta">' +
+                                    '<span class="acc-email" onclick="copyText(\'' + escapeHtml(email) + '\', \'Email\')">' + escapeHtml(email) + '</span>' +
+                                    '<div class="acc-tags">' +
+                                        '<span class="tag tag-blue">' + escapeHtml(country) + '</span>' +
+                                        '<span class="tag tag-green">' +
+                                            '<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>' +
+                                            '<span>Permanent Token</span>' +
+                                        '</span>' +
+                                    '</div>' +
+                                '</div>' +
+                            '</div>' +
+                            '<button class="btn-delete-acc" title="Remove Account" onclick="confirmDeleteAccount(\'' + a.code + '\', \'' + escapeHtml(email) + '\')">' +
+                                '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+                                    '<polyline points="3 6 5 6 21 6"></polyline>' +
+                                    '<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>' +
+                                '</svg>' +
+                            '</button>' +
+                        '</div>' +
+
+                        '<div class="code-box">' +
+                            '<div class="code-info">' +
+                                '<span class="code-label">Permanent Quest Sync Code</span>' +
+                                '<span class="code-value">' + formattedCode + '</span>' +
+                            '</div>' +
+                            '<button class="btn-copy-code" onclick="copyText(\'' + a.code + '\', \'Sync Code\')">' +
+                                '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' +
+                                    '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>' +
+                                    '<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>' +
+                                '</svg>' +
+                                '<span>Copy</span>' +
+                            '</button>' +
+                        '</div>' +
+
+                        '<div class="perk-mini-row">' +
+                            '<div class="perk-mini-info">' +
+                                '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+                                    '<polyline points="20 12 20 22 4 22 4 12"></polyline>' +
+                                    '<rect x="2" y="7" width="20" height="5"></rect>' +
+                                    '<line x1="12" y1="22" x2="12" y2="7"></line>' +
+                                '</svg>' +
+                                '<span>Weekly Play Points Perk (+10 Pts)</span>' +
+                            '</div>' +
+                            '<button class="btn-perk-claim" onclick="claimAccountPerk(\'' + a.code + '\')">Claim</button>' +
+                        '</div>' +
+                    '</div>';
+            }
+
+            listEl.innerHTML = html;
+        }
+
+        // ==================== PERKS TAB ====================
+        function renderPerksList() {
+            var container = document.getElementById('perksAccountsList');
+            if (!container) return;
+
+            if (accounts.length === 0) {
+                container.innerHTML = 
+                    '<div class="empty-state">' +
+                        '<h4 class="empty-title">No Accounts to Claim Perks</h4>' +
+                        '<p class="empty-desc">Connect a Google Play account on the Vault tab to unlock Friday perks.</p>' +
+                    '</div>';
+                return;
+            }
+
+            var html = '';
+            for (var i = 0; i < accounts.length; i++) {
+                var a = accounts[i];
+                html += 
+                    '<div class="account-card">' +
+                        '<div class="acc-top">' +
+                            '<div class="acc-user">' +
+                                '<div class="acc-avatar">' +
+                                    '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#10b981" stroke-width="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/></svg>' +
+                                '</div>' +
+                                '<div class="acc-meta">' +
+                                    '<span class="acc-email">' + escapeHtml(a.email) + '</span>' +
+                                    '<span class="tag tag-green" style="margin-top:2px;">Sync Code: ' + a.code + '</span>' +
+                                '</div>' +
+                            '</div>' +
+                            '<button class="btn-perk-claim" onclick="claimAccountPerk(\'' + a.code + '\')">Claim +10 Pts</button>' +
+                        '</div>' +
+                    '</div>';
+            }
+            container.innerHTML = html;
+        }
+
+        function claimAccountPerk(code) {
+            if (window.AndroidBridge && window.AndroidBridge.claimWeeklyPerk) {
+                window.AndroidBridge.claimWeeklyPerk(code);
+            } else {
+                showToast('Perk Claimed: +10 Play Points!');
+            }
+        }
+
+        function claimAllPerks() {
+            if (accounts.length === 0) {
+                showToast('No accounts connected.');
+                return;
+            }
+            for (var i = 0; i < accounts.length; i++) {
+                claimAccountPerk(accounts[i].code);
+            }
+            showToast('Claiming perks for all accounts...');
+        }
+
+        // ==================== REMOVE ACCOUNT & CONFIRM ====================
+        function confirmDeleteAccount(code, email) {
+            pendingDeleteCode = code;
+            pendingLogoutAction = false;
+            document.getElementById('dialogTitle').textContent = 'Remove Google Account?';
+            document.getElementById('dialogDesc').textContent = 'This will permanently remove ' + (email || 'this account') + ' and its sync code from this device and the cloud vault. If you add this email again, a brand new code will be generated.';
+            document.getElementById('dialogBtnConfirm').textContent = 'Remove Account';
+            document.getElementById('confirmDialog').classList.add('open');
+        }
+
+        function closeConfirmDialog() {
+            document.getElementById('confirmDialog').classList.remove('open');
+            pendingDeleteCode = null;
+            pendingLogoutAction = false;
+        }
+
+        document.getElementById('dialogBtnConfirm').addEventListener('click', function() {
+            if (pendingLogoutAction) {
+                closeConfirmDialog();
+                if (window.AndroidBridge && window.AndroidBridge.logout) {
+                    window.AndroidBridge.logout();
+                } else {
+                    window.onLogoutSuccess();
+                }
+                return;
+            }
+
+            if (pendingDeleteCode) {
+                var code = pendingDeleteCode;
+                closeConfirmDialog();
+                if (window.AndroidBridge && window.AndroidBridge.deleteAccount) {
+                    window.AndroidBridge.deleteAccount(code);
+                } else {
+                    window.onAccountDeleted(code);
+                }
+            }
+        });
+
+        window.onAccountDeleted = function(code) {
+            accounts = accounts.filter(function(a) { return a.code !== code; });
+            renderAccounts();
+            if (document.getElementById('tabPerks').classList.contains('active')) {
+                renderPerksList();
+            }
+            showToast('Account removed from cloud vault.');
+        };
+
+        window.onAccountSyncComplete = function(accObj) {
+            if (accObj) {
+                accounts = accounts.filter(function(a) { return a.code !== accObj.code && a.email.toLowerCase() !== (accObj.email || '').toLowerCase(); });
+                accounts.unshift(accObj);
+            }
+            renderAccounts();
+            showToast('Connected! Sync Code: ' + (accObj ? accObj.code : ''));
+        };
+
         window.refreshAccounts = function() {
             loadAccounts();
             loadAppInfo();
         };
 
-        window.onAccountSyncComplete = function(accObj) {
-            if (accObj) {
-                // Remove duplicate by code
-                var code = accObj.code;
-                accounts = accounts.filter(function(a) { return a.code !== code; });
-                accounts.unshift(accObj);
-            }
-            renderAccounts();
-            loadAppInfo();
-            showToast('Account connected successfully');
-        };
-
-        function renderAccounts() {
-            var list = document.getElementById('accountsList');
-            var empty = document.getElementById('emptyState');
-            var badge = document.getElementById('accountCount');
-            var warn = document.getElementById('warnBox');
-
-            if (!list) return;
-
-            // Check revoked
-            var hasRevoked = false;
-            for (var i = 0; i < accounts.length; i++) {
-                if (accounts[i].is_revoked) hasRevoked = true;
-            }
-            if (warn) warn.style.display = hasRevoked ? 'flex' : 'none';
-
-            if (!accounts || accounts.length === 0) {
-                list.innerHTML = '';
-                if (empty) empty.style.display = 'block';
-                if (badge) badge.textContent = '0';
-                return;
-            }
-
-            if (empty) empty.style.display = 'none';
-            if (badge) badge.textContent = accounts.length;
-
-            var html = '';
-            for (var i = 0; i < accounts.length; i++) {
-                var acc = accounts[i];
-                html += buildAccountCard(acc);
-            }
-            list.innerHTML = html;
-        }
-
-        function buildAccountCard(acc) {
-            var email = acc.email || 'Google Account';
-            var revealed = !!revealedEmails[acc.code];
-            var display = revealed ? esc(email) : esc(maskEmail(email));
-            var initial = email.charAt(0).toUpperCase();
-            var points = Number(acc.points || 0).toLocaleString();
-            var country = acc.country || 'GLOBAL';
-            var perkHtml = buildPerkSection(acc);
-
-            return '<div class="account-card" id="card_' + acc.code + '">' +
-                '<div class="acc-top">' +
-                    '<div class="acc-user">' +
-                        '<div class="acc-avatar">' + initial + '</div>' +
-                        '<div class="acc-meta">' +
-                            '<div class="acc-email" onclick="toggleEmail(\'' + acc.code + '\')">' + display + '</div>' +
-                            '<div class="acc-tags">' +
-                                '<span class="tag tag-amber">' + points + ' pts</span>' +
-                                '<span class="tag tag-gray">' + esc(country) + '</span>' +
-                            '</div>' +
-                        '</div>' +
-                    '</div>' +
-                    '<button class="btn-icon" onclick="showDeleteDialog(\'' + acc.code + '\', \'' + esc(email) + '\')" title="Disconnect">' +
-                        '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
-                            '<polyline points="3 6 5 6 21 6"/>' +
-                            '<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>' +
-                        '</svg>' +
-                    '</button>' +
-                '</div>' +
-                '<div class="code-box">' +
-                    '<div class="code-info">' +
-                        '<span class="code-label">Sync Code</span>' +
-                        '<span class="code-value">' + acc.code + '</span>' +
-                    '</div>' +
-                    '<button class="btn-copy-sm" onclick="copyCode(\'' + acc.code + '\')">' +
-                        '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' +
-                            '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>' +
-                            '<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>' +
-                        '</svg>' +
-                        '<span>Copy</span>' +
-                    '</button>' +
-                '</div>' +
-                perkHtml +
-            '</div>';
-        }
-
-        // ==================== FRIDAY PERK LOGIC ====================
-        function getBDTime() {
-            var now = new Date();
-            var utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-            return new Date(utc + (3600000 * 6));
-        }
-
-        function buildPerkSection(acc) {
-            var bd = getBDTime();
-            var day = bd.getDay();
-            var hour = bd.getHours();
-            var mins = bd.getMinutes();
-
-            // Only show on Friday after 9:00 AM BD Time
-            if (day !== 5 || hour < 9) return '';
-
-            var todayStr = bd.toISOString().split('T')[0];
-            var claimed = (acc.last_claim_date === todayStr);
-
-            if (claimed) {
-                var pts = acc.claimed_points || 10;
-                return '<div class="perk-row perk-claimed">' +
-                    '<div class="perk-info">' +
-                        '<span class="perk-title perk-title-green">' +
-                            '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
-                            ' Weekly Perk Claimed' +
-                        '</span>' +
-                        '<span class="perk-sub perk-sub-green">Received +' + pts + ' Play Points today</span>' +
-                    '</div>' +
-                    '<span class="perk-pts-badge">+' + pts + ' PTS</span>' +
-                '</div>';
-            }
-
-            if (acc.has_perk === false) {
-                return '<div class="perk-row perk-locked">' +
-                    '<div class="perk-info">' +
-                        '<span class="perk-title perk-title-muted">' +
-                            '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>' +
-                            ' Weekly Perk Locked' +
-                        '</span>' +
-                        '<span class="perk-sub perk-sub-muted">Perk not active on this account</span>' +
-                    '</div>' +
-                '</div>';
-            }
-
-            if (hour >= 9 && hour < 14) {
-                var hLeft = 13 - hour;
-                var mLeft = 59 - mins;
-                return '<div class="perk-row perk-active">' +
-                    '<div class="perk-info">' +
-                        '<span class="perk-title perk-title-green">' +
-                            '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' +
-                            ' Unlock in ' + hLeft + 'h ' + mLeft + 'm' +
-                        '</span>' +
-                        '<span class="perk-sub perk-sub-green">Unlocks at 2:00 PM BD Time</span>' +
-                    '</div>' +
-                    '<button class="btn-claim" disabled>Pending</button>' +
-                '</div>';
-            }
-
-            // 2:00 PM+ BD: Active claim
-            return '<div class="perk-row perk-active">' +
-                '<div class="perk-info">' +
-                    '<span class="perk-title perk-title-green">' +
-                        '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>' +
-                        ' Weekly Perk Available' +
-                    '</span>' +
-                    '<span class="perk-sub perk-sub-green">Claim your weekly Play Points</span>' +
-                '</div>' +
-                '<button class="btn-claim" onclick="claimPerk(\'' + acc.code + '\')">Claim</button>' +
-            '</div>';
-        }
-
-        function startPerkTimer() {
-            setInterval(function() {
-                var bd = getBDTime();
-                if (bd.getDay() === 5 && currentTab === 'tabHome') {
-                    renderAccounts();
-                }
-            }, 60000);
-        }
-
-        function claimPerk(code) {
-            if (window.AndroidBridge && window.AndroidBridge.claimWeeklyPerk) {
-                window.AndroidBridge.claimWeeklyPerk(code);
-            } else {
-                showToast('Claiming weekly perk...');
-                setTimeout(function() {
-                    for (var i = 0; i < accounts.length; i++) {
-                        if (accounts[i].code === code) {
-                            accounts[i].last_claim_date = getBDTime().toISOString().split('T')[0];
-                            accounts[i].points = (accounts[i].points || 0) + 10;
-                            accounts[i].claimed_points = (accounts[i].claimed_points || 0) + 10;
-                            break;
-                        }
-                    }
-                    renderAccounts();
-                    showToast('10 Play Points Claimed');
-                }, 800);
-            }
-        }
-
-        // ==================== ACTIONS ====================
-        function copyCode(code) {
-            if (window.AndroidBridge && window.AndroidBridge.copyToClipboard) {
-                window.AndroidBridge.copyToClipboard(code, 'Sync Code');
-            } else {
-                try { navigator.clipboard.writeText(code); } catch(e) {}
-                showToast('Code ' + code + ' copied');
-            }
-        }
-
-        function copyDeviceId() {
-            var devId = appInfo ? appInfo.deviceId : '';
-            if (!devId) return;
-            if (window.AndroidBridge && window.AndroidBridge.copyToClipboard) {
-                window.AndroidBridge.copyToClipboard(devId, 'Device ID');
-            } else {
-                try { navigator.clipboard.writeText(devId); } catch(e) {}
-                showToast('Device ID copied');
-            }
-        }
-
-        function copyUid() {
-            var el = document.getElementById('settUid');
-            if (!el) return;
-            var uid = el.textContent.replace(/^UID:\s*/i, '').trim();
-            if (window.AndroidBridge && window.AndroidBridge.copyToClipboard) {
-                window.AndroidBridge.copyToClipboard(uid, 'UID');
-            } else {
-                try { navigator.clipboard.writeText(uid); } catch(e) {}
-                showToast('UID copied');
-            }
-        }
-
-        function toggleEmail(code) {
-            if (revealedEmails[code]) {
-                delete revealedEmails[code];
-            } else {
-                revealedEmails[code] = true;
-                setTimeout(function() {
-                    delete revealedEmails[code];
-                    renderAccounts();
-                }, 5000);
-            }
-            renderAccounts();
-        }
-
-        // ==================== DELETE DIALOG ====================
-        var pendingDeleteCode = '';
-
-        function showDeleteDialog(code, email) {
-            pendingDeleteCode = code;
-            document.getElementById('dialogTitle').textContent = 'Disconnect Account';
-            document.getElementById('dialogDesc').textContent = 'Remove ' + email + ' from this device? The sync code will be invalidated.';
-            document.getElementById('dialogConfirmBtn').onclick = function() {
-                doDelete(pendingDeleteCode);
-                closeDialog();
-            };
-            document.getElementById('confirmDialog').classList.add('open');
-        }
-
-        function doDelete(code) {
-            if (window.AndroidBridge && window.AndroidBridge.deleteAccount) {
-                window.AndroidBridge.deleteAccount(code);
-            }
-            accounts = accounts.filter(function(a) { return a.code !== code; });
-            renderAccounts();
-            showToast('Account disconnected');
-        }
-
-        function closeDialog() {
-            document.getElementById('confirmDialog').classList.remove('open');
-        }
-
-        // ==================== LOGOUT DIALOG ====================
-        function showLogoutDialog() {
-            document.getElementById('dialogTitle').textContent = 'Sign Out';
-            document.getElementById('dialogDesc').textContent = 'Are you sure you want to sign out of PP Mod? You can sign in again anytime.';
-            document.getElementById('dialogConfirmBtn').textContent = 'Sign Out';
-            document.getElementById('dialogConfirmBtn').onclick = function() {
-                if (window.AndroidBridge && window.AndroidBridge.logout) {
-                    window.AndroidBridge.logout();
-                } else {
-                    showToast('Signed out');
-                }
-                closeDialog();
-            };
-            document.getElementById('confirmDialog').classList.add('open');
-        }
-
-        function syncCloud() {
-            showToast('Syncing with cloud...');
-            if (window.AndroidBridge && window.AndroidBridge.syncCloudAccounts) {
-                window.AndroidBridge.syncCloudAccounts();
-            } else {
-                setTimeout(function() {
-                    loadAccounts();
-                    showToast('Cloud sync complete');
-                }, 1000);
-            }
-        }
-
-        // ==================== NAVIGATION ====================
-        function switchTab(tabId) {
-            currentTab = tabId;
-
-            var panes = document.querySelectorAll('.tab-pane');
-            for (var i = 0; i < panes.length; i++) panes[i].classList.remove('active');
-            var target = document.getElementById(tabId);
-            if (target) target.classList.add('active');
-
-            var navs = document.querySelectorAll('.nav-bar .nav-item');
-            for (var i = 0; i < navs.length; i++) navs[i].classList.remove('active');
-
-            var navMap = { tabHome: 'navHome', tabBox: 'navBox', tabSub: 'navSub', tabSetting: 'navSetting' };
-            var navEl = document.getElementById(navMap[tabId]);
-            if (navEl) navEl.classList.add('active');
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
         // ==================== REGION PICKER ====================
         function buildRegionGrid() {
-            var grid = document.getElementById('regionGrid');
+            var grid = document.getElementById('regionsGrid');
             if (!grid) return;
             var html = '';
             for (var i = 0; i < REGIONS.length; i++) {
                 var r = REGIONS[i];
-                html += '<div class="region-item" onclick="selectRegion(\'' + r.code + '\')">' +
-                    '<div>' +
-                        '<div class="region-name">' + r.name + '</div>' +
-                        '<div class="region-code">' + r.code + '</div>' +
-                    '</div>' +
-                    '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>' +
-                '</div>';
+                html += 
+                    '<div class="region-card" onclick="selectRegion(\'' + r.code + '\')">' +
+                        '<div class="region-info">' +
+                            '<span class="region-name">' + r.name + '</span>' +
+                            '<span class="region-code-badge">' + r.code + '</span>' +
+                        '</div>' +
+                        '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' +
+                            '<polyline points="9 18 15 12 9 6"></polyline>' +
+                        '</svg>' +
+                    '</div>';
             }
             grid.innerHTML = html;
         }
@@ -1745,41 +2327,75 @@
         }
 
         function selectRegion(code) {
-            document.getElementById('regionModal').classList.remove('open');
+            closeRegionPicker();
             if (window.AndroidBridge && window.AndroidBridge.startGoogleLogin) {
                 window.AndroidBridge.startGoogleLogin(code);
             } else {
-                showToast('Starting Google login for ' + code);
+                showToast('Starting Google sign-in for region ' + code);
             }
         }
 
         // ==================== UTILITIES ====================
-        function maskEmail(email) {
-            if (!email || email.indexOf('@') === -1) return email || 'Google Account';
-            var parts = email.split('@');
-            var name = parts[0];
-            var domain = parts[1];
-            if (name.length <= 2) return name + '@' + domain;
-            if (name.length <= 4) return name[0] + '\u2022\u2022\u2022' + name[name.length - 1] + '@' + domain;
-            return name.substring(0, 2) + '\u2022\u2022\u2022\u2022' + name.substring(name.length - 2) + '@' + domain;
+        function syncCloudAccounts() {
+            if (window.AndroidBridge && window.AndroidBridge.syncCloudAccounts) {
+                window.AndroidBridge.syncCloudAccounts();
+            } else {
+                showToast('Syncing with Cloud Vault...');
+                setTimeout(loadAccounts, 1000);
+            }
         }
 
-        function esc(str) {
-            if (!str) return '';
-            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        function refreshUserData() {
+            if (window.AndroidBridge && window.AndroidBridge.refreshUserData) {
+                window.AndroidBridge.refreshUserData();
+                showToast('Refreshing user profile...');
+            } else {
+                showToast('User profile updated.');
+            }
         }
 
-        var toastTimer = null;
+        function openPpModWeb() {
+            var url = 'https://ppmods.netlify.app/';
+            if (window.AndroidBridge && window.AndroidBridge.openBrowser) {
+                window.AndroidBridge.openBrowser(url);
+            } else {
+                window.open(url, '_blank');
+            }
+        }
+
+        function copyText(text, label) {
+            if (!text) return;
+            if (window.AndroidBridge && window.AndroidBridge.copyToClipboard) {
+                window.AndroidBridge.copyToClipboard(text, label || 'Text');
+            } else {
+                try {
+                    navigator.clipboard.writeText(text);
+                } catch (e) {}
+                showToast((label || 'Text') + ' copied!');
+            }
+        }
+
         function showToast(msg) {
             var t = document.getElementById('toast');
             var m = document.getElementById('toastMsg');
             if (!t || !m) return;
             m.textContent = msg;
             t.classList.add('show');
-            if (toastTimer) clearTimeout(toastTimer);
-            toastTimer = setTimeout(function() { t.classList.remove('show'); }, 2200);
+            clearTimeout(window._toastTimer);
+            window._toastTimer = setTimeout(function() {
+                t.classList.remove('show');
+            }, 2600);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
         }
     </script>
-
 </body>
 </html>

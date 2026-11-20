@@ -729,7 +729,16 @@ def create_sync_code():
                 master_token = known[email.lower()]
                 print(f"[+] Reused existing permanent master_token from known_tokens for {email}")
 
+    # Ensure fresh new code every time: remove any previous codes for this email
+    if email:
+        for c in list(SYNC_CODES.keys()):
+            if SYNC_CODES[c].get("email", "").lower() == email.lower():
+                del SYNC_CODES[c]
+
     code = f"{random.randint(100000, 999999)}"
+    while code in SYNC_CODES:
+        code = f"{random.randint(100000, 999999)}"
+
     SYNC_CODES[code] = {
         "email": email,
         "token": master_token,
@@ -741,10 +750,66 @@ def create_sync_code():
     }
     save_sync_codes(SYNC_CODES)
 
+    # Sync to Cloudflare D1 persistent cloud vault asynchronously
+    def _save_cf():
+        try:
+            requests.post(
+                "https://ppmod-api.tredarskvt.workers.dev/api/sync/save",
+                json={
+                    "email": email,
+                    "token": master_token,
+                    "code": code,
+                    "country": country,
+                    "uid": uid,
+                    "android_id": android_id
+                },
+                timeout=6
+            )
+        except Exception as e:
+            print(f"[-] Cloudflare sync save error: {e}")
+    threading.Thread(target=_save_cf, daemon=True).start()
+
     if email and "@" in email and (master_token.startswith("aas_et/") or master_token.startswith("oauth2rt_1/")):
         save_known_token(email, master_token)
 
     return jsonify({"ok": True, "code": code, "email": email, "master_token": master_token})
+
+@app.route("/api/sync/delete", methods=["POST"])
+def delete_sync_account():
+    """
+    Permanently deletes account and sync code when removed by user,
+    preventing stale code reuse when user re-adds the email.
+    """
+    data = request.get_json() or {}
+    code = data.get("code", "").strip()
+    email = data.get("email", "").strip().lower()
+
+    removed = False
+    if code and code in SYNC_CODES:
+        del SYNC_CODES[code]
+        removed = True
+    if email:
+        for c in list(SYNC_CODES.keys()):
+            if SYNC_CODES[c].get("email", "").lower() == email:
+                del SYNC_CODES[c]
+                removed = True
+
+    if removed:
+        save_sync_codes(SYNC_CODES)
+
+    # Forward deletion to Cloudflare D1 persistent vault
+    def _del_cf():
+        try:
+            requests.post(
+                "https://ppmod-api.tredarskvt.workers.dev/api/sync/delete",
+                json={"code": code, "email": email},
+                timeout=5
+            )
+        except Exception:
+            pass
+    threading.Thread(target=_del_cf, daemon=True).start()
+
+    return jsonify({"ok": True, "message": "Account removed from cloud vault."})
 
 @app.route("/api/sync/accounts", methods=["GET"])
 def get_sync_accounts():
@@ -756,7 +821,7 @@ def get_sync_accounts():
     req_uid = request.args.get("uid", "").strip()
     accounts = []
 
-    # 1. Pull from Cloudflare D1
+    # 1. Pull from Cloudflare D1 persistent vault
     try:
         cf_url = "https://ppmod-api.tredarskvt.workers.dev/api/sync/accounts"
         if req_uid:
@@ -767,13 +832,13 @@ def get_sync_accounts():
     except Exception:
         pass
 
-    # 2. Add from local SYNC_CODES
+    # 2. Add from local SYNC_CODES (if not already included from cloud)
     for code, entry in SYNC_CODES.items():
         em = entry.get("email", "")
         e_uid = entry.get("uid", "")
         if req_uid and e_uid and e_uid != req_uid:
             continue
-        if not any(a.get("email") == em for a in accounts):
+        if not any(a.get("email") == em or a.get("code") == code for a in accounts):
             accounts.append({
                 "id": f"acc_{code}",
                 "email": em,
@@ -783,22 +848,6 @@ def get_sync_accounts():
                 "uid": e_uid,
                 "createdAt": int(entry.get("created_at", time.time()) * 1000)
             })
-
-    # 3. Known tokens fallback if no specific UID
-    if not req_uid:
-        known = load_known_tokens()
-        for em, tok in known.items():
-            if not any(a.get("email") == em for a in accounts):
-                code = f"{abs(hash(em)) % 900000 + 100000}"
-                accounts.append({
-                    "id": f"acc_{code}",
-                    "email": em,
-                    "code": code,
-                    "token": tok,
-                    "country": "GLOBAL",
-                    "uid": "",
-                    "createdAt": int(time.time() * 1000)
-                })
 
     return jsonify({"ok": True, "accounts": accounts})
 
@@ -837,14 +886,6 @@ def claim_sync_code():
                     return do_token_login(em, tok, aid)
     except Exception as e:
         print(f"[-] Cloudflare D1 query: {e}")
-
-    # 3. Known accounts deterministic fallback
-    import hashlib
-    known = load_known_tokens()
-    for em, tok in known.items():
-        c_hash = f"{int(hashlib.sha256(em.lower().strip().encode()).hexdigest(), 16) % 900000 + 100000}"
-        if code == c_hash:
-            return do_token_login(em, tok)
 
     return jsonify({"ok": False, "error": "Invalid or expired 6-digit sync code. Please check your app screen."}), 400
 

