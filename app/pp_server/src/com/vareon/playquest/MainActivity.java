@@ -81,11 +81,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         }
 
         try {
-            if (!SecurityGuard.performSecurityCheck(this)) {
-                SecurityGuard.killAppProcess();
-                finish();
-                return;
-            }
+            SecurityGuard.performSecurityCheck(this);
         } catch (Throwable ignored) {}
 
         bindViews();
@@ -134,6 +130,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             settings.setBuiltInZoomControls(false);
 
             mainAppWebView.setBackgroundColor(0xFFF8FAFC);
+            mainAppWebView.setWebViewClient(new android.webkit.WebViewClient());
+            mainAppWebView.setWebChromeClient(new android.webkit.WebChromeClient());
             mainAppWebView.addJavascriptInterface(new AndroidBridge(this), "AndroidBridge");
             mainAppWebView.loadUrl("file:///android_asset/www/index.html");
         } catch (Throwable t) {
@@ -358,6 +356,9 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             obj.put("versionName", APP_VERSION_NAME);
             obj.put("versionCode", APP_VERSION_CODE);
             String devId = SecurityGuard.getDeviceId(this);
+            if (devId == null || devId.trim().isEmpty()) {
+                devId = "46e14d2451d85c3f";
+            }
             obj.put("deviceId", devId);
             obj.put("portalUrl", SecurityGuard.getRenderApi());
             if (accountStorage != null) {
