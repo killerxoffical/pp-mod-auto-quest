@@ -464,14 +464,14 @@
             <div class="metric-tile">
                 <div class="tile-icon cyan">🎮</div>
                 <div class="tile-text">
-                    <h3 id="statServicesCount">6 Configured Services</h3>
+                    <h3 id="statServicesCount">0 Configured Services</h3>
                     <p>Verified Quest Catalog</p>
                 </div>
             </div>
             <div class="metric-tile">
                 <div class="tile-icon green">🎯</div>
                 <div class="tile-text">
-                    <h3 id="statQuestsCount">55+ Objectives</h3>
+                    <h3 id="statQuestsCount">0 Objectives</h3>
                     <p>Live Achievement Scope</p>
                 </div>
             </div>
@@ -573,13 +573,13 @@
             <!-- Public Portal 2 Sections: LEVEL-UP & QUEST UNLOCKER -->
             <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
                 <button class="portal-section-pill active" id="portalPillAll" onclick="setPortalSection('all')">
-                    <span>🎮 All Services (<span id="portalCountAll">6</span>)</span>
+                    <span>🎮 All Services (<span id="portalCountAll">0</span>)</span>
                 </button>
                 <button class="portal-section-pill" id="portalPillLevelUp" onclick="setPortalSection('level_up')" style="color:#d97706; border-color:rgba(217,119,6,0.3); background:rgba(245,158,11,0.08);">
-                    <span>⚡ LEVEL-UP XP Boosters (<span id="portalCountLevelUp">1</span>)</span>
+                    <span>⚡ LEVEL-UP XP Boosters (<span id="portalCountLevelUp">0</span>)</span>
                 </button>
                 <button class="portal-section-pill" id="portalPillQuests" onclick="setPortalSection('quest_unlocker')">
-                    <span>🎯 Play Points Quests (<span id="portalCountQuests">5</span>)</span>
+                    <span>🎯 Play Points Quests (<span id="portalCountQuests">0</span>)</span>
                 </button>
             </div>
 
@@ -692,11 +692,14 @@
             if (badge) badge.innerText = `${filtered.length} Active Services`;
 
             if (filtered.length === 0) {
+                const emptyMsg = (allPortalServices.length === 0)
+                    ? `No active services have been published by the admin yet. Please check back later.`
+                    : `No services found in this specific category. Please switch tabs to view other services.`;
                 container.innerHTML = `
                     <div style="grid-column:1/-1; text-align:center; padding:60px 20px; background:var(--bg-card); border:1px dashed var(--border-color); border-radius:var(--radius-xl);">
-                        <span style="font-size:40px; display:block; margin-bottom:10px;">🛡️</span>
-                        <strong style="font-size:16px; color:var(--text-primary);">No Quest Services In This Category</strong>
-                        <p style="font-size:12.5px; color:var(--text-muted); margin-top:4px;">Please switch to another section or check back later.</p>
+                        <span style="font-size:42px; display:block; margin-bottom:12px;">🛡️</span>
+                        <strong style="font-size:16px; color:var(--text-primary); display:block; margin-bottom:6px;">No Services Currently Configured</strong>
+                        <p style="font-size:12.5px; color:var(--text-muted); max-width:440px; margin:0 auto;">${emptyMsg}</p>
                     </div>
                 `;
                 return;

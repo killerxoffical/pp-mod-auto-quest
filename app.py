@@ -33,42 +33,44 @@ def load_portal_services():
     if PORTAL_SERVICES_CACHE is not None:
         return PORTAL_SERVICES_CACHE
 
-    data = {}
-    if os.path.exists(PORTAL_SERVICES_FILE):
+    data = None
+    # 1. Primary Source of Truth: Cloudflare D1 persistent cloud store (survives Render restarts)
+    try:
+        cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", timeout=3)
+        if cf_res.status_code == 200:
+            cloud_data = cf_res.json()
+            if isinstance(cloud_data, dict):
+                data = cloud_data
+                print(f"[+] Loaded {len(data)} portal services from Cloudflare D1.")
+    except Exception as e:
+        print(f"[-] Cloudflare D1 boot fetch note: {e}")
+
+    # 2. Local Fallback: If Cloudflare was unreachable, use local file
+    if data is None and os.path.exists(PORTAL_SERVICES_FILE):
         try:
             with open(PORTAL_SERVICES_FILE, "r", encoding="utf-8") as f:
-                data = json.load(f)
+                content = json.load(f)
+                if isinstance(content, dict):
+                    data = content
         except Exception:
             pass
 
-    # If empty, auto-recover from permanent repository backup
-    if not data or len(data) == 0:
-        if os.path.exists(PORTAL_SERVICES_BACKUP_FILE):
-            try:
-                with open(PORTAL_SERVICES_BACKUP_FILE, "r", encoding="utf-8") as bf:
-                    data = json.load(bf)
-                    print(f"[+] Restored {len(data)} portal services from backup file.")
-            except Exception:
-                pass
+    # 3. Default to empty dictionary - NEVER auto-inject default games
+    if data is None:
+        data = {}
 
-    # If still empty, check Cloudflare D1 once on boot
-    if not data or len(data) == 0:
-        try:
-            cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", timeout=2)
-            if cf_res.status_code == 200:
-                cloud_data = cf_res.json()
-                if cloud_data and isinstance(cloud_data, dict):
-                    data = cloud_data
-        except Exception:
-            pass
+    # Mirror to local files
+    try:
+        with open(PORTAL_SERVICES_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+    except Exception:
+        pass
 
-    # Ensure local file is written if we have data
-    if data:
-        try:
-            with open(PORTAL_SERVICES_FILE, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, ensure_ascii=False)
-        except Exception:
-            pass
+    try:
+        with open(PORTAL_SERVICES_BACKUP_FILE, "w", encoding="utf-8") as bf:
+            json.dump(data, bf, indent=2, ensure_ascii=False)
+    except Exception:
+        pass
 
     PORTAL_SERVICES_CACHE = data
     return data
@@ -88,10 +90,10 @@ def save_portal_services(data):
     except Exception:
         pass
 
-    # Sync to Cloudflare D1 persistent cloud store in background
+    # Sync to Cloudflare D1 persistent cloud store immediately
     def _sync_cf():
         try:
-            requests.post("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", json=data, timeout=4)
+            requests.post("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", json=data, timeout=5)
         except Exception as e:
             print(f"[-] Cloudflare D1 portal sync error: {e}")
     threading.Thread(target=_sync_cf, daemon=True).start()
@@ -3158,15 +3160,22 @@ def unlock_game():
 
     # If restricted to specific quest IDs (Public Portal service rule)
     allowed_quest_ids = data.get("selected_quest_ids")
-    if not allowed_quest_ids and data.get("portal_service"):
-        p_services = load_portal_services()
-        if game_id in p_services:
-            allowed_quest_ids = p_services[game_id].get("selected_quest_ids", [])
+    if data.get("portal_service"):
+        if not allowed_quest_ids:
+            p_services = load_portal_services()
+            found_key, p_srv = find_portal_service(p_services, game_id)
+            if p_srv:
+                allowed_quest_ids = p_srv.get("selected_quest_ids", [])
+        if not allowed_quest_ids:
+            return jsonify({
+                "ok": False,
+                "error": f"Game '{game['title']}' has no active quests configured on the Public Portal."
+            }), 400
 
     targets = []
     for d in all_defs:
         ach_id = d.get("id")
-        if allowed_quest_ids and ach_id not in allowed_quest_ids:
+        if allowed_quest_ids is not None and ach_id not in allowed_quest_ids:
             continue
         if ach_id not in already_unlocked:
             targets.append(d)
@@ -3584,7 +3593,7 @@ def get_portal_services():
             s["icon"] = g.get("icon", s.get("icon"))
             s["category"] = g.get("category", s.get("category"))
             s["developer"] = g.get("developer", s.get("developer"))
-            s["section"] = g.get("section", s.get("section", "quest_unlocker"))
+            s["section"] = s.get("section") or g.get("section", "quest_unlocker")
         out.append(s)
 
     out.sort(key=lambda x: (not x.get("enabled", True), x.get("title", "")))
@@ -3682,6 +3691,10 @@ def save_portal_service():
     services = load_portal_services()
     existing = services.get(game_id, {})
 
+    section = str(data.get("section") or "").strip().lower()
+    if section not in ("level_up", "quest_unlocker"):
+        section = existing.get("section") or game.get("section", "quest_unlocker")
+
     service_entry = {
         "service_id": existing.get("service_id") or f"srv_{game_id}",
         "game_id": game_id,
@@ -3690,7 +3703,7 @@ def save_portal_service():
         "developer": game.get("developer", "Play Games"),
         "category": game.get("category", "Quest Game"),
         "icon": game.get("icon"),
-        "section": game.get("section", "quest_unlocker"),
+        "section": section,
         "enabled": enabled,
         "total_quests_count": len(all_quests),
         "selected_quests_count": len(selected_quests),
@@ -3802,7 +3815,6 @@ def unlock_portal_service_quests():
     if not service:
         return jsonify({"ok": False, "error": f"Game '{game_id}' is not an active Public Portal service."}), 404
 
-    service = services[game_id]
     if not service.get("enabled", True):
         return jsonify({"ok": False, "error": f"Quest service for '{service.get('title')}' is currently paused by admin."}), 403
 
@@ -3822,7 +3834,9 @@ def unlock_portal_service_quests():
         return jsonify({"ok": False, "error": "No valid authentication token or 6-digit sync code found. Please connect your account first."}), 401
 
     merged = get_merged_games()
-    game = merged.get(game_id, service)
+    game = merged.get(found_key) or merged.get(str(service.get("game_id", ""))) or service
+    app_package = game.get("package") or service.get("package")
+    client_sig = game.get("client_sig") or "58e71785c961e7328ea9c76de647f8f6c4403b39"
 
     # Authenticate with Google Play Games
     if master_token:
@@ -3830,8 +3844,8 @@ def unlock_portal_service_quests():
             email=email,
             master_token=master_token,
             android_id=android_id,
-            app_package=game["package"],
-            client_sig=game.get("client_sig", "58e71785c961e7328ea9c76de647f8f6c4403b39")
+            app_package=app_package,
+            client_sig=client_sig
         )
         if not tok_res.get("ok"):
             return jsonify({"ok": False, "error": f"Game GPGS authentication failed: {tok_res.get('error')}"}), 401
@@ -3851,42 +3865,90 @@ def unlock_portal_service_quests():
         pass
 
     # STRICT FILTER: ONLY selected quests that are NOT yet unlocked
-    targets = [q for q in service.get("selected_quests", []) if q["id"] in selected_quest_ids and q["id"] not in already_unlocked]
+    all_game_quests = get_game_quest_definitions(game)
+    quest_map = {q["id"]: q for q in all_game_quests}
+
+    targets = []
+    for qid in selected_quest_ids:
+        if qid in already_unlocked:
+            continue
+        quest_info = quest_map.get(qid) or next((q for q in service.get("selected_quests", []) if q.get("id") == qid), None)
+        if quest_info:
+            targets.append(quest_info)
+        else:
+            targets.append({"id": qid, "name": f"Achievement {qid}", "achievementType": "STANDARD", "experiencePoints": 5000})
+
+    if not targets:
+        return jsonify({
+            "ok": True,
+            "service_title": service.get("title"),
+            "game_id": game_id,
+            "package": app_package,
+            "total_configured_quests": len(selected_quest_ids),
+            "newly_unlocked_count": 0,
+            "previously_completed": len(selected_quest_ids),
+            "total_xp_earned": 0,
+            "unlocked_quests": [],
+            "message": f"All {len(selected_quest_ids)} selected quest(s) for '{service.get('title')}' are already unlocked on your account!"
+        })
 
     unlocked_now = []
     total_xp_earned = 0
+    last_err = ""
 
     for quest in targets:
         ach_id = quest["id"]
         ach_type = quest.get("achievementType", "STANDARD")
+        xp = int(quest.get("experiencePoints", 5000) or 5000)
         try:
+            try:
+                reveal_achievement(game_token, ach_id)
+            except Exception:
+                pass
+
             if ach_type == "INCREMENTAL" and quest.get("totalSteps"):
                 res = set_achievement_steps(game_token, ach_id, int(quest["totalSteps"]))
+                if not res or not res.get("ok"):
+                    res = unlock_achievement(game_token, ach_id)
             else:
                 res = unlock_achievement(game_token, ach_id)
-            if res.status_code == 200:
-                xp = int(quest.get("experiencePoints", 5000) or 5000)
+
+            if res and res.get("ok"):
                 total_xp_earned += xp
                 unlocked_now.append({
                     "id": ach_id,
-                    "name": quest.get("name"),
+                    "name": quest.get("name", ach_id),
                     "xp": xp,
                     "status": "UNLOCKED"
                 })
+            elif res and res.get("error"):
+                last_err = str(res.get("error"))
         except Exception as e:
+            last_err = str(e)
             print(f"[-] Error unlocking quest {ach_id}: {e}")
+
+        time.sleep(0.04)
+
+    if email:
+        USER_PROGRESS_CACHE.pop(email.lower(), None)
+
+    if len(unlocked_now) == 0 and last_err:
+        return jsonify({
+            "ok": False,
+            "error": f"Failed to unlock quests for {service.get('title')}: {last_err}"
+        }), 400
 
     return jsonify({
         "ok": True,
         "service_title": service.get("title"),
         "game_id": game_id,
-        "package": game.get("package"),
+        "package": app_package,
         "total_configured_quests": len(selected_quest_ids),
         "newly_unlocked_count": len(unlocked_now),
         "previously_completed": len(selected_quest_ids) - len(targets),
         "total_xp_earned": total_xp_earned,
         "unlocked_quests": unlocked_now,
-        "message": f"Successfully completed {len(unlocked_now)} quest(s) for '{service.get('title')}'!" if unlocked_now else "All configured quests are already 100% completed!"
+        "message": f"Successfully completed {len(unlocked_now)} quest(s) for '{service.get('title')}'!" if unlocked_now else "All configured quests are already completed!"
     })
 
 @app.route("/portal")
