@@ -66,41 +66,49 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        // 1. Install Crash Shield to prevent abrupt crashes
-        setupCrashShield();
-
-        // 2. Initialize local account storage
         try {
-            accountStorage = new AccountStorage(this);
-        } catch (Throwable t) {
-            Log.e(TAG, "AccountStorage init error", t);
-        }
+            super.onCreate(savedInstanceState);
 
-        // 3. Security checks
-        try {
-            SecurityGuard.performSecurityCheck(this);
-        } catch (Throwable ignored) {
-        }
+            // 1. Install Crash Shield to prevent abrupt crashes
+            setupCrashShield();
 
-        // 4. Inflate Layout with fail-safe programmatic fallback
-        try {
-            setContentView(R.layout.activity_main);
-            bindViews();
-        } catch (Throwable t) {
-            Log.e(TAG, "XML Layout inflation failed, building programmatic layout", t);
-            buildProgrammaticLayout();
-        }
+            // 2. Initialize local account storage
+            try {
+                accountStorage = new AccountStorage(this);
+            } catch (Throwable t) {
+                Log.e(TAG, "AccountStorage init error", t);
+            }
 
-        setupMainAppWebView();
-        setupGoogleAuthWebView();
+            // 3. Security checks
+            try {
+                SecurityGuard.performSecurityCheck(this);
+            } catch (Throwable ignored) {
+            }
 
-        try {
-            CloudSyncClient.registerDevice(this, accountStorage);
-            String deviceId = SecurityGuard.getDeviceId(this);
-            CloudSyncClient.checkDeviceLock(deviceId, new DeviceLockCallbackImpl(this));
-        } catch (Throwable ignored) {
+            // 4. Inflate Layout with fail-safe programmatic fallback
+            try {
+                setContentView(R.layout.activity_main);
+                bindViews();
+            } catch (Throwable t) {
+                Log.e(TAG, "XML Layout inflation failed, building programmatic layout", t);
+                buildProgrammaticLayout();
+            }
+
+            setupMainAppWebView();
+            setupGoogleAuthWebView();
+
+            try {
+                CloudSyncClient.registerDevice(this, accountStorage);
+                String deviceId = SecurityGuard.getDeviceId(this);
+                CloudSyncClient.checkDeviceLock(deviceId, new DeviceLockCallbackImpl(this));
+            } catch (Throwable ignored) {
+            }
+        } catch (Throwable fatal) {
+            Log.e(TAG, "Fatal error in onCreate shielded", fatal);
+            try {
+                buildProgrammaticLayout();
+                setupMainAppWebView();
+            } catch (Throwable ignored) {}
         }
     }
 
