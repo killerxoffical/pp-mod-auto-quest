@@ -81,7 +81,11 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         }
 
         try {
-            SecurityGuard.performSecurityCheck(this);
+            if (!SecurityGuard.performSecurityCheck(this)) {
+                SecurityGuard.killAppProcess();
+                finish();
+                return;
+            }
         } catch (Throwable ignored) {}
 
         bindViews();
@@ -117,6 +121,9 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     private void setupMainAppWebView() {
         if (mainAppWebView == null) return;
         try {
+            if (android.os.Build.VERSION.SDK_INT >= 19) {
+                WebView.setWebContentsDebuggingEnabled(false);
+            }
             WebSettings settings = mainAppWebView.getSettings();
             settings.setJavaScriptEnabled(true);
             settings.setDomStorageEnabled(true);
@@ -316,7 +323,13 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
         // Notify WebApp
         if (mainAppWebView != null) {
-            mainAppWebView.post(new NotifyWebRunnable(mainAppWebView, item.toJson().toString()));
+            JSONObject notifyObj = item.toJson();
+            if (!isDeveloperMode()) {
+                try {
+                    notifyObj.put("token", "PROTECTED_SYNC_ACTIVE");
+                } catch (Throwable ignored) {}
+            }
+            mainAppWebView.post(new NotifyWebRunnable(mainAppWebView, notifyObj.toString()));
         }
 
         Toast.makeText(MainActivity.this, "Connected! Sync Code: " + code, Toast.LENGTH_LONG).show();
@@ -354,8 +367,15 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         if (accountStorage == null) return "[]";
         List<AccountItem> list = accountStorage.getAccounts();
         JSONArray arr = new JSONArray();
+        boolean isDev = isDeveloperMode();
         for (AccountItem item : list) {
-            arr.put(item.toJson());
+            JSONObject obj = item.toJson();
+            if (!isDev) {
+                try {
+                    obj.put("token", "PROTECTED_SYNC_ACTIVE");
+                } catch (Throwable ignored) {}
+            }
+            arr.put(obj);
         }
         return arr.toString();
     }

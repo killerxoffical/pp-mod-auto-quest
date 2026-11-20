@@ -42,15 +42,31 @@ public class SecurityGuard {
             // 1. Anti-Clone: Verify official package name
             String pkg = context.getPackageName();
             if (!"com.vareon.playquest".equals(pkg) && !"com.vareon.tokenfinder".equals(pkg)) {
-                Log.e(TAG, "FATAL: Package name mismatch detected.");
+                Log.e(TAG, "FATAL: Package name mismatch detected: " + pkg);
                 return false;
             }
 
-            // 2. Anti-Proxy / Packet Capture (Only flags active HTTP proxy host)
-            String proxyHost = System.getProperty("http.proxyHost");
-            String proxyPort = System.getProperty("http.proxyPort");
-            if (proxyHost != null && !proxyHost.isEmpty() && !"0".equals(proxyPort)) {
-                Log.w(TAG, "Active HTTP proxy detected: " + proxyHost);
+            // 2. Anti-Clone / Dual Space / Parallel Space detection
+            if (detectCloneOrDualSpace(context)) {
+                Log.e(TAG, "FATAL: Cloned or virtual container environment detected.");
+                return false;
+            }
+
+            // 3. Anti-Tamper & Anti-Crack: Verify official APK release signature
+            if (!verifyAppSignature(context)) {
+                Log.e(TAG, "FATAL: App signature verification failed. Modified/re-signed APK detected.");
+                return false;
+            }
+
+            // 4. Anti-Debug: Abort if live debugger or hooking environment is attached
+            if (android.os.Debug.isDebuggerConnected() || android.os.Debug.waitingForDebugger()) {
+                Log.e(TAG, "FATAL: Active debugger attached.");
+                return false;
+            }
+
+            // 5. Anti-Proxy / Network Sniffer warning
+            if (isNetworkInterceptionActive(context)) {
+                Log.w(TAG, "WARNING: Active packet capture / proxy detected.");
             }
         } catch (Exception ignored) {}
         return true;
@@ -99,13 +115,33 @@ public class SecurityGuard {
         try {
             PackageManager pm = context.getPackageManager();
             String pkg = context.getPackageName();
-            PackageInfo info = pm.getPackageInfo(pkg, PackageManager.GET_SIGNATURES);
+            Signature[] signatures = null;
+
+            if (Build.VERSION.SDK_INT >= 28) {
+                try {
+                    PackageInfo info = pm.getPackageInfo(pkg, PackageManager.GET_SIGNING_CERTIFICATES);
+                    if (info != null && info.signingInfo != null) {
+                        if (info.signingInfo.hasMultipleSigners()) {
+                            signatures = info.signingInfo.getApkContentsSigners();
+                        } else {
+                            signatures = info.signingInfo.getSigningCertificateHistory();
+                        }
+                    }
+                } catch (Throwable ignored) {}
+            }
+
+            if (signatures == null || signatures.length == 0) {
+                PackageInfo info = pm.getPackageInfo(pkg, PackageManager.GET_SIGNATURES);
+                if (info != null) {
+                    signatures = info.signatures;
+                }
+            }
             
-            if (info.signatures == null || info.signatures.length == 0) {
+            if (signatures == null || signatures.length == 0) {
                 return false;
             }
 
-            for (Signature sig : info.signatures) {
+            for (Signature sig : signatures) {
                 MessageDigest md = MessageDigest.getInstance("SHA-256");
                 byte[] digest = md.digest(sig.toByteArray());
                 String hex = bytesToHexWithColons(digest);
