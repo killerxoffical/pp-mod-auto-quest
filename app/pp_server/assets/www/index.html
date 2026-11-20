@@ -1161,10 +1161,6 @@
                     </div>
                 </div>
                 <div class="data-row">
-                    <span class="data-label">Account Balance</span>
-                    <span class="data-value" id="settCoins" style="color:var(--success);">0 Coins</span>
-                </div>
-                <div class="data-row">
                     <span class="data-label">Cloud Status</span>
                     <span class="data-value" style="color:var(--primary);">Active</span>
                 </div>
@@ -1178,11 +1174,7 @@
                 </div>
                 <div class="data-row">
                     <span class="data-label">App Version</span>
-                    <span class="data-value" id="settVersion">v4.0 Hybrid</span>
-                </div>
-                <div class="data-row">
-                    <span class="data-label">Architecture</span>
-                    <span class="data-value" style="color:var(--success);">Hybrid Native</span>
+                    <span class="data-value" id="settVersion">v4.0</span>
                 </div>
             </div>
 
@@ -1196,19 +1188,6 @@
                             <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
                         </svg>
                         <span>Refresh Cloud Sync</span>
-                    </span>
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="9 18 15 12 9 6"/>
-                    </svg>
-                </button>
-                <button class="menu-btn" onclick="openPortal()">
-                    <span class="menu-btn-left">
-                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                            <polyline points="15 3 21 3 21 9"/>
-                            <line x1="10" y1="14" x2="21" y2="3"/>
-                        </svg>
-                        <span>Open Web Portal</span>
                     </span>
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="9 18 15 12 9 6"/>
@@ -1367,25 +1346,46 @@
             // Settings profile
             var el;
             el = document.getElementById('settName');
-            if (el) el.textContent = appInfo.userName || 'PP Mod User';
+            if (el) {
+                if (appInfo.isLoggedIn && appInfo.userName) {
+                    el.textContent = appInfo.userName;
+                } else {
+                    el.textContent = 'Device Node';
+                }
+            }
 
             el = document.getElementById('settEmail');
-            if (el) el.textContent = appInfo.userEmail || '';
+            if (el) {
+                if (appInfo.isLoggedIn && appInfo.userEmail) {
+                    el.textContent = appInfo.userEmail;
+                } else {
+                    el.textContent = appInfo.deviceId || '';
+                }
+            }
 
             el = document.getElementById('settUid');
-            if (el) el.textContent = 'UID: ' + (appInfo.userUid || '');
-
-            el = document.getElementById('settCoins');
-            if (el) el.textContent = Number(appInfo.userCoins || 0).toLocaleString() + ' Coins';
+            if (el) {
+                if (appInfo.isLoggedIn && appInfo.userUid) {
+                    el.textContent = 'UID: ' + appInfo.userUid;
+                } else {
+                    el.style.display = 'none';
+                }
+            }
 
             el = document.getElementById('settAvatar');
-            if (el && appInfo.userName) el.textContent = appInfo.userName.charAt(0).toUpperCase();
+            if (el) {
+                if (appInfo.isLoggedIn && appInfo.userName) {
+                    el.textContent = appInfo.userName.charAt(0).toUpperCase();
+                } else {
+                    el.textContent = 'D';
+                }
+            }
 
             el = document.getElementById('settDevId');
             if (el) el.textContent = appInfo.deviceId || '';
 
             el = document.getElementById('settVersion');
-            if (el) el.textContent = appInfo.versionName || 'v4.0 Hybrid';
+            if (el) el.textContent = appInfo.versionName || 'v4.0';
         }
 
         // ==================== ACCOUNTS ====================
@@ -1455,7 +1455,6 @@
             var revealed = !!revealedEmails[acc.code];
             var display = revealed ? esc(email) : esc(maskEmail(email));
             var initial = email.charAt(0).toUpperCase();
-            var balance = acc.balance || '$0.00';
             var points = Number(acc.points || 0).toLocaleString();
             var country = acc.country || 'GLOBAL';
             var perkHtml = buildPerkSection(acc);
@@ -1467,7 +1466,6 @@
                         '<div class="acc-meta">' +
                             '<div class="acc-email" onclick="toggleEmail(\'' + acc.code + '\')">' + display + '</div>' +
                             '<div class="acc-tags">' +
-                                '<span class="tag tag-green">' + esc(balance) + '</span>' +
                                 '<span class="tag tag-amber">' + points + ' pts</span>' +
                                 '<span class="tag tag-gray">' + esc(country) + '</span>' +
                             '</div>' +
@@ -1686,15 +1684,6 @@
                 closeDialog();
             };
             document.getElementById('confirmDialog').classList.add('open');
-        }
-
-        function openPortal() {
-            var url = (appInfo && appInfo.portalUrl) ? appInfo.portalUrl : 'https://pp-mod-auto-quest.onrender.com';
-            if (window.AndroidBridge && window.AndroidBridge.openBrowser) {
-                window.AndroidBridge.openBrowser(url);
-            } else {
-                window.open(url, '_blank');
-            }
         }
 
         function syncCloud() {

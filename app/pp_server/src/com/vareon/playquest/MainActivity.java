@@ -39,7 +39,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     private static final String TAG = "MainActivity";
     public static final String SETUP_URL = "https://accounts.google.com/EmbeddedSetup";
     public static final int APP_VERSION_CODE = 4;
-    public static final String APP_VERSION_NAME = "v4.0 Hybrid";
+    public static final String APP_VERSION_NAME = "v4.0";
 
     // Main App Hybrid Webview
     private WebView mainAppWebView;
@@ -369,7 +369,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 }
                 obj.put("userUid", uid);
                 String email = accountStorage.getUserEmail();
-                obj.put("userEmail", (email == null || email.trim().isEmpty()) ? "user@ppmod.cloud" : email);
+                obj.put("userEmail", (email == null || email.trim().isEmpty()) ? "" : email);
                 String name = accountStorage.getUserName();
                 obj.put("userName", (name == null || name.trim().isEmpty()) ? "PP Mod User" : name);
                 obj.put("userAvatar", accountStorage.getUserAvatar());

@@ -59,7 +59,7 @@ public class AccountStorage {
     }
 
     public String getUserEmail() {
-        return prefs.getString(KEY_USER_EMAIL, "guest@ppmod.cloud");
+        return prefs.getString(KEY_USER_EMAIL, "");
     }
 
     public String getUserName() {
