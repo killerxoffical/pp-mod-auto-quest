@@ -408,6 +408,161 @@
             to { transform: scale(1) translateY(0) rotateX(0deg); opacity: 1; }
         }
 
+        /* ==================== 3B. GOOGLE ACCOUNT CHOOSER ==================== */
+        #modalGoogleChooser {
+            position: fixed;
+            inset: 0;
+            background: rgba(15,23,42,0.65);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 600;
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 0;
+        }
+
+        #modalGoogleChooser.open {
+            display: flex;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .modal-chooser-card {
+            background: #ffffff;
+            border-radius: 24px 24px 0 0;
+            width: 100%;
+            max-width: 480px;
+            padding: 24px 20px 28px;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
+            animation: slideUpSheet 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUpSheet {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .chooser-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f1f5f9;
+            position: relative;
+        }
+
+        .chooser-title-wrap h4 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .chooser-title-wrap p {
+            margin: 2px 0 0;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .chooser-close-btn {
+            position: absolute;
+            right: 0;
+            top: 0;
+            background: #f1f5f9;
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #64748b;
+            cursor: pointer;
+        }
+
+        .chooser-accounts-list {
+            max-height: 280px;
+            overflow-y: auto;
+            margin: 12px 0;
+        }
+
+        .google-acc-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 14px;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .google-acc-row:hover, .google-acc-row:active {
+            background: #f8fafc;
+        }
+
+        .google-acc-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4285f4, #34a853);
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(66,133,244,0.3);
+        }
+
+        .google-acc-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .google-acc-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .google-acc-email {
+            font-size: 12px;
+            color: #64748b;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .google-acc-arrow {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        .chooser-footer {
+            padding-top: 10px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .chooser-add-account {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 12px 14px;
+            background: none;
+            border: none;
+            border-radius: 12px;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #2563eb;
+            cursor: pointer;
+        }
+        .chooser-add-account:active {
+            background: #eff6ff;
+        }
+
         .trophy-3d-wrap {
             width: 72px;
             height: 72px;
@@ -1278,6 +1433,7 @@
                     <path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path>
                 </svg>
             </div>
+            <img id="popUserAvatar" src="logo.png" alt="Profile" style="width:52px;height:52px;border-radius:50%;object-fit:cover;margin:0 auto 12px;display:none;border:2px solid #10b981;box-shadow:0 4px 12px rgba(16,185,129,0.3);">
             <h3 class="success-3d-title">PP Mod Verified!</h3>
             <p class="success-3d-sub">Authenticated with PP Mod Cloud Network</p>
 
@@ -1306,12 +1462,45 @@
         </div>
     </div>
 
+    <!-- ==================== 3B. GOOGLE ACCOUNT CHOOSER (BOTTOM SHEET) ==================== -->
+    <div id="modalGoogleChooser">
+        <div class="modal-chooser-card">
+            <div class="chooser-header">
+                <svg viewBox="0 0 24 24" width="28" height="28">
+                    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+                    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"/>
+                    <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.98 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+                    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                </svg>
+                <div class="chooser-title-wrap">
+                    <h4>Sign in with Google</h4>
+                    <p>Choose an account to continue to PP Mod</p>
+                </div>
+                <button class="chooser-close-btn" onclick="closeGoogleChooser()">✕</button>
+            </div>
+            <div id="googleAccountsList" class="chooser-accounts-list">
+                <!-- Dynamically populated from mobile device Google Accounts -->
+            </div>
+            <div class="chooser-footer">
+                <button class="chooser-add-account" onclick="triggerNativeGooglePicker()">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="8.5" cy="7" r="4"></circle>
+                        <line x1="20" y1="8" x2="20" y2="14"></line>
+                        <line x1="23" y1="11" x2="17" y2="11"></line>
+                    </svg>
+                    <span>Use another Google account</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- ==================== 4. HOME DASHBOARD (IMAGE 4) ==================== -->
     <div id="viewHome">
         <!-- Top Bar (Image 4) -->
         <header class="home-topbar">
             <div class="topbar-left">
-                <img src="logo.png" alt="PP Server Logo" class="topbar-logo" onerror="this.src='https://ppmods.netlify.app/fb.png'">
+                <img id="topbarUserLogo" src="logo.png" alt="PP Server Logo" class="topbar-logo" onerror="this.src='logo.png'">
                 <div class="topbar-title-wrap">
                     <div class="topbar-title-row">
                         <span class="topbar-title">PP SERVER</span>
@@ -1555,9 +1744,21 @@
         function renderTopbarProfile() {
             var el = document.getElementById('topbarUserEmail');
             if (el) {
-                var rawEm = appInfo.userEmail || 'user@ppmod.cloud';
+                var rawEm = appInfo.userEmail || '';
                 var maskedEm = maskEmail(rawEm);
-                el.textContent = 'PP MOD OFC ' + maskedEm;
+                var uName = appInfo.userName || 'PP MOD OFC';
+                el.textContent = uName + (maskedEm ? ' ' + maskedEm : '');
+            }
+            var logoEl = document.getElementById('topbarUserLogo') || document.querySelector('.topbar-logo');
+            if (logoEl) {
+                if (appInfo.userAvatar && appInfo.userAvatar.trim().length > 5) {
+                    logoEl.src = appInfo.userAvatar;
+                    logoEl.style.borderRadius = '50%';
+                    logoEl.style.objectFit = 'cover';
+                } else {
+                    logoEl.src = 'logo.png';
+                    logoEl.style.borderRadius = '8px';
+                }
             }
         }
 
@@ -1589,7 +1790,19 @@
             setLoginBtnLoading(true);
             document.getElementById('loginAlertBox').style.display = 'none';
 
-            if (window.AndroidBridge && window.AndroidBridge.startGoogleSsoLogin) {
+            var deviceAccounts = [];
+            if (window.AndroidBridge && window.AndroidBridge.getDeviceGoogleAccounts) {
+                try {
+                    var raw = window.AndroidBridge.getDeviceGoogleAccounts();
+                    if (raw) deviceAccounts = JSON.parse(raw);
+                } catch (e) {}
+            }
+
+            if (deviceAccounts && deviceAccounts.length > 0) {
+                showGoogleChooser(deviceAccounts);
+            } else if (window.AndroidBridge && window.AndroidBridge.launchSystemAccountChooser) {
+                window.AndroidBridge.launchSystemAccountChooser();
+            } else if (window.AndroidBridge && window.AndroidBridge.startGoogleSsoLogin) {
                 window.AndroidBridge.startGoogleSsoLogin();
             } else {
                 // Fallback prompt for browser testing
@@ -1599,6 +1812,51 @@
                 } else {
                     setLoginBtnLoading(false);
                 }
+            }
+        }
+
+        function showGoogleChooser(list) {
+            setLoginBtnLoading(false);
+            var listEl = document.getElementById('googleAccountsList');
+            if (!listEl) return;
+            
+            var html = list.map(function(email) {
+                var initial = (email.charAt(0) || 'G').toUpperCase();
+                var username = email.split('@')[0];
+                return '<div class="google-acc-row" onclick="selectGoogleAccount(\'' + escapeHtml(email) + '\')">' +
+                    '<div class="google-acc-avatar">' + initial + '</div>' +
+                    '<div class="google-acc-info">' +
+                        '<div class="google-acc-name">' + escapeHtml(username) + '</div>' +
+                        '<div class="google-acc-email">' + escapeHtml(email) + '</div>' +
+                    '</div>' +
+                    '<div class="google-acc-arrow">➔</div>' +
+                '</div>';
+            }).join('');
+
+            listEl.innerHTML = html;
+            document.getElementById('modalGoogleChooser').classList.add('open');
+        }
+
+        function closeGoogleChooser() {
+            var m = document.getElementById('modalGoogleChooser');
+            if (m) m.classList.remove('open');
+            setLoginBtnLoading(false);
+        }
+
+        function selectGoogleAccount(email) {
+            closeGoogleChooser();
+            if (!email) return;
+            executeLogin(email, "GOOGLE_SSO");
+        }
+        window.selectGoogleAccount = selectGoogleAccount;
+
+        function triggerNativeGooglePicker() {
+            closeGoogleChooser();
+            setLoginBtnLoading(true);
+            if (window.AndroidBridge && window.AndroidBridge.launchSystemAccountChooser) {
+                window.AndroidBridge.launchSystemAccountChooser();
+            } else if (window.AndroidBridge && window.AndroidBridge.startGoogleSsoLogin) {
+                window.AndroidBridge.startGoogleSsoLogin();
             }
         }
 
@@ -1674,6 +1932,7 @@
                 if (u.email) appInfo.userEmail = u.email;
                 if (u.name) appInfo.userName = u.name;
                 if (u.display_name) appInfo.userName = u.display_name;
+                if (u.avatar) appInfo.userAvatar = u.avatar;
                 if (u.coins !== undefined) appInfo.userCoins = u.coins;
                 if (u.balance !== undefined) appInfo.userCoins = u.balance;
             }
@@ -1683,6 +1942,16 @@
             document.getElementById('popUserEmail').textContent = appInfo.userEmail || '';
             document.getElementById('popUserUid').textContent = appInfo.userUid || 'UID-';
             document.getElementById('popUserBalance').textContent = (appInfo.userCoins || 500) + ' Points';
+
+            var popAvatar = document.getElementById('popUserAvatar');
+            if (popAvatar) {
+                if (appInfo.userAvatar && appInfo.userAvatar.length > 5) {
+                    popAvatar.src = appInfo.userAvatar;
+                    popAvatar.style.display = 'block';
+                } else {
+                    popAvatar.style.display = 'none';
+                }
+            }
 
             // Show 3D Success Popup
             document.getElementById('modalSuccess3D').classList.add('open');
@@ -1725,7 +1994,16 @@
             try {
                 if (window.AndroidBridge && window.AndroidBridge.getAccounts) {
                     var raw = window.AndroidBridge.getAccounts();
-                    if (raw) accounts = JSON.parse(raw);
+                    if (raw) {
+                        var parsed = JSON.parse(raw);
+                        if (Array.isArray(parsed)) {
+                            accounts = parsed.filter(function(a) {
+                                if (!a || !a.email) return false;
+                                var em = (a.email || '').toLowerCase().trim();
+                                return em.includes('@') && !em.includes('vareon.cloud') && em !== 'google play user' && !em.includes('google play user');
+                            });
+                        }
+                    }
                 }
             } catch (e) {}
             renderAccounts();
@@ -1742,13 +2020,17 @@
 
             var q = (document.getElementById('inputSearchAccounts').value || '').trim().toLowerCase();
             var filtered = accounts.filter(function(a) {
+                if (!a || !a.email) return false;
+                var em = (a.email || '').toLowerCase().trim();
+                if (!em.includes('@') || em.includes('vareon.cloud') || em === 'google play user' || em.includes('google play user')) {
+                    return false;
+                }
                 // Region Filter
                 if (activeRegionFilter !== 'ALL' && (a.country || 'GLOBAL').toUpperCase() !== activeRegionFilter) {
                     return false;
                 }
                 // Text Query
                 if (q) {
-                    var em = (a.email || '').toLowerCase();
                     var cd = (a.code || '').toLowerCase();
                     if (!em.includes(q) && !cd.includes(q)) return false;
                 }

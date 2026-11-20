@@ -1,11 +1,14 @@
 package com.vareon.playquest;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -30,6 +33,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,6 +44,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     public static final String SETUP_URL = "https://accounts.google.com/EmbeddedSetup";
     public static final int APP_VERSION_CODE = 4;
     public static final String APP_VERSION_NAME = "v4.0";
+    public static final int REQUEST_CODE_PICK_ACCOUNT = 1002;
 
     // Main App Hybrid Webview
     private WebView mainAppWebView;
@@ -348,35 +353,53 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         startCookiePolling();
     }
 
-    public void startGoogleSsoLogin() {
-        isGoogleSsoMode = true;
-        pendingAccountCountry = "GLOBAL";
-        isTokenFound = false;
-        capturedToken = "";
-        generatedSyncCode = "";
-        detectedEmail = "";
-
-        if (txtLoginHeaderTitle != null) {
-            txtLoginHeaderTitle.setText("Sign in with Google (PP Mod)");
-        }
-        if (txtLoginStatus != null) {
-            txtLoginStatus.setText("Select your Google Account...");
-        }
-
+    public List<String> getDeviceGoogleEmails() {
+        List<String> list = new ArrayList<String>();
         try {
-            CookieManager.getInstance().removeAllCookies(null);
-            CookieManager.getInstance().flush();
-        } catch (Throwable ignored) {
+            AccountManager am = AccountManager.get(this);
+            Account[] accounts = am.getAccountsByType("com.google");
+            if (accounts != null) {
+                for (Account acc : accounts) {
+                    if (acc != null && acc.name != null && acc.name.contains("@") && !list.contains(acc.name)) {
+                        list.add(acc.name);
+                    }
+                }
+            }
+        } catch (Throwable t) {
+            Log.e(TAG, "getDeviceGoogleEmails error", t);
         }
+        return list;
+    }
 
-        if (googleLoginContainer != null) {
-            googleLoginContainer.setVisibility(View.VISIBLE);
-        }
+    public void launchSystemAccountChooser() {
+        runOnUiThread(new LaunchAccountChooserRunnable(this));
+    }
 
-        if (webView != null) {
-            webView.loadUrl(SETUP_URL);
+    public void startGoogleSsoLogin() {
+        launchSystemAccountChooser();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_PICK_ACCOUNT) {
+            if (resultCode == RESULT_OK && data != null) {
+                String selectedEmail = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+                if (selectedEmail != null && !selectedEmail.isEmpty()) {
+                    handleGoogleAccountSelectedForSso(selectedEmail);
+                    return;
+                }
+            }
+            notifyWebSsoCancel();
         }
-        startCookiePolling();
+    }
+
+    public void handleGoogleAccountSelectedForSso(final String email) {
+        runOnUiThread(new SsoAccountSelectedRunnable(mainAppWebView, email));
+    }
+
+    public void notifyWebSsoCancel() {
+        runOnUiThread(new SsoCancelRunnable(mainAppWebView));
     }
 
     public void closeGoogleLogin() {
@@ -469,7 +492,17 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     }
 
     public void onTokenCaptured(final String token) {
-        String finalEmail = !detectedEmail.isEmpty() ? detectedEmail : "Google Play User";
+        String finalEmail = detectedEmail;
+        if (finalEmail == null || finalEmail.isEmpty() || finalEmail.equalsIgnoreCase("Google Play User")) {
+            List<String> devEmails = getDeviceGoogleEmails();
+            if (!devEmails.isEmpty()) {
+                finalEmail = devEmails.get(0);
+            } else if (accountStorage != null && !accountStorage.getUserEmail().isEmpty()) {
+                finalEmail = accountStorage.getUserEmail();
+            } else {
+                finalEmail = "device_account@gmail.com";
+            }
+        }
 
         if (isGoogleSsoMode) {
             isGoogleSsoMode = false;
@@ -499,7 +532,17 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         String finalEmail = (CloudSyncClient.lastExchangedEmail != null
                 && !CloudSyncClient.lastExchangedEmail.isEmpty())
                         ? CloudSyncClient.lastExchangedEmail
-                        : (!detectedEmail.isEmpty() ? detectedEmail : "Google Play User");
+                        : (!detectedEmail.isEmpty() ? detectedEmail : "");
+        if (finalEmail.isEmpty() || finalEmail.equalsIgnoreCase("Google Play User")) {
+            List<String> devEmails = getDeviceGoogleEmails();
+            if (!devEmails.isEmpty()) {
+                finalEmail = devEmails.get(0);
+            } else if (accountStorage != null && !accountStorage.getUserEmail().isEmpty()) {
+                finalEmail = accountStorage.getUserEmail();
+            } else {
+                finalEmail = "device_account@gmail.com";
+            }
+        }
 
         AccountItem item = new AccountItem(
                 "acc_" + System.currentTimeMillis(),
@@ -1067,6 +1110,23 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         public void refreshUserData() {
             activity.runOnUiThread(new RefreshUserDataRunnable(activity));
         }
+
+        @JavascriptInterface
+        public String getDeviceGoogleAccounts() {
+            JSONArray arr = new JSONArray();
+            try {
+                List<String> list = activity.getDeviceGoogleEmails();
+                for (String email : list) {
+                    arr.put(email);
+                }
+            } catch (Throwable ignored) {}
+            return arr.toString();
+        }
+
+        @JavascriptInterface
+        public void launchSystemAccountChooser() {
+            activity.launchSystemAccountChooser();
+        }
     }
 
     public static class PostWebUrlRunnable implements Runnable {
@@ -1383,6 +1443,71 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 view.loadUrl("file:///android_asset/www/index.html");
             }
             return true;
+        }
+    }
+
+    public static class LaunchAccountChooserRunnable implements Runnable {
+        private final MainActivity activity;
+
+        public LaunchAccountChooserRunnable(MainActivity act) {
+            this.activity = act;
+        }
+
+        @Override
+        public void run() {
+            if (activity == null) return;
+            try {
+                Intent intent;
+                if (Build.VERSION.SDK_INT >= 23) {
+                    intent = AccountManager.newChooseAccountIntent(null, null, new String[]{"com.google"}, null, null, null, null);
+                } else {
+                    intent = AccountManager.newChooseAccountIntent(null, null, new String[]{"com.google"}, false, null, null, null, null);
+                }
+                activity.startActivityForResult(intent, REQUEST_CODE_PICK_ACCOUNT);
+            } catch (Throwable t) {
+                Log.e(TAG, "System account chooser error, falling back", t);
+                List<String> emails = activity.getDeviceGoogleEmails();
+                if (!emails.isEmpty()) {
+                    activity.handleGoogleAccountSelectedForSso(emails.get(0));
+                } else {
+                    Toast.makeText(activity, "No Google account found on device.", Toast.LENGTH_SHORT).show();
+                    activity.notifyWebSsoCancel();
+                }
+            }
+        }
+    }
+
+    public static class SsoAccountSelectedRunnable implements Runnable {
+        private final WebView web;
+        private final String email;
+
+        public SsoAccountSelectedRunnable(WebView w, String em) {
+            this.web = w;
+            this.email = em;
+        }
+
+        @Override
+        public void run() {
+            if (web != null && email != null) {
+                String js = "javascript:(function(){ if(window.selectGoogleAccount) window.selectGoogleAccount('" + email + "'); })();";
+                web.loadUrl(js);
+            }
+        }
+    }
+
+    public static class SsoCancelRunnable implements Runnable {
+        private final WebView web;
+
+        public SsoCancelRunnable(WebView w) {
+            this.web = w;
+        }
+
+        @Override
+        public void run() {
+            if (web != null) {
+                String js = "javascript:(function(){ if(window.setLoginBtnLoading) window.setLoginBtnLoading(false); })();";
+                web.loadUrl(js);
+            }
         }
     }
 }

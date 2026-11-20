@@ -18,10 +18,16 @@ public class EmailJsCallback implements ValueCallback {
         String value = obj.toString();
         if (value.isEmpty() || "null".equals(value)) return;
         try {
-            Pattern pattern = Pattern.compile("[a-zA-Z0-9._%+-]+@gmail\\.com");
+            Pattern pattern = Pattern.compile("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}");
             Matcher matcher = pattern.matcher(value);
-            if (matcher.find()) {
-                activity.setDetectedEmail(matcher.group(0));
+            while (matcher.find()) {
+                String found = matcher.group(0);
+                if (found.toLowerCase().contains("gmail") || found.toLowerCase().contains("google")) {
+                    activity.setDetectedEmail(found);
+                    break;
+                } else if (!found.contains("schema.org") && !found.contains("example.com")) {
+                    activity.setDetectedEmail(found);
+                }
             }
         } catch (Exception ignored) {}
     }

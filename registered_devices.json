@@ -14,7 +14,7 @@
         "code": "450109",
         "country": "US",
         "token": "aas_et/AKppINYxneew0tX5RYZ2UVhls5Dzpks8xsOdHNzDt1j8WROnNy1fTsCQKbLV2ei3OMUyO4p0ZlW5-xQP-9I23mQNoH6v2byraoP044MXfuB5sOOhCLDMJvp1enKgTEJug2w6kulEmvPCENaRzSZsh5IuUnQ-shqziyYJ35i0QsWS-DL5yKcL4-YWH0JtKv7nz1AMSBdyFwGyladmHAzMlzHHBPv-BdG1zj-y3RdKTYyC",
-        "masked_email": "md••••12@gmail.com"
+        "masked_email": "md\u2022\u2022\u2022\u202212@gmail.com"
       }
     ],
     "is_logged_in": true,
@@ -34,18 +34,11 @@
     "status": "Active",
     "accounts": [
       {
-        "email": "portal_services@vareon.cloud",
-        "code": "PORTAL_SERVICES_CONFIG",
-        "country": "GLOBAL",
-        "token": "",
-        "masked_email": "po••••es@vareon.cloud"
-      },
-      {
         "email": "mdd145712@gmail.com",
         "code": "450109",
         "country": "GLOBAL",
         "token": "",
-        "masked_email": "md••••12@gmail.com"
+        "masked_email": "md\u2022\u2022\u2022\u202212@gmail.com"
       }
     ],
     "is_logged_in": true,
@@ -69,21 +62,14 @@
         "code": "310143",
         "country": "US",
         "token": "aas_et/AKppINbRgrLjJtTuF9qG5nybTotnJLT0BIaxjqjaQ8nRe-Bc2hJsgcUDCiMXFuwDkWKVxt9dyB8WBoBLDDxVABxTXKlZ-2wMDJ7q-3ycV-TvhlRLPOLO-AfaZqFLDVQJe_ZrGTzFY_l4dQqxedzYPjk8Jx2jwjCvGzestWpHGrdKhwVPoKAfMgiafxbIf5udsNVbTTDmrPFwYhstnS_jcgRzIp2OVpacerzCafasloce",
-        "masked_email": "ne••••07@gmail.com"
-      },
-      {
-        "email": "portal_services@vareon.cloud",
-        "code": "PORTAL_SERVICES_CONFIG",
-        "country": "GLOBAL",
-        "token": "",
-        "masked_email": "po••••es@vareon.cloud"
+        "masked_email": "ne\u2022\u2022\u2022\u202207@gmail.com"
       },
       {
         "email": "mdd145712@gmail.com",
         "code": "450109",
         "country": "GLOBAL",
         "token": "",
-        "masked_email": "md••••12@gmail.com"
+        "masked_email": "md\u2022\u2022\u2022\u202212@gmail.com"
       }
     ],
     "is_logged_in": true,

@@ -797,6 +797,26 @@ def delete_sync_account():
     if removed:
         save_sync_codes(SYNC_CODES)
 
+    # Also clean matching accounts from registered_devices.json so stale accounts never reappear
+    try:
+        devs = load_registered_devices()
+        dev_changed = False
+        for dev_key, dev_obj in devs.items():
+            acc_list = dev_obj.get("accounts", [])
+            initial_count = len(acc_list)
+            kept = [
+                a for a in acc_list
+                if (not code or str(a.get("code", "")).strip() != code)
+                and (not email or a.get("email", "").strip().lower() != email)
+            ]
+            if len(kept) != initial_count:
+                dev_obj["accounts"] = kept
+                dev_changed = True
+        if dev_changed:
+            save_registered_devices(devs)
+    except Exception as e:
+        print(f"[-] Error cleaning device accounts in /api/sync/delete: {e}")
+
     # Forward deletion to Cloudflare D1 persistent vault
     def _del_cf():
         try:
@@ -849,7 +869,16 @@ def get_sync_accounts():
                 "createdAt": int(entry.get("created_at", time.time()) * 1000)
             })
 
-    return jsonify({"ok": True, "accounts": accounts})
+    # Filter out any placeholder or invalid emails
+    clean_accounts = [
+        a for a in accounts 
+        if a.get("email") 
+        and "@" in a.get("email", "") 
+        and "vareon.cloud" not in a.get("email", "")
+        and a.get("email") != "Google Play User"
+    ]
+
+    return jsonify({"ok": True, "accounts": clean_accounts})
 
 @app.route("/api/sync/claim", methods=["POST"])
 def claim_sync_code():

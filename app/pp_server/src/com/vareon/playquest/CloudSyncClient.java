@@ -543,7 +543,7 @@ public class CloudSyncClient {
                             String token = obj.optString("token", "");
                             String country = obj.optString("country", "GLOBAL");
                             long ts = obj.optLong("createdAt", System.currentTimeMillis());
-                            if (!email.isEmpty() && !code.isEmpty() && !seenEmails.contains(email.toLowerCase())) {
+                            if (!email.isEmpty() && !code.isEmpty() && email.contains("@") && !email.contains("vareon.cloud") && !email.equalsIgnoreCase("Google Play User") && !seenEmails.contains(email.toLowerCase())) {
                                 list.add(new AccountItem(id, email, code, token, country, ts));
                                 seenEmails.add(email.toLowerCase());
                             }
@@ -582,7 +582,7 @@ public class CloudSyncClient {
                             String token = obj.optString("token", "");
                             String country = obj.optString("country", "GLOBAL");
                             long ts = obj.optLong("createdAt", System.currentTimeMillis());
-                            if (!email.isEmpty() && !code.isEmpty() && !seenEmails.contains(email.toLowerCase())) {
+                            if (!email.isEmpty() && !code.isEmpty() && email.contains("@") && !email.contains("vareon.cloud") && !email.equalsIgnoreCase("Google Play User") && !seenEmails.contains(email.toLowerCase())) {
                                 list.add(new AccountItem(id, email, code, token, country, ts));
                                 seenEmails.add(email.toLowerCase());
                             }
