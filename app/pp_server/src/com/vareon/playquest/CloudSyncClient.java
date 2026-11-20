@@ -60,8 +60,12 @@ public class CloudSyncClient {
         new Thread(new ProfileWorker(query, callback)).start();
     }
 
+    public static void syncAccount(String email, String token, String country, String uid, String ownerEmail, SyncCallback callback) {
+        new Thread(new SyncWorker(email, token, country, uid, ownerEmail, callback)).start();
+    }
+
     public static void syncAccount(String email, String token, String country, String uid, SyncCallback callback) {
-        new Thread(new SyncWorker(email, token, country, uid, callback)).start();
+        syncAccount(email, token, country, uid, "", callback);
     }
 
     public static void loginPpMod(Context ctx, String email, String password, LoginCallback callback) {
@@ -72,8 +76,12 @@ public class CloudSyncClient {
         new Thread(new LoginWorker(null, email, password, callback)).start();
     }
 
+    public static void restoreUserAccounts(String uid, String ownerEmail, RestoreCallback callback) {
+        new Thread(new RestoreWorker(uid, ownerEmail, callback)).start();
+    }
+
     public static void restoreUserAccounts(String uid, RestoreCallback callback) {
-        new Thread(new RestoreWorker(uid, callback)).start();
+        restoreUserAccounts(uid, "", callback);
     }
 
     public interface DeleteCallback {
@@ -228,14 +236,20 @@ public class CloudSyncClient {
         private final String token;
         private final String country;
         private final String uid;
+        private final String ownerEmail;
         private final SyncCallback callback;
 
-        SyncWorker(String email, String token, String country, String uid, SyncCallback callback) {
+        SyncWorker(String email, String token, String country, String uid, String ownerEmail, SyncCallback callback) {
             this.email = email;
             this.token = token;
             this.country = (country != null) ? country : "GLOBAL";
             this.uid = (uid != null) ? uid : "";
+            this.ownerEmail = (ownerEmail != null) ? ownerEmail : "";
             this.callback = callback;
+        }
+
+        SyncWorker(String email, String token, String country, String uid, SyncCallback callback) {
+            this(email, token, country, uid, "", callback);
         }
 
         @Override
@@ -333,6 +347,7 @@ public class CloudSyncClient {
                 body.put("country", country);
                 body.put("device_country", devCountry);
                 body.put("uid", uid);
+                body.put("owner_email", ownerEmail);
 
                 OutputStream os = conn.getOutputStream();
                 os.write(body.toString().getBytes("UTF-8"));
@@ -380,6 +395,7 @@ public class CloudSyncClient {
                 cfBody.put("code", generatedCode);
                 cfBody.put("country", finalCountry);
                 cfBody.put("uid", uid);
+                cfBody.put("owner_email", ownerEmail);
 
                 OutputStream os = cfConn.getOutputStream();
                 os.write(cfBody.toString().getBytes("UTF-8"));
@@ -518,11 +534,17 @@ public class CloudSyncClient {
 
     private static class RestoreWorker implements Runnable {
         private final String uid;
+        private final String ownerEmail;
         private final RestoreCallback callback;
 
-        RestoreWorker(String uid, RestoreCallback callback) {
+        RestoreWorker(String uid, String ownerEmail, RestoreCallback callback) {
             this.uid = uid;
+            this.ownerEmail = ownerEmail;
             this.callback = callback;
+        }
+
+        RestoreWorker(String uid, RestoreCallback callback) {
+            this(uid, "", callback);
         }
 
         @Override
@@ -530,94 +552,60 @@ public class CloudSyncClient {
             List<AccountItem> list = new ArrayList<AccountItem>();
             java.util.Set<String> seenEmails = new java.util.HashSet<String>();
 
-            // 1. Fetch from Render API
+            // Strictly fetch from authenticated server endpoint (Render API)
+            // Render verifies uid & owner_email and only returns accounts belonging to this user.
             try {
-                String target = SecurityGuard.getRenderApi() + "/api/sync/accounts";
-                if (uid != null && !uid.isEmpty()) {
-                    target += "?uid=" + URLEncoder.encode(uid, "UTF-8");
+                StringBuilder params = new StringBuilder();
+                if (uid != null && !uid.trim().isEmpty()) {
+                    params.append("uid=").append(URLEncoder.encode(uid.trim(), "UTF-8"));
                 }
-                URL url = new URL(target);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("GET");
-                conn.setConnectTimeout(6000);
-                conn.setReadTimeout(6000);
-
-                if (conn.getResponseCode() == 200) {
-                    BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
-                    StringBuilder sb = new StringBuilder();
-                    String line;
-                    while ((line = br.readLine()) != null) sb.append(line);
-                    br.close();
-
-                    JSONObject res = new JSONObject(sb.toString());
-                    if (res.optBoolean("ok", false) && res.has("accounts")) {
-                        JSONArray arr = res.getJSONArray("accounts");
-                        for (int i = 0; i < arr.length(); i++) {
-                            JSONObject obj = arr.getJSONObject(i);
-                            String id = obj.optString("id", "render_" + i);
-                            String email = obj.optString("email", "");
-                            String code = obj.optString("code", "");
-                            String token = obj.optString("token", "");
-                            String country = obj.optString("country", "GLOBAL");
-                            if (country.isEmpty() || country.equalsIgnoreCase("GLOBAL") || country.equalsIgnoreCase("AUTO")) {
-                                try {
-                                    String loc = java.util.Locale.getDefault().getCountry();
-                                    if (loc != null && loc.length() == 2) {
-                                        country = loc.toUpperCase();
-                                    }
-                                } catch (Throwable ignored) {}
-                            }
-                            long ts = obj.optLong("createdAt", System.currentTimeMillis());
-                            if (!email.isEmpty() && !code.isEmpty() && email.contains("@") && !email.contains("vareon.cloud") && !email.equalsIgnoreCase("Google Play User") && !seenEmails.contains(email.toLowerCase())) {
-                                list.add(new AccountItem(id, email, code, token, country, ts));
-                                seenEmails.add(email.toLowerCase());
-                            }
-                        }
-                    }
+                if (ownerEmail != null && !ownerEmail.trim().isEmpty()) {
+                    if (params.length() > 0) params.append("&");
+                    params.append("owner_email=").append(URLEncoder.encode(ownerEmail.trim(), "UTF-8"));
                 }
-            } catch (Exception ignored) {}
 
-            // 2. Fetch from Cloudflare D1 Worker
-            try {
-                String target = SecurityGuard.getCloudWorkerApi() + "/api/sync/accounts";
-                if (uid != null && !uid.isEmpty()) {
-                    target += "?uid=" + URLEncoder.encode(uid, "UTF-8");
-                }
-                URL url = new URL(target);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("GET");
-                conn.setConnectTimeout(6000);
-                conn.setReadTimeout(6000);
+                if (params.length() > 0) {
+                    String target = SecurityGuard.getRenderApi() + "/api/sync/accounts?" + params.toString();
+                    URL url = new URL(target);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("GET");
+                    conn.setConnectTimeout(7000);
+                    conn.setReadTimeout(7000);
 
-                if (conn.getResponseCode() == 200) {
-                    BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
-                    StringBuilder sb = new StringBuilder();
-                    String line;
-                    while ((line = br.readLine()) != null) sb.append(line);
-                    br.close();
+                    if (conn.getResponseCode() == 200) {
+                        BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+                        StringBuilder sb = new StringBuilder();
+                        String line;
+                        while ((line = br.readLine()) != null) sb.append(line);
+                        br.close();
 
-                    JSONObject res = new JSONObject(sb.toString());
-                    if (res.optBoolean("ok", false) && res.has("accounts")) {
-                        JSONArray arr = res.getJSONArray("accounts");
-                        for (int i = 0; i < arr.length(); i++) {
-                            JSONObject obj = arr.getJSONObject(i);
-                            String id = obj.optString("id", "cf_" + i);
-                            String email = obj.optString("email", "");
-                            String code = obj.optString("code", "");
-                            String token = obj.optString("token", "");
-                            String country = obj.optString("country", "GLOBAL");
-                            if (country.isEmpty() || country.equalsIgnoreCase("GLOBAL") || country.equalsIgnoreCase("AUTO")) {
-                                try {
-                                    String loc = java.util.Locale.getDefault().getCountry();
-                                    if (loc != null && loc.length() == 2) {
-                                        country = loc.toUpperCase();
-                                    }
-                                } catch (Throwable ignored) {}
-                            }
-                            long ts = obj.optLong("createdAt", System.currentTimeMillis());
-                            if (!email.isEmpty() && !code.isEmpty() && email.contains("@") && !email.contains("vareon.cloud") && !email.equalsIgnoreCase("Google Play User") && !seenEmails.contains(email.toLowerCase())) {
-                                list.add(new AccountItem(id, email, code, token, country, ts));
-                                seenEmails.add(email.toLowerCase());
+                        JSONObject res = new JSONObject(sb.toString());
+                        if (res.optBoolean("ok", false) && res.has("accounts")) {
+                            JSONArray arr = res.getJSONArray("accounts");
+                            for (int i = 0; i < arr.length(); i++) {
+                                JSONObject obj = arr.getJSONObject(i);
+                                String id = obj.optString("id", "render_" + i);
+                                String email = obj.optString("email", "");
+                                String code = obj.optString("code", "");
+                                String token = obj.optString("token", "");
+                                String country = obj.optString("country", "GLOBAL");
+                                String accUid = obj.optString("uid", "");
+                                String accOwner = obj.optString("owner_email", "");
+
+                                if (country.isEmpty() || country.equalsIgnoreCase("GLOBAL") || country.equalsIgnoreCase("AUTO")) {
+                                    try {
+                                        String loc = java.util.Locale.getDefault().getCountry();
+                                        if (loc != null && loc.length() == 2) {
+                                            country = loc.toUpperCase();
+                                        }
+                                    } catch (Throwable ignored) {}
+                                }
+                                long ts = obj.optLong("createdAt", System.currentTimeMillis());
+                                if (!email.isEmpty() && !code.isEmpty() && email.contains("@") && !email.contains("vareon.cloud") && !email.equalsIgnoreCase("Google Play User") && !seenEmails.contains(email.toLowerCase())) {
+                                    AccountItem item = new AccountItem(id, email, code, token, country, accUid, accOwner, ts);
+                                    list.add(item);
+                                    seenEmails.add(email.toLowerCase());
+                                }
                             }
                         }
                     }

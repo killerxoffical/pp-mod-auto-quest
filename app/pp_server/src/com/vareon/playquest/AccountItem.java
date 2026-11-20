@@ -19,6 +19,10 @@ public class AccountItem {
     private int claimedPoints = 0;
     private boolean isRevoked = false;
 
+    // Strict Account Ownership Isolation
+    private String ownerUid = "";
+    private String ownerEmail = "";
+
     public AccountItem(String id, String email, String code, String token, String country, long timestamp) {
         this.id = id;
         this.email = email;
@@ -26,6 +30,12 @@ public class AccountItem {
         this.token = token;
         this.country = (country != null && !country.isEmpty()) ? country : "GLOBAL";
         this.timestamp = timestamp;
+    }
+
+    public AccountItem(String id, String email, String code, String token, String country, String ownerUid, String ownerEmail, long timestamp) {
+        this(id, email, code, token, country, timestamp);
+        this.ownerUid = (ownerUid != null) ? ownerUid : "";
+        this.ownerEmail = (ownerEmail != null) ? ownerEmail : "";
     }
 
     public AccountItem(String id, String email, String code, String token, long timestamp) {
@@ -120,6 +130,22 @@ public class AccountItem {
         isRevoked = revoked;
     }
 
+    public String getOwnerUid() {
+        return ownerUid != null ? ownerUid : "";
+    }
+
+    public void setOwnerUid(String ownerUid) {
+        this.ownerUid = ownerUid;
+    }
+
+    public String getOwnerEmail() {
+        return ownerEmail != null ? ownerEmail : "";
+    }
+
+    public void setOwnerEmail(String ownerEmail) {
+        this.ownerEmail = ownerEmail;
+    }
+
     public JSONObject toJson() {
         JSONObject obj = new JSONObject();
         try {
@@ -135,6 +161,8 @@ public class AccountItem {
             obj.put("last_claim_date", lastClaimDate);
             obj.put("claimed_points", claimedPoints);
             obj.put("is_revoked", isRevoked);
+            obj.put("owner_uid", ownerUid);
+            obj.put("owner_email", ownerEmail);
         } catch (JSONException ignored) {
         }
         return obj;
@@ -157,6 +185,8 @@ public class AccountItem {
         item.setLastClaimDate(obj.optString("last_claim_date", ""));
         item.setClaimedPoints(obj.optInt("claimed_points", 0));
         item.setRevoked(obj.optBoolean("is_revoked", false));
+        item.setOwnerUid(obj.optString("owner_uid", obj.optString("uid", "")));
+        item.setOwnerEmail(obj.optString("owner_email", ""));
         return item;
     }
 }

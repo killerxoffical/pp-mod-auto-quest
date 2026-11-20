@@ -1371,9 +1371,93 @@
             from { opacity: 0; }
             to { opacity: 1; }
         }
+
+        @keyframes pulseRed {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
     </style>
 </head>
 <body>
+
+    <!-- ==================== 0A. FULL-SCREEN MAINTENANCE OVERLAY ==================== -->
+    <div id="viewMaintenance" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:9999999; background:linear-gradient(180deg, #f8fafc 0%, #eef2f6 100%); flex-direction:column; align-items:center; justify-content:center; padding:32px 24px; box-sizing:border-box; text-align:center;">
+        <div style="width:96px; height:96px; border-radius:30px; background:linear-gradient(135deg, #fef2f2, #fee2e2); border:2px solid rgba(239,68,68,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:20px; box-shadow:0 12px 30px rgba(239,68,68,0.15); position:relative;">
+            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#ef4444" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+            </svg>
+            <span style="position:absolute; bottom:-6px; right:-6px; width:22px; height:22px; border-radius:50%; background:#ef4444; border:3px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,0.2);"></span>
+        </div>
+
+        <div style="display:inline-flex; align-items:center; gap:6px; padding:5px 14px; border-radius:999px; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); margin-bottom:12px;">
+            <span style="width:7px; height:7px; border-radius:50%; background:#ef4444; display:inline-block; animation:pulseRed 1.5s infinite;"></span>
+            <span style="font-size:11px; font-weight:800; color:#ef4444; letter-spacing:0.8px; text-transform:uppercase;">System Maintenance</span>
+        </div>
+
+        <h2 id="maintScreenTitle" style="font-size:22px; font-weight:900; color:#0f172a; margin:0 0 10px; letter-spacing:-0.4px;">Server Under Maintenance</h2>
+        <p id="maintScreenMessage" style="font-size:13.5px; line-height:1.65; color:#64748b; max-width:330px; margin:0 auto 28px;">Our engineers are currently upgrading server security, database speed, and user data isolation. Access is temporarily paused. Please check back shortly.</p>
+
+        <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:12px 18px; width:100%; max-width:320px; box-shadow:0 4px 14px rgba(0,0,0,0.03); margin-bottom:24px; text-align:left;">
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-bottom:6px;">
+                <span style="color:#64748b; font-weight:600;">Status</span>
+                <span style="color:#ef4444; font-weight:800; display:flex; align-items:center; gap:4px;">● Upgrading</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px;">
+                <span style="color:#64748b; font-weight:600;">Cluster</span>
+                <span style="color:#0f172a; font-family:'JetBrains Mono', monospace; font-size:11px; font-weight:700;">Render Edge Vault</span>
+            </div>
+        </div>
+
+        <button id="btnMaintRetry" onclick="checkMaintenanceAgain()" style="width:100%; max-width:320px; padding:14px 20px; font-size:14px; font-weight:800; border-radius:14px; background:linear-gradient(135deg, #4f46e5, #4338ca); color:#fff; border:none; box-shadow:0 8px 24px rgba(79,70,229,0.35); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+            </svg>
+            <span>Check Server Status</span>
+        </button>
+    </div>
+
+    <!-- ==================== 0B. FULL-SCREEN FORCE UPDATE OVERLAY ==================== -->
+    <div id="viewForceUpdate" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:9999999; background:linear-gradient(180deg, #f8fafc 0%, #eef2f6 100%); flex-direction:column; align-items:center; justify-content:center; padding:32px 24px; box-sizing:border-box; text-align:center;">
+        <div style="width:96px; height:96px; border-radius:30px; background:linear-gradient(135deg, #eff6ff, #dbeafe); border:2px solid rgba(59,130,246,0.3); display:flex; align-items:center; justify-content:center; margin-bottom:20px; box-shadow:0 12px 30px rgba(59,130,246,0.18);">
+            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#2563eb" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+        </div>
+
+        <div style="display:inline-flex; align-items:center; gap:6px; padding:5px 14px; border-radius:999px; background:rgba(37,99,235,0.08); border:1px solid rgba(37,99,235,0.22); margin-bottom:12px;">
+            <span style="font-size:11px; font-weight:800; color:#2563eb; letter-spacing:0.8px; text-transform:uppercase;">⚡ Mandatory Update</span>
+        </div>
+
+        <h2 style="font-size:22px; font-weight:900; color:#0f172a; margin:0 0 6px; letter-spacing:-0.4px;">New Version Available</h2>
+        <p style="font-size:13px; color:#64748b; margin:0 0 18px;">Please update to continue using PPM Server.</p>
+
+        <!-- Version Comparison Pill -->
+        <div style="display:inline-flex; align-items:center; gap:12px; padding:8px 16px; background:#fff; border:1px solid #e2e8f0; border-radius:999px; margin-bottom:18px; box-shadow:0 2px 8px rgba(0,0,0,0.03);">
+            <span style="font-size:12px; color:#94a3b8; font-weight:600;">Current: <span id="labelCurrentVer">v4.0</span></span>
+            <span style="color:#cbd5e1;">➔</span>
+            <span style="font-size:12px; color:#10b981; font-weight:800;">Latest: <span id="labelNewVer">v4.1 Official</span></span>
+        </div>
+
+        <!-- Release Notes Box -->
+        <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:14px 18px; width:100%; max-width:320px; box-shadow:0 4px 14px rgba(0,0,0,0.03); margin-bottom:24px; text-align:left;">
+            <div style="font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">What's New in this Update:</div>
+            <p id="labelReleaseNotes" style="font-size:12.5px; line-height:1.6; color:#334155; margin:0;">User data privacy isolation, full-screen maintenance mode, and enhanced security protection.</p>
+        </div>
+
+        <button id="btnDownloadUpdate" onclick="openUpdateDownload()" style="width:100%; max-width:320px; padding:15px 20px; font-size:15px; font-weight:800; border-radius:14px; background:linear-gradient(135deg, #10b981, #059669); color:#fff; border:none; box-shadow:0 8px 24px rgba(16,185,129,0.35); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Download & Update Now</span>
+        </button>
+
+        <span style="font-size:11px; color:#94a3b8; margin-top:14px; display:block;">Updating is required to protect your account and cloud tokens.</span>
+    </div>
 
     <!-- ==================== 1. SPLASH SCREEN ==================== -->
     <div id="viewSplash">
@@ -1706,7 +1790,8 @@
         var appInfo = {
             appName: 'PPM Server',
             isDeveloperMode: false,
-            versionName: 'v4.0',
+            versionName: 'v4.1 Official',
+            versionCode: 5,
             deviceId: '46e14d2451d85c3f',
             isLoggedIn: false,
             userUid: '',
@@ -1720,6 +1805,9 @@
         var activeRegionFilter = 'ALL';
         var pendingDeleteCode = null;
         var pendingLogout = false;
+        var isMaintenanceActive = false;
+        var isForceUpdateActive = false;
+        var liveDownloadUrl = 'https://pp-mod-auto-quest.onrender.com/download/PP_Server.apk';
 
         var REGIONS = [
             { code: 'ALL', name: 'All Regions', flag: '🌐' },
@@ -1739,11 +1827,16 @@
         document.addEventListener('DOMContentLoaded', function() {
             buildRegionGrid();
             fetchAppInfo();
+            checkSystemStatus();
 
             // Splash Screen Timer (1.2 seconds)
             setTimeout(function() {
                 var splash = document.getElementById('viewSplash');
                 splash.classList.add('hide');
+
+                if (isMaintenanceActive || isForceUpdateActive) {
+                    return;
+                }
 
                 if (appInfo.isDeveloperMode) {
                     showView('viewDevPortal');
@@ -1755,6 +1848,113 @@
                 }
             }, 1200);
         });
+
+        // ==================== SYSTEM MAINTENANCE & FORCE UPDATE CONTROLLER ====================
+        function checkSystemStatus(cb) {
+            var vUrl = (appInfo.portalUrl || 'https://pp-mod-auto-quest.onrender.com') + '/api/app/version';
+            fetch(vUrl)
+                .then(function(r) { return r.json(); })
+                .then(function(d) {
+                    if (!d || !d.ok) {
+                        if (cb) cb();
+                        return;
+                    }
+
+                    if (d.download_url) {
+                        liveDownloadUrl = d.download_url;
+                    }
+
+                    // 1. Maintenance Mode (Highest Priority)
+                    if (d.maintenance_mode) {
+                        showMaintenanceScreen(d.maintenance_title, d.maintenance_message);
+                        if (cb) cb();
+                        return;
+                    } else {
+                        hideMaintenanceScreen();
+                    }
+
+                    // 2. Mandatory Force Update
+                    var minVer = d.min_required_version_code || 5;
+                    var isForce = d.is_force_update !== false;
+                    var appVerCode = appInfo.versionCode || 5;
+                    if (appVerCode < minVer || (isForce && appVerCode < (d.latest_version_code || 5))) {
+                        showForceUpdateScreen(d.latest_version_name, d.latest_version_code, d.download_url, d.release_notes);
+                        if (cb) cb();
+                        return;
+                    } else {
+                        hideForceUpdateScreen();
+                    }
+
+                    if (cb) cb();
+                })
+                .catch(function() {
+                    if (cb) cb();
+                });
+        }
+
+        function showMaintenanceScreen(title, message) {
+            isMaintenanceActive = true;
+            if (window.AndroidBridge && window.AndroidBridge.setSystemBlocked) {
+                window.AndroidBridge.setSystemBlocked(true);
+            }
+            if (title) document.getElementById('maintScreenTitle').textContent = title;
+            if (message) document.getElementById('maintScreenMessage').textContent = message;
+            document.getElementById('viewMaintenance').style.display = 'flex';
+        }
+
+        function hideMaintenanceScreen() {
+            isMaintenanceActive = false;
+            document.getElementById('viewMaintenance').style.display = 'none';
+            if (!isForceUpdateActive) {
+                if (window.AndroidBridge && window.AndroidBridge.setSystemBlocked) {
+                    window.AndroidBridge.setSystemBlocked(false);
+                }
+            }
+        }
+
+        function showForceUpdateScreen(latestName, latestCode, dlUrl, notes) {
+            isForceUpdateActive = true;
+            if (window.AndroidBridge && window.AndroidBridge.setSystemBlocked) {
+                window.AndroidBridge.setSystemBlocked(true);
+            }
+            if (dlUrl) liveDownloadUrl = dlUrl;
+            if (latestName) document.getElementById('labelNewVer').textContent = latestName;
+            if (notes) document.getElementById('labelReleaseNotes').textContent = notes;
+            document.getElementById('labelCurrentVer').textContent = appInfo.versionName || 'v4.0';
+            document.getElementById('viewForceUpdate').style.display = 'flex';
+        }
+
+        function hideForceUpdateScreen() {
+            isForceUpdateActive = false;
+            document.getElementById('viewForceUpdate').style.display = 'none';
+            if (!isMaintenanceActive) {
+                if (window.AndroidBridge && window.AndroidBridge.setSystemBlocked) {
+                    window.AndroidBridge.setSystemBlocked(false);
+                }
+            }
+        }
+
+        function checkMaintenanceAgain() {
+            var btn = document.getElementById('btnMaintRetry');
+            if (btn) btn.innerHTML = '<span>Checking Server...</span>';
+            checkSystemStatus(function() {
+                if (btn) btn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg><span>Check Server Status</span>';
+                if (!isMaintenanceActive) {
+                    showToast("Server is back online! Welcome.");
+                    location.reload();
+                } else {
+                    showToast("Server is still under maintenance.");
+                }
+            });
+        }
+
+        function openUpdateDownload() {
+            if (liveDownloadUrl) {
+                openBrowserUrl(liveDownloadUrl);
+            } else {
+                openBrowserUrl('https://pp-mod-auto-quest.onrender.com/download/PP_Server.apk');
+            }
+        }
 
         function showView(viewId) {
             document.getElementById('viewLogin').style.display = 'none';
@@ -2342,9 +2542,18 @@
 
         // ==================== HELPERS ====================
         function syncCloudAccounts() {
-            showToast("Syncing and updating accounts...");
-            var uidParam = (appInfo.userUid) ? ('?uid=' + encodeURIComponent(appInfo.userUid)) : '';
-            fetch((appInfo.portalUrl || 'https://pp-mod-auto-quest.onrender.com') + '/api/sync/accounts' + uidParam)
+            if (!appInfo.isLoggedIn || !appInfo.userEmail) {
+                showToast("Please log in to sync accounts.");
+                return;
+            }
+            showToast("Syncing your cloud accounts...");
+            checkSystemStatus();
+            var params = [];
+            if (appInfo.userUid) params.push('uid=' + encodeURIComponent(appInfo.userUid));
+            if (appInfo.userEmail) params.push('owner_email=' + encodeURIComponent(appInfo.userEmail));
+            var queryStr = params.length > 0 ? ('?' + params.join('&')) : '';
+
+            fetch((appInfo.portalUrl || 'https://pp-mod-auto-quest.onrender.com') + '/api/sync/accounts' + queryStr)
                 .then(function(r) { return r.json(); })
                 .then(function(d) {
                     if (d.ok && Array.isArray(d.accounts)) {

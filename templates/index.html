@@ -2243,6 +2243,23 @@
                         </div>
                     </div>
 
+                    <!-- PPM SERVER App APK Download Link Config Bar -->
+                    <div style="padding:14px 24px; background:linear-gradient(135deg, rgba(79,70,229,0.12), rgba(16,185,129,0.08)); border-bottom:1px solid rgba(79,70,229,0.25); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                        <div style="display:flex; align-items:center; gap:12px; min-width:280px;">
+                            <span style="font-size:24px;">📲</span>
+                            <div>
+                                <strong style="font-size:13.5px; color:var(--text-primary); display:block;">PPM SERVER App Download Link (WebApp User Link)</strong>
+                                <span style="font-size:11.5px; color:var(--text-muted);">Webapp-এ ইউজাররা 'Download APK' চাপলে আপনার দেওয়া এই লিংকে যাবে (Google Drive, Mediafire বা APK লিঙ্ক দিন)।</span>
+                            </div>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:320px; max-width:600px;">
+                            <input id="portalApkDownloadUrl" type="url" placeholder="https://..." class="form-input-element" style="height:40px; font-size:12.5px; font-family:'JetBrains Mono'; flex:1;">
+                            <button type="button" class="btn-primary" onclick="savePortalApkDownloadUrl()" style="padding:9px 18px; font-size:12.5px; font-weight:800; white-space:nowrap; background:linear-gradient(135deg, #10b981, #059669); cursor:pointer;">
+                                💾 Save Link
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- SMART QUEST AUTO-DETECT BOX (Paste & Auto-Match) -->
                     <div id="smartQuestAutoBox"
                         style="padding:18px 24px; background:linear-gradient(180deg, rgba(14,165,233,0.04), rgba(16,185,129,0.04)); border-bottom:1px solid var(--border-color); transition:all 0.3s ease;">
@@ -2641,6 +2658,29 @@
                             <textarea id="updReleaseNotes" class="form-input-element"
                                 style="height:70px; font-size:12.5px; resize:vertical;"
                                 placeholder="New security features, live profile synchronization, and anti-interception enhancements..."></textarea>
+                        </div>
+                        <div style="grid-column: 1 / -1; margin-top:10px; padding:16px; background:linear-gradient(135deg, rgba(239,68,68,0.06), rgba(245,158,11,0.06)); border:1px solid rgba(239,68,68,0.25); border-radius:12px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span style="font-size:20px;">🛡️</span>
+                                    <strong style="font-size:13px; color:var(--text-primary);">App Maintenance Mode (সম্পূর্ণ অ্যাপ লকড স্ক্রিন)</strong>
+                                </div>
+                                <label style="display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:800; color:#ef4444; cursor:pointer;">
+                                    <input id="chkMaintenanceMode" type="checkbox" style="width:18px; height:18px; accent-color:#ef4444;">
+                                    <span>Enable Maintenance Mode Now</span>
+                                </label>
+                            </div>
+                            <div style="display:grid; grid-template-columns:1fr 2fr; gap:12px;">
+                                <div>
+                                    <label style="font-size:11.5px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">Maintenance Title</label>
+                                    <input id="updMaintTitle" type="text" class="form-input-element" value="System Under Maintenance" style="height:38px; font-size:12.5px;">
+                                </div>
+                                <div>
+                                    <label style="font-size:11.5px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">Maintenance Message (Display to Users)</label>
+                                    <input id="updMaintMsg" type="text" class="form-input-element" value="Our servers are currently undergoing scheduled maintenance to upgrade security and performance. Please try again later." style="height:38px; font-size:12px;">
+                                </div>
+                            </div>
+                            <span style="font-size:11px; color:var(--text-muted); display:block; margin-top:8px;">অন থাকলে ইউজারের অ্যাপে সুন্দর ফুলস্ক্রিন মেইনটেনেন্স স্ক্রিন চলে আসবে এবং কোনো অপশন বা পেজে যেতে পারবে না।</span>
                         </div>
                     </div>
 
@@ -4984,24 +5024,31 @@
                 const res = await fetch(`${API_BASE}/api/app/version`);
                 const data = await res.json();
                 if (data.ok) {
-                    if (document.getElementById("updMinVerCode")) document.getElementById("updMinVerCode").value = data.min_required_version_code || 4;
-                    if (document.getElementById("updVerName")) document.getElementById("updVerName").value = data.latest_version_name || "v3.8 Enterprise";
+                    if (document.getElementById("updMinVerCode")) document.getElementById("updMinVerCode").value = data.min_required_version_code || 5;
+                    if (document.getElementById("updVerName")) document.getElementById("updVerName").value = data.latest_version_name || "v4.1 Official";
                     if (document.getElementById("updDownloadUrl")) document.getElementById("updDownloadUrl").value = data.download_url || "https://pp-mod-auto-quest.onrender.com/download/PP_Server.apk";
                     if (document.getElementById("updReleaseNotes")) document.getElementById("updReleaseNotes").value = data.release_notes || "";
                     if (document.getElementById("chkForceUpdate")) document.getElementById("chkForceUpdate").checked = !!data.is_force_update;
+                    if (document.getElementById("chkMaintenanceMode")) document.getElementById("chkMaintenanceMode").checked = !!data.maintenance_mode;
+                    if (document.getElementById("updMaintTitle")) document.getElementById("updMaintTitle").value = data.maintenance_title || "System Under Maintenance";
+                    if (document.getElementById("updMaintMsg")) document.getElementById("updMaintMsg").value = data.maintenance_message || "Our servers are currently undergoing scheduled maintenance to upgrade security and performance. Please try again later.";
                     if (document.getElementById("badgeCurrentAppVer")) {
-                        document.getElementById("badgeCurrentAppVer").textContent = `LIVE: ${data.latest_version_name} (Code ${data.min_required_version_code})`;
+                        const maintBadge = data.maintenance_mode ? ' <span style="background:#ef4444; color:#fff; padding:2px 6px; border-radius:4px; font-size:10px;">MAINTENANCE ON</span>' : '';
+                        document.getElementById("badgeCurrentAppVer").innerHTML = `LIVE: ${data.latest_version_name} (Code ${data.min_required_version_code})${maintBadge}`;
                     }
                 }
             } catch (e) { }
         }
 
         async function pushAppForceUpdate() {
-            const minCode = parseInt(document.getElementById("updMinVerCode")?.value || "4");
+            const minCode = parseInt(document.getElementById("updMinVerCode")?.value || "5");
             const verName = document.getElementById("updVerName")?.value || "";
             const dlUrl = document.getElementById("updDownloadUrl")?.value || "";
             const notes = document.getElementById("updReleaseNotes")?.value || "";
             const force = document.getElementById("chkForceUpdate")?.checked ?? true;
+            const maint = document.getElementById("chkMaintenanceMode")?.checked ?? false;
+            const maintTitle = document.getElementById("updMaintTitle")?.value || "System Under Maintenance";
+            const maintMsg = document.getElementById("updMaintMsg")?.value || "";
 
             try {
                 const res = await fetch(`${API_BASE}/api/admin/app/version/update`, {
@@ -5012,7 +5059,10 @@
                         latest_version_name: verName,
                         download_url: dlUrl,
                         release_notes: notes,
-                        is_force_update: force
+                        is_force_update: force,
+                        maintenance_mode: maint,
+                        maintenance_title: maintTitle,
+                        maintenance_message: maintMsg
                     })
                 });
                 const data = await res.json();
@@ -5946,7 +5996,45 @@
         let portalAllGames = [];
         let portalCurrentSelectedGame = null;
 
+        async function savePortalApkDownloadUrl() {
+            const inp = document.getElementById("portalApkDownloadUrl");
+            const url = (inp ? inp.value : "").trim();
+            if (!url) {
+                showToast("দয়া করে সঠিক ডাউনলোড লিংক দিন", "error");
+                return;
+            }
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/app/version/update`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ download_url: url })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    showToast("✓ PPM SERVER APK ডাউনলোড লিংক সফলভাবে সেভ হয়েছে!", "success");
+                    if (document.getElementById("updDownloadUrl")) {
+                        document.getElementById("updDownloadUrl").value = url;
+                    }
+                } else {
+                    showToast(data.error || "Failed to save link", "error");
+                }
+            } catch (e) {
+                showToast("Error saving link: " + e.message, "error");
+            }
+        }
+        window.savePortalApkDownloadUrl = savePortalApkDownloadUrl;
+
         async function loadPortalServices() {
+            // Auto-load live APK download URL
+            fetch(`${API_BASE}/api/app/version`)
+                .then(r => r.json())
+                .then(d => {
+                    if (d && d.ok && d.download_url) {
+                        const inp = document.getElementById("portalApkDownloadUrl");
+                        if (inp) inp.value = d.download_url;
+                    }
+                }).catch(() => {});
+
             const container = document.getElementById("portalServicesContainer");
             if (!container) return;
             container.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-muted);"><div class="spinner" style="margin:0 auto 12px; border-top-color:var(--accent-cyan);"></div>Loading Public Portal Services...</div>`;

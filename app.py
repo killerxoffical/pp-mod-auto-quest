@@ -41,14 +41,14 @@ def load_portal_services():
         try:
             with open(PORTAL_SERVICES_FILE, "r", encoding="utf-8") as f:
                 content = json.load(f)
-                if isinstance(content, dict):
+                if isinstance(content, dict) and len(content) > 0:
                     data = content
                     print(f"[+] Loaded {len(data)} portal services from local {PORTAL_SERVICES_FILE}")
         except Exception as e:
             print(f"[-] Error reading local portal_services: {e}")
 
     # 2. Second Priority: Cloudflare D1 persistent cloud store (survives Render restarts)
-    if data is None:
+    if not data:
         try:
             cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", timeout=8, verify=False)
             if cf_res.status_code == 200:
@@ -136,6 +136,8 @@ def find_portal_service(services, query_id):
             if cf_res.status_code == 200:
                 c_data = cf_res.json()
                 if isinstance(c_data, dict) and c_data:
+                    if "data" in c_data and isinstance(c_data["data"], dict):
+                        c_data = c_data["data"]
                     services.update(c_data)
         except Exception:
             pass
@@ -661,6 +663,8 @@ def resolve_credentials_from_input(data):
                         master_token = acc.get("master_token") or acc.get("token")
                         if acc.get("email") and acc.get("email") != "Google Play User":
                             email = acc.get("email")
+                        if acc.get("android_id"):
+                            android_id = acc.get("android_id")
             except Exception:
                 pass
             if not master_token:
@@ -670,6 +674,8 @@ def resolve_credentials_from_input(data):
                         if str(acc.get("code")) == sync_code:
                             email = acc.get("email") or email
                             master_token = acc.get("token") or master_token
+                            if d.get("android_id"):
+                                android_id = d.get("android_id")
                             break
                     if master_token:
                         break
@@ -744,7 +750,8 @@ def create_sync_code():
     
     country = data.get("country", "").strip()
     device_country = data.get("device_country", "").strip()
-    uid = data.get("uid", "")
+    uid = str(data.get("uid", "")).strip()
+    owner_email = str(data.get("owner_email", "")).strip().lower()
     android_id = data.get("android_id", "").strip() or generate_android_id(email if email else None)
 
     # Immediately convert fresh oauth_token to permanent master_token
@@ -789,6 +796,7 @@ def create_sync_code():
         "master_token": master_token,
         "country": country,
         "uid": uid,
+        "owner_email": owner_email,
         "android_id": android_id,
         "created_at": time.time()
     }
@@ -805,6 +813,7 @@ def create_sync_code():
                     "code": code,
                     "country": country,
                     "uid": uid,
+                    "owner_email": owner_email,
                     "android_id": android_id
                 },
                 timeout=6
@@ -879,29 +888,56 @@ def delete_sync_account():
 def get_sync_accounts():
     """
     Returns user accounts for mobile app and web console.
-    Optionally filtered by ?uid=...
+    STRICT DATA PRIVACY & ISOLATION:
+    Requires uid or owner_email. Only accounts owned by the requesting user are returned.
+    Never leak another user's accounts!
     Zero Firebase quota usage.
     """
     req_uid = request.args.get("uid", "").strip()
+    req_email = (request.args.get("owner_email", "") or request.args.get("email", "")).strip().lower()
+
+    # STRICT PRIVACY GUARD: If neither uid nor owner_email is provided, NEVER return all accounts!
+    if not req_uid and not req_email:
+        return jsonify({"ok": True, "accounts": []})
+
     accounts = []
 
-    # 1. Pull from Cloudflare D1 persistent vault
+    # 1. Pull from Cloudflare D1 persistent vault (strictly filtered by user)
     try:
         cf_url = "https://ppmod-api.tredarskvt.workers.dev/api/sync/accounts"
         if req_uid:
             cf_url += f"?uid={requests.utils.quote(req_uid)}"
         cf_res = requests.get(cf_url, timeout=4)
         if cf_res.status_code == 200:
-            accounts.extend(cf_res.json().get("accounts", []))
+            cf_data = cf_res.json().get("accounts", [])
+            for a in cf_data:
+                a_uid = str(a.get("uid", "")).strip()
+                a_owner = str(a.get("owner_email", "")).strip().lower()
+                is_match = False
+                if req_uid and a_uid and a_uid == req_uid:
+                    is_match = True
+                if req_email and a_owner and a_owner == req_email:
+                    is_match = True
+                if is_match:
+                    accounts.append(a)
     except Exception:
         pass
 
-    # 2. Add from local SYNC_CODES (if not already included from cloud)
+    # 2. Add from local SYNC_CODES (strictly matching req_uid or req_email)
     for code, entry in SYNC_CODES.items():
         em = entry.get("email", "")
-        e_uid = entry.get("uid", "")
-        if req_uid and e_uid and e_uid != req_uid:
+        e_uid = str(entry.get("uid", "")).strip()
+        e_owner = str(entry.get("owner_email", "")).strip().lower()
+
+        is_match = False
+        if req_uid and e_uid and e_uid == req_uid:
+            is_match = True
+        if req_email and e_owner and e_owner == req_email:
+            is_match = True
+
+        if not is_match:
             continue
+
         if not any(a.get("email") == em or a.get("code") == code for a in accounts):
             accounts.append({
                 "id": f"acc_{code}",
@@ -910,6 +946,7 @@ def get_sync_accounts():
                 "token": entry.get("token") or entry.get("master_token", ""),
                 "country": entry.get("country", "GLOBAL"),
                 "uid": e_uid,
+                "owner_email": e_owner,
                 "createdAt": int(entry.get("created_at", time.time()) * 1000)
             })
 
@@ -1188,6 +1225,8 @@ def portal_connect_account():
                         token_str = acc.get("master_token") or acc.get("token")
                         if acc.get("email") and acc.get("email") != "Google Play User":
                             email = acc.get("email")
+                        if acc.get("android_id"):
+                            android_id = str(acc.get("android_id")).strip()
             except Exception as e:
                 print(f"[-] Cloudflare D1 query portal connect: {e}")
 
@@ -1200,6 +1239,9 @@ def portal_connect_account():
                     email = em
                     token_str = tok
                     break
+
+    if not android_id and email:
+        android_id = generate_android_id(email)
 
     if not token_str:
         return jsonify({"ok": False, "error": "Invalid or expired 6-digit code. Please enter a valid code or direct Master Token."}), 400
@@ -1916,12 +1958,15 @@ VERSION_CONFIG_FILE = os.path.join(DATA_DIR, "app_version_config.json")
 
 def load_version_config():
     default_cfg = {
-        "latest_version_code": 4,
-        "latest_version_name": "v3.8 Enterprise",
-        "min_required_version_code": 4,
+        "latest_version_code": 5,
+        "latest_version_name": "v4.1 Official",
+        "min_required_version_code": 5,
         "download_url": "https://pp-mod-auto-quest.onrender.com/download/PP_Server.apk",
-        "release_notes": "Security hardening, live profile sync, and enhanced anti-interception protection.",
+        "release_notes": "User data privacy isolation, full-screen maintenance mode, and security upgrade.",
         "is_force_update": True,
+        "maintenance_mode": False,
+        "maintenance_title": "Scheduled Server Maintenance",
+        "maintenance_message": "Our servers are currently undergoing scheduled maintenance to upgrade security and database performance. Please try again later.",
         "updated_at": int(time.time())
     }
     if os.path.exists(VERSION_CONFIG_FILE):
@@ -1943,29 +1988,32 @@ def save_version_config(cfg):
 
 @app.route("/api/app/version", methods=["GET"])
 def get_app_version():
-    """Public endpoint for mobile app to check update requirements on launch"""
+    """Public endpoint for mobile app to check update and maintenance status on launch"""
     cfg = load_version_config()
     return jsonify({
         "ok": True,
-        "latest_version_code": cfg.get("latest_version_code", 4),
-        "latest_version_name": cfg.get("latest_version_name", "v3.8 Enterprise"),
-        "min_required_version_code": cfg.get("min_required_version_code", 4),
+        "latest_version_code": cfg.get("latest_version_code", 5),
+        "latest_version_name": cfg.get("latest_version_name", "v4.1 Official"),
+        "min_required_version_code": cfg.get("min_required_version_code", 5),
         "download_url": cfg.get("download_url", "https://pp-mod-auto-quest.onrender.com/download/PP_Server.apk"),
-        "release_notes": cfg.get("release_notes", "Important security update required."),
+        "release_notes": cfg.get("release_notes", "Important security and privacy update required."),
         "is_force_update": cfg.get("is_force_update", True),
+        "maintenance_mode": bool(cfg.get("maintenance_mode", False)),
+        "maintenance_title": cfg.get("maintenance_title", "Scheduled Server Maintenance"),
+        "maintenance_message": cfg.get("maintenance_message", "Our servers are currently undergoing scheduled maintenance to upgrade security and database performance. Please try again later."),
         "updated_at": cfg.get("updated_at", int(time.time()))
     })
 
 @app.route("/api/admin/app/version/update", methods=["POST"])
 def update_app_version():
-    """Admin endpoint to push a new version requirement to all devices"""
+    """Admin endpoint to push a new version requirement or toggle maintenance mode to all devices"""
     data = request.get_json() or {}
     cfg = load_version_config()
 
     if "min_required_version_code" in data:
         try:
             cfg["min_required_version_code"] = int(data["min_required_version_code"])
-            cfg["latest_version_code"] = max(cfg.get("latest_version_code", 4), cfg["min_required_version_code"])
+            cfg["latest_version_code"] = max(cfg.get("latest_version_code", 5), cfg["min_required_version_code"])
         except ValueError:
             pass
 
@@ -1981,11 +2029,20 @@ def update_app_version():
     if "is_force_update" in data:
         cfg["is_force_update"] = bool(data["is_force_update"])
 
+    if "maintenance_mode" in data:
+        cfg["maintenance_mode"] = bool(data["maintenance_mode"])
+
+    if "maintenance_title" in data and str(data["maintenance_title"]).strip():
+        cfg["maintenance_title"] = str(data["maintenance_title"]).strip()
+
+    if "maintenance_message" in data and str(data["maintenance_message"]).strip():
+        cfg["maintenance_message"] = str(data["maintenance_message"]).strip()
+
     cfg["updated_at"] = int(time.time())
     save_version_config(cfg)
     return jsonify({
         "ok": True,
-        "message": f"Successfully pushed update requirement for {cfg['latest_version_name']} (Min Code: {cfg['min_required_version_code']})",
+        "message": f"Successfully updated system config for {cfg['latest_version_name']} (Maintenance: {'ON' if cfg.get('maintenance_mode') else 'OFF'})",
         "config": cfg
     })
 
@@ -4086,6 +4143,7 @@ def save_portal_service():
         "game_id": game_id,
         "title": game.get("title"),
         "package": game.get("package"),
+        "client_sig": game.get("client_sig") or existing.get("client_sig"),
         "developer": game.get("developer", "Play Games"),
         "category": game.get("category", "Quest Game"),
         "icon": game.get("icon"),
@@ -4219,10 +4277,30 @@ def unlock_portal_service_quests():
     if not (master_token or access_token):
         return jsonify({"ok": False, "error": "No valid authentication token or 6-digit sync code found. Please connect your account first."}), 401
 
+    if not android_id and email:
+        android_id = generate_android_id(email)
+
     merged = get_merged_games()
     game = merged.get(found_key) or merged.get(str(service.get("game_id", ""))) or service
     app_package = game.get("package") or service.get("package")
-    client_sig = game.get("client_sig") or "58e71785c961e7328ea9c76de647f8f6c4403b39"
+    client_sig = game.get("client_sig") or service.get("client_sig")
+
+    if not client_sig:
+        try:
+            real_db_path = os.path.join(DATA_DIR, "real_achievements_db.json")
+            if os.path.exists(real_db_path):
+                with open(real_db_path, "r", encoding="utf-8") as rdbf:
+                    rdb = json.load(rdbf)
+                    g_entry = rdb.get(found_key) or rdb.get(str(service.get("game_id", "")))
+                    if not g_entry and app_package:
+                        g_entry = next((item for item in rdb.values() if item.get("package") == app_package), None)
+                    if g_entry and g_entry.get("client_sig"):
+                        client_sig = g_entry["client_sig"]
+        except Exception:
+            pass
+
+    if not client_sig and app_package == PLAY_GAMES_PACKAGE:
+        client_sig = "58e71785c961e7328ea9c76de647f8f6c4403b39"
 
     # Authenticate with Google Play Games
     if master_token:
@@ -4235,6 +4313,25 @@ def unlock_portal_service_quests():
         )
         if not tok_res.get("ok"):
             return jsonify({"ok": False, "error": f"Game GPGS authentication failed: {tok_res.get('error')}"}), 401
+
+        # Prevent fallback Play Games package token from causing 401 UnauthorizedThirdPartyApiAccess
+        if tok_res.get("is_fallback") and app_package != PLAY_GAMES_PACKAGE:
+            det_aid = generate_android_id(email)
+            retry_res = get_games_oauth_token(
+                email=email,
+                master_token=master_token,
+                android_id=det_aid,
+                app_package=app_package,
+                client_sig=client_sig
+            )
+            if retry_res.get("ok") and not retry_res.get("is_fallback"):
+                tok_res = retry_res
+            else:
+                return jsonify({
+                    "ok": False,
+                    "error": f"Google Play Games third-party authorization failed for '{service.get('title')}'. Please re-sync code in PPM Server app or check account permissions."
+                }), 401
+
         game_token = tok_res["access_token"]
     else:
         game_token = access_token

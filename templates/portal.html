@@ -604,8 +604,9 @@
                 <!-- Result details -->
             </div>
 
-            <div style="display:flex; justify-content:flex-end;">
-                <button class="btn-action" style="width:100%; justify-content:center;" onclick="closeResultModal()">Done / Close</button>
+            <div style="display:flex; gap:10px; margin-top:14px;">
+                <button class="btn-action" style="flex:1; justify-content:center; background:var(--bg-input); color:var(--text-primary); border:1px solid var(--border-color); box-shadow:none;" onclick="closeResultModal()">✓ Done</button>
+                <button class="btn-action" style="flex:1; justify-content:center; background:linear-gradient(135deg, #0ea5e9, #6366f1);" onclick="switchAccountFromModal()">🔄 Switch Next Account</button>
             </div>
         </div>
     </div>
@@ -838,6 +839,9 @@
                         profile: data.profile
                     };
                     sessionStorage.setItem("pp_portal_session", JSON.stringify(connectedAccountData));
+                    if (window.history && window.history.replaceState) {
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    }
                     renderConnectedUI(connectedAccountData);
                     statusDiv.style.display = "none";
                 } else {
@@ -883,13 +887,27 @@
         function disconnectPortalAccount() {
             connectedAccountData = null;
             sessionStorage.removeItem("pp_portal_session");
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
 
             document.getElementById("portalConnectedBox").style.display = "none";
             document.getElementById("portalConnectHeader").style.display = "flex";
             document.getElementById("tabContentCode").style.display = "flex";
-            document.getElementById("portalSyncCodeInput").value = "";
-            document.getElementById("portalMasterTokenInput").value = "";
+            const codeInput = document.getElementById("portalSyncCodeInput");
+            if (codeInput) {
+                codeInput.value = "";
+                setTimeout(() => codeInput.focus(), 80);
+            }
+            if (document.getElementById("portalMasterTokenInput")) document.getElementById("portalMasterTokenInput").value = "";
+            if (document.getElementById("portalEmailInput")) document.getElementById("portalEmailInput").value = "";
             document.getElementById("portalConnectStatus").style.display = "none";
+        }
+
+        function switchAccountFromModal() {
+            closeResultModal();
+            disconnectPortalAccount();
+            window.scrollTo({ top: 120, behavior: 'smooth' });
         }
 
         async function initPortalSession() {

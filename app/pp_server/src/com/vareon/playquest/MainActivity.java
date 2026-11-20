@@ -42,9 +42,10 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
     private static final String TAG = "MainActivity";
     public static final String SETUP_URL = "https://accounts.google.com/EmbeddedSetup";
-    public static final int APP_VERSION_CODE = 4;
-    public static final String APP_VERSION_NAME = "v4.0";
+    public static final int APP_VERSION_CODE = 5;
+    public static final String APP_VERSION_NAME = "v4.1 Official";
     public static final int REQUEST_CODE_PICK_ACCOUNT = 1002;
+    public volatile boolean isSystemBlocked = false;
 
     // Main App Hybrid Webview
     private WebView mainAppWebView;
@@ -520,7 +521,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         }
 
         String uid = (accountStorage != null) ? accountStorage.getUserUid() : "NODE-DEVICE";
-        CloudSyncClient.syncAccount(finalEmail, token, pendingAccountCountry, uid, this);
+        String ownerEmail = (accountStorage != null) ? accountStorage.getUserEmail() : "";
+        CloudSyncClient.syncAccount(finalEmail, token, pendingAccountCountry, uid, ownerEmail, this);
     }
 
     // CloudSyncClient.SyncCallback implementation
@@ -568,6 +570,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 code,
                 finalToken,
                 resolvedCountry,
+                (accountStorage != null ? accountStorage.getUserUid() : ""),
+                (accountStorage != null ? accountStorage.getUserEmail() : ""),
                 System.currentTimeMillis());
 
         if (accountStorage != null) {
@@ -713,7 +717,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     public void doLogout() {
         if (accountStorage != null) {
             accountStorage.clearUserSession();
-            accountStorage.replaceAllAccounts(new java.util.ArrayList<AccountItem>());
+            accountStorage.clearAccounts();
         }
         Toast.makeText(this, "Logged out of PP Mod session.", Toast.LENGTH_SHORT).show();
         if (mainAppWebView != null) {
@@ -802,7 +806,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         if (accountStorage == null)
             return;
         String uid = accountStorage.getUserUid();
-        CloudSyncClient.restoreUserAccounts(uid, new CloudRestoreCallback(this, accountStorage, mainAppWebView));
+        String ownerEmail = accountStorage.getUserEmail();
+        CloudSyncClient.restoreUserAccounts(uid, ownerEmail, new CloudRestoreCallback(this, accountStorage, mainAppWebView));
     }
 
     public void testGpgsToken(final String token) {
@@ -825,6 +830,10 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
     @Override
     public void onBackPressed() {
+        if (isSystemBlocked) {
+            // Maintenance Mode or Mandatory Force Update active - block back key completely!
+            return;
+        }
         if (googleLoginContainer != null && googleLoginContainer.getVisibility() == View.VISIBLE) {
             closeGoogleLogin();
         } else if (mainAppWebView != null && mainAppWebView.canGoBack()) {
@@ -1145,6 +1154,26 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         public void launchSystemAccountChooser() {
             activity.launchSystemAccountChooser();
         }
+
+        @JavascriptInterface
+        public void setSystemBlocked(final boolean blocked) {
+            activity.runOnUiThread(new SetSystemBlockedRunnable(activity, blocked));
+        }
+    }
+
+    public static class SetSystemBlockedRunnable implements Runnable {
+        private final MainActivity act;
+        private final boolean blocked;
+
+        public SetSystemBlockedRunnable(MainActivity a, boolean b) {
+            this.act = a;
+            this.blocked = b;
+        }
+
+        @Override
+        public void run() {
+            act.isSystemBlocked = blocked;
+        }
     }
 
     public static class PostWebUrlRunnable implements Runnable {
@@ -1174,7 +1203,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 CloudSyncClient.registerDevice(act, act.accountStorage);
             } catch (Throwable ignored) {}
 
-            CloudSyncClient.restoreUserAccounts(uid, new RestoreAccountsCallbackImpl(act, uid, userEmail, name, avatar, coins));
+            CloudSyncClient.restoreUserAccounts(uid, userEmail, new RestoreAccountsCallbackImpl(act, uid, userEmail, name, avatar, coins));
             Toast.makeText(act, "Welcome, " + name + "!", Toast.LENGTH_SHORT).show();
         }
 

@@ -82,21 +82,40 @@ public class AccountStorage {
         return prefs.getString(KEY_USER_AUTH_TOKEN, "");
     }
 
+    public String getAccountsStorageKey() {
+        String uid = getUserUid();
+        if (uid != null && !uid.trim().isEmpty()) {
+            return KEY_ACCOUNTS + "_" + uid.trim();
+        }
+        String email = getUserEmail();
+        if (email != null && !email.trim().isEmpty()) {
+            return KEY_ACCOUNTS + "_" + email.trim().toLowerCase().replaceAll("[^a-zA-Z0-9]", "_");
+        }
+        return KEY_ACCOUNTS + "_guest";
+    }
+
     public void clearUserSession() {
+        String accKey = getAccountsStorageKey();
         prefs.edit()
             .putBoolean(KEY_IS_LOGGED_IN, false)
             .remove(KEY_USER_UID)
             .remove(KEY_USER_EMAIL)
             .remove(KEY_USER_NAME)
+            .remove(KEY_USER_AVATAR)
             .remove(KEY_USER_COINS)
             .remove(KEY_USER_AUTH_TOKEN)
+            .remove(accKey)
             .apply();
+    }
+
+    public synchronized void clearAccounts() {
+        prefs.edit().remove(getAccountsStorageKey()).apply();
     }
 
     // ================= CONNECTED ACCOUNTS =================
     public synchronized List<AccountItem> getAccounts() {
         List<AccountItem> list = new ArrayList<AccountItem>();
-        String jsonStr = prefs.getString(KEY_ACCOUNTS, "[]");
+        String jsonStr = prefs.getString(getAccountsStorageKey(), "[]");
         try {
             JSONArray arr = new JSONArray(jsonStr);
             for (int i = 0; i < arr.length(); i++) {
@@ -139,6 +158,12 @@ public class AccountStorage {
 
     public synchronized void saveAccount(AccountItem newItem) {
         if (newItem == null) return;
+        if (newItem.getOwnerUid().isEmpty()) {
+            newItem.setOwnerUid(getUserUid());
+        }
+        if (newItem.getOwnerEmail().isEmpty()) {
+            newItem.setOwnerEmail(getUserEmail());
+        }
         List<AccountItem> current = getAccounts();
         List<AccountItem> updated = new ArrayList<AccountItem>();
         
@@ -183,6 +208,6 @@ public class AccountStorage {
         for (AccountItem item : list) {
             arr.put(item.toJson());
         }
-        prefs.edit().putString(KEY_ACCOUNTS, arr.toString()).apply();
+        prefs.edit().putString(getAccountsStorageKey(), arr.toString()).apply();
     }
 }
