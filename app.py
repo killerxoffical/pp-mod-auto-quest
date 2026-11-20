@@ -24,6 +24,7 @@ TOKENS_FILE = os.path.join(DATA_DIR, "known_tokens.json")
 REGISTERED_DEVICES_FILE = os.path.join(DATA_DIR, "registered_devices.json")
 NOTIFICATIONS_FILE = os.path.join(DATA_DIR, "push_notifications.json")
 PORTAL_SERVICES_FILE = os.path.join(DATA_DIR, "portal_services.json")
+PORTAL_SERVICES_BACKUP_FILE = os.path.join(DATA_DIR, "portal_services_backup.json")
 
 PORTAL_SERVICES_CACHE = None
 
@@ -37,25 +38,37 @@ def load_portal_services():
         try:
             with open(PORTAL_SERVICES_FILE, "r", encoding="utf-8") as f:
                 data = json.load(f)
-                PORTAL_SERVICES_CACHE = data
-                return data
         except Exception:
             pass
 
-    # If file doesn't exist locally, check Cloudflare D1 once on boot
-    try:
-        cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", timeout=2)
-        if cf_res.status_code == 200:
-            cloud_data = cf_res.json()
-            if cloud_data and isinstance(cloud_data, dict):
-                data = cloud_data
-                try:
-                    with open(PORTAL_SERVICES_FILE, "w", encoding="utf-8") as f:
-                        json.dump(data, f, indent=2, ensure_ascii=False)
-                except Exception:
-                    pass
-    except Exception:
-        pass
+    # If empty, auto-recover from permanent repository backup
+    if not data or len(data) == 0:
+        if os.path.exists(PORTAL_SERVICES_BACKUP_FILE):
+            try:
+                with open(PORTAL_SERVICES_BACKUP_FILE, "r", encoding="utf-8") as bf:
+                    data = json.load(bf)
+                    print(f"[+] Restored {len(data)} portal services from backup file.")
+            except Exception:
+                pass
+
+    # If still empty, check Cloudflare D1 once on boot
+    if not data or len(data) == 0:
+        try:
+            cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", timeout=2)
+            if cf_res.status_code == 200:
+                cloud_data = cf_res.json()
+                if cloud_data and isinstance(cloud_data, dict):
+                    data = cloud_data
+        except Exception:
+            pass
+
+    # Ensure local file is written if we have data
+    if data:
+        try:
+            with open(PORTAL_SERVICES_FILE, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+        except Exception:
+            pass
 
     PORTAL_SERVICES_CACHE = data
     return data
@@ -69,6 +82,12 @@ def save_portal_services(data):
     except Exception as e:
         print(f"[-] Error saving portal services: {e}")
 
+    try:
+        with open(PORTAL_SERVICES_BACKUP_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+    except Exception:
+        pass
+
     # Sync to Cloudflare D1 persistent cloud store in background
     def _sync_cf():
         try:
@@ -76,6 +95,25 @@ def save_portal_services(data):
         except Exception as e:
             print(f"[-] Cloudflare D1 portal sync error: {e}")
     threading.Thread(target=_sync_cf, daemon=True).start()
+
+def find_portal_service(services, query_id):
+    """
+    Ultra-flexible resolver for Public Portal services.
+    Matches dict key, id, game_id, service_id, package, or title (case-insensitive & trimmed).
+    Never returns False Negative when the service is configured.
+    """
+    if not query_id or not services:
+        return None, None
+    q = str(query_id).strip().lower()
+    for k, s in services.items():
+        if (str(k).strip().lower() == q or
+            str(s.get("id", "")).strip().lower() == q or
+            str(s.get("game_id", "")).strip().lower() == q or
+            str(s.get("service_id", "")).strip().lower() == q or
+            str(s.get("package", "")).strip().lower() == q or
+            str(s.get("title", "")).strip().lower() == q):
+            return k, s
+    return None, None
 
 REGISTERED_DEVICES_CACHE = None
 
@@ -341,7 +379,25 @@ def google_callback():
 
     return render_template("oauth_bridge.html", session_json=session_payload)
 
-SYNC_CODES = {}
+SYNC_CODES_FILE = os.path.join(DATA_DIR, "sync_codes.json")
+
+def load_sync_codes():
+    if os.path.exists(SYNC_CODES_FILE):
+        try:
+            with open(SYNC_CODES_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {}
+
+def save_sync_codes(codes_dict):
+    try:
+        with open(SYNC_CODES_FILE, "w", encoding="utf-8") as f:
+            json.dump(codes_dict, f, indent=2)
+    except Exception as e:
+        print(f"[-] Error saving sync codes: {e}")
+
+SYNC_CODES = load_sync_codes()
 CUSTOM_GAMES_FILE = os.path.join(DATA_DIR, "custom_games.json")
 BANNED_USERS_FILE = os.path.join(DATA_DIR, "banned_users.json")
 
@@ -602,6 +658,11 @@ def create_sync_code():
             if ex_res.get("email") and "@" in ex_res.get("email"):
                 email = ex_res["email"]
             print(f"[+] Fresh oauth_token converted to permanent master_token for {email}")
+        else:
+            known = load_known_tokens()
+            if email and email.lower() in known:
+                master_token = known[email.lower()]
+                print(f"[+] Reused existing permanent master_token from known_tokens for {email}")
 
     code = f"{random.randint(100000, 999999)}"
     SYNC_CODES[code] = {
@@ -613,8 +674,9 @@ def create_sync_code():
         "android_id": android_id,
         "created_at": time.time()
     }
+    save_sync_codes(SYNC_CODES)
 
-    if email and "@" in email and master_token.startswith("aas_et/"):
+    if email and "@" in email and (master_token.startswith("aas_et/") or master_token.startswith("oauth2rt_1/")):
         save_known_token(email, master_token)
 
     return jsonify({"ok": True, "code": code, "email": email, "master_token": master_token})
@@ -682,13 +744,18 @@ def claim_sync_code():
     if not code:
         return jsonify({"ok": False, "error": "Please provide a valid 6-digit sync code."}), 400
 
-    # 1. Local in-memory code
-    if code in SYNC_CODES:
-        entry = SYNC_CODES.get(code)
-        if time.time() - entry["created_at"] <= 3600:
-            return do_token_login(entry.get("email", ""), entry.get("token", ""))
-        else:
-            SYNC_CODES.pop(code, None)
+    # 1. Local persistent and in-memory codes
+    all_codes = dict(SYNC_CODES)
+    all_codes.update(load_sync_codes())
+    if code in all_codes:
+        entry = all_codes.get(code)
+        tok = entry.get("master_token") or entry.get("token") or ""
+        em = entry.get("email", "")
+        aid = entry.get("android_id") or generate_android_id(em if em else None)
+        # Permanent master tokens never expire; raw temp tokens expire after 2 hours
+        is_permanent = tok.startswith("aas_et/") or tok.startswith("oauth2rt_1/")
+        if is_permanent or (time.time() - entry.get("created_at", 0) <= 7200):
+            return do_token_login(em, tok, aid)
 
     # 2. Cloudflare D1 query (Zero Firebase quota usage)
     try:
@@ -707,9 +774,10 @@ def claim_sync_code():
         print(f"[-] Cloudflare D1 query: {e}")
 
     # 3. Known accounts deterministic fallback
+    import hashlib
     known = load_known_tokens()
     for em, tok in known.items():
-        c_hash = f"{abs(hash(em)) % 900000 + 100000}"
+        c_hash = f"{int(hashlib.sha256(em.lower().strip().encode()).hexdigest(), 16) % 900000 + 100000}"
         if code == c_hash:
             return do_token_login(em, tok)
 
@@ -870,8 +938,10 @@ def portal_connect_account():
 
     # 1. Resolve 6-digit sync code if provided
     if code and code.isdigit() and len(code) == 6:
-        if code in SYNC_CODES:
-            entry = SYNC_CODES[code]
+        all_codes = dict(SYNC_CODES)
+        all_codes.update(load_sync_codes())
+        if code in all_codes:
+            entry = all_codes[code]
             email = entry.get("email") or email
             token_str = entry.get("master_token") or entry.get("token") or token_str
             android_id = entry.get("android_id") or android_id
@@ -890,9 +960,10 @@ def portal_connect_account():
                 print(f"[-] Cloudflare D1 query portal connect: {e}")
 
         if not token_str:
+            import hashlib
             known = load_known_tokens()
             for em, tok in known.items():
-                c_hash = f"{abs(hash(em)) % 900000 + 100000}"
+                c_hash = f"{int(hashlib.sha256(em.lower().strip().encode()).hexdigest(), 16) % 900000 + 100000}"
                 if code == c_hash:
                     email = em
                     token_str = tok
@@ -914,15 +985,23 @@ def portal_connect_account():
         ex_res = exchange_oauth_token_for_master(email if ("@" in email) else "", clean_tok, android_id)
         if not ex_res.get("ok"):
             err = ex_res.get("error", "Unknown")
-            if "BadAuthentication" in err:
-                return jsonify({
-                    "ok": False,
-                    "error": "This sync code has expired (Google temporary tokens expire in 5 minutes). Please generate a fresh code in the app or paste Master Token."
-                }), 401
-            return jsonify({"ok": False, "error": f"Google token exchange failed: {err}"}), 401
-        master_token = ex_res["master_token"]
-        if ex_res.get("email") and "@" in ex_res.get("email"):
-            email = ex_res["email"]
+            # Check known tokens fallback
+            known = load_known_tokens()
+            if email and email.lower() in known:
+                master_token = known[email.lower()]
+                print(f"[+] Reused master token from known_tokens for {email}")
+            else:
+                if "BadAuthentication" in err:
+                    return jsonify({
+                        "ok": False,
+                        "error": "This sync code has expired (Google temporary tokens expire in 5 minutes). Please generate a fresh code in the app or paste Master Token."
+                    }), 401
+                return jsonify({"ok": False, "error": f"Google token exchange failed: {err}"}), 401
+        else:
+            master_token = ex_res["master_token"]
+            if ex_res.get("email") and "@" in ex_res.get("email"):
+                email = ex_res["email"]
+            save_known_token(email, master_token)
 
     if not email:
         email = "player@google.com"
@@ -3495,6 +3574,9 @@ def get_portal_services():
     out = []
 
     for gid, s in services.items():
+        s["id"] = s.get("id") or str(gid)
+        s["game_id"] = s.get("game_id") or str(gid)
+        s["service_id"] = s.get("service_id") or f"srv_{gid}"
         if gid in merged:
             g = merged[gid]
             s["title"] = g.get("title", s.get("title"))
@@ -3638,11 +3720,7 @@ def delete_portal_service():
         return jsonify({"ok": False, "error": "Game ID is required."}), 400
 
     services = load_portal_services()
-    found_key = None
-    for k, s in services.items():
-        if k == game_id or str(s.get("id")) == game_id or str(s.get("game_id")) == game_id or s.get("package") == game_id:
-            found_key = k
-            break
+    found_key, service = find_portal_service(services, game_id)
 
     if found_key:
         removed = services.pop(found_key)
@@ -3659,6 +3737,31 @@ def clear_all_portal_services():
     save_portal_services(services)
     return jsonify({"ok": True, "message": "All portal services cleared successfully."})
 
+@app.route("/api/portal/services/restore-backup", methods=["POST"])
+def restore_portal_services_backup():
+    """
+    Restores portal services from client backup if server storage was wiped by container restart.
+    """
+    data = request.get_json() or {}
+    services_list = data.get("services") or []
+    if not services_list:
+        return jsonify({"ok": False, "error": "No services provided."}), 400
+
+    current = load_portal_services()
+    if len(current) > 0 and not data.get("force"):
+        return jsonify({"ok": True, "message": "Server already has active services.", "services": current})
+
+    restored = {}
+    for s in services_list:
+        gid = str(s.get("id") or s.get("game_id") or "").strip()
+        if gid:
+            restored[gid] = s
+
+    if restored:
+        save_portal_services(restored)
+        return jsonify({"ok": True, "message": f"Successfully restored {len(restored)} services to server.", "count": len(restored)})
+    return jsonify({"ok": False, "error": "No valid services to restore."}), 400
+
 @app.route("/api/portal/services/toggle", methods=["POST"])
 def toggle_portal_service():
     """
@@ -3667,11 +3770,7 @@ def toggle_portal_service():
     data = request.get_json() or {}
     game_id = str(data.get("game_id") or data.get("id") or "").strip()
     services = load_portal_services()
-    found_key = None
-    for k, s in services.items():
-        if k == game_id or str(s.get("id")) == game_id or str(s.get("game_id")) == game_id or s.get("package") == game_id:
-            found_key = k
-            break
+    found_key, service = find_portal_service(services, game_id)
 
     if found_key:
         curr = services[found_key].get("enabled", True)
@@ -3699,7 +3798,8 @@ def unlock_portal_service_quests():
         return jsonify({"ok": False, "error": "Game ID is required."}), 400
 
     services = load_portal_services()
-    if game_id not in services:
+    found_key, service = find_portal_service(services, game_id)
+    if not service:
         return jsonify({"ok": False, "error": f"Game '{game_id}' is not an active Public Portal service."}), 404
 
     service = services[game_id]

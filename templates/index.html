@@ -5819,8 +5819,38 @@
                 const res = await fetch(`${API_BASE}/api/portal/services`);
                 const data = await res.json();
                 if (data.ok && Array.isArray(data.services)) {
-                    portalAllServices = data.services;
-                    renderPortalServicesGrid();
+                    if (data.services.length > 0) {
+                        portalAllServices = data.services;
+                        try {
+                            localStorage.setItem("pp_portal_services_backup", JSON.stringify(data.services));
+                        } catch (e) { }
+                        renderPortalServicesGrid();
+                    } else {
+                        // Check if browser has local backup to auto-restore
+                        const backupStr = localStorage.getItem("pp_portal_services_backup");
+                        if (backupStr) {
+                            try {
+                                const backup = JSON.parse(backupStr);
+                                if (Array.isArray(backup) && backup.length > 0) {
+                                    showToast("Restoring portal services from backup...", "info");
+                                    const restoreRes = await fetch(`${API_BASE}/api/portal/services/restore-backup`, {
+                                        method: "POST",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({ services: backup })
+                                    });
+                                    const restoreData = await restoreRes.json();
+                                    if (restoreData.ok) {
+                                        showToast(`✅ Auto-restored ${backup.length} games to Public Portal!`, "success");
+                                        portalAllServices = backup;
+                                        renderPortalServicesGrid();
+                                        return;
+                                    }
+                                }
+                            } catch (err) { }
+                        }
+                        portalAllServices = [];
+                        renderPortalServicesGrid();
+                    }
                 } else {
                     container.innerHTML = `<div style="text-align:center; padding:30px; color:#ef4444;">Failed to load services: ${data.error || 'Server error'}</div>`;
                 }
@@ -5960,13 +5990,13 @@
                     <!-- Action Buttons -->
                     <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; border-top:1px solid var(--border-color); padding-top:14px; flex-wrap:wrap;">
                         <div style="display:flex; align-items:center; gap:6px;">
-                            <button class="btn-sync-protocol" style="padding:6px 12px; font-size:11.5px; font-weight:700;" onclick="openPortalServiceModal('${s.id || s.game_id}')">
+                            <button class="btn-sync-protocol" style="padding:6px 12px; font-size:11.5px; font-weight:700;" onclick="openPortalServiceModal('${s.id || s.game_id || s.service_id || s.package}')">
                                 <span>✏️ Edit Quests</span>
                             </button>
-                            <button class="btn-inspect-action" style="padding:6px 10px; font-size:11.5px; font-weight:700; color:${isEnabled ? '#f59e0b' : '#10b981'};" onclick="togglePortalService('${s.id || s.game_id}')">
+                            <button class="btn-inspect-action" style="padding:6px 10px; font-size:11.5px; font-weight:700; color:${isEnabled ? '#f59e0b' : '#10b981'};" onclick="togglePortalService('${s.id || s.game_id || s.service_id || s.package}')">
                                 ${isEnabled ? '⏸️ Pause' : '▶️ Activate'}
                             </button>
-                            <button class="btn-inspect-action" style="padding:6px 9px; font-size:11.5px; color:#ef4444;" title="Delete Service" onclick="deletePortalService('${s.id || s.game_id}')">
+                            <button class="btn-inspect-action" style="padding:6px 9px; font-size:11.5px; color:#ef4444;" title="Delete Service" onclick="deletePortalService('${s.id || s.game_id || s.service_id || s.package}')">
                                 🗑️
                             </button>
                         </div>
