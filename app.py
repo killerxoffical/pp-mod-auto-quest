@@ -30,47 +30,61 @@ PORTAL_SERVICES_CACHE = None
 
 def load_portal_services():
     global PORTAL_SERVICES_CACHE
-    if PORTAL_SERVICES_CACHE is not None:
+    if PORTAL_SERVICES_CACHE is not None and len(PORTAL_SERVICES_CACHE) > 0:
         return PORTAL_SERVICES_CACHE
 
     data = None
-    # 1. Primary Source of Truth: Cloudflare D1 persistent cloud store (survives Render restarts)
-    try:
-        cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", timeout=3)
-        if cf_res.status_code == 200:
-            cloud_data = cf_res.json()
-            if isinstance(cloud_data, dict):
-                data = cloud_data
-                print(f"[+] Loaded {len(data)} portal services from Cloudflare D1.")
-    except Exception as e:
-        print(f"[-] Cloudflare D1 boot fetch note: {e}")
 
-    # 2. Local Fallback: If Cloudflare was unreachable, use local file
-    if data is None and os.path.exists(PORTAL_SERVICES_FILE):
+    # 1. First Priority: Local verified portal_services.json
+    if os.path.exists(PORTAL_SERVICES_FILE):
         try:
             with open(PORTAL_SERVICES_FILE, "r", encoding="utf-8") as f:
                 content = json.load(f)
-                if isinstance(content, dict):
+                if isinstance(content, dict) and len(content) > 0:
                     data = content
+                    print(f"[+] Loaded {len(data)} portal services from local {PORTAL_SERVICES_FILE}")
+        except Exception as e:
+            print(f"[-] Error reading local portal_services: {e}")
+
+    # 2. Second Priority: Cloudflare D1 persistent cloud store (survives Render restarts)
+    if not data:
+        try:
+            cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", timeout=8)
+            if cf_res.status_code == 200:
+                cloud_data = cf_res.json()
+                if isinstance(cloud_data, dict) and len(cloud_data) > 0:
+                    data = cloud_data
+                    print(f"[+] Loaded {len(data)} portal services from Cloudflare D1.")
+        except Exception as e:
+            print(f"[-] Cloudflare D1 boot fetch note: {e}")
+
+    # 3. Third Priority: Local backup file
+    if not data and os.path.exists(PORTAL_SERVICES_BACKUP_FILE):
+        try:
+            with open(PORTAL_SERVICES_BACKUP_FILE, "r", encoding="utf-8") as bf:
+                b_content = json.load(bf)
+                if isinstance(b_content, dict) and len(b_content) > 0:
+                    data = b_content
         except Exception:
             pass
 
-    # 3. Default to empty dictionary - NEVER auto-inject default games
+    # Default to empty dictionary if completely brand new
     if data is None:
         data = {}
 
-    # Mirror to local files
-    try:
-        with open(PORTAL_SERVICES_FILE, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
-    except Exception:
-        pass
+    # Mirror to local files if we have data
+    if data:
+        try:
+            with open(PORTAL_SERVICES_FILE, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+        except Exception:
+            pass
 
-    try:
-        with open(PORTAL_SERVICES_BACKUP_FILE, "w", encoding="utf-8") as bf:
-            json.dump(data, bf, indent=2, ensure_ascii=False)
-    except Exception:
-        pass
+        try:
+            with open(PORTAL_SERVICES_BACKUP_FILE, "w", encoding="utf-8") as bf:
+                json.dump(data, bf, indent=2, ensure_ascii=False)
+        except Exception:
+            pass
 
     PORTAL_SERVICES_CACHE = data
     return data
@@ -93,7 +107,7 @@ def save_portal_services(data):
     # Sync to Cloudflare D1 persistent cloud store immediately
     def _sync_cf():
         try:
-            requests.post("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", json=data, timeout=5)
+            requests.post("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", json=data, timeout=8)
         except Exception as e:
             print(f"[-] Cloudflare D1 portal sync error: {e}")
     threading.Thread(target=_sync_cf, daemon=True).start()
@@ -104,8 +118,20 @@ def find_portal_service(services, query_id):
     Matches dict key, id, game_id, service_id, package, or title (case-insensitive & trimmed).
     Never returns False Negative when the service is configured.
     """
-    if not query_id or not services:
+    if not query_id:
         return None, None
+    if not services:
+        services = load_portal_services()
+    if not services:
+        try:
+            cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", timeout=6)
+            if cf_res.status_code == 200:
+                c_data = cf_res.json()
+                if isinstance(c_data, dict) and c_data:
+                    services.update(c_data)
+        except Exception:
+            pass
+
     q = str(query_id).strip().lower()
     for k, s in services.items():
         if (str(k).strip().lower() == q or
@@ -115,6 +141,22 @@ def find_portal_service(services, query_id):
             str(s.get("package", "")).strip().lower() == q or
             str(s.get("title", "")).strip().lower() == q):
             return k, s
+
+    # Normalized comparison (strip non-alphanumeric)
+    def _clean(val):
+        return re.sub(r'[^a-z0-9]', '', str(val).lower()) if val else ""
+
+    cq = _clean(q)
+    if cq:
+        for k, s in services.items():
+            if (_clean(k) == cq or
+                _clean(s.get("id")) == cq or
+                _clean(s.get("game_id")) == cq or
+                _clean(s.get("service_id")) == cq or
+                _clean(s.get("package")) == cq or
+                _clean(s.get("title")) == cq):
+                return k, s
+
     return None, None
 
 REGISTERED_DEVICES_CACHE = None
@@ -137,7 +179,7 @@ def load_registered_devices():
 
     # Fallback: check Cloudflare D1 persistent cloud store
     try:
-        cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/registered-devices", timeout=2)
+        cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/registered-devices", timeout=6)
         if cf_res.status_code == 200:
             cloud_data = cf_res.json()
             if cloud_data and isinstance(cloud_data, dict):
@@ -165,7 +207,10 @@ def save_registered_devices(data):
     # Asynchronously persist registered devices to Cloudflare D1
     def _sync_devs():
         try:
-            requests.post("https://ppmod-api.tredarskvt.workers.dev/api/cloud/registered-devices", json=data, timeout=4)
+            requests.post("https://ppmod-api.tredarskvt.workers.dev/api/cloud/registered-devices", json=data, timeout=8)
+        except Exception as e:
+            print(f"[-] Cloudflare D1 device sync error: {e}")
+    threading.Thread(target=_sync_devs, daemon=True).start()
         except Exception as e:
             print(f"[-] Cloudflare D1 device sync error: {e}")
     threading.Thread(target=_sync_devs, daemon=True).start()
@@ -924,17 +969,56 @@ def admin_switch_account():
     aid = generate_android_id(target_email if target_email else None)
     return do_token_login(target_email, master_token, aid)
 
+def extract_token_from_string(raw_str):
+    """
+    Extracts raw token or oauth_token from raw string, full URL, or query parameter.
+    Handles URL-encoding and fragment identifiers seamlessly.
+    """
+    if not raw_str:
+        return ""
+    import urllib.parse
+    s = urllib.parse.unquote(str(raw_str).strip())
+    if "aas_et/" in s:
+        idx = s.find("aas_et/")
+        tok = s[idx:]
+        for ch in ['&', '#', ' ', '"', "'", '\n', '\r']:
+            if ch in tok:
+                tok = tok.split(ch)[0]
+        return tok
+    if "oauth2rt_1/" in s:
+        idx = s.find("oauth2rt_1/")
+        tok = s[idx:]
+        for ch in ['&', '#', ' ', '"', "'", '\n', '\r']:
+            if ch in tok:
+                tok = tok.split(ch)[0]
+        return tok
+    if "oauth_token=" in s:
+        idx = s.find("oauth_token=") + len("oauth_token=")
+        tok = s[idx:]
+        for ch in ['&', '#', ' ', '"', "'", '\n', '\r']:
+            if ch in tok:
+                tok = tok.split(ch)[0]
+        return tok
+    if "token=" in s:
+        idx = s.find("token=") + len("token=")
+        tok = s[idx:]
+        for ch in ['&', '#', ' ', '"', "'", '\n', '\r']:
+            if ch in tok:
+                tok = tok.split(ch)[0]
+        return tok
+    return s.strip()
+
 @app.route("/api/portal/connect", methods=["POST"])
 def portal_connect_account():
     """
     Dedicated, isolated account connection for the Public Portal.
-    Accepts 6-digit sync code OR direct master_token / access_token.
+    Accepts 6-digit sync code OR direct master_token / access_token or full OAuth URL.
     Validates with Google Play Games and returns the player profile.
     Does NOT modify the Admin panel session.
     """
     data = request.get_json() or {}
     code = str(data.get("code") or data.get("sync_code") or "").strip().replace(" ", "").replace("-", "")
-    token_str = str(data.get("token") or data.get("master_token") or "").strip()
+    token_str = extract_token_from_string(str(data.get("token") or data.get("master_token") or data.get("url") or "").strip())
     email = str(data.get("email") or "").strip()
     android_id = str(data.get("android_id") or "").strip() or generate_android_id(email if email else None)
 
