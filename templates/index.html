@@ -2131,8 +2131,8 @@
                                 <div
                                     style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
                                     <span id="fullPanelAppVersion"
-                                        style="font-family:'JetBrains Mono'; font-size:12px; font-weight:800; color:#0284c7; word-break:break-all;">v3.8
-                                        Enterprise (Code 4)</span>
+                                        style="font-family:'JetBrains Mono'; font-size:12px; font-weight:800; color:#0284c7; word-break:break-all;">v4.1
+                                        Official (Code 5)</span>
                                 </div>
                             </div>
 
@@ -2468,8 +2468,8 @@
                                     <div>
                                         <h4 style="font-size:16px; font-weight:800; color:var(--text-primary);">PP
                                             Server Node Client</h4>
-                                        <span style="font-size:11.5px; color:var(--accent-green); font-weight:700;">v3.8
-                                            Enterprise • Release Signed (V1+V2+V3)</span>
+                                        <span style="font-size:11.5px; color:var(--accent-green); font-weight:700;">v4.1
+                                            Official • Release Signed (V1+V2+V3)</span>
                                     </div>
                                 </div>
                                 <div style="display:flex; align-items:center; gap:8px;">
@@ -2616,7 +2616,7 @@
                         <div style="display:flex; align-items:center; gap:8px;">
                             <span id="badgeCurrentAppVer" class="badge-status active"
                                 style="background:rgba(16,185,129,0.15); color:var(--accent-green); border:1px solid rgba(16,185,129,0.3); font-weight:800; font-size:12px; padding:6px 14px;">
-                                LIVE: v3.8 Enterprise (Code 4)
+                                LIVE: v4.1 Official (Code 5)
                             </span>
                         </div>
                     </div>
@@ -2626,7 +2626,7 @@
                             <label
                                 style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:6px;">Minimum
                                 Required Version Code *</label>
-                            <input id="updMinVerCode" type="number" class="form-input-element" value="4"
+                            <input id="updMinVerCode" type="number" class="form-input-element" value="5"
                                 style="height:42px; font-weight:800; font-family:'JetBrains Mono'; font-size:14px;">
                             <span
                                 style="font-size:11px; color:var(--text-muted); display:block; margin-top:4px;">ইউজারের
@@ -2636,10 +2636,10 @@
                             <label
                                 style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:6px;">Latest
                                 Version Name (Full Text) *</label>
-                            <input id="updVerName" type="text" class="form-input-element" value="v3.8 Enterprise"
+                            <input id="updVerName" type="text" class="form-input-element" value="v4.1 Official"
                                 style="height:42px; font-weight:700; font-size:13px;">
                             <span style="font-size:11px; color:var(--text-muted); display:block; margin-top:4px;">এডমিন
-                                যা লিখবেন ইউজারের আপডেট পপআপে বড় অক্ষরে সেটাই শো করবে (যেমন: v3.8 Enterprise)।</span>
+                                যা লিখবেন ইউজারের আপডেট পপআপে বড় অক্ষরে সেটাই শো করবে (যেমন: v4.1 Official)।</span>
                         </div>
                         <div style="grid-column: 1 / -1;">
                             <label
@@ -4952,7 +4952,7 @@
                         <span style="font-size:10.5px; font-family:'JetBrains Mono'; color:var(--text-secondary);">${(u.device_id || '').substring(0, 16)}...</span>
                         <div style="margin-top:3px;">
                             <span style="font-size:10px; font-weight:700; color:#0284c7; background:rgba(2,132,199,0.08); border:1px solid rgba(2,132,199,0.25); border-radius:4px; padding:1px 6px;">
-                                🚀 ${u.app_version || 'v3.8 Enterprise (Code 4)'}
+                                🚀 ${u.app_version || 'v4.1 Official (Code 5)'}
                             </span>
                         </div>
                     </div>
@@ -5399,7 +5399,7 @@
             document.getElementById("fullPanelUserName").innerText = u.display_name || "PP Mod User";
             document.getElementById("fullPanelDeviceTitle").innerText = "📱 " + (u.model || "Android Device");
             const appVerEl = document.getElementById("fullPanelAppVersion");
-            if (appVerEl) appVerEl.innerText = u.app_version || "v3.8 Enterprise (Code 4)";
+            if (appVerEl) appVerEl.innerText = u.app_version || "v4.1 Official (Code 5)";
             document.getElementById("fullPanelEmailSub").innerText = u.email || "No Email";
             document.getElementById("fullPanelDeviceId").innerText = u.device_id || "DEV-Node";
             document.getElementById("fullPanelUid").innerText = u.uid || "UID-N/A";
