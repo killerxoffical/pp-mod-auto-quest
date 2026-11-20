@@ -2800,19 +2800,17 @@ def ppmod_login():
             "error": f"This PP Mod account has been suspended by Admin. Reason: {ban_msg}"
         }), 403
 
-    if real_user:
-        uid = real_user.get("uid") or f"UID-{abs(hash(email)) % 900000 + 100000}"
-        disp = real_user.get("name") or email.split("@")[0].capitalize()
-        real_email = real_user.get("email") or email
-        avatar = real_user.get("avatar") or ""
-        coins = int(real_user.get("playPoints") or real_user.get("balance") or 1000)
-    else:
-        # Seamless authentication for Google SSO and email users
-        uid = f"UID-{abs(hash(email)) % 900000 + 100000}"
-        disp = email.split("@")[0].capitalize()
-        real_email = email
-        avatar = ""
-        coins = 1000
+    if not real_user:
+        return jsonify({
+            "ok": False,
+            "error": f"No PP Mod account found for '{email}'. Please create an account on PP Mod portal first."
+        }), 404
+
+    uid = real_user.get("uid") or f"UID-{abs(hash(email)) % 900000 + 100000}"
+    disp = real_user.get("name") or email.split("@")[0].capitalize()
+    real_email = real_user.get("email") or email
+    avatar = real_user.get("avatar") or ""
+    coins = int(real_user.get("playPoints") or real_user.get("balance") or 500)
 
     # Auto-link and persist device session in registered_devices.json
     now_str = time.strftime("%Y-%m-%d %H:%M:%S")

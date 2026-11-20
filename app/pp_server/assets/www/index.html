@@ -3,39 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>PP Server - Enterprise Vault</title>
+    <title>PPM Server Cloud</title>
     <style>
         :root {
             --bg-base: #f8fafc;
-            --bg-base-alt: #f1f5f9;
             --bg-card: #ffffff;
-            --bg-card-subtle: #f8fafc;
             --border-color: #e2e8f0;
-            --border-subtle: #edf2f7;
-            --border-focus: #0284c7;
+            --border-subtle: #f1f5f9;
             --text-primary: #0f172a;
             --text-secondary: #334155;
             --text-muted: #64748b;
             --text-faint: #94a3b8;
-            --primary: #0284c7;
-            --primary-hover: #0369a1;
-            --primary-light: #e0f2fe;
+            --primary: #7c3aed;
+            --primary-end: #6366f1;
+            --primary-light: #f5f3ff;
+            --blue: #2563eb;
+            --blue-light: #eff6ff;
+            --blue-border: #bfdbfe;
             --success: #10b981;
             --success-light: #ecfdf5;
             --warning: #f59e0b;
             --warning-light: #fffbeb;
             --danger: #ef4444;
             --danger-light: #fef2f2;
-            --purple: #8b5cf6;
-            --purple-light: #f5f3ff;
-            --radius-xs: 6px;
-            --radius-sm: 10px;
-            --radius-md: 14px;
-            --radius-lg: 18px;
-            --radius-xl: 22px;
-            --shadow-subtle: 0 1px 3px rgba(15,23,42,0.04);
-            --shadow-card: 0 4px 20px -2px rgba(15,23,42,0.06), 0 2px 6px -1px rgba(15,23,42,0.04);
-            --shadow-float: 0 10px 25px -3px rgba(2,132,199,0.3);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --shadow-subtle: 0 1px 3px rgba(15,23,42,0.05);
+            --shadow-card: 0 4px 16px -2px rgba(15,23,42,0.06), 0 1px 4px rgba(15,23,42,0.04);
+            --shadow-btn: 0 6px 18px -2px rgba(124,58,237,0.35);
             --shadow-modal: 0 25px 50px -12px rgba(15,23,42,0.25);
         }
 
@@ -49,984 +46,934 @@
         html, body {
             overscroll-behavior: none;
             -webkit-overflow-scrolling: touch;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background: var(--bg-base);
             color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             min-height: 100vh;
             overflow-x: hidden;
-            overflow-y: auto;
-            padding-bottom: 96px;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
             user-select: none;
             -webkit-user-select: none;
         }
 
-        /* ========== TOP NAVBAR ========== */
-        .navbar {
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            background: rgba(255, 255, 255, 0.94);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+        /* ==================== 1. SPLASH SCREEN ==================== */
+        #viewSplash {
+            position: fixed;
+            inset: 0;
+            background: #ffffff;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        #viewSplash.hide {
+            opacity: 0;
+            transform: scale(1.04);
+            pointer-events: none;
+        }
+
+        .splash-logo-wrap {
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .splash-logo-img {
+            width: 88px;
+            height: 88px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 10px 30px rgba(124,58,237,0.25);
+            animation: pulse-logo 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse-logo {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); box-shadow: 0 15px 40px rgba(124,58,237,0.35); }
+        }
+
+        .splash-title {
+            font-size: 21px;
+            font-weight: 900;
+            color: #0f172a;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .splash-sub {
+            font-size: 13px;
+            font-weight: 600;
+            color: #64748b;
+            letter-spacing: 0.3px;
+            margin-bottom: 32px;
+        }
+
+        .splash-progress-track {
+            width: 170px;
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .splash-progress-bar {
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, #7c3aed, #6366f1);
+            border-radius: 4px;
+            position: absolute;
+            animation: splash-bar 1.2s infinite ease-in-out;
+        }
+
+        @keyframes splash-bar {
+            0% { left: -50%; width: 50%; }
+            50% { left: 25%; width: 70%; }
+            100% { left: 100%; width: 50%; }
+        }
+
+        .splash-footnote {
+            font-size: 11px;
+            color: #94a3b8;
+            font-weight: 600;
+            margin-top: 14px;
+            letter-spacing: 0.2px;
+        }
+
+        /* ==================== 2. LOGIN SCREEN (IMAGE 3) ==================== */
+        #viewLogin {
+            display: none;
+            min-height: 100vh;
+            padding: 40px 20px 30px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            max-width: 440px;
+            margin: 0 auto;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .login-brand-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .login-brand-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 14px;
+            box-shadow: 0 10px 25px rgba(124,58,237,0.22);
+            display: block;
+        }
+
+        .login-main-title {
+            font-size: 20px;
+            font-weight: 900;
+            color: #0f172a;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .login-main-sub {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .login-card {
+            width: 100%;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: 24px 20px;
+            box-shadow: var(--shadow-card);
+        }
+
+        /* Google SSO Button */
+        .btn-google-sso {
+            width: 100%;
+            height: 48px;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+            cursor: pointer;
+            box-shadow: var(--shadow-subtle);
+            transition: all 0.12s ease;
+        }
+
+        .btn-google-sso:active {
+            transform: scale(0.98);
+            background: #f8fafc;
+        }
+
+        /* Divider */
+        .login-divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            color: #94a3b8;
+        }
+
+        .login-divider::before, .login-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e2e8f0;
+        }
+
+        .login-divider span {
+            padding: 0 12px;
+            font-size: 10.5px;
+            font-weight: 800;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+        }
+
+        /* Form Fields */
+        .login-form-group {
+            margin-bottom: 16px;
+        }
+
+        .login-field-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .login-input-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .login-input {
+            width: 100%;
+            height: 46px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background: #ffffff;
+            padding: 0 14px;
+            font-size: 14px;
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .login-input:focus {
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 3px rgba(124,58,237,0.12);
+        }
+
+        .login-input-pass {
+            padding-right: 44px;
+        }
+
+        .btn-eye-toggle {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px;
+        }
+
+        /* Login Submit Button */
+        .btn-submit-ppm {
+            width: 100%;
+            height: 48px;
+            background: linear-gradient(135deg, #7c3aed, #6366f1);
+            color: #ffffff;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            cursor: pointer;
+            box-shadow: var(--shadow-btn);
+            margin-top: 8px;
+            transition: all 0.15s ease;
+        }
+
+        .btn-submit-ppm:active {
+            transform: scale(0.98);
+        }
+
+        .btn-submit-ppm:disabled {
+            background: #cbd5e1;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        /* Register Link Card */
+        .card-register-link {
+            width: 100%;
+            margin-top: 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--radius-md);
+            background: #f8fafc;
+            padding: 12px;
+            text-align: center;
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #2563eb;
+            cursor: pointer;
+            transition: all 0.12s;
+        }
+
+        .card-register-link:active {
+            background: #eff6ff;
+            transform: scale(0.98);
+        }
+
+        .login-security-footer {
+            margin-top: 24px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .login-alert-error {
+            display: none;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 14px;
+            line-height: 1.4;
+        }
+
+        /* ==================== 3. 3D SUCCESS POPUP ==================== */
+        #modalSuccess3D {
+            position: fixed;
+            inset: 0;
+            background: rgba(15,23,42,0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 500;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        #modalSuccess3D.open {
+            display: flex;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .card-3d-success {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 30px 24px 24px;
+            width: 100%;
+            max-width: 360px;
+            text-align: center;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+            perspective: 1000px;
+            animation: pop3D 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes pop3D {
+            from { transform: scale(0.85) translateY(20px) rotateX(15deg); opacity: 0; }
+            to { transform: scale(1) translateY(0) rotateX(0deg); opacity: 1; }
+        }
+
+        .trophy-3d-wrap {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            box-shadow: 0 12px 30px rgba(16,185,129,0.35);
+            animation: float3D 3s infinite ease-in-out;
+        }
+
+        @keyframes float3D {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        .success-3d-title {
+            font-size: 19px;
+            font-weight: 900;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+
+        .success-3d-sub {
+            font-size: 12.5px;
+            color: #64748b;
+            margin-bottom: 18px;
+        }
+
+        .success-user-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--radius-md);
+            padding: 14px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .success-info-line {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12.5px;
+            margin-bottom: 6px;
+        }
+
+        .success-info-line:last-child {
+            margin-bottom: 0;
+        }
+
+        .success-info-k {
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .success-info-v {
+            color: #0f172a;
+            font-weight: 800;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        .btn-confirm-enter {
+            width: 100%;
+            height: 48px;
+            background: linear-gradient(135deg, #7c3aed, #6366f1);
+            color: #ffffff;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: var(--shadow-btn);
+            transition: all 0.12s;
+        }
+
+        .btn-confirm-enter:active {
+            transform: scale(0.98);
+        }
+
+        /* ==================== 4. HOME DASHBOARD (IMAGE 4) ==================== */
+        #viewHome {
+            display: none;
+            min-height: 100vh;
+            padding-bottom: 100px;
+            animation: fadeIn 0.25s ease;
+        }
+
+        /* Top Bar */
+        .home-topbar {
+            background: #ffffff;
             border-bottom: 1px solid var(--border-color);
             padding: 12px 18px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            transition: all 0.2s ease;
+            position: sticky;
+            top: 0;
+            z-index: 40;
         }
 
-        .nav-brand {
+        .topbar-left {
             display: flex;
             align-items: center;
             gap: 10px;
+            overflow: hidden;
+            flex: 1;
         }
 
-        .brand-logo {
+        .topbar-logo {
             width: 36px;
             height: 36px;
-            border-radius: var(--radius-sm);
-            background: linear-gradient(135deg, #0284c7, #06b6d4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #ffffff;
-            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #e2e8f0;
             flex-shrink: 0;
         }
 
-        .brand-info {
+        .topbar-title-wrap {
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
 
-        .brand-row {
+        .topbar-title-row {
             display: flex;
             align-items: center;
             gap: 6px;
         }
 
-        .brand-title {
+        .topbar-title {
             font-size: 15px;
-            font-weight: 800;
-            color: var(--text-primary);
-            letter-spacing: -0.3px;
+            font-weight: 900;
+            color: #0d9488;
+            letter-spacing: 0.2px;
         }
 
-        .brand-badge {
-            font-size: 9px;
-            font-weight: 700;
-            padding: 2px 6px;
-            border-radius: 6px;
-            background: var(--primary-light);
-            color: var(--primary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .brand-sub {
-            font-size: 11px;
-            font-weight: 500;
-            color: var(--text-muted);
-        }
-
-        .nav-actions {
+        .topbar-server-icon {
+            color: #14b8a6;
             display: flex;
             align-items: center;
-            gap: 8px;
         }
 
-        .cloud-pill {
-            display: flex;
-            align-items: center;
-            gap: 6px;
+        .topbar-user-sub {
             font-size: 11px;
             font-weight: 700;
-            color: #047857;
-            background: var(--success-light);
-            border: 1px solid #a7f3d0;
-            padding: 5px 10px;
-            border-radius: 20px;
-        }
-
-        .pulse-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: var(--success);
-            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-            animation: pulse-ring 2s infinite cubic-bezier(0.45, 0, 0.2, 1);
-        }
-
-        @keyframes pulse-ring {
-            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-            70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-        }
-
-        .nav-user-pill {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            padding: 4px 10px 4px 6px;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.15s ease;
-        }
-
-        .nav-user-pill:active {
-            transform: scale(0.96);
-            background: var(--bg-base-alt);
-        }
-
-        .nav-avatar {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #0284c7, #8b5cf6);
-            color: #fff;
-            font-size: 11px;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .nav-coins-badge {
-            display: flex;
-            align-items: center;
-            gap: 3px;
-            font-size: 11px;
-            font-weight: 800;
-            color: #d97706;
-        }
-
-        .btn-nav-login {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 11.5px;
-            font-weight: 700;
-            color: #ffffff;
-            background: linear-gradient(135deg, #0284c7, #0369a1);
-            padding: 6px 12px;
-            border-radius: var(--radius-sm);
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
-            transition: all 0.15s ease;
-        }
-
-        .btn-nav-login:active {
-            transform: scale(0.96);
-        }
-
-        /* ========== CONTAINER ========== */
-        .container {
-            width: 100%;
-            max-width: 580px;
-            margin: 0 auto;
-            padding: 16px 16px 24px;
-        }
-
-        /* ========== TAB PANES ========== */
-        .tab-pane {
-            display: none;
-        }
-
-        .tab-pane.active {
-            display: block;
-            animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(4px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* ========== USER STATUS BANNER ========== */
-        .user-status-card {
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 16px;
-            margin-bottom: 16px;
-            box-shadow: var(--shadow-card);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-        }
-
-        .user-profile-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            overflow: hidden;
-            flex: 1;
-        }
-
-        .user-profile-avatar {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #0284c7, #8b5cf6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #ffffff;
-            font-size: 17px;
-            font-weight: 800;
-            box-shadow: 0 4px 10px rgba(139, 92, 246, 0.25);
-            flex-shrink: 0;
-        }
-
-        .user-profile-info {
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .user-profile-name {
-            font-size: 14.5px;
-            font-weight: 800;
-            color: var(--text-primary);
+            color: #0284c7;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        .user-profile-meta {
+        .topbar-actions {
             display: flex;
             align-items: center;
-            gap: 6px;
-            margin-top: 2px;
+            gap: 8px;
+            flex-shrink: 0;
         }
 
-        .user-uid-pill {
-            font-size: 10px;
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            font-weight: 700;
-            color: var(--primary);
-            background: var(--primary-light);
-            padding: 1px 6px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .user-coins-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-            font-size: 11px;
-            font-weight: 800;
-            color: #b45309;
-            background: var(--warning-light);
-            border: 1px solid #fde68a;
-            padding: 1px 7px;
-            border-radius: 12px;
-        }
-
-        .user-profile-right {
+        .btn-circle-action {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #ffffff;
             display: flex;
             align-items: center;
-            gap: 6px;
-        }
-
-        .btn-logout-sm {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            padding: 7px 12px;
-            border-radius: var(--radius-sm);
-            background: var(--danger-light);
-            border: 1px solid #fecaca;
-            color: var(--danger);
-            font-size: 11.5px;
-            font-weight: 700;
+            justify-content: center;
             cursor: pointer;
             transition: all 0.12s;
         }
 
-        .btn-logout-sm:active {
-            transform: scale(0.95);
-            background: var(--danger);
-            color: #ffffff;
+        .btn-circle-reload {
+            border: 1px solid #bfdbfe;
+            color: #2563eb;
         }
 
-        /* Non-logged in notice */
-        .auth-prompt-card {
-            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
-            border: 1px solid #bae6fd;
-            border-radius: var(--radius-lg);
-            padding: 16px;
-            margin-bottom: 16px;
+        .btn-circle-reload:active {
+            background: #eff6ff;
+            transform: scale(0.94);
+        }
+
+        .btn-circle-logout {
+            border: 1px solid #fecaca;
+            color: #ef4444;
+        }
+
+        .btn-circle-logout:active {
+            background: #fef2f2;
+            transform: scale(0.94);
+        }
+
+        /* Filter & Search Controls (Image 4) */
+        .controls-filter-bar {
+            padding: 14px 18px 8px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .region-select-pill {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 9px 12px;
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #0284c7;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .search-input-wrap {
+            position: relative;
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            color: #94a3b8;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-input {
+            width: 100%;
+            height: 38px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background: #ffffff;
+            padding: 0 12px 0 34px;
+            font-size: 12.5px;
+            color: var(--text-primary);
+            outline: none;
+            box-shadow: var(--shadow-subtle);
+            transition: border-color 0.15s ease;
+        }
+
+        .search-input:focus {
+            border-color: #2563eb;
+        }
+
+        /* Section Heading */
+        .section-accounts-bar {
+            padding: 12px 18px 8px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 12px;
-            box-shadow: var(--shadow-subtle);
         }
 
-        .auth-prompt-content {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .auth-prompt-icon {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            background: #ffffff;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.15);
-        }
-
-        .auth-prompt-text h4 {
-            font-size: 13.5px;
-            font-weight: 800;
-            color: #0369a1;
-        }
-
-        .auth-prompt-text p {
-            font-size: 11.5px;
-            color: #0284c7;
-            margin-top: 1px;
-            line-height: 1.35;
-        }
-
-        .btn-prompt-login {
-            padding: 8px 14px;
-            border-radius: var(--radius-sm);
-            background: linear-gradient(135deg, #0284c7, #0369a1);
-            color: #ffffff;
+        .sec-title-dark {
             font-size: 12px;
             font-weight: 800;
-            border: none;
-            cursor: pointer;
-            white-space: nowrap;
-            box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25);
-            transition: all 0.15s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #334155;
         }
 
-        .btn-prompt-login:active {
-            transform: scale(0.95);
+        .sec-count-blue {
+            font-size: 12.5px;
+            font-weight: 800;
+            color: #2563eb;
         }
 
-        /* ========== STATS ROW ========== */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 18px;
-        }
-
-        .stat-card {
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            padding: 12px 10px;
+        /* Accounts Cards Container */
+        .home-accounts-wrap {
+            padding: 6px 18px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            text-align: center;
-            box-shadow: var(--shadow-subtle);
+            gap: 12px;
         }
 
-        .stat-icon {
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 6px;
+        .card-connected-acc {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            box-shadow: var(--shadow-card);
         }
 
-        .stat-icon-blue { background: var(--primary-light); color: var(--primary); }
-        .stat-icon-green { background: var(--success-light); color: var(--success); }
-        .stat-icon-amber { background: var(--warning-light); color: var(--warning); }
-
-        .stat-val {
-            font-size: 16px;
-            font-weight: 800;
-            color: var(--text-primary);
-            letter-spacing: -0.2px;
-        }
-
-        .stat-label {
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            margin-top: 2px;
-        }
-
-        /* ========== SECTION CONTROLS ========== */
-        .section-header {
+        .card-acc-top {
             display: flex;
             align-items: center;
             justify-content: space-between;
             margin-bottom: 12px;
         }
 
-        .section-title-wrap {
+        .card-acc-header-left {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
+            overflow: hidden;
+            flex: 1;
         }
 
-        .section-title {
-            font-size: 12px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            color: var(--text-muted);
+        .flag-icon {
+            font-size: 16px;
+            line-height: 1;
         }
 
-        .count-badge {
-            background: var(--primary-light);
-            color: var(--primary);
+        .tag-country-code {
             font-size: 10.5px;
             font-weight: 800;
-            padding: 1px 7px;
-            border-radius: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
         }
 
-        .section-actions {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn-action-outline {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-sm);
-            padding: 6px 10px;
-            font-size: 11.5px;
-            font-weight: 700;
-            color: var(--primary);
-            cursor: pointer;
-            transition: all 0.12s;
-        }
-
-        .btn-action-outline:active {
-            transform: scale(0.95);
-            background: var(--primary-light);
-        }
-
-        .btn-add-primary {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            background: linear-gradient(135deg, #0284c7, #10b981);
-            color: #ffffff;
-            border: none;
-            border-radius: var(--radius-sm);
-            padding: 6px 12px;
-            font-size: 11.5px;
+        .card-acc-email {
+            font-size: 14px;
             font-weight: 800;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
-            transition: all 0.15s ease;
-        }
-
-        .btn-add-primary:active {
-            transform: scale(0.95);
-        }
-
-        /* ========== ACCOUNTS LIST ========== */
-        .accounts-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .account-card {
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 16px;
-            box-shadow: var(--shadow-card);
-            transition: all 0.15s ease;
-        }
-
-        .acc-top {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 12px;
-        }
-
-        .acc-user {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            overflow: hidden;
-            flex: 1;
-            min-width: 0;
-        }
-
-        .acc-avatar {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-        }
-
-        .acc-meta {
-            overflow: hidden;
-            flex: 1;
-            min-width: 0;
-        }
-
-        .acc-email {
-            font-size: 13.5px;
-            font-weight: 800;
-            color: var(--text-primary);
+            color: #0f172a;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            cursor: pointer;
         }
 
-        .acc-tags {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            margin-top: 3px;
-            flex-wrap: wrap;
-        }
-
-        .tag {
-            font-size: 10px;
-            font-weight: 700;
-            padding: 2px 6px;
-            border-radius: 4px;
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-        }
-
-        .tag-green {
-            background: var(--success-light);
-            color: #047857;
-            border: 1px solid #a7f3d0;
-        }
-
-        .tag-blue {
-            background: var(--primary-light);
-            color: #0369a1;
-            border: 1px solid #bae6fd;
-        }
-
-        .tag-amber {
-            background: var(--warning-light);
-            color: #b45309;
-            border: 1px solid #fde68a;
-        }
-
-        .btn-delete-acc {
+        .btn-trash-delete {
             width: 32px;
             height: 32px;
-            border-radius: var(--radius-xs);
-            background: transparent;
-            border: none;
-            color: var(--text-faint);
+            border-radius: 6px;
+            background: #fef2f2;
+            border: 1px solid #fee2e2;
+            color: #ef4444;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.12s;
             flex-shrink: 0;
+            transition: all 0.12s;
         }
 
-        .btn-delete-acc:active {
-            background: var(--danger-light);
-            color: var(--danger);
+        .btn-trash-delete:active {
+            background: #ef4444;
+            color: #ffffff;
+            transform: scale(0.94);
         }
 
-        /* 6-DIGIT CODE DISPLAY */
-        .code-box {
-            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-            border: 1px solid var(--border-color);
+        /* Sync Code Box */
+        .box-sync-code {
+            background: #f0f7ff;
+            border: 1px solid #dbeafe;
             border-radius: var(--radius-md);
             padding: 12px 14px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 10px;
         }
 
-        .code-info {
+        .box-sync-code-left {
             display: flex;
             flex-direction: column;
         }
 
-        .code-label {
-            font-size: 9.5px;
+        .sync-code-label {
+            font-size: 10px;
             font-weight: 800;
-            color: var(--text-muted);
-            letter-spacing: 0.6px;
+            color: #64748b;
             text-transform: uppercase;
+            letter-spacing: 0.6px;
         }
 
-        .code-value {
+        .sync-code-digits {
             font-family: ui-monospace, "JetBrains Mono", SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            font-size: 22px;
+            font-size: 24px;
             font-weight: 900;
-            letter-spacing: 4px;
-            color: var(--primary);
+            letter-spacing: 5px;
+            color: #1e40af;
             margin-top: 1px;
         }
 
-        .btn-copy-code {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            padding: 7px 12px;
-            background: #ffffff;
-            border: 1px solid #bae6fd;
-            border-radius: var(--radius-sm);
-            color: var(--primary);
-            font-size: 11px;
-            font-weight: 800;
-            cursor: pointer;
-            box-shadow: 0 1px 3px rgba(2, 132, 199, 0.1);
-            transition: all 0.12s;
-        }
-
-        .btn-copy-code:active {
-            transform: scale(0.95);
-            background: var(--primary);
-            color: #ffffff;
-        }
-
-        /* PERK ROW IN CARD */
-        .perk-mini-row {
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            border-radius: var(--radius-sm);
-            padding: 8px 12px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-        }
-
-        .perk-mini-info {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 11.5px;
-            font-weight: 700;
-            color: #166534;
-        }
-
-        .btn-perk-claim {
-            padding: 5px 10px;
-            background: linear-gradient(135deg, #10b981, #059669);
+        .btn-blue-copy {
+            background: #2563eb;
             color: #ffffff;
             border: none;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 800;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.12s;
-        }
-
-        .btn-perk-claim:disabled {
-            background: #e2e8f0;
-            color: var(--text-muted);
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-
-        /* EMPTY STATE */
-        .empty-state {
-            background: #ffffff;
-            border: 2px dashed var(--border-color);
-            border-radius: var(--radius-xl);
-            padding: 44px 20px;
-            text-align: center;
-            box-shadow: var(--shadow-subtle);
-        }
-
-        .empty-icon {
-            width: 64px;
-            height: 64px;
-            border-radius: 50%;
-            background: var(--primary-light);
-            border: 1px solid #bae6fd;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 16px;
-            color: var(--primary);
-        }
-
-        .empty-title {
-            font-size: 16px;
-            font-weight: 800;
-            color: var(--text-primary);
-            margin-bottom: 6px;
-        }
-
-        .empty-desc {
-            font-size: 12.5px;
-            color: var(--text-muted);
-            line-height: 1.5;
-            max-width: 320px;
-            margin: 0 auto 20px;
-        }
-
-        .btn-empty-add {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            padding: 11px 22px;
-            background: linear-gradient(135deg, #0284c7, #10b981);
-            color: #ffffff;
-            border: none;
-            border-radius: var(--radius-md);
-            font-size: 13px;
-            font-weight: 800;
-            cursor: pointer;
-            box-shadow: var(--shadow-float);
-            transition: all 0.15s ease;
-        }
-
-        .btn-empty-add:active {
-            transform: scale(0.96);
-        }
-
-        /* ========== TAB 2: FRIDAY PERKS ========== */
-        .perks-hero {
-            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
-            border: 1px solid #a7f3d0;
-            border-radius: var(--radius-lg);
-            padding: 20px;
-            margin-bottom: 16px;
-            text-align: center;
-        }
-
-        .perks-hero-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: #ffffff;
-            color: #059669;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 10px;
-            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
-        }
-
-        .perks-hero h2 {
-            font-size: 16px;
-            font-weight: 800;
-            color: #065f46;
-        }
-
-        .perks-hero p {
+            border-radius: var(--radius-sm);
+            padding: 8px 14px;
             font-size: 12px;
-            color: #047857;
-            margin-top: 4px;
-            line-height: 1.4;
-        }
-
-        /* ========== TAB 3: NODE & SETTINGS ========== */
-        .settings-card {
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 16px 18px;
-            margin-bottom: 14px;
-            box-shadow: var(--shadow-card);
-        }
-
-        .settings-header {
-            font-size: 13px;
             font-weight: 800;
-            color: var(--text-primary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 12px;
             display: flex;
             align-items: center;
-            gap: 6px;
-        }
-
-        .info-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 9px 0;
-            border-bottom: 1px solid var(--border-subtle);
-            font-size: 12.5px;
-        }
-
-        .info-row:last-child {
-            border-bottom: none;
-        }
-
-        .info-label {
-            color: var(--text-muted);
-            font-weight: 600;
-        }
-
-        .info-val {
-            color: var(--text-primary);
-            font-weight: 700;
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            text-align: right;
-            max-width: 220px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .btn-setting-row {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 14px;
-            background: var(--bg-card-subtle);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            color: var(--text-primary);
-            font-size: 13px;
-            font-weight: 700;
+            gap: 5px;
             cursor: pointer;
-            margin-top: 10px;
+            box-shadow: 0 4px 10px rgba(37,99,235,0.25);
             transition: all 0.12s;
         }
 
-        .btn-setting-row:active {
-            background: var(--primary-light);
-            border-color: var(--primary);
+        .btn-blue-copy:active {
+            transform: scale(0.95);
+            background: #1d4ed8;
         }
 
-        .btn-logout-full {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 7px;
-            padding: 12px 16px;
-            border-radius: var(--radius-md);
-            background: var(--danger-light);
-            border: 1px solid #fecaca;
-            color: var(--danger);
-            font-size: 13px;
-            font-weight: 800;
-            cursor: pointer;
-            margin-top: 16px;
-            transition: all 0.15s ease;
-        }
-
-        .btn-logout-full:active {
-            background: var(--danger);
-            color: #ffffff;
-            transform: scale(0.98);
-        }
-
-        /* ========== BOTTOM NAVIGATION BAR ========== */
-        .bottom-nav {
+        /* Bottom Fixed Action Button (Image 4) */
+        .bottom-connect-bar {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            z-index: 60;
+            z-index: 50;
             background: rgba(255, 255, 255, 0.94);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border-top: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-around;
-            padding: 6px 12px (8px + env(safe-area-inset-bottom, 8px));
+            padding: 12px 18px (14px + env(safe-area-inset-bottom, 10px));
             max-width: 580px;
             margin: 0 auto;
         }
 
-        .nav-item {
-            flex: 1;
+        .btn-connect-google-full {
+            width: 100%;
+            height: 50px;
+            border-radius: var(--radius-md);
+            background: linear-gradient(135deg, #7c3aed, #6366f1);
+            color: #ffffff;
+            border: none;
+            font-size: 15px;
+            font-weight: 800;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 3px;
-            background: transparent;
-            border: none;
-            padding: 6px 4px;
+            gap: 8px;
             cursor: pointer;
-            color: var(--text-muted);
+            box-shadow: var(--shadow-btn);
             transition: all 0.15s ease;
-            position: relative;
         }
 
-        .nav-item.active {
-            color: var(--primary);
+        .btn-connect-google-full:active {
+            transform: scale(0.98);
         }
 
-        .nav-item.active::after {
-            content: '';
-            position: absolute;
-            top: 2px;
-            width: 16px;
-            height: 3px;
-            border-radius: 2px;
-            background: var(--primary);
+        /* Empty State */
+        .empty-home-box {
+            background: #ffffff;
+            border: 2px dashed #cbd5e1;
+            border-radius: var(--radius-xl);
+            padding: 44px 20px;
+            text-align: center;
+            margin: 10px 0;
         }
 
-        .nav-label {
+        .empty-home-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #f5f3ff;
+            color: #7c3aed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+        }
+
+        .empty-home-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+
+        .empty-home-sub {
+            font-size: 12px;
+            color: #64748b;
+            line-height: 1.4;
+            max-width: 280px;
+            margin: 0 auto;
+        }
+
+        /* ==================== 5. DEV PORTAL (TOKEN FINDER) ==================== */
+        #viewDevPortal {
+            display: none;
+            min-height: 100vh;
+            padding: 24px 18px 40px;
+            max-width: 540px;
+            margin: 0 auto;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .dev-portal-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: 24px 20px;
+            box-shadow: var(--shadow-card);
+            margin-bottom: 18px;
+        }
+
+        .dev-badge-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .badge-dev {
+            background: #fef3c7;
+            color: #b45309;
             font-size: 10.5px;
-            font-weight: 700;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        /* ========== MODAL SHEET (REGION / LOGIN / CONFIRM) ========== */
-        .modal-backdrop {
+        .dev-portal-title {
+            font-size: 18px;
+            font-weight: 900;
+            color: #0f172a;
+        }
+
+        .dev-portal-sub {
+            font-size: 12.5px;
+            color: #64748b;
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+
+        .dev-result-box {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-top: 18px;
+        }
+
+        .dev-link-preview {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: var(--radius-sm);
+            padding: 10px 12px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 11.5px;
+            color: #0284c7;
+            word-break: break-all;
+            margin: 8px 0 12px;
+        }
+
+        /* ==================== MODALS & DIALOGS ==================== */
+        .modal-bg {
             position: fixed;
             inset: 0;
-            background: rgba(15, 23, 42, 0.45);
+            background: rgba(15,23,42,0.45);
             backdrop-filter: blur(6px);
             -webkit-backdrop-filter: blur(6px);
-            z-index: 100;
+            z-index: 200;
             display: none;
             align-items: flex-end;
             justify-content: center;
-            transition: opacity 0.2s ease;
         }
 
-        .modal-backdrop.open {
+        .modal-bg.open {
             display: flex;
+            animation: fadeIn 0.2s ease;
         }
 
         .modal-sheet {
@@ -1034,12 +981,12 @@
             border-top: 1px solid var(--border-color);
             border-radius: 24px 24px 0 0;
             width: 100%;
-            max-width: 540px;
-            max-height: 82vh;
+            max-width: 520px;
+            max-height: 80vh;
             overflow-y: auto;
             padding: 16px 20px 36px;
             box-shadow: var(--shadow-modal);
-            animation: slideUp 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: slideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         @keyframes slideUp {
@@ -1047,7 +994,7 @@
             to { transform: translateY(0); }
         }
 
-        .modal-drag-pill {
+        .modal-pill-drag {
             width: 36px;
             height: 4px;
             border-radius: 2px;
@@ -1055,46 +1002,40 @@
             margin: 0 auto 16px;
         }
 
-        .modal-title-row {
+        .modal-header-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
             margin-bottom: 16px;
         }
 
-        .modal-heading {
-            font-size: 16px;
+        .modal-sheet-title {
+            font-size: 15px;
             font-weight: 800;
-            color: var(--text-primary);
+            color: #0f172a;
         }
 
-        .modal-btn-close {
-            background: var(--bg-card-subtle);
+        .modal-close-btn {
+            background: #f1f5f9;
             border: none;
-            color: var(--text-secondary);
-            width: 32px;
-            height: 32px;
+            color: #64748b;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.12s;
         }
 
-        .modal-btn-close:active {
-            background: #e2e8f0;
-        }
-
-        /* REGIONS GRID */
-        .regions-grid {
+        .region-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 10px;
         }
 
-        .region-card {
-            background: var(--bg-card-subtle);
+        .region-item-card {
+            background: #f8fafc;
             border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
             padding: 12px 14px;
@@ -1105,235 +1046,73 @@
             transition: all 0.12s;
         }
 
-        .region-card:active {
-            background: var(--primary-light);
-            border-color: var(--primary);
+        .region-item-card:active {
+            background: #eff6ff;
+            border-color: #2563eb;
             transform: scale(0.98);
         }
 
-        .region-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .region-name {
+        .region-item-name {
             font-size: 13px;
             font-weight: 700;
-            color: var(--text-primary);
+            color: #0f172a;
         }
 
-        .region-code-badge {
+        .region-item-code {
             font-size: 10px;
             font-weight: 800;
-            color: var(--primary);
+            color: #2563eb;
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            margin-top: 2px;
         }
 
-        /* ========== LOGIN FORM IN MODAL ========== */
-        .login-banner {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .login-logo {
-            width: 52px;
-            height: 52px;
-            border-radius: 14px;
-            background: linear-gradient(135deg, #0284c7, #8b5cf6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #ffffff;
-            margin: 0 auto 10px;
-            box-shadow: 0 6px 18px rgba(2, 132, 199, 0.25);
-        }
-
-        .login-title {
-            font-size: 18px;
-            font-weight: 900;
-            color: var(--text-primary);
-        }
-
-        .login-sub {
-            font-size: 12.5px;
-            color: var(--text-muted);
-            margin-top: 4px;
-            line-height: 1.4;
-        }
-
-        .login-form {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .form-label {
-            font-size: 11.5px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--text-secondary);
-        }
-
-        .input-wrap {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
-        .input-icon {
-            position: absolute;
-            left: 14px;
-            color: var(--text-muted);
-            pointer-events: none;
-            display: flex;
-            align-items: center;
-        }
-
-        .form-input {
-            width: 100%;
-            height: 46px;
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border-color);
-            background: #ffffff;
-            padding: 0 42px 0 42px;
-            font-size: 14px;
-            color: var(--text-primary);
-            outline: none;
-            transition: all 0.15s ease;
-        }
-
-        .form-input:focus {
-            border-color: var(--border-focus);
-            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
-        }
-
-        .input-toggle-pw {
-            position: absolute;
-            right: 12px;
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            padding: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .btn-submit-login {
-            height: 48px;
-            border-radius: var(--radius-md);
-            background: linear-gradient(135deg, #0284c7, #0369a1);
-            color: #ffffff;
-            border: none;
-            font-size: 14px;
-            font-weight: 800;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            box-shadow: var(--shadow-float);
-            margin-top: 6px;
-            transition: all 0.15s ease;
-        }
-
-        .btn-submit-login:active {
-            transform: scale(0.98);
-        }
-
-        .btn-submit-login:disabled {
-            background: #cbd5e1;
-            box-shadow: none;
-            cursor: not-allowed;
-        }
-
-        .login-error-box {
-            display: none;
-            background: var(--danger-light);
-            border: 1px solid #fecaca;
-            color: var(--danger);
-            font-size: 12px;
-            font-weight: 600;
-            padding: 10px 14px;
-            border-radius: var(--radius-sm);
-            line-height: 1.4;
-        }
-
-        .login-footer {
-            margin-top: 14px;
-            text-align: center;
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        .login-footer a {
-            color: var(--primary);
-            font-weight: 700;
-            text-decoration: none;
-        }
-
-        /* ========== CONFIRM DIALOG ========== */
-        .dialog-backdrop {
+        /* Confirm Dialog */
+        .dialog-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(15, 23, 42, 0.5);
+            background: rgba(15,23,42,0.5);
             backdrop-filter: blur(4px);
-            z-index: 200;
+            z-index: 300;
             display: none;
             align-items: center;
             justify-content: center;
             padding: 24px;
         }
 
-        .dialog-backdrop.open {
+        .dialog-overlay.open {
             display: flex;
         }
 
-        .dialog-card {
+        .dialog-box {
             background: #ffffff;
             border-radius: var(--radius-lg);
             padding: 24px 20px 18px;
             width: 100%;
-            max-width: 360px;
+            max-width: 350px;
             box-shadow: var(--shadow-modal);
-            animation: scaleIn 0.18s ease;
+            animation: pop3D 0.2s ease;
         }
 
-        @keyframes scaleIn {
-            from { transform: scale(0.95); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-
-        .dialog-title {
+        .dialog-h {
             font-size: 16px;
             font-weight: 800;
-            color: var(--text-primary);
+            color: #0f172a;
             margin-bottom: 6px;
         }
 
-        .dialog-desc {
+        .dialog-p {
             font-size: 12.5px;
-            color: var(--text-muted);
-            line-height: 1.5;
-            margin-bottom: 18px;
+            color: #64748b;
+            line-height: 1.45;
+            margin-bottom: 20px;
         }
 
-        .dialog-actions {
+        .dialog-btn-row {
             display: flex;
             gap: 10px;
             justify-content: flex-end;
         }
 
-        .dialog-btn {
+        .btn-dialog {
             padding: 9px 16px;
             border-radius: var(--radius-sm);
             font-size: 12.5px;
@@ -1343,53 +1122,49 @@
             transition: all 0.12s;
         }
 
-        .dialog-btn-cancel {
-            background: var(--bg-card-subtle);
-            color: var(--text-secondary);
-            border: 1px solid var(--border-color);
+        .btn-dialog-cancel {
+            background: #f1f5f9;
+            color: #334155;
+            border: 1px solid #e2e8f0;
         }
 
-        .dialog-btn-danger {
-            background: var(--danger);
+        .btn-dialog-danger {
+            background: #ef4444;
             color: #ffffff;
         }
 
-        .dialog-btn:active {
-            transform: scale(0.96);
-        }
-
-        /* ========== TOAST NOTIFICATION ========== */
-        .toast {
+        /* Toast */
+        .toast-pop {
             position: fixed;
-            top: 64px;
+            top: 60px;
             left: 50%;
             transform: translateX(-50%) translateY(-16px);
             background: #ffffff;
             border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            padding: 10px 18px;
+            color: #0f172a;
+            padding: 9px 16px;
             border-radius: 30px;
             font-size: 12.5px;
             font-weight: 700;
             display: flex;
             align-items: center;
-            gap: 8px;
-            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+            gap: 7px;
+            box-shadow: 0 10px 25px rgba(15,23,42,0.12);
             opacity: 0;
             pointer-events: none;
-            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-            z-index: 999;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 9999;
         }
 
-        .toast.show {
+        .toast-pop.show {
             opacity: 1;
             transform: translateX(-50%) translateY(0);
         }
 
-        .spinner {
-            width: 18px;
-            height: 18px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
+        .spinner-mini {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
             border-top-color: #ffffff;
             border-radius: 50%;
             animation: spin 0.6s linear infinite;
@@ -1398,354 +1173,71 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
     </style>
 </head>
 <body>
 
-    <!-- TOP NAVBAR -->
-    <header class="navbar">
-        <div class="nav-brand">
-            <div class="brand-logo">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                </svg>
-            </div>
-            <div class="brand-info">
-                <div class="brand-row">
-                    <span class="brand-title">PP Server</span>
-                    <span class="brand-badge">Vault</span>
-                </div>
-                <span class="brand-sub">PlayQuest Cloud Node</span>
-            </div>
+    <!-- ==================== 1. SPLASH SCREEN ==================== -->
+    <div id="viewSplash">
+        <div class="splash-logo-wrap">
+            <img src="logo.png" alt="PP MOD Logo" class="splash-logo-img" onerror="this.src='https://ppmods.netlify.app/fb.png'">
         </div>
-        <div class="nav-actions">
-            <div class="cloud-pill">
-                <span class="pulse-dot"></span>
-                <span>Cloud Live</span>
-            </div>
-            <div id="navUserArea">
-                <!-- Dynamically filled with User Pill or Sign In Button -->
-            </div>
+        <h1 class="splash-title">PPM SERVER CLOUD</h1>
+        <p class="splash-sub">Dedicated Cloud Sync Engine</p>
+        <div class="splash-progress-track">
+            <div class="splash-progress-bar"></div>
         </div>
-    </header>
-
-    <!-- MAIN CONTAINER -->
-    <main class="container">
-
-        <!-- TAB 1: CONNECTED ACCOUNTS & HOME -->
-        <section id="tabAccounts" class="tab-pane active">
-
-            <!-- Dynamic User / Login Prompt Card -->
-            <div id="topUserBanner"></div>
-
-            <!-- Stats Row -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon stat-icon-blue">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="9" cy="7" r="4"></circle>
-                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                        </svg>
-                    </div>
-                    <span class="stat-val" id="statAccCount">0</span>
-                    <span class="stat-label">Accounts</span>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon stat-icon-green">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                        </svg>
-                    </div>
-                    <span class="stat-val" style="color:#059669;font-size:13px;margin-top:2px;">SECURE</span>
-                    <span class="stat-label">Cloud Vault</span>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon stat-icon-amber">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                        </svg>
-                    </div>
-                    <span class="stat-val" id="statUserCoins" style="color:#d97706;">500</span>
-                    <span class="stat-label">PP Points</span>
-                </div>
-            </div>
-
-            <!-- Section Controls -->
-            <div class="section-header">
-                <div class="section-title-wrap">
-                    <span class="section-title">Connected Google Vault</span>
-                    <span class="count-badge" id="badgeAccCount">0</span>
-                </div>
-                <div class="section-actions">
-                    <button class="btn-action-outline" onclick="syncCloudAccounts()">
-                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="23 4 23 10 17 10"></polyline>
-                            <polyline points="1 20 1 14 7 14"></polyline>
-                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-                        </svg>
-                        <span>Sync</span>
-                    </button>
-                    <button class="btn-add-primary" onclick="openRegionPicker()">
-                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
-                        <span>Add Gmail</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Accounts Card Container -->
-            <div class="accounts-list" id="accountsList"></div>
-
-            <!-- Empty State -->
-            <div class="empty-state" id="emptyState">
-                <div class="empty-icon">
-                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                    </svg>
-                </div>
-                <h3 class="empty-title">No Google Accounts Connected</h3>
-                <p class="empty-desc">Connect your Google Play account to capture a permanent master token and receive a 6-digit sync code for auto-quest completion.</p>
-                <button class="btn-empty-add" onclick="openRegionPicker()">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
-                    <span>Connect Google Account</span>
-                </button>
-            </div>
-
-        </section>
-
-        <!-- TAB 2: FRIDAY PERKS -->
-        <section id="tabPerks" class="tab-pane">
-            <div class="perks-hero">
-                <div class="perks-hero-icon">
-                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="20 12 20 22 4 22 4 12"></polyline>
-                        <rect x="2" y="7" width="20" height="5"></rect>
-                        <line x1="12" y1="22" x2="12" y2="7"></line>
-                        <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
-                        <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
-                    </svg>
-                </div>
-                <h2>Friday Play Points Perks Hub</h2>
-                <p>Claim free Google Play Points weekly perks across all your connected Google accounts automatically.</p>
-            </div>
-
-            <div class="section-header">
-                <span class="section-title">Weekly Perks Manager</span>
-                <button class="btn-add-primary" onclick="claimAllPerks()">
-                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    <span>Claim All Perks</span>
-                </button>
-            </div>
-
-            <div class="accounts-list" id="perksAccountsList"></div>
-        </section>
-
-        <!-- TAB 3: NODE & SETTINGS -->
-        <section id="tabSettings" class="tab-pane">
-
-            <!-- Profile Overview Card -->
-            <div class="settings-card" id="settingsProfileCard">
-                <div class="settings-header">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                    <span>PP Mod Account Session</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Status</span>
-                    <span class="info-val" id="settAuthStatus" style="color:#059669;">Logged In</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Name</span>
-                    <span class="info-val" id="settName">PP Mod User</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Email</span>
-                    <span class="info-val" id="settEmail">user@ppmod.com</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">PP UID</span>
-                    <span class="info-val" id="settUid" style="color:#0284c7;cursor:pointer;" onclick="copyText(this.textContent, 'PP UID')">UID-123456</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Play Points Balance</span>
-                    <span class="info-val" id="settBalance" style="color:#d97706;">500 Points</span>
-                </div>
-
-                <button class="btn-setting-row" onclick="refreshUserData()">
-                    <span>Refresh Balance & Profile</span>
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="23 4 23 10 17 10"></polyline>
-                        <polyline points="1 20 1 14 7 14"></polyline>
-                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-                    </svg>
-                </button>
-            </div>
-
-            <!-- Node Diagnostics -->
-            <div class="settings-card">
-                <div class="settings-header">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
-                        <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
-                        <line x1="6" y1="6" x2="6.01" y2="6"></line>
-                        <line x1="6" y1="18" x2="6.01" y2="18"></line>
-                    </svg>
-                    <span>Node Infrastructure</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Device Hardware ID</span>
-                    <span class="info-val" id="settDevId" onclick="copyText(this.textContent, 'Device ID')" style="cursor:pointer;">Loading...</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">App Client Version</span>
-                    <span class="info-val" id="settVersion">v4.0 Enterprise</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Cloud Vault Edge</span>
-                    <span class="info-val" style="color:#059669;">Cloudflare D1 + Render</span>
-                </div>
-
-                <button class="btn-setting-row" onclick="syncCloudAccounts()">
-                    <span>Force Full Cloud Vault Sync</span>
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="9 18 15 12 9 6"></polyline>
-                    </svg>
-                </button>
-
-                <button class="btn-setting-row" onclick="openPpModWeb()">
-                    <span>Visit PP Mod Web Portal</span>
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                        <polyline points="15 3 21 3 21 9"></polyline>
-                        <line x1="10" y1="14" x2="21" y2="3"></line>
-                    </svg>
-                </button>
-
-                <!-- Logout Button -->
-                <button class="btn-logout-full" id="btnFullLogout" onclick="confirmLogout()">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                        <polyline points="16 17 21 12 16 7"></polyline>
-                        <line x1="21" y1="12" x2="9" y2="12"></line>
-                    </svg>
-                    <span>Log Out of PP Mod Account</span>
-                </button>
-            </div>
-
-        </section>
-
-    </main>
-
-    <!-- BOTTOM TAB NAVIGATION -->
-    <nav class="bottom-nav">
-        <button class="nav-item active" onclick="switchTab('tabAccounts', this)">
-            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-            </svg>
-            <span class="nav-label">Vault</span>
-        </button>
-        <button class="nav-item" onclick="switchTab('tabPerks', this)">
-            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 12 20 22 4 22 4 12"></polyline>
-                <rect x="2" y="7" width="20" height="5"></rect>
-                <line x1="12" y1="22" x2="12" y2="7"></line>
-                <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
-                <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
-            </svg>
-            <span class="nav-label">Perks</span>
-        </button>
-        <button class="nav-item" onclick="switchTab('tabSettings', this)">
-            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-            </svg>
-            <span class="nav-label">Node &amp; Profile</span>
-        </button>
-    </nav>
-
-    <!-- MODAL 1: REGION PICKER -->
-    <div class="modal-backdrop" id="regionModal" onclick="closeRegionPicker(event)">
-        <div class="modal-sheet" onclick="event.stopPropagation()">
-            <div class="modal-drag-pill"></div>
-            <div class="modal-title-row">
-                <h3 class="modal-heading">Select Google Play Region</h3>
-                <button class="modal-btn-close" onclick="closeRegionPicker()">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
-            </div>
-            <div class="regions-grid" id="regionsGrid"></div>
-        </div>
+        <span class="splash-footnote">Verifying secure node session...</span>
     </div>
 
-    <!-- MODAL 2: PP MOD ACCOUNT LOGIN -->
-    <div class="modal-backdrop" id="loginModal" onclick="closeLoginModal(event)">
-        <div class="modal-sheet" onclick="event.stopPropagation()">
-            <div class="modal-drag-pill"></div>
-            <div class="modal-title-row">
-                <h3 class="modal-heading">PP Mod Account</h3>
-                <button class="modal-btn-close" onclick="closeLoginModal()">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
+    <!-- ==================== 2. LOGIN PAGE (IMAGE 3) ==================== -->
+    <main id="viewLogin">
+        <div class="login-brand-header">
+            <img src="logo.png" alt="PP MOD Logo" class="login-brand-logo" onerror="this.src='https://ppmods.netlify.app/fb.png'">
+            <h1 class="login-main-title">PPM SERVER CLOUD</h1>
+            <p class="login-main-sub">Dedicated Cloud Sync Engine</p>
+        </div>
+
+        <div class="login-card">
+            <!-- Google Sign In Button -->
+            <button class="btn-google-sso" onclick="startGoogleSsoLogin()">
+                <svg viewBox="0 0 24 24" width="20" height="20">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                </svg>
+                <span>Sign in with Google</span>
+            </button>
+
+            <!-- Divider -->
+            <div class="login-divider">
+                <span>OR PP MOD EMAIL</span>
             </div>
 
-            <div class="login-banner">
-                <div class="login-logo">
-                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                    </svg>
-                </div>
-                <h2 class="login-title">Sign In to PP Mod</h2>
-                <p class="login-sub">Enter your PP Mod account credentials (ppmods.netlify.app) to permanently sync your tokens to the cloud.</p>
-            </div>
+            <!-- Error Alert -->
+            <div class="login-alert-error" id="loginAlertBox"></div>
 
-            <div class="login-error-box" id="loginErrorBox"></div>
-
-            <form class="login-form" onsubmit="submitLogin(event)">
-                <div class="form-group">
-                    <label class="form-label">Email or Username</label>
-                    <div class="input-wrap">
-                        <div class="input-icon">
-                            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                                <polyline points="22,6 12,13 2,6"></polyline>
-                            </svg>
-                        </div>
-                        <input type="text" id="loginEmailInput" class="form-input" placeholder="user@gmail.com" required autocomplete="username">
+            <!-- Form -->
+            <form onsubmit="handleEmailLogin(event)">
+                <div class="login-form-group">
+                    <label class="login-field-label">PP Mod Account Email</label>
+                    <div class="login-input-box">
+                        <input type="text" id="inputLoginEmail" class="login-input" placeholder="user@ppmod.cloud" required autocomplete="username">
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Password</label>
-                    <div class="input-wrap">
-                        <div class="input-icon">
-                            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                            </svg>
-                        </div>
-                        <input type="password" id="loginPassInput" class="form-input" placeholder="Enter your password" required autocomplete="current-password">
-                        <button type="button" class="input-toggle-pw" onclick="togglePasswordVisibility()">
-                            <svg id="eyeIcon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <div class="login-form-group">
+                    <label class="login-field-label">Password</label>
+                    <div class="login-input-box">
+                        <input type="password" id="inputLoginPass" class="login-input login-input-pass" placeholder="••••••••" required autocomplete="current-password">
+                        <button type="button" class="btn-eye-toggle" onclick="togglePassView()">
+                            <svg id="eyeGlyph" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                 <circle cx="12" cy="12" r="3"></circle>
                             </svg>
@@ -1753,90 +1245,298 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn-submit-login" id="btnSubmitLogin">
-                    <span id="btnSubmitLoginText">Sign In to PP Mod</span>
-                    <div class="spinner" id="loginSpinner" style="display:none;"></div>
+                <button type="submit" class="btn-submit-ppm" id="btnSubmitPpm">
+                    <span id="btnSubmitPpmText">⚡ Login to PPM Server Node</span>
+                    <div class="spinner-mini" id="loginSpinner" style="display:none;"></div>
                 </button>
             </form>
 
-            <div class="login-footer">
-                <span>Don't have an account? </span>
-                <a href="javascript:void(0)" onclick="openPpModWeb()">Register on PP Mod Portal</a>
+            <!-- Register Link -->
+            <div class="card-register-link" onclick="openPpModWeb()">
+                <span>Don't have an account? Create on PP Mod</span>
+            </div>
+        </div>
+
+        <div class="login-security-footer">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <span>Official Release Signed • Anti-Tamper Protected</span>
+        </div>
+    </main>
+
+    <!-- ==================== 3. 3D SUCCESS POPUP ==================== -->
+    <div id="modalSuccess3D">
+        <div class="card-3d-success">
+            <div class="trophy-3d-wrap">
+                <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                    <path d="M4 22h16"></path>
+                    <path d="M10 14.66V17c0 .55-.45 1-1 1H8c-.55 0-1 .45-1 1v1h10v-1c0-.55-.45-1-1-1h-1c-.55 0-1-.45-1-1v-2.34"></path>
+                    <path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path>
+                </svg>
+            </div>
+            <h3 class="success-3d-title">PP Mod Verified!</h3>
+            <p class="success-3d-sub">Authenticated with PP Mod Cloud Network</p>
+
+            <div class="success-user-box">
+                <div class="success-info-line">
+                    <span class="success-info-k">Display Name</span>
+                    <span class="success-info-v" id="popUserName">User</span>
+                </div>
+                <div class="success-info-line">
+                    <span class="success-info-k">Account Email</span>
+                    <span class="success-info-v" id="popUserEmail" style="font-size:11.5px;">user@gmail.com</span>
+                </div>
+                <div class="success-info-line">
+                    <span class="success-info-k">PP UID</span>
+                    <span class="success-info-v" id="popUserUid" style="color:#7c3aed;">UID-123456</span>
+                </div>
+                <div class="success-info-line">
+                    <span class="success-info-k">Points Balance</span>
+                    <span class="success-info-v" id="popUserBalance" style="color:#d97706;">500 Points</span>
+                </div>
+            </div>
+
+            <button class="btn-confirm-enter" onclick="confirmSuccessEnter()">
+                <span>Confirm &amp; Enter PPM Node ➔</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== 4. HOME DASHBOARD (IMAGE 4) ==================== -->
+    <div id="viewHome">
+        <!-- Top Bar (Image 4) -->
+        <header class="home-topbar">
+            <div class="topbar-left">
+                <img src="logo.png" alt="PP Server Logo" class="topbar-logo" onerror="this.src='https://ppmods.netlify.app/fb.png'">
+                <div class="topbar-title-wrap">
+                    <div class="topbar-title-row">
+                        <span class="topbar-title">PP SERVER</span>
+                        <div class="topbar-server-icon">
+                            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                                <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                                <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                                <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                            </svg>
+                        </div>
+                    </div>
+                    <span class="topbar-user-sub" id="topbarUserEmail">PP MOD OFC md••••12@gmail.com</span>
+                </div>
+            </div>
+            <div class="topbar-actions">
+                <button class="btn-circle-action btn-circle-reload" title="Refresh" onclick="syncCloudAccounts()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 4 23 10 17 10"></polyline>
+                        <polyline points="1 20 1 14 7 14"></polyline>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                    </svg>
+                </button>
+                <button class="btn-circle-action btn-circle-logout" title="Log Out" onclick="promptLogout()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Filter & Search Controls (Image 4) -->
+        <div class="controls-filter-bar">
+            <div class="region-select-pill" onclick="openRegionPickerModal()">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                </svg>
+                <span id="labelCurrentRegion">All Regions ▾</span>
+            </div>
+            <div class="search-input-wrap">
+                <div class="search-icon">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </div>
+                <input type="text" id="inputSearchAccounts" class="search-input" placeholder="Filter email / code..." oninput="filterAccountsList()">
+            </div>
+        </div>
+
+        <!-- Section Heading -->
+        <div class="section-accounts-bar">
+            <span class="sec-title-dark">CONNECTED GOOGLE ACCOUNTS</span>
+            <span class="sec-count-blue" id="labelAccountsCount">0 Accounts</span>
+        </div>
+
+        <!-- Connected Accounts List (Image 4) -->
+        <div class="home-accounts-wrap" id="homeAccountsList"></div>
+
+        <!-- Empty State -->
+        <div class="home-accounts-wrap" id="homeEmptyState" style="display:none;">
+            <div class="empty-home-box">
+                <div class="empty-home-icon">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                </div>
+                <h4 class="empty-home-title">No Google Accounts Connected</h4>
+                <p class="empty-home-sub">Tap "+ Connect Google Account" below to capture a permanent master token and 6-digit sync code.</p>
+            </div>
+        </div>
+
+        <!-- Bottom Fixed Button (Image 4) -->
+        <div class="bottom-connect-bar">
+            <button class="btn-connect-google-full" onclick="openRegionPickerModal()">
+                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>+ Connect Google Account</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== 5. DEV PORTAL (PLAYQUEST TOKEN FINDER) ==================== -->
+    <div id="viewDevPortal">
+        <div class="dev-portal-card">
+            <div class="dev-badge-row">
+                <span class="badge-dev">Developer Mode</span>
+                <span style="font-size:11px;font-weight:700;color:#0284c7;">PlayQuest Token Finder</span>
+            </div>
+            <h2 class="dev-portal-title">Instant Token Generator</h2>
+            <p class="dev-portal-sub">Generate 5-minute session tokens and permanent direct quest access links without requiring PP Mod cloud accounts.</p>
+
+            <button class="btn-connect-google-full" style="margin-top:16px;" onclick="startDevGoogleLogin()">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.3">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+                <span>Connect Google Account for Token</span>
+            </button>
+
+            <div id="devGeneratedArea" style="display:none;" class="dev-result-box">
+                <div class="box-sync-code" style="margin-bottom:12px;">
+                    <div class="box-sync-code-left">
+                        <span class="sync-code-label">5-Minute Sync Code</span>
+                        <span class="sync-code-digits" id="devCodeValue">000 000</span>
+                    </div>
+                    <button class="btn-blue-copy" onclick="copyText(document.getElementById('devCodeValue').textContent, 'Sync Code')">Copy</button>
+                </div>
+
+                <span class="sync-code-label">Permanent Quest Portal Link</span>
+                <div class="dev-link-preview" id="devLinkValue">https://pp-mod-auto-quest.onrender.com/portal?code=...</div>
+
+                <div style="display:flex;gap:8px;">
+                    <button class="btn-blue-copy" style="flex:1;" onclick="copyText(document.getElementById('devLinkValue').textContent, 'Permanent Link')">
+                        <span>Copy Permanent Link</span>
+                    </button>
+                    <button class="btn-blue-copy" style="background:#059669;" onclick="openBrowserUrl(document.getElementById('devLinkValue').textContent)">
+                        <span>Open Portal</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL 3: CONFIRM DIALOG -->
-    <div class="dialog-backdrop" id="confirmDialog">
-        <div class="dialog-card">
-            <h4 class="dialog-title" id="dialogTitle">Confirm Action</h4>
-            <p class="dialog-desc" id="dialogDesc">Are you sure you want to proceed?</p>
-            <div class="dialog-actions">
-                <button class="dialog-btn dialog-btn-cancel" onclick="closeConfirmDialog()">Cancel</button>
-                <button class="dialog-btn dialog-btn-danger" id="dialogBtnConfirm">Confirm</button>
+    <!-- ==================== REGION PICKER MODAL ==================== -->
+    <div class="modal-bg" id="modalRegionPicker" onclick="closeRegionPickerModal(event)">
+        <div class="modal-sheet" onclick="event.stopPropagation()">
+            <div class="modal-pill-drag"></div>
+            <div class="modal-header-row">
+                <span class="modal-sheet-title">Select Region / Country</span>
+                <button class="modal-close-btn" onclick="closeRegionPickerModal()">✕</button>
+            </div>
+            <div class="region-grid" id="regionPickerGrid"></div>
+        </div>
+    </div>
+
+    <!-- ==================== LOGOUT & DELETE CONFIRM DIALOG ==================== -->
+    <div class="dialog-overlay" id="dialogConfirm">
+        <div class="dialog-box">
+            <h4 class="dialog-h" id="dialogHeader">Confirm Action</h4>
+            <p class="dialog-p" id="dialogBody">Are you sure you want to proceed?</p>
+            <div class="dialog-btn-row">
+                <button class="btn-dialog btn-dialog-cancel" onclick="closeConfirmDialog()">Cancel</button>
+                <button class="btn-dialog btn-dialog-danger" id="btnDialogConfirm">Confirm</button>
             </div>
         </div>
     </div>
 
-    <!-- TOAST NOTIFICATION -->
-    <div class="toast" id="toast">
+    <!-- ==================== TOAST ==================== -->
+    <div class="toast-pop" id="toastPop">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="20 6 9 17 4 12"></polyline>
         </svg>
-        <span id="toastMsg">Operation successful</span>
+        <span id="toastPopMsg">Success</span>
     </div>
 
-    <!-- JAVASCRIPT ENGINE -->
+    <!-- ==================== CORE JS LOGIC ==================== -->
     <script>
-        // State
         var appInfo = {
-            appName: 'PP Server',
+            appName: 'PPM Server',
+            isDeveloperMode: false,
             versionName: 'v4.0',
             deviceId: '46e14d2451d85c3f',
             isLoggedIn: false,
             userUid: '',
             userEmail: '',
             userName: 'PP Mod User',
-            userAvatar: '',
-            userCoins: 500
+            userCoins: 500,
+            portalUrl: 'https://pp-mod-auto-quest.onrender.com'
         };
 
         var accounts = [];
+        var activeRegionFilter = 'ALL';
         var pendingDeleteCode = null;
-        var pendingLogoutAction = false;
+        var pendingLogout = false;
 
         var REGIONS = [
-            { code: 'GLOBAL', name: 'Global (All Regions)' },
-            { code: 'US', name: 'United States' },
-            { code: 'JP', name: 'Japan' },
-            { code: 'KR', name: 'South Korea' },
-            { code: 'UK', name: 'United Kingdom' },
-            { code: 'DE', name: 'Germany' },
-            { code: 'FR', name: 'France' },
-            { code: 'TW', name: 'Taiwan' }
+            { code: 'GLOBAL', name: 'Global (All Regions)', flag: '🌐' },
+            { code: 'US', name: 'United States', flag: '🇺🇸' },
+            { code: 'JP', name: 'Japan', flag: '🇯🇵' },
+            { code: 'KR', name: 'South Korea', flag: '🇰🇷' },
+            { code: 'UK', name: 'United Kingdom', flag: '🇬🇧' },
+            { code: 'DE', name: 'Germany', flag: '🇩🇪' },
+            { code: 'FR', name: 'France', flag: '🇫🇷' },
+            { code: 'TW', name: 'Taiwan', flag: '🇹🇼' }
         ];
 
-        // Init
         document.addEventListener('DOMContentLoaded', function() {
             buildRegionGrid();
-            loadAppInfo();
-            loadAccounts();
+            fetchAppInfo();
+
+            // Splash Screen Timer (1.2 seconds)
+            setTimeout(function() {
+                var splash = document.getElementById('viewSplash');
+                splash.classList.add('hide');
+
+                if (appInfo.isDeveloperMode) {
+                    showView('viewDevPortal');
+                } else if (appInfo.isLoggedIn && appInfo.userEmail) {
+                    showView('viewHome');
+                    loadAccounts();
+                } else {
+                    showView('viewLogin');
+                }
+            }, 1200);
         });
 
-        function switchTab(tabId, el) {
-            document.querySelectorAll('.tab-pane').forEach(function(p) { p.classList.remove('active'); });
-            var target = document.getElementById(tabId);
-            if (target) target.classList.add('active');
+        function showView(viewId) {
+            document.getElementById('viewLogin').style.display = 'none';
+            document.getElementById('viewHome').style.display = 'none';
+            document.getElementById('viewDevPortal').style.display = 'none';
 
-            document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
-            if (el) el.classList.add('active');
-
-            if (tabId === 'tabPerks') {
-                renderPerksList();
+            var target = document.getElementById(viewId);
+            if (target) {
+                target.style.display = (viewId === 'viewLogin') ? 'flex' : 'block';
             }
         }
 
-        function loadAppInfo() {
+        function fetchAppInfo() {
             try {
                 if (window.AndroidBridge && window.AndroidBridge.getAppInfo) {
                     var raw = window.AndroidBridge.getAppInfo();
@@ -1849,155 +1549,80 @@
                 }
             } catch (e) {}
 
-            renderUserUI();
+            renderTopbarProfile();
         }
 
-        function renderUserUI() {
-            var navArea = document.getElementById('navUserArea');
-            var topBanner = document.getElementById('topUserBanner');
-            var statCoins = document.getElementById('statUserCoins');
-            var settCard = document.getElementById('settingsProfileCard');
-            var fullLogoutBtn = document.getElementById('btnFullLogout');
-
-            if (statCoins) statCoins.textContent = appInfo.userCoins || 0;
-
-            if (appInfo.isLoggedIn && appInfo.userEmail) {
-                // Nav Bar User Pill
-                var initial = (appInfo.userName ? appInfo.userName.charAt(0) : 'U').toUpperCase();
-                navArea.innerHTML = 
-                    '<div class="nav-user-pill" onclick="switchTab(\'tabSettings\', document.querySelectorAll(\'.nav-item\')[2])">' +
-                        '<div class="nav-avatar">' + initial + '</div>' +
-                        '<span style="font-size:12px;font-weight:800;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(appInfo.userName || 'User') + '</span>' +
-                        '<div class="nav-coins-badge">' +
-                            '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>' +
-                            '<span>' + (appInfo.userCoins || 0) + '</span>' +
-                        '</div>' +
-                    '</div>';
-
-                // Top Banner User Card
-                topBanner.innerHTML = 
-                    '<div class="user-status-card">' +
-                        '<div class="user-profile-left">' +
-                            '<div class="user-profile-avatar">' + initial + '</div>' +
-                            '<div class="user-profile-info">' +
-                                '<span class="user-profile-name">' + escapeHtml(appInfo.userName) + '</span>' +
-                                '<div class="user-profile-meta">' +
-                                    '<span class="user-uid-pill" onclick="copyText(\'' + escapeHtml(appInfo.userUid) + '\', \'UID\')">UID: ' + escapeHtml(appInfo.userUid) + '</span>' +
-                                    '<span class="user-coins-pill">' + (appInfo.userCoins || 0) + ' Points</span>' +
-                                '</div>' +
-                            '</div>' +
-                        '</div>' +
-                        '<div class="user-profile-right">' +
-                            '<button class="btn-logout-sm" onclick="confirmLogout()">' +
-                                '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' +
-                                    '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>' +
-                                    '<polyline points="16 17 21 12 16 7"></polyline>' +
-                                    '<line x1="21" y1="12" x2="9" y2="12"></line>' +
-                                '</svg>' +
-                                '<span>Logout</span>' +
-                            '</button>' +
-                        '</div>' +
-                    '</div>';
-
-                // Settings Screen
-                document.getElementById('settAuthStatus').textContent = 'Active (Authenticated)';
-                document.getElementById('settAuthStatus').style.color = '#059669';
-                document.getElementById('settName').textContent = appInfo.userName || 'PP Mod User';
-                document.getElementById('settEmail').textContent = appInfo.userEmail || '';
-                document.getElementById('settUid').textContent = appInfo.userUid || 'UID-';
-                document.getElementById('settBalance').textContent = (appInfo.userCoins || 0) + ' Points';
-                if (fullLogoutBtn) fullLogoutBtn.style.display = 'flex';
-
-            } else {
-                // Not Logged In
-                navArea.innerHTML = 
-                    '<button class="btn-nav-login" onclick="openLoginModal()">' +
-                        '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' +
-                            '<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>' +
-                            '<polyline points="10 17 15 12 10 7"></polyline>' +
-                            '<line x1="15" y1="12" x2="3" y2="12"></line>' +
-                        '</svg>' +
-                        '<span>Sign In</span>' +
-                    '</button>';
-
-                topBanner.innerHTML = 
-                    '<div class="auth-prompt-card">' +
-                        '<div class="auth-prompt-content">' +
-                            '<div class="auth-prompt-icon">' +
-                                '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' +
-                                    '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>' +
-                                '</svg>' +
-                            '</div>' +
-                            '<div class="auth-prompt-text">' +
-                                '<h4>PP Mod Account Login</h4>' +
-                                '<p>Sign in to sync your Google quest tokens permanently to the cloud vault.</p>' +
-                            '</div>' +
-                        '</div>' +
-                        '<button class="btn-prompt-login" onclick="openLoginModal()">Login</button>' +
-                    '</div>';
-
-                document.getElementById('settAuthStatus').textContent = 'Guest Node (Not Logged In)';
-                document.getElementById('settAuthStatus').style.color = '#d97706';
-                document.getElementById('settName').textContent = 'Device Node';
-                document.getElementById('settEmail').textContent = appInfo.deviceId || '';
-                document.getElementById('settUid').textContent = 'Tap to sign in';
-                document.getElementById('settBalance').textContent = '0 Points';
-                if (fullLogoutBtn) fullLogoutBtn.style.display = 'none';
+        function renderTopbarProfile() {
+            var el = document.getElementById('topbarUserEmail');
+            if (el) {
+                var rawEm = appInfo.userEmail || 'user@ppmod.cloud';
+                var maskedEm = maskEmail(rawEm);
+                el.textContent = 'PP MOD OFC ' + maskedEm;
             }
-
-            document.getElementById('settDevId').textContent = appInfo.deviceId || '46e14d2451d85c3f';
-            document.getElementById('settVersion').textContent = appInfo.versionName || 'v4.0 Enterprise';
         }
 
-        // ==================== LOGIN HANDLING ====================
-        function openLoginModal() {
-            document.getElementById('loginErrorBox').style.display = 'none';
-            document.getElementById('loginModal').classList.add('open');
-            setTimeout(function() {
-                var el = document.getElementById('loginEmailInput');
-                if (el) el.focus();
-            }, 300);
+        function maskEmail(email) {
+            if (!email || !email.includes('@')) return email || '';
+            var parts = email.split('@');
+            var name = parts[0];
+            var domain = parts[1];
+            if (name.length <= 4) {
+                return name.charAt(0) + '••••@' + domain;
+            }
+            return name.substring(0, 2) + '••••' + name.substring(name.length - 2) + '@' + domain;
         }
 
-        function closeLoginModal(e) {
-            if (e && e.target !== e.currentTarget) return;
-            document.getElementById('loginModal').classList.remove('open');
-        }
-
-        function togglePasswordVisibility() {
-            var f = document.getElementById('loginPassInput');
-            var icon = document.getElementById('eyeIcon');
-            if (f.type === 'password') {
-                f.type = 'text';
+        // ==================== AUTH / LOGIN ====================
+        function togglePassView() {
+            var input = document.getElementById('inputLoginPass');
+            var icon = document.getElementById('eyeGlyph');
+            if (input.type === 'password') {
+                input.type = 'text';
                 icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
             } else {
-                f.type = 'password';
+                input.type = 'password';
                 icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
             }
         }
 
-        function submitLogin(e) {
+        function startGoogleSsoLogin() {
+            setLoginBtnLoading(true);
+            document.getElementById('loginAlertBox').style.display = 'none';
+
+            if (window.AndroidBridge && window.AndroidBridge.startGoogleSsoLogin) {
+                window.AndroidBridge.startGoogleSsoLogin();
+            } else {
+                // Fallback prompt for browser testing
+                var em = prompt("Enter Google account email to test PP Mod SSO:", "user@gmail.com");
+                if (em) {
+                    executeLogin(em, "GOOGLE_SSO");
+                } else {
+                    setLoginBtnLoading(false);
+                }
+            }
+        }
+
+        function handleEmailLogin(e) {
             if (e) e.preventDefault();
-            var email = document.getElementById('loginEmailInput').value.trim();
-            var pass = document.getElementById('loginPassInput').value.trim();
+            var email = document.getElementById('inputLoginEmail').value.trim();
+            var pass = document.getElementById('inputLoginPass').value.trim();
 
             if (!email) {
-                showLoginError('Please enter your email or username.');
+                showLoginError("Please enter your PP Mod account email.");
                 return;
             }
 
-            var btn = document.getElementById('btnSubmitLogin');
-            var btnText = document.getElementById('btnSubmitLoginText');
-            var spinner = document.getElementById('loginSpinner');
-            btn.disabled = true;
-            btnText.style.display = 'none';
-            spinner.style.display = 'block';
-            document.getElementById('loginErrorBox').style.display = 'none';
+            executeLogin(email, pass);
+        }
+
+        function executeLogin(email, pass) {
+            setLoginBtnLoading(true);
+            document.getElementById('loginAlertBox').style.display = 'none';
 
             if (window.AndroidBridge && window.AndroidBridge.login) {
                 window.AndroidBridge.login(email, pass);
             } else {
-                // Direct Web Fetch Fallback
+                // Browser Direct Fetch
                 fetch('https://pp-mod-auto-quest.onrender.com/api/login/ppmod', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -2008,36 +1633,41 @@
                     if (d.ok) {
                         window.onLoginSuccess(d);
                     } else {
-                        window.onLoginError(d.error || 'Authentication failed.');
+                        window.onLoginError(d.error || 'No PP Mod account found for this email.');
                     }
                 })
                 .catch(function(err) {
-                    window.onLoginError('Network error: ' + err.message);
+                    window.onLoginError("Connection error: " + err.message);
                 });
             }
         }
 
-        function showLoginError(msg) {
-            var box = document.getElementById('loginErrorBox');
-            box.textContent = msg;
-            box.style.display = 'block';
-            var btn = document.getElementById('btnSubmitLogin');
-            var btnText = document.getElementById('btnSubmitLoginText');
-            var spinner = document.getElementById('loginSpinner');
-            btn.disabled = false;
-            btnText.style.display = 'inline';
-            spinner.style.display = 'none';
+        function setLoginBtnLoading(isLoading) {
+            var btn = document.getElementById('btnSubmitPpm');
+            var txt = document.getElementById('btnSubmitPpmText');
+            var spin = document.getElementById('loginSpinner');
+            if (!btn) return;
+            btn.disabled = isLoading;
+            if (isLoading) {
+                txt.style.display = 'none';
+                spin.style.display = 'block';
+            } else {
+                txt.style.display = 'inline';
+                spin.style.display = 'none';
+            }
         }
 
-        // Bridge Callbacks
-        window.onLoginSuccess = function(u) {
-            var btn = document.getElementById('btnSubmitLogin');
-            var btnText = document.getElementById('btnSubmitLoginText');
-            var spinner = document.getElementById('loginSpinner');
-            if (btn) btn.disabled = false;
-            if (btnText) btnText.style.display = 'inline';
-            if (spinner) spinner.style.display = 'none';
+        function showLoginError(msg) {
+            setLoginBtnLoading(false);
+            var box = document.getElementById('loginAlertBox');
+            box.textContent = msg;
+            box.style.display = 'block';
+            showToast("Login Failed: " + msg);
+        }
 
+        // Bridge Auth Callbacks
+        window.onLoginSuccess = function(u) {
+            setLoginBtnLoading(false);
             appInfo.isLoggedIn = true;
             if (u) {
                 if (u.uid) appInfo.userUid = u.uid;
@@ -2048,15 +1678,26 @@
                 if (u.balance !== undefined) appInfo.userCoins = u.balance;
             }
 
-            closeLoginModal();
-            renderUserUI();
-            loadAccounts();
-            showToast('Welcome back, ' + (appInfo.userName || 'User') + '!');
+            // Populate 3D Popup
+            document.getElementById('popUserName').textContent = appInfo.userName || 'User';
+            document.getElementById('popUserEmail').textContent = appInfo.userEmail || '';
+            document.getElementById('popUserUid').textContent = appInfo.userUid || 'UID-';
+            document.getElementById('popUserBalance').textContent = (appInfo.userCoins || 500) + ' Points';
+
+            // Show 3D Success Popup
+            document.getElementById('modalSuccess3D').classList.add('open');
         };
 
+        function confirmSuccessEnter() {
+            document.getElementById('modalSuccess3D').classList.remove('open');
+            renderTopbarProfile();
+            showView('viewHome');
+            loadAccounts();
+            showToast("Welcome back, " + (appInfo.userName || 'User') + "!");
+        }
+
         window.onLoginError = function(err) {
-            showLoginError(err || 'Invalid username or password.');
-            showToast('Login Failed: ' + (err || 'Error'));
+            showLoginError(err || "Authentication failed. No PP Mod account found.");
         };
 
         window.onLogoutSuccess = function() {
@@ -2064,23 +1705,22 @@
             appInfo.userUid = '';
             appInfo.userEmail = '';
             appInfo.userName = 'PP Mod User';
-            appInfo.userCoins = 0;
             accounts = [];
-            renderUserUI();
-            renderAccounts();
-            showToast('Logged out of PP Mod session.');
+            showView('viewLogin');
+            setLoginBtnLoading(false);
+            showToast("Logged out of PPM Server Node.");
         };
 
-        function confirmLogout() {
-            pendingLogoutAction = true;
+        function promptLogout() {
+            pendingLogout = true;
             pendingDeleteCode = null;
-            document.getElementById('dialogTitle').textContent = 'Log Out of PP Mod?';
-            document.getElementById('dialogDesc').textContent = 'Are you sure you want to log out? Your local session and cloud tokens cache will be cleared on this device.';
-            document.getElementById('dialogBtnConfirm').textContent = 'Log Out';
-            document.getElementById('confirmDialog').classList.add('open');
+            document.getElementById('dialogHeader').textContent = "Log Out of PP Server?";
+            document.getElementById('dialogBody').textContent = "Are you sure you want to log out? Your local session and accounts will be cleared on this device.";
+            document.getElementById('btnDialogConfirm').textContent = "Log Out";
+            document.getElementById('dialogConfirm').classList.add('open');
         }
 
-        // ==================== ACCOUNTS HANDLING ====================
+        // ==================== ACCOUNTS LIST & MANAGEMENT (IMAGE 4) ====================
         function loadAccounts() {
             try {
                 if (window.AndroidBridge && window.AndroidBridge.getAccounts) {
@@ -2091,17 +1731,33 @@
             renderAccounts();
         }
 
+        function filterAccountsList() {
+            renderAccounts();
+        }
+
         function renderAccounts() {
-            var listEl = document.getElementById('accountsList');
-            var emptyEl = document.getElementById('emptyState');
-            var countEl = document.getElementById('statAccCount');
-            var badgeEl = document.getElementById('badgeAccCount');
+            var listEl = document.getElementById('homeAccountsList');
+            var emptyEl = document.getElementById('homeEmptyState');
+            var countLabel = document.getElementById('labelAccountsCount');
 
-            var total = accounts.length;
-            if (countEl) countEl.textContent = total;
-            if (badgeEl) badgeEl.textContent = total;
+            var q = (document.getElementById('inputSearchAccounts').value || '').trim().toLowerCase();
+            var filtered = accounts.filter(function(a) {
+                // Region Filter
+                if (activeRegionFilter !== 'ALL' && (a.country || 'GLOBAL').toUpperCase() !== activeRegionFilter) {
+                    return false;
+                }
+                // Text Query
+                if (q) {
+                    var em = (a.email || '').toLowerCase();
+                    var cd = (a.code || '').toLowerCase();
+                    if (!em.includes(q) && !cd.includes(q)) return false;
+                }
+                return true;
+            });
 
-            if (total === 0) {
+            countLabel.textContent = filtered.length + " Accounts";
+
+            if (filtered.length === 0) {
                 listEl.style.display = 'none';
                 emptyEl.style.display = 'block';
                 return;
@@ -2111,68 +1767,43 @@
             emptyEl.style.display = 'none';
 
             var html = '';
-            for (var i = 0; i < accounts.length; i++) {
-                var a = accounts[i];
-                var email = a.email || 'Google Play User';
+            for (var i = 0; i < filtered.length; i++) {
+                var a = filtered[i];
+                var rawEmail = a.email || 'Google Play User';
+                var masked = maskEmail(rawEmail);
                 var code = a.code || '000000';
                 var formattedCode = code.length === 6 ? (code.substring(0, 3) + ' ' + code.substring(3)) : code;
-                var country = a.country || 'GLOBAL';
+                var country = (a.country || 'GLOBAL').toUpperCase();
+                var flag = getRegionFlag(country);
 
                 html += 
-                    '<div class="account-card" id="acc_card_' + a.code + '">' +
-                        '<div class="acc-top">' +
-                            '<div class="acc-user">' +
-                                '<div class="acc-avatar">' +
-                                    '<svg viewBox="0 0 24 24" width="20" height="20">' +
-                                        '<path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>' +
-                                        '<path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>' +
-                                        '<path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>' +
-                                        '<path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>' +
-                                    '</svg>' +
-                                '</div>' +
-                                '<div class="acc-meta">' +
-                                    '<span class="acc-email" onclick="copyText(\'' + escapeHtml(email) + '\', \'Email\')">' + escapeHtml(email) + '</span>' +
-                                    '<div class="acc-tags">' +
-                                        '<span class="tag tag-blue">' + escapeHtml(country) + '</span>' +
-                                        '<span class="tag tag-green">' +
-                                            '<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>' +
-                                            '<span>Permanent Token</span>' +
-                                        '</span>' +
-                                    '</div>' +
-                                '</div>' +
+                    '<div class="card-connected-acc" id="card_acc_' + a.code + '">' +
+                        '<div class="card-acc-top">' +
+                            '<div class="card-acc-header-left">' +
+                                '<span class="flag-icon">' + flag + '</span>' +
+                                '<span class="tag-country-code">' + escapeHtml(country) + '</span>' +
+                                '<span class="card-acc-email" title="Click to copy" onclick="copyText(\'' + escapeHtml(rawEmail) + '\', \'Email\')">' + escapeHtml(masked) + '</span>' +
                             '</div>' +
-                            '<button class="btn-delete-acc" title="Remove Account" onclick="confirmDeleteAccount(\'' + a.code + '\', \'' + escapeHtml(email) + '\')">' +
-                                '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+                            '<button class="btn-trash-delete" title="Delete Account" onclick="promptDeleteAccount(\'' + a.code + '\', \'' + escapeHtml(rawEmail) + '\')">' +
+                                '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' +
                                     '<polyline points="3 6 5 6 21 6"></polyline>' +
                                     '<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>' +
                                 '</svg>' +
                             '</button>' +
                         '</div>' +
 
-                        '<div class="code-box">' +
-                            '<div class="code-info">' +
-                                '<span class="code-label">Permanent Quest Sync Code</span>' +
-                                '<span class="code-value">' + formattedCode + '</span>' +
+                        '<div class="box-sync-code">' +
+                            '<div class="box-sync-code-left">' +
+                                '<span class="sync-code-label">6-DIGIT SYNC CODE</span>' +
+                                '<span class="sync-code-digits">' + formattedCode + '</span>' +
                             '</div>' +
-                            '<button class="btn-copy-code" onclick="copyText(\'' + a.code + '\', \'Sync Code\')">' +
-                                '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' +
+                            '<button class="btn-blue-copy" onclick="copyText(\'' + a.code + '\', \'Sync Code\')">' +
+                                '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">' +
                                     '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>' +
                                     '<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>' +
                                 '</svg>' +
                                 '<span>Copy</span>' +
                             '</button>' +
-                        '</div>' +
-
-                        '<div class="perk-mini-row">' +
-                            '<div class="perk-mini-info">' +
-                                '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
-                                    '<polyline points="20 12 20 22 4 22 4 12"></polyline>' +
-                                    '<rect x="2" y="7" width="20" height="5"></rect>' +
-                                    '<line x1="12" y1="22" x2="12" y2="7"></line>' +
-                                '</svg>' +
-                                '<span>Weekly Play Points Perk (+10 Pts)</span>' +
-                            '</div>' +
-                            '<button class="btn-perk-claim" onclick="claimAccountPerk(\'' + a.code + '\')">Claim</button>' +
                         '</div>' +
                     '</div>';
             }
@@ -2180,79 +1811,31 @@
             listEl.innerHTML = html;
         }
 
-        // ==================== PERKS TAB ====================
-        function renderPerksList() {
-            var container = document.getElementById('perksAccountsList');
-            if (!container) return;
-
-            if (accounts.length === 0) {
-                container.innerHTML = 
-                    '<div class="empty-state">' +
-                        '<h4 class="empty-title">No Accounts to Claim Perks</h4>' +
-                        '<p class="empty-desc">Connect a Google Play account on the Vault tab to unlock Friday perks.</p>' +
-                    '</div>';
-                return;
+        function getRegionFlag(code) {
+            for (var i = 0; i < REGIONS.length; i++) {
+                if (REGIONS[i].code === code) return REGIONS[i].flag;
             }
-
-            var html = '';
-            for (var i = 0; i < accounts.length; i++) {
-                var a = accounts[i];
-                html += 
-                    '<div class="account-card">' +
-                        '<div class="acc-top">' +
-                            '<div class="acc-user">' +
-                                '<div class="acc-avatar">' +
-                                    '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#10b981" stroke-width="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/></svg>' +
-                                '</div>' +
-                                '<div class="acc-meta">' +
-                                    '<span class="acc-email">' + escapeHtml(a.email) + '</span>' +
-                                    '<span class="tag tag-green" style="margin-top:2px;">Sync Code: ' + a.code + '</span>' +
-                                '</div>' +
-                            '</div>' +
-                            '<button class="btn-perk-claim" onclick="claimAccountPerk(\'' + a.code + '\')">Claim +10 Pts</button>' +
-                        '</div>' +
-                    '</div>';
-            }
-            container.innerHTML = html;
+            return '🌐';
         }
 
-        function claimAccountPerk(code) {
-            if (window.AndroidBridge && window.AndroidBridge.claimWeeklyPerk) {
-                window.AndroidBridge.claimWeeklyPerk(code);
-            } else {
-                showToast('Perk Claimed: +10 Play Points!');
-            }
-        }
-
-        function claimAllPerks() {
-            if (accounts.length === 0) {
-                showToast('No accounts connected.');
-                return;
-            }
-            for (var i = 0; i < accounts.length; i++) {
-                claimAccountPerk(accounts[i].code);
-            }
-            showToast('Claiming perks for all accounts...');
-        }
-
-        // ==================== REMOVE ACCOUNT & CONFIRM ====================
-        function confirmDeleteAccount(code, email) {
+        // Prompt Account Deletion
+        function promptDeleteAccount(code, email) {
             pendingDeleteCode = code;
-            pendingLogoutAction = false;
-            document.getElementById('dialogTitle').textContent = 'Remove Google Account?';
-            document.getElementById('dialogDesc').textContent = 'This will permanently remove ' + (email || 'this account') + ' and its sync code from this device and the cloud vault. If you add this email again, a brand new code will be generated.';
-            document.getElementById('dialogBtnConfirm').textContent = 'Remove Account';
-            document.getElementById('confirmDialog').classList.add('open');
+            pendingLogout = false;
+            document.getElementById('dialogHeader').textContent = "Delete Account & Token?";
+            document.getElementById('dialogBody').textContent = "This will permanently remove " + (email || 'this account') + " from your device and the cloud vault. If you add this email again, a brand new 6-digit code will be generated.";
+            document.getElementById('btnDialogConfirm').textContent = "Delete";
+            document.getElementById('dialogConfirm').classList.add('open');
         }
 
         function closeConfirmDialog() {
-            document.getElementById('confirmDialog').classList.remove('open');
+            document.getElementById('dialogConfirm').classList.remove('open');
             pendingDeleteCode = null;
-            pendingLogoutAction = false;
+            pendingLogout = false;
         }
 
-        document.getElementById('dialogBtnConfirm').addEventListener('click', function() {
-            if (pendingLogoutAction) {
+        document.getElementById('btnDialogConfirm').addEventListener('click', function() {
+            if (pendingLogout) {
                 closeConfirmDialog();
                 if (window.AndroidBridge && window.AndroidBridge.logout) {
                     window.AndroidBridge.logout();
@@ -2276,10 +1859,7 @@
         window.onAccountDeleted = function(code) {
             accounts = accounts.filter(function(a) { return a.code !== code; });
             renderAccounts();
-            if (document.getElementById('tabPerks').classList.contains('active')) {
-                renderPerksList();
-            }
-            showToast('Account removed from cloud vault.');
+            showToast("Account removed from cloud vault.");
         };
 
         window.onAccountSyncComplete = function(accObj) {
@@ -2288,74 +1868,93 @@
                 accounts.unshift(accObj);
             }
             renderAccounts();
-            showToast('Connected! Sync Code: ' + (accObj ? accObj.code : ''));
+            showToast("Google Account Connected! Sync Code: " + (accObj ? accObj.code : ''));
+
+            // If in Dev Mode, display directly
+            if (appInfo.isDeveloperMode && accObj) {
+                var area = document.getElementById('devGeneratedArea');
+                area.style.display = 'block';
+                document.getElementById('devCodeValue').textContent = accObj.code;
+                var portalLink = (appInfo.portalUrl || 'https://pp-mod-auto-quest.onrender.com') + '/portal?code=' + accObj.code;
+                document.getElementById('devLinkValue').textContent = portalLink;
+            }
         };
 
         window.refreshAccounts = function() {
             loadAccounts();
-            loadAppInfo();
+            fetchAppInfo();
         };
 
         // ==================== REGION PICKER ====================
         function buildRegionGrid() {
-            var grid = document.getElementById('regionsGrid');
+            var grid = document.getElementById('regionPickerGrid');
             if (!grid) return;
             var html = '';
             for (var i = 0; i < REGIONS.length; i++) {
                 var r = REGIONS[i];
                 html += 
-                    '<div class="region-card" onclick="selectRegion(\'' + r.code + '\')">' +
-                        '<div class="region-info">' +
-                            '<span class="region-name">' + r.name + '</span>' +
-                            '<span class="region-code-badge">' + r.code + '</span>' +
+                    '<div class="region-item-card" onclick="selectRegionOption(\'' + r.code + '\')">' +
+                        '<div style="display:flex;align-items:center;gap:8px;">' +
+                            '<span style="font-size:16px;">' + r.flag + '</span>' +
+                            '<span class="region-item-name">' + r.name + '</span>' +
                         '</div>' +
-                        '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' +
-                            '<polyline points="9 18 15 12 9 6"></polyline>' +
-                        '</svg>' +
+                        '<span class="region-item-code">' + r.code + '</span>' +
                     '</div>';
             }
             grid.innerHTML = html;
         }
 
-        function openRegionPicker() {
-            document.getElementById('regionModal').classList.add('open');
+        function openRegionPickerModal() {
+            document.getElementById('modalRegionPicker').classList.add('open');
         }
 
-        function closeRegionPicker(e) {
+        function closeRegionPickerModal(e) {
             if (e && e.target !== e.currentTarget) return;
-            document.getElementById('regionModal').classList.remove('open');
+            document.getElementById('modalRegionPicker').classList.remove('open');
         }
 
-        function selectRegion(code) {
-            closeRegionPicker();
+        function selectRegionOption(code) {
+            closeRegionPickerModal();
             if (window.AndroidBridge && window.AndroidBridge.startGoogleLogin) {
                 window.AndroidBridge.startGoogleLogin(code);
             } else {
-                showToast('Starting Google sign-in for region ' + code);
+                showToast("Starting Google Sign-In for " + code);
             }
         }
 
-        // ==================== UTILITIES ====================
+        // ==================== DEV PORTAL ====================
+        function startDevGoogleLogin() {
+            if (window.AndroidBridge && window.AndroidBridge.startGoogleLogin) {
+                window.AndroidBridge.startGoogleLogin("GLOBAL");
+            } else {
+                showToast("Opening Google Sign-In for Developer Mode...");
+            }
+        }
+
+        // ==================== HELPERS ====================
         function syncCloudAccounts() {
             if (window.AndroidBridge && window.AndroidBridge.syncCloudAccounts) {
                 window.AndroidBridge.syncCloudAccounts();
+                showToast("Syncing accounts with cloud vault...");
             } else {
-                showToast('Syncing with Cloud Vault...');
-                setTimeout(loadAccounts, 1000);
+                showToast("Synced with cloud.");
             }
         }
 
-        function refreshUserData() {
-            if (window.AndroidBridge && window.AndroidBridge.refreshUserData) {
-                window.AndroidBridge.refreshUserData();
-                showToast('Refreshing user profile...');
+        function copyText(text, label) {
+            if (!text) return;
+            if (window.AndroidBridge && window.AndroidBridge.copyToClipboard) {
+                window.AndroidBridge.copyToClipboard(text, label || "Text");
             } else {
-                showToast('User profile updated.');
+                try {
+                    navigator.clipboard.writeText(text);
+                } catch (e) {}
+                showToast((label || "Text") + " copied!");
             }
         }
 
-        function openPpModWeb() {
-            var url = 'https://ppmods.netlify.app/';
+        function openBrowserUrl(url) {
+            if (!url) return;
             if (window.AndroidBridge && window.AndroidBridge.openBrowser) {
                 window.AndroidBridge.openBrowser(url);
             } else {
@@ -2363,21 +1962,13 @@
             }
         }
 
-        function copyText(text, label) {
-            if (!text) return;
-            if (window.AndroidBridge && window.AndroidBridge.copyToClipboard) {
-                window.AndroidBridge.copyToClipboard(text, label || 'Text');
-            } else {
-                try {
-                    navigator.clipboard.writeText(text);
-                } catch (e) {}
-                showToast((label || 'Text') + ' copied!');
-            }
+        function openPpModWeb() {
+            openBrowserUrl('https://ppmods.netlify.app/');
         }
 
         function showToast(msg) {
-            var t = document.getElementById('toast');
-            var m = document.getElementById('toastMsg');
+            var t = document.getElementById('toastPop');
+            var m = document.getElementById('toastPopMsg');
             if (!t || !m) return;
             m.textContent = msg;
             t.classList.add('show');

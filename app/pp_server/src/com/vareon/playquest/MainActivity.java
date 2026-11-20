@@ -57,6 +57,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     private AccountStorage accountStorage;
     private String pendingAccountCountry = "GLOBAL";
     private boolean isTokenFound = false;
+    private boolean isGoogleSsoMode = false;
     private String capturedToken = "";
     private String generatedSyncCode = "";
     private String detectedEmail = "";
@@ -172,6 +173,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     // ================= GOOGLE AUTHENTICATION ENGINE =================
 
     public void startGoogleLogin(String country) {
+        isGoogleSsoMode = false;
         pendingAccountCountry = (country != null && !country.isEmpty()) ? country : "GLOBAL";
         isTokenFound = false;
         capturedToken = "";
@@ -201,7 +203,39 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         startCookiePolling();
     }
 
+    public void startGoogleSsoLogin() {
+        isGoogleSsoMode = true;
+        pendingAccountCountry = "GLOBAL";
+        isTokenFound = false;
+        capturedToken = "";
+        generatedSyncCode = "";
+        detectedEmail = "";
+
+        if (txtLoginHeaderTitle != null) {
+            txtLoginHeaderTitle.setText("Sign in with Google (PP Mod)");
+        }
+        if (txtLoginStatus != null) {
+            txtLoginStatus.setText("Select your Google Account...");
+        }
+
+        try {
+            CookieManager.getInstance().removeAllCookies(null);
+            CookieManager.getInstance().flush();
+        } catch (Throwable ignored) {
+        }
+
+        if (googleLoginContainer != null) {
+            googleLoginContainer.setVisibility(View.VISIBLE);
+        }
+
+        if (webView != null) {
+            webView.loadUrl(SETUP_URL);
+        }
+        startCookiePolling();
+    }
+
     public void closeGoogleLogin() {
+        isGoogleSsoMode = false;
         stopCookiePolling();
         if (webView != null) {
             webView.loadUrl("about:blank");
@@ -291,6 +325,17 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
     public void onTokenCaptured(final String token) {
         String finalEmail = !detectedEmail.isEmpty() ? detectedEmail : "Google Play User";
+
+        if (isGoogleSsoMode) {
+            isGoogleSsoMode = false;
+            closeGoogleLogin();
+            if (txtLoginStatus != null) {
+                txtLoginStatus.setText("Verifying PP Mod membership...");
+            }
+            doLogin(finalEmail, "GOOGLE_SSO");
+            return;
+        }
+
         if (txtLoginStatus != null) {
             txtLoginStatus.setText("Account verified! Registering 6-digit sync code...");
         }
@@ -472,6 +517,11 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     }
 
     public String getAccountsJson() {
+        if (!isDeveloperMode()) {
+            if (accountStorage == null || !accountStorage.isLoggedIn()) {
+                return "[]";
+            }
+        }
         if (accountStorage == null)
             return "[]";
         List<AccountItem> list = accountStorage.getAccounts();
@@ -859,6 +909,11 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         }
 
         @JavascriptInterface
+        public void startGoogleSsoLogin() {
+            activity.runOnUiThread(new StartGoogleSsoLoginRunnable(activity));
+        }
+
+        @JavascriptInterface
         public void logout() {
             activity.runOnUiThread(new LogoutRunnable(activity));
         }
@@ -1018,6 +1073,19 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         @Override
         public void run() {
             act.startGoogleLogin(country);
+        }
+    }
+
+    public static class StartGoogleSsoLoginRunnable implements Runnable {
+        private final MainActivity act;
+
+        public StartGoogleSsoLoginRunnable(MainActivity a) {
+            this.act = a;
+        }
+
+        @Override
+        public void run() {
+            act.startGoogleSsoLogin();
         }
     }
 
