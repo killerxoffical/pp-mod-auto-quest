@@ -35,62 +35,59 @@ def load_portal_services():
     if PORTAL_SERVICES_CACHE is not None:
         return PORTAL_SERVICES_CACHE
 
-    data = None
-
-    # 1. First Priority: Local verified portal_services.json
+    local_data = {}
     if os.path.exists(PORTAL_SERVICES_FILE):
         try:
             with open(PORTAL_SERVICES_FILE, "r", encoding="utf-8") as f:
                 content = json.load(f)
-                if isinstance(content, dict) and len(content) > 0:
-                    data = content
-                    print(f"[+] Loaded {len(data)} portal services from local {PORTAL_SERVICES_FILE}")
+                if isinstance(content, dict):
+                    local_data = content
         except Exception as e:
             print(f"[-] Error reading local portal_services: {e}")
 
-    # 2. Second Priority: Cloudflare D1 persistent cloud store (survives Render restarts)
-    if not data:
-        try:
-            cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", timeout=8, verify=False)
-            if cf_res.status_code == 200:
-                cloud_data = cf_res.json()
-                if isinstance(cloud_data, dict):
-                    if "data" in cloud_data and isinstance(cloud_data["data"], dict):
-                        cloud_data = cloud_data["data"]
-                    data = cloud_data
-                    print(f"[+] Loaded {len(data)} portal services from Cloudflare D1.")
-        except Exception as e:
-            print(f"[-] Cloudflare D1 boot fetch note: {e}")
+    # Always fetch from Cloudflare D1 persistent cloud store (survives Render container redeploys)
+    cf_data = {}
+    try:
+        cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", timeout=5, verify=False)
+        if cf_res.status_code == 200:
+            cloud_data = cf_res.json()
+            if isinstance(cloud_data, dict):
+                if "data" in cloud_data and isinstance(cloud_data["data"], dict):
+                    cloud_data = cloud_data["data"]
+                cf_data = cloud_data
+                print(f"[+] Fetched {len(cf_data)} portal services from Cloudflare D1 cloud store.")
+    except Exception as e:
+        print(f"[-] Cloudflare D1 portal fetch note: {e}")
 
-    # 3. Third Priority: Local backup file
-    if data is None and os.path.exists(PORTAL_SERVICES_BACKUP_FILE):
+    # Merge: take local, overlay Cloudflare D1 so newly added games in cloud are NEVER lost
+    merged = dict(local_data)
+    if cf_data:
+        merged.update(cf_data)
+
+    if not merged and os.path.exists(PORTAL_SERVICES_BACKUP_FILE):
         try:
             with open(PORTAL_SERVICES_BACKUP_FILE, "r", encoding="utf-8") as bf:
                 b_content = json.load(bf)
                 if isinstance(b_content, dict):
-                    data = b_content
+                    merged = b_content
         except Exception:
             pass
 
-    # Default to empty dictionary if completely brand new
-    if data is None:
-        data = {}
-
-    # Mirror to local files if initialized
+    # Mirror merged to local files so disk is always fresh
     try:
         with open(PORTAL_SERVICES_FILE, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
+            json.dump(merged, f, indent=2, ensure_ascii=False)
     except Exception:
         pass
 
     try:
         with open(PORTAL_SERVICES_BACKUP_FILE, "w", encoding="utf-8") as bf:
-            json.dump(data, bf, indent=2, ensure_ascii=False)
+            json.dump(merged, bf, indent=2, ensure_ascii=False)
     except Exception:
         pass
 
-    PORTAL_SERVICES_CACHE = data
-    return data
+    PORTAL_SERVICES_CACHE = merged
+    return merged
 
 def save_portal_services(data):
     global PORTAL_SERVICES_CACHE
@@ -625,15 +622,47 @@ USER_QUEST_PROGRESS_FILE = os.path.join(DATA_DIR, "user_quest_progress.json")
 UNLOCK_HISTORY_FILE = os.path.join(DATA_DIR, "unlock_history.json")
 
 def load_unlock_history():
+    data = None
     if os.path.exists(UNLOCK_HISTORY_FILE):
         try:
             with open(UNLOCK_HISTORY_FILE, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                if isinstance(data, dict):
-                    return data
+                content = json.load(f)
+                if isinstance(content, dict):
+                    data = content
         except Exception as e:
-            print(f"[-] Error loading unlock history: {e}")
-    return {"total_completed_count": 0, "total_requests_count": 0, "logs": []}
+            print(f"[-] Error loading local unlock history: {e}")
+
+    # Persistent cloud sync with Cloudflare D1 (survives Render restarts)
+    try:
+        cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/unlock-history", timeout=5, verify=False)
+        if cf_res.status_code == 200:
+            cf_json = cf_res.json()
+            if isinstance(cf_json, dict) and "logs" in cf_json:
+                cf_logs = cf_json.get("logs", [])
+                local_logs = data.get("logs", []) if data else []
+                # Merge logs by ID preserving order
+                merged_map = {l["id"]: l for l in local_logs if isinstance(l, dict) and "id" in l}
+                for l in cf_logs:
+                    if isinstance(l, dict) and "id" in l:
+                        merged_map[l["id"]] = l
+                merged_logs = sorted(merged_map.values(), key=lambda x: x.get("timestamp", 0), reverse=True)[:100]
+                tot_comp = max((data.get("total_completed_count", 0) if data else 0), cf_json.get("total_completed_count", 0))
+                tot_req = max((data.get("total_requests_count", 0) if data else 0), cf_json.get("total_requests_count", 0))
+                data = {"total_completed_count": tot_comp, "total_requests_count": tot_req, "logs": merged_logs}
+                print(f"[+] Synced {len(merged_logs)} audit logs from Cloudflare D1 cloud store.")
+    except Exception as e:
+        print(f"[-] Cloudflare D1 history fetch note: {e}")
+
+    if data is None:
+        data = {"total_completed_count": 0, "total_requests_count": 0, "logs": []}
+
+    try:
+        with open(UNLOCK_HISTORY_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+    except Exception:
+        pass
+
+    return data
 
 def save_unlock_history(data):
     try:
@@ -641,6 +670,17 @@ def save_unlock_history(data):
             json.dump(data, f, indent=2, ensure_ascii=False)
     except Exception as e:
         print(f"[-] Error saving unlock history: {e}")
+
+    # Sync to Cloudflare D1 persistent cloud store (survives Render restarts)
+    def _sync_cf():
+        for attempt in range(3):
+            try:
+                res = requests.post("https://ppmod-api.tredarskvt.workers.dev/api/cloud/unlock-history", json=data, timeout=8, verify=False)
+                if res.status_code == 200:
+                    break
+            except Exception as e:
+                time.sleep(1)
+    threading.Thread(target=_sync_cf, daemon=True).start()
 
 def record_unlock_log(account_name="", email="", server_code="", user_uid="", game_id="", game_title="", status="COMPLETED", unlocked_count=0, total_count=0, xp_earned=0, message="", source="Web App", game_icon="", coins_cost=2, balance_before=None, balance_after=None, refund_status=None, coins_refunded=0):
     """

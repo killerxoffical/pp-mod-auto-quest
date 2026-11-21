@@ -3615,6 +3615,7 @@
     "game_id": "8",
     "title": "Gossip Harbor®: Merge & Story",
     "package": "com.mergegames.gossipharbor",
+    "client_sig": "58e71785c961e7328ea9c76de647f8f6c4403b39",
     "developer": "Microfun Limited",
     "category": "Puzzle & Merge",
     "icon": "https://play-lh.googleusercontent.com/VIv1J5fPLy-r9KrlA4WhLvzTboMphqs_jo_U9OqLyOmkr1AGAZ-nzIPo74_VISY7Ul28ZkObCkvlyyWPd_50=s0-br30",
@@ -3803,8 +3804,7 @@
       }
     ],
     "created_at": "2026-11-20 13:58:11",
-    "updated_at": "2026-11-20 13:58:11",
-    "id": "8"
+    "updated_at": "2026-11-21 09:58:11"
   },
   "37": {
     "service_id": "srv_37",
@@ -8063,6 +8063,284 @@
       }
     ],
     "created_at": "2026-11-20 14:02:14",
-    "updated_at": "2026-11-20 14:02:14"
+    "updated_at": "2026-11-20 14:02:14",
+    "id": "38"
+  },
+  "50": {
+    "service_id": "srv_50",
+    "game_id": "50",
+    "title": "Rise of Castles: Ice and Fire",
+    "package": "com.im30.ROE.gp",
+    "client_sig": "1f3603691327f50b184baea092c6c3e608d99a0d",
+    "developer": "Long Tech Network Limited",
+    "category": "Popular Games",
+    "icon": "https://play-lh.googleusercontent.com/VnuNntrmS7rBVEP2DrwSQAO9BFlaYZf9MwJ72p2jX5la8esW7IHoVuoVH9Qg5kzwLOCsKkg71GIzh7iQgG7hXQ=s0-br30",
+    "section": "quest_unlocker",
+    "enabled": true,
+    "total_quests_count": 26,
+    "selected_quests_count": 2,
+    "selected_quest_ids": [
+      "CgkI_c_FyZ8bEAIQFw",
+      "CgkI_c_FyZ8bEAIQGQ"
+    ],
+    "selected_quests": [
+      {
+        "id": "CgkI_c_FyZ8bEAIQFw",
+        "name": "Join the Group",
+        "description": "Join an Alliance for the first time",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/UgDJ2av2l6L5oAcZSSO1ZWw0trCb4nGRNCUGoXllz_dh8jmERtrJ-0pklBw3RYBHK5M"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQGQ",
+        "name": "Enlist Begins",
+        "description": "Recruit any soldier for the first time",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/7hr7jd5ugDyE844rCFsN3FoF-R2rNCRblBgrzgKpUrWwlh7ByUHwaisndEmnlkXfNoSl"
+      }
+    ],
+    "all_quests": [
+      {
+        "id": "CgkI_c_FyZ8bEAIQFg",
+        "name": "First Steps",
+        "description": "Log in for 3 days in total",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/bvKdhckYZJl8jja7dfYJEyM9cNdwWxfNEn9w1tPckaMLQwKgzCINmf_t1YPUJ-jLjbjj"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQAw",
+        "name": "Progressing Daily",
+        "description": "Log in for 7 days in total",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/nQH-kYnDgaRtV_KvZmbv-3exOPOm3_S646q8nyfus4KxlWda95oSnuzgWTqPgryvdNo"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQBA",
+        "name": "Perseverance",
+        "description": "Log in for 14 days in total",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/up0sVBzy9prdoazsXHIAVyJEC-5sKitplsBEKFDWQSRDNt4kKblvOuUbcw2mEd4SzA"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQBQ",
+        "name": "Loyal Companion",
+        "description": "Log in for 30 days in total",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/CMzrPtHRznOst_Y70Y9wbyEzyqWGjYundafbd14-Yb3mFqADY8SVnb-yIL42pbrIKQo"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQBg",
+        "name": "Legendary Login",
+        "description": "Log in for 90 days in total",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/nM_28AwBDOMZ0l_B1Ln7IT0nVebIrSBKSUIGtDSr-a7NjBzhnygitx6FcBlMdnYbp7Y"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQBw",
+        "name": "Steady Growth",
+        "description": "Upgrade the main base to level 8",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/D-OdkvboBHXva3lj-LPXRT6enbnenSRYYt_u6oc3xQdWO2Lwb8zOohHr7G_2PQSPb6M"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQCA",
+        "name": "Sturdy Fortress",
+        "description": "Upgrade the main base to level 13",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/h7LTU9oCOH92B3xPGK_7T76StIBATileXRNrANmW2S1B_xb24VW7mz-RZ4M_010ojkA"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQCQ",
+        "name": "Advanced Castle",
+        "description": "Upgrade the main base to level 16",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/KOP8Frpiv78i5wTR5z96y2eCHra5f-YtqvPPOLFnfbECi4ADXlfraJ_CPY_yp4Bu5w"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQCg",
+        "name": "Prosperous City",
+        "description": "Upgrade the main base to level 19",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/-z7vcP8Nvtds4gtAXUdjS3ssJU84L4cZjNf97GQ_g4INlgWAhhaXuIifqVawmwcIBw"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQCw",
+        "name": "King's Territory",
+        "description": "Upgrade the main base to level 25",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/qiinE_T-nmO35oS6Rq6WEB7q0DTYK4H1vKpSa7RDb95S4PvhKdDv0gXw81aFA2Zflg"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQDA",
+        "name": "Squad Formation",
+        "description": "Obtain 3 heroes",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/eqvo2tQAOImOS8jkr1KPIz5Q6prF2SBn20Is7T3EAxusJ_fvUiDh6Huo_gPgLVkFhzE"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQDQ",
+        "name": "Elite Gathering",
+        "description": "Obtain 6 heroes",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/mYJfalUaoWYsa0cQuIL3a9MAq-8T2JjySP6DCPErF2y-_3bKG_7gajp9uEidzPF3Kw"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQDg",
+        "name": "Powerful Lineup",
+        "description": "Obtain 9 heroes",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/UhedBnIH_auEK5sTO-2BaR5xxMouS7CWVUjTDdylswhqTDf7kn0Ng3Sv4EPBC0-_-yU"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQDw",
+        "name": "Legendary Team",
+        "description": "Obtain 12 heroes",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/tGulBke9ckMyzAdjiTCYzsceImFHBD4CJoKHnmvOKrvrQMW_E2TiWw5I46WLcVqeprY"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQEA",
+        "name": "Perfect Legion",
+        "description": "Obtain 15 heroes",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/tPfOUurDsf_UQswOlLKheD9TfRE6f1m4-ViE5DwXfxg0fsCVMViAPomn9YBL3-28lZGH"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQEQ",
+        "name": "Emerging Strength",
+        "description": "Reach a maximum Power of 1,000,000",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/9Zpy5TPgyvoT_yaznoLf-HUIImOBjm1p5HbgGX9Ib8yc45fQxyRw-5_eMTo5nu-aPxw"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQEg",
+        "name": "Rapid Power Surge",
+        "description": "Reach a maximum Power of 2,000,000",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/wc1JMNSCL6t0x0t2XzULTTfVXK5GTvPmYZSL_wzfIgz5523ts3-7VyDyBo-U9eStqwIs"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQEw",
+        "name": "Astonishing Might",
+        "description": "Reach a maximum Power of 5,000,000",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/Zl_-mO82vfxGs9w-FvqBJuYZeug2IFdB_JzALwfpOK4BJIsKCd3GPX39VxL1eN2mCz4"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQFA",
+        "name": "Peak Power",
+        "description": "Reach a maximum Power of 10,000,000",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/yEltmsmM8NeAngnYCwTEjpfVdDyfxMAvV0XQ_Gd4CyMs6rFAbNsVjqUqMuM6_eCj0c8"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQFQ",
+        "name": "Battle Master Descends",
+        "description": "Reach a maximum Power of 30,000,000",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/DdofFWWn25sA7nRlJvyuE_fWsV6uD82g7lum6uefFnNDT45Hn98GjXs3PNaSQDIJFq0"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQFw",
+        "name": "Join the Group",
+        "description": "Join an Alliance for the first time",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/UgDJ2av2l6L5oAcZSSO1ZWw0trCb4nGRNCUGoXllz_dh8jmERtrJ-0pklBw3RYBHK5M"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQGA",
+        "name": "Channel Newcomer",
+        "description": "Speak in the Province or Alliance Channel for the first time",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/v0w72nvGkDfQGIKbp4ggTJhBExjXkXBGa1tYi7EGLzvuPf25DeK4Vu-fFe7jgyjmUno"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQGQ",
+        "name": "Enlist Begins",
+        "description": "Recruit any soldier for the first time",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/7hr7jd5ugDyE844rCFsN3FoF-R2rNCRblBgrzgKpUrWwlh7ByUHwaisndEmnlkXfNoSl"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQGg",
+        "name": "Planting Seeds",
+        "description": "Own 10 buildings with different functions",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/7GJWkahG8RMZYCC63D0R4Q-ISCfh0zTM48sRJG5zYu0FFV-8CUmnkp1L8VzKVyVyrA"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQGw",
+        "name": "Scout Vanguard",
+        "description": "Use the scouting function for the first time",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/qMDi_BttKrPg5D70SG7AJ9DITtYuTizJjcBV3C5Ge-5Cbf7UxiUouQy2Nn9qxVhdypk"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQAg",
+        "name": "First Victory",
+        "description": "Complete the first combat, defeat marauders",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/2XzkgOgiDgi4j6XnFugs6F0eF6e2RInWKvw-HqOFWQ6bls8zcQNoXjpjzMlukcX19Oxe"
+      }
+    ],
+    "created_at": "2026-11-21 09:15:22",
+    "updated_at": "2026-11-21 09:15:22",
+    "id": "50"
   }
 }
