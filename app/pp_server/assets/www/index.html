@@ -647,94 +647,103 @@
         /* ==================== 4. HOME DASHBOARD (IMAGE 4) ==================== */
         #viewHome {
             display: none;
-            min-height: 100vh;
-            padding-bottom: 100px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 64px;
+            flex-direction: column;
+            overflow: hidden;
+            background: var(--bg-base);
             animation: fadeIn 0.25s ease;
         }
 
         /* Top Bar */
         .home-topbar {
             background: #ffffff;
-            border-bottom: 1px solid #e2e8f0;
-            border-bottom-left-radius: 22px;
-            border-bottom-right-radius: 22px;
-            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
-            padding: 14px 18px 14px 18px;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.65);
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+            padding: 10px 16px;
             display: flex;
-            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            position: sticky;
-            top: 0;
-            z-index: 40;
+            justify-content: space-between;
             position: relative;
-        }
-
-        .settings-topbar {
-            padding: 18px 18px;
-        }
-
-        .topbar-banner-wrap {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            padding-right: 76px;
-            padding-left: 20px;
-        }
-
-        .topbar-banner-img {
-            height: 38px;
-            width: auto;
-            max-width: 250px;
-            object-fit: contain;
-            display: block;
-            filter: drop-shadow(0 2px 8px rgba(0, 168, 255, 0.16));
-        }
-
-        .topbar-user-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 24px;
-            padding: 4px 12px 4px 5px;
-            margin-top: 10px;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-        }
-
-        .topbar-logo {
-            width: 28px;
-            height: 28px;
-            border-radius: 8px !important;
-            object-fit: cover;
-            border: 1px solid #cbd5e1;
+            z-index: 40;
             flex-shrink: 0;
         }
 
+        .settings-topbar {
+            padding: 10px 16px;
+        }
+
+        .topbar-brand-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            overflow: hidden;
+            flex: 1;
+            padding-right: 8px;
+        }
+
+        .topbar-logo-img {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 1.5px solid rgba(226, 232, 240, 0.9);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+            flex-shrink: 0;
+        }
+
+        .topbar-brand-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 2px;
+            overflow: hidden;
+        }
+
+        .topbar-brand-banner {
+            height: 25px;
+            width: auto;
+            max-width: 175px;
+            object-fit: contain;
+            object-position: left center;
+            display: block;
+            filter: drop-shadow(0 1px 4px rgba(0, 168, 255, 0.16));
+        }
+
+        .topbar-email-row {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            overflow: hidden;
+        }
+
         .topbar-user-sub {
-            font-size: 12px;
+            font-size: 11.5px;
             font-weight: 700;
-            color: #334155;
-            letter-spacing: 0.3px;
+            color: #475569;
+            letter-spacing: 0.2px;
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .topbar-status-dot {
-            font-size: 10px;
+            font-size: 9px;
             color: #10b981;
-            margin-left: 2px;
+            flex-shrink: 0;
         }
 
         .topbar-actions {
-            position: absolute;
-            top: 14px;
-            right: 14px;
             display: flex;
             align-items: center;
             gap: 8px;
-            z-index: 5;
+            flex-shrink: 0;
         }
 
         .round-svg-flag-btn {
@@ -1010,10 +1019,11 @@
 
         /* Section Heading */
         .section-accounts-bar {
-            padding: 12px 18px 8px;
+            padding: 10px 16px 8px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            flex-shrink: 0;
         }
 
         .sec-title-dark {
@@ -1030,9 +1040,19 @@
             color: #2563eb;
         }
 
+        /* Dedicated Scrollable Area for Accounts Only */
+        .home-accounts-scrollable {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: contain;
+            padding-bottom: 24px;
+        }
+
         /* Accounts Cards Container */
         .home-accounts-wrap {
-            padding: 6px 18px;
+            padding: 4px 16px;
             display: flex;
             flex-direction: column;
             gap: 12px;
@@ -1579,15 +1599,15 @@
             right: 0;
             height: 64px;
             background: #ffffff;
-            border-top: 1px solid #e2e8f0;
-            border-top-left-radius: 22px;
-            border-top-right-radius: 22px;
+            border-top: 1px solid rgba(226, 232, 240, 0.65);
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: space-around;
             padding: 0 16px;
             z-index: 100;
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 -3px 12px rgba(0, 0, 0, 0.03);
         }
 
         .bottom-nav-item {
@@ -1649,12 +1669,25 @@
         /* ==================== SETTINGS / PROFILE VIEW ==================== */
         #viewSettings {
             display: none;
-            padding-bottom: 85px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 64px;
+            flex-direction: column;
+            overflow: hidden;
+            background: var(--bg-base);
             animation: fadeIn 0.25s ease;
         }
 
         .settings-container {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: contain;
             padding: 16px;
+            padding-bottom: 24px;
             display: flex;
             flex-direction: column;
             gap: 14px;
@@ -2060,8 +2093,15 @@
     <div id="viewHome">
         <!-- Top Bar (Home) -->
         <header class="home-topbar">
-            <div class="topbar-banner-wrap">
-                <img src="pp_server_banner.png" alt="PP SERVER" class="topbar-banner-img" onerror="this.style.display='none'">
+            <div class="topbar-brand-row">
+                <img id="topbarUserLogo" src="logo.png" alt="Profile" class="topbar-logo-img" onerror="this.src='logo.png'">
+                <div class="topbar-brand-info">
+                    <img src="pp_server_banner.png" alt="PP SERVER" class="topbar-brand-banner" onerror="this.style.display='none'">
+                    <div class="topbar-email-row">
+                        <span class="topbar-user-sub" id="topbarUserEmail">xx••••xx@gmail.com</span>
+                        <span class="topbar-status-dot" title="Active">●</span>
+                    </div>
+                </div>
             </div>
 
             <div class="topbar-actions">
@@ -2072,24 +2112,10 @@
                         <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
                     </svg>
                 </button>
-                <button class="btn-circle-action btn-circle-logout" title="Log Out" onclick="promptLogout()">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                        <polyline points="16 17 21 12 16 7"></polyline>
-                        <line x1="21" y1="12" x2="9" y2="12"></line>
-                    </svg>
-                </button>
-            </div>
-
-            <!-- Sleek Compact Profile Pill -->
-            <div class="topbar-user-pill">
-                <img id="topbarUserLogo" src="logo.png" alt="Profile" class="topbar-logo" onerror="this.src='logo.png'">
-                <span class="topbar-user-sub" id="topbarUserEmail">xx••••xx@gmail.com</span>
-                <span class="topbar-status-dot" title="Active">●</span>
             </div>
         </header>
 
-        <!-- Filter & Search Controls (Image 4) -->
+        <!-- Filter & Search Controls (Pinned) -->
         <div class="controls-filter-bar">
             <div class="region-select-pill" onclick="openRegionPickerModal()">
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -2110,38 +2136,30 @@
             </div>
         </div>
 
-        <!-- Section Heading -->
+        <!-- Section Heading (Pinned) -->
         <div class="section-accounts-bar">
             <span class="sec-title-dark">CONNECTED GOOGLE ACCOUNTS</span>
             <span class="sec-count-blue" id="labelAccountsCount">0 Accounts</span>
         </div>
 
-        <!-- Connected Accounts List (Image 4) -->
-        <div class="home-accounts-wrap" id="homeAccountsList"></div>
+        <!-- Dedicated Scrollable Accounts Area (Only This Scrolls) -->
+        <div class="home-accounts-scrollable" id="homeAccountsScrollArea">
+            <!-- Connected Accounts List (Image 4) -->
+            <div class="home-accounts-wrap" id="homeAccountsList"></div>
 
-        <!-- Empty State -->
-        <div class="home-accounts-wrap" id="homeEmptyState" style="display:none;">
-            <div class="empty-home-box">
-                <div class="empty-home-icon">
-                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                    </svg>
+            <!-- Empty State -->
+            <div class="home-accounts-wrap" id="homeEmptyState" style="display:none;">
+                <div class="empty-home-box">
+                    <div class="empty-home-icon">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </div>
+                    <h4 class="empty-home-title">No Google Accounts Connected</h4>
+                    <p class="empty-home-sub">Tap "+" below to connect your Google Play account and generate your QID.</p>
                 </div>
-                <h4 class="empty-home-title">No Google Accounts Connected</h4>
-                <p class="empty-home-sub">Tap "+" below to connect your Google Play account and generate your QID.</p>
             </div>
-        </div>
-
-        <!-- Bottom Fixed Button (Replaced by floating + in Bottom Nav) -->
-        <div class="bottom-connect-bar" style="display:none;">
-            <button class="btn-connect-google-full" onclick="startConnectAccount()">
-                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                <span>+ Connect Google Account</span>
-            </button>
         </div>
     </div>
 
@@ -2149,8 +2167,14 @@
     <div id="viewSettings" style="display:none;">
         <!-- Top Bar with same 3D Banner & Curved Bottom -->
         <header class="home-topbar settings-topbar">
-            <div class="topbar-banner-wrap">
-                <img src="pp_server_banner.png" alt="PP SERVER" class="topbar-banner-img" onerror="this.style.display='none'">
+            <div class="topbar-brand-row">
+                <img id="topbarUserLogoSettings" src="logo.png" alt="Profile" class="topbar-logo-img" onerror="this.src='logo.png'">
+                <div class="topbar-brand-info">
+                    <img src="pp_server_banner.png" alt="PP SERVER" class="topbar-brand-banner" onerror="this.style.display='none'">
+                    <div class="topbar-email-row">
+                        <span class="topbar-user-sub" style="color:#0284c7;font-weight:800;letter-spacing:0.5px;font-size:10.5px;">ACCOUNT SETTINGS</span>
+                    </div>
+                </div>
             </div>
 
             <div class="topbar-actions">
@@ -2159,13 +2183,6 @@
                         <polyline points="23 4 23 10 17 10"></polyline>
                         <polyline points="1 20 1 14 7 14"></polyline>
                         <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-                    </svg>
-                </button>
-                <button class="btn-circle-action btn-circle-logout" title="Log Out" onclick="promptLogout()">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                        <polyline points="16 17 21 12 16 7"></polyline>
-                        <line x1="21" y1="12" x2="9" y2="12"></line>
                     </svg>
                 </button>
             </div>
@@ -2506,7 +2523,7 @@
 
             var target = document.getElementById(viewId);
             if (target) {
-                target.style.display = (viewId === 'viewLogin') ? 'flex' : 'block';
+                target.style.display = (viewId === 'viewLogin' || viewId === 'viewHome' || viewId === 'viewSettings') ? 'flex' : 'block';
             }
 
             var bottomNav = document.getElementById('appBottomNav');
@@ -2526,14 +2543,14 @@
             var navSettings = document.getElementById('navItemSettings');
 
             if (tab === 'home') {
-                if (homeEl) homeEl.style.display = 'block';
+                if (homeEl) homeEl.style.display = 'flex';
                 if (settingsEl) settingsEl.style.display = 'none';
                 if (navHome) navHome.classList.add('active');
                 if (navSettings) navSettings.classList.remove('active');
                 renderAccounts();
             } else if (tab === 'settings') {
                 if (homeEl) homeEl.style.display = 'none';
-                if (settingsEl) settingsEl.style.display = 'block';
+                if (settingsEl) settingsEl.style.display = 'flex';
                 if (navHome) navHome.classList.remove('active');
                 if (navSettings) navSettings.classList.add('active');
                 renderSettingsProfile();
