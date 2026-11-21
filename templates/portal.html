@@ -532,14 +532,14 @@
                     </span>
                 </div>
                 <div style="display:flex; gap:6px;">
-                    <button type="button" id="tabBtnCode" class="portal-section-pill active" style="font-size:11px; padding:4px 12px;" onclick="switchPortalTab('code')">🔢 6-Digit Code</button>
+                    <button type="button" id="tabBtnCode" class="portal-section-pill active" style="font-size:11px; padding:4px 12px;" onclick="switchPortalTab('code')">🔢 6-Digit QID</button>
                     <button type="button" id="tabBtnToken" class="portal-section-pill" style="font-size:11px; padding:4px 12px;" onclick="switchPortalTab('token')">🔑 Master Token</button>
                 </div>
             </div>
 
             <!-- TAB 1: 6-Digit Sync Code -->
             <div id="tabContentCode" class="sync-row" style="margin-top:4px;">
-                <input id="portalSyncCodeInput" type="text" maxlength="8" class="sync-input" placeholder="Enter 6-digit sync code from app (e.g. 582914)" autocomplete="off" onkeydown="if(event.key==='Enter')connectPortalAccount('code')">
+                <input id="portalSyncCodeInput" type="text" maxlength="8" class="sync-input" placeholder="Enter 6-digit QID from app (e.g. 582914)" autocomplete="off" onkeydown="if(event.key==='Enter')connectPortalAccount('code')">
                 <button class="btn-action" id="btnConnectCode" onclick="connectPortalAccount('code')">🔗 Connect Account</button>
             </div>
 
@@ -979,7 +979,7 @@
                 const code = (document.getElementById("portalSyncCodeInput").value || "").trim().replace(" ", "").replace("-", "");
                 if (!code || code.length < 6) {
                     statusDiv.style.color = "#ef4444";
-                    statusDiv.innerText = "❌ Please enter a valid 6-digit sync code from the PPM Server app.";
+                    statusDiv.innerText = "❌ Please enter a valid 6-digit QID from the PPM Server app.";
                     return;
                 }
                 reqBody = { code: code };
@@ -1022,7 +1022,7 @@
                     statusDiv.style.display = "none";
                 } else {
                     statusDiv.style.color = "#ef4444";
-                    statusDiv.innerText = `❌ ${data.error || 'Failed to connect. Please check your code.'}`;
+                    statusDiv.innerText = `❌ ${data.error || 'Failed to connect. Please check your QID.'}`;
                 }
             } catch(e) {
                 const isTimeout = e.name === "AbortError";
@@ -1132,7 +1132,7 @@
 
         async function runServiceUnlock(gameId, gameTitle, btnElement) {
             if (!connectedAccountData || (!connectedAccountData.master_token && !connectedAccountData.code)) {
-                alert("Please connect your Google Account first in Step 1 (via 6-digit sync code or Master Token)!");
+                alert("Please connect your Google Account first in Step 1 (via 6-digit QID or Master Token)!");
                 window.scrollTo({ top: 120, behavior: 'smooth' });
                 return;
             }

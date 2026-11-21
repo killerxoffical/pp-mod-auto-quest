@@ -1630,21 +1630,22 @@ def portal_connect_account():
 
     access_token = tok_res["access_token"]
     profile_res = get_player_profile(access_token)
-    if not profile_res.get("ok"):
-        import hashlib
+    if not profile_res.get("ok") or not profile_res.get("display_name"):
         profile = {
-            "player_id": f"p_{int(hashlib.md5(email.encode()).hexdigest()[:12], 16)}",
-            "display_name": email.split("@")[0] if "@" in email else "Play Gamer",
+            "has_profile": False,
+            "player_id": None,
+            "display_name": None,
             "avatar_url": "https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512",
-            "current_level": 3,
-            "current_xp": 4500,
-            "min_xp": 2500,
-            "max_xp": 5000,
-            "next_level": 4,
-            "progress_pct": 80
+            "current_level": 0,
+            "current_xp": 0,
+            "min_xp": 0,
+            "max_xp": 1000,
+            "next_level": 1,
+            "progress_pct": 0
         }
     else:
         profile = format_profile(profile_res)
+        profile["has_profile"] = bool(profile.get("display_name") and profile.get("player_id"))
 
     res_data = {
         "ok": True,
@@ -1652,8 +1653,9 @@ def portal_connect_account():
         "master_token": master_token,
         "access_token": access_token,
         "android_id": android_id,
+        "has_profile": profile.get("has_profile", False),
         "profile": profile,
-        "message": f"Connected as {profile.get('display_name', email)} (One-time Public Session)"
+        "message": f"Connected as {profile.get('display_name') or email}"
     }
 
     PORTAL_PROFILE_CACHE[master_token] = {"ts": now_ts, "data": res_data}
