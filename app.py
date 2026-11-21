@@ -779,8 +779,28 @@ def save_banned_users(banned_set):
 
 def detect_token_country(email, master_token, android_id, fallback="GLOBAL"):
     """
-    Auto-detects country from token via Google userinfo profile locale or Google Play services.
+    Auto-detects country from token via Google userinfo profile locale or email domain or Google Play services.
     """
+    em = (email or "").lower().strip()
+    if em.endswith(".co.uk") or em.endswith(".uk") or em.endswith(".ac.uk"):
+        return "UK"
+    elif em.endswith(".de"):
+        return "DE"
+    elif em.endswith(".jp") or em.endswith(".co.jp"):
+        return "JP"
+    elif em.endswith(".kr") or em.endswith(".co.kr"):
+        return "KR"
+    elif em.endswith(".ca"):
+        return "CA"
+    elif em.endswith(".fr"):
+        return "FR"
+    elif em.endswith(".au") or em.endswith(".com.au"):
+        return "AU"
+    elif em.endswith(".in") or em.endswith(".co.in"):
+        return "IN"
+    elif em.endswith(".bd") or em.endswith(".com.bd"):
+        return "BD"
+
     try:
         import gpsoauth
         res = gpsoauth.perform_oauth(
@@ -799,15 +819,49 @@ def detect_token_country(email, master_token, android_id, fallback="GLOBAL"):
                 loc = ur.json().get("locale", "")
                 if "-" in loc:
                     c = loc.split("-")[-1].upper()
+                    if c == "GB":
+                        c = "UK"
                     if len(c) == 2:
                         return c
                 elif loc.lower() == "ja":
                     return "JP"
                 elif loc.lower() == "ko":
                     return "KR"
+                elif loc.lower() == "de":
+                    return "DE"
+                elif loc.lower() == "fr":
+                    return "FR"
     except Exception as e:
         print(f"[-] Token country auto-detect error: {e}")
-    if fallback and fallback.upper() not in ("AUTO", "GLOBAL"):
+
+    try:
+        import gpsoauth
+        mkt_res = gpsoauth.perform_oauth(
+            email.strip(), master_token.strip(), android_id,
+            service="androidmarket",
+            app="com.android.vending",
+            client_sig="38918a453d07199354f8b19af05ec6562ced5788"
+        )
+        if mkt_res and mkt_res.get("Auth"):
+            fdfe_headers = {
+                "Authorization": f"GoogleLogin auth={mkt_res['Auth']}",
+                "X-DFE-Device-Id": android_id,
+                "User-Agent": "Android-Finsky/37.5.24-29 (api=3,versionCode=83752410,sdk=33)",
+            }
+            tr = requests.get("https://android.clients.google.com/fdfe/toc", headers=fdfe_headers, timeout=5)
+            if tr.status_code == 200:
+                h_c = tr.headers.get("X-DFE-Country", "").strip().upper()
+                if h_c and len(h_c) == 2:
+                    return "UK" if h_c == "GB" else h_c
+                import re
+                cm = re.search(rb'country[\x00-\x1f:]+([A-Z]{2})', tr.content)
+                if cm:
+                    found_c = cm.group(1).decode("ascii").upper()
+                    return "UK" if found_c == "GB" else found_c
+    except Exception:
+        pass
+
+    if fallback and fallback.upper() not in ("AUTO", "GLOBAL", "US"):
         return fallback.upper()
     return "GLOBAL"
 
@@ -961,6 +1015,45 @@ def delete_sync_account():
     threading.Thread(target=_del_cf, daemon=True).start()
 
     return jsonify({"ok": True, "message": "Account removed from cloud vault."})
+
+@app.route("/api/sync/update_country", methods=["POST"])
+def update_sync_country():
+    """
+    Updates the account's country in cloud vault and memory when user switches it.
+    """
+    data = request.get_json() or {}
+    code = data.get("code", "").strip()
+    country = data.get("country", "").strip().upper()
+    if not code or not country:
+        return jsonify({"ok": False, "error": "Code and country required"}), 400
+
+    if country == "GB":
+        country = "UK"
+
+    updated = False
+    if code in SYNC_CODES:
+        SYNC_CODES[code]["country"] = country
+        save_sync_codes(SYNC_CODES)
+        updated = True
+
+        def _update_cf():
+            try:
+                entry = SYNC_CODES[code]
+                cf_payload = {
+                    "code": code,
+                    "email": entry.get("email", ""),
+                    "master_token": entry.get("master_token", ""),
+                    "country": country,
+                    "android_id": entry.get("android_id", ""),
+                    "uid": entry.get("uid", ""),
+                    "owner_email": entry.get("owner_email", "")
+                }
+                requests.post("https://ppmod-api.tredarskvt.workers.dev/api/sync/save", json=cf_payload, timeout=4)
+            except Exception as e:
+                print(f"[-] Cloudflare update country error: {e}")
+        threading.Thread(target=_update_cf, daemon=True).start()
+
+    return jsonify({"ok": True, "code": code, "country": country, "updated": updated})
 
 @app.route("/api/sync/accounts", methods=["GET"])
 def get_sync_accounts():
@@ -3387,6 +3480,7 @@ def unlock_single_achievement():
     # Invalidate cached progress so frontend updates immediately from Google live servers!
     if email:
         USER_PROGRESS_CACHE.pop(email.lower(), None)
+        PORTAL_PROGRESS_CACHE.pop(email.lower(), None)
 
     # 2. Calculate authentic quest XP
     xp = 500
@@ -3823,6 +3917,7 @@ def get_user_real_achievements():
     })
 
 USER_PROGRESS_CACHE = {}
+PORTAL_PROGRESS_CACHE = {}
 
 @app.route("/api/user/progress", methods=["GET", "POST"])
 def get_user_progress_summary():
@@ -4388,14 +4483,15 @@ def clear_admin_unlock_history():
 def check_portal_progress():
     """
     Checks real-time Google Play Games achievement progress directly from GPGS API for all active portal services.
-    Returns real-time UNLOCKED status per service and individual quests so users see 100% genuine live progress
-    and completed badges, even if unlocked by playing manually or on another session.
+    Returns real-time UNLOCKED status per service and individual quests with smart 60-second caching.
     """
     data = request.get_json(silent=True) or {}
     email = data.get("email", "").strip()
     master_token = data.get("master_token", "").strip() or data.get("token", "").strip()
     access_token = data.get("access_token", "").strip()
     android_id = data.get("android_id", "").strip()
+    code = data.get("code", "").strip() or data.get("sync_code", "").strip()
+    force_refresh = str(data.get("refresh", request.args.get("refresh", "0"))).lower() in ["1", "true"]
 
     if not master_token and not access_token:
         email, master_token, access_token, android_id = resolve_credentials_from_input(data)
@@ -4406,7 +4502,21 @@ def check_portal_progress():
     if not android_id and email:
         android_id = generate_android_id(email)
 
+    # 60s Server-side Cache for high-performance instant loading
+    now = time.time()
+    cache_key = (email.lower() if email else (code or master_token[:15]))
+    if not force_refresh and cache_key in PORTAL_PROGRESS_CACHE:
+        entry = PORTAL_PROGRESS_CACHE[cache_key]
+        if now - entry.get("ts", 0) < 60:
+            return jsonify(entry.get("data")), 200
+
     services = load_portal_services()
+    if isinstance(services, dict):
+        services_list = list(services.values())
+    else:
+        services_list = list(services)
+
+    active_services = [s for s in services_list if isinstance(s, dict) and s.get("enabled", True)]
     merged = get_merged_games()
 
     real_db = {}
@@ -4424,21 +4534,24 @@ def check_portal_progress():
         srv_id = str(srv.get("id") or srv.get("game_id", ""))
         game_id = str(srv.get("game_id", srv_id))
         selected_quest_ids = set(srv.get("selected_quest_ids", []))
-        
-        if not selected_quest_ids:
-            return srv_id, {
+        if not selected_quest_ids and srv.get("selected_quests"):
+            selected_quest_ids = set(q["id"] for q in srv.get("selected_quests", []) if isinstance(q, dict) and "id" in q)
+
+        total_count = len(selected_quest_ids)
+        if total_count == 0:
+            return srv_id, game_id, {
                 "is_completed": False,
                 "completed_count": 0,
                 "total_count": 0,
                 "completed_quest_ids": []
             }
 
-        game = merged.get(game_id) or srv
+        game = merged.get(str(game_id)) or merged.get(str(srv_id)) or real_db.get(str(game_id)) or srv
         app_package = game.get("package") or srv.get("package")
         client_sig = game.get("client_sig") or srv.get("client_sig")
 
         if not client_sig and real_db:
-            g_entry = real_db.get(game_id)
+            g_entry = real_db.get(str(game_id)) or real_db.get(str(srv_id))
             if not g_entry and app_package:
                 g_entry = next((item for item in real_db.values() if item.get("package") == app_package), None)
             if g_entry and g_entry.get("client_sig"):
@@ -4473,30 +4586,30 @@ def check_portal_progress():
         else:
             game_token = access_token
 
-        if not game_token:
-            return srv_id, {
-                "is_completed": False,
-                "completed_count": 0,
-                "total_count": len(selected_quest_ids),
-                "completed_quest_ids": []
-            }
-
+        # Query live Google Play Games achievements + local persistent progress
         live_unlocked = set()
-        try:
-            p_res = requests.get(f"{GAMES_API_BASE}/players/me/achievements?maxResults=100", headers=get_headers(game_token), timeout=8)
-            if p_res.status_code == 200:
-                for it in p_res.json().get("items", []):
-                    if it.get("achievementState") == "UNLOCKED":
-                        live_unlocked.add(it.get("id"))
-        except Exception as e:
-            print(f"[-] Live check error for {srv.get('title')}: {e}")
+        if email:
+            try:
+                live_unlocked.update(get_user_unlocked_quest_ids(email, game_id))
+                live_unlocked.update(get_user_unlocked_quest_ids(email, srv_id))
+            except Exception:
+                pass
+
+        if game_token:
+            try:
+                p_res = requests.get(f"{GAMES_API_BASE}/players/me/achievements?maxResults=100", headers=get_headers(game_token), timeout=8)
+                if p_res.status_code == 200:
+                    for it in p_res.json().get("items", []):
+                        if it.get("achievementState") == "UNLOCKED":
+                            live_unlocked.add(it.get("id"))
+            except Exception as e:
+                print(f"[-] Live check error for {srv.get('title')}: {e}")
 
         completed_in_service = [qid for qid in selected_quest_ids if qid in live_unlocked]
         completed_count = len(completed_in_service)
-        total_count = len(selected_quest_ids)
         is_completed = (total_count > 0) and (completed_count >= total_count)
 
-        return srv_id, {
+        return srv_id, game_id, {
             "is_completed": is_completed,
             "completed_count": completed_count,
             "total_count": total_count,
@@ -4504,18 +4617,21 @@ def check_portal_progress():
         }
 
     results = {}
-    active_services = [s for s in services if s.get("enabled", True)]
     with ThreadPoolExecutor(max_workers=10) as executor:
-        for srv_id, res in executor.map(check_service_live_progress, active_services):
+        for srv_id, game_id, res in executor.map(check_service_live_progress, active_services):
             results[srv_id] = res
+            results[game_id] = res
+            results[str(srv_id)] = res
+            results[str(game_id)] = res
 
-    return jsonify({
+    res_data = {
         "ok": True,
         "email": email,
         "services": results,
-        "timestamp": int(time.time())
-    }), 200
-
+        "timestamp": int(now)
+    }
+    PORTAL_PROGRESS_CACHE[cache_key] = {"ts": now, "data": res_data}
+    return jsonify(res_data), 200
 
 @app.route("/api/portal/unlock", methods=["POST"])
 def unlock_portal_service_quests():
@@ -4693,6 +4809,8 @@ def unlock_portal_service_quests():
                     "xp": xp,
                     "status": "UNLOCKED"
                 })
+                if email:
+                    record_user_unlocked_quest(email, game_id, ach_id)
             elif res and res.get("error"):
                 last_err = str(res.get("error"))
         except Exception as e:

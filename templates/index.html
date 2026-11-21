@@ -1531,7 +1531,7 @@
                         <svg viewBox="0 0 24 24">
                             <path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
                         </svg>
-                        <span>Serviced Log (Last 100)</span>
+                        <span>Serviced Log</span>
                         <span id="historyLogCountBadge" style="background:var(--accent-green-subtle); color:var(--accent-green); font-size:10px; font-weight:800; padding:2px 6px; border-radius:10px; margin-left:auto;">0</span>
                     </a>
                     <a class="nav-item" id="navAddGame" onclick="switchAdminTab('add_game')">
@@ -3056,12 +3056,11 @@
                                     <th>Game &amp; Service</th>
                                     <th>Quests</th>
                                     <th>Status</th>
-                                    <th>XP</th>
                                 </tr>
                             </thead>
                             <tbody id="servicedHistoryTableBody">
                                 <tr>
-                                    <td colspan="9" style="text-align:center; padding:35px; color:var(--text-muted);">
+                                    <td colspan="8" style="text-align:center; padding:35px; color:var(--text-muted);">
                                         <div class="spinner" style="margin:0 auto 10px; border-top-color:var(--accent-green);"></div>
                                         Loading serviced accounts history from Render node...
                                     </td>
@@ -6874,6 +6873,167 @@
                 }
             }
         }
+    
+        // ================= SERVICED ACCOUNTS AUDIT & HISTORY (CACHED & LIVE) =================
+        let allServicedLogs = [];
+
+        function renderServicedHistoryStats(data) {
+            if (!data) return;
+            const statTotal = document.getElementById("statTotalCompletedAllTime");
+            if (statTotal) statTotal.innerText = (data.total_completed || 0).toLocaleString();
+            const statWeb = document.getElementById("statWebRequestsCount");
+            if (statWeb) statWeb.innerText = (data.web_requests_count || 0).toLocaleString();
+            const statDirect = document.getElementById("statDirectRequestsCount");
+            if (statDirect) statDirect.innerText = (data.direct_requests_count || 0).toLocaleString();
+            const statRecent = document.getElementById("statRecentLogsCount");
+            const count = (data.logs ? data.logs.length : (data.logs_count || 0));
+            if (statRecent) statRecent.innerText = `${count} / 100`;
+
+            const badge = document.getElementById("historyLogCountBadge");
+            if (badge) badge.innerText = count;
+        }
+
+        async function loadServicedHistory(force = false) {
+            const tbody = document.getElementById("servicedHistoryTableBody");
+            
+            // 1. Instant Cache Render: load immediately from localStorage with 0ms delay!
+            let hasCache = false;
+            try {
+                const cached = localStorage.getItem("pp_serviced_history_cache");
+                if (cached) {
+                    const parsed = JSON.parse(cached);
+                    if (parsed && Array.isArray(parsed.logs)) {
+                        hasCache = true;
+                        allServicedLogs = parsed.logs;
+                        renderServicedHistoryStats(parsed);
+                        renderServicedHistoryTable(allServicedLogs);
+                    }
+                }
+            } catch(e) {}
+
+            // Only show spinner if no cache exists
+            if (!hasCache && tbody) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:35px; color:var(--text-muted);"><div class="spinner" style="margin:0 auto 10px; border-top-color:var(--accent-green);"></div>Loading serviced accounts history from Render node...</td></tr>`;
+            }
+
+            // 2. Fetch fresh live data from Render backend & seamlessly update
+            try {
+                const res = await fetch("/api/admin/history");
+                const data = await res.json();
+                if (data.ok) {
+                    allServicedLogs = data.logs || [];
+                    renderServicedHistoryStats(data);
+                    renderServicedHistoryTable(allServicedLogs);
+                    try {
+                        localStorage.setItem("pp_serviced_history_cache", JSON.stringify(data));
+                    } catch(e) {}
+                } else if (!hasCache && tbody) {
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:25px; color:#ef4444;">${data.error || "Failed to load audit history."}</td></tr>`;
+                }
+            } catch(e) {
+                if (!hasCache && tbody) {
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:25px; color:#ef4444;">Error connecting to Render backend: ${e.message}</td></tr>`;
+                }
+            }
+        }
+
+        function renderServicedHistoryTable(logs) {
+            const tbody = document.getElementById("servicedHistoryTableBody");
+            if (!tbody) return;
+
+            if (!logs || logs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:40px 20px; color:var(--text-muted);">
+                    <div style="font-size:32px; margin-bottom:8px;">📭</div>
+                    <strong style="color:var(--text-primary); font-size:14px;">No Serviced Account Logs Yet</strong>
+                    <p style="font-size:12px; margin-top:4px;">When users unlock quests via Web App or Public Portal, their Play Point accounts, 6-digit codes, and UIDs will appear here automatically.</p>
+                </td></tr>`;
+                return;
+            }
+
+            let html = "";
+            logs.forEach((log, index) => {
+                const isCompleted = (log.status === "COMPLETED" || log.status === "SUCCESS");
+                const isAlready = (log.status === "ALREADY_DONE");
+
+                let statusBadge = "";
+                if (isCompleted) {
+                    statusBadge = `<span style="background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3); padding:3px 8px; border-radius:4px; font-size:11px; font-weight:800; display:inline-flex; align-items:center; gap:4px;">✓ COMPLETED</span>`;
+                } else if (isAlready) {
+                    statusBadge = `<span style="background:rgba(2,132,199,0.15); color:#0284c7; border:1px solid rgba(2,132,199,0.3); padding:3px 8px; border-radius:4px; font-size:11px; font-weight:800; display:inline-flex; align-items:center; gap:4px;">ℹ️ ALREADY DONE</span>`;
+                } else {
+                    statusBadge = `<span style="background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3); padding:3px 8px; border-radius:4px; font-size:11px; font-weight:800; display:inline-flex; align-items:center; gap:4px;">✕ FAILED</span>`;
+                }
+
+                const codeBadge = (log.server_code && log.server_code !== "—")
+                    ? `<span style="font-family:'JetBrains Mono', monospace; font-size:12px; font-weight:700; background:rgba(2,132,199,0.1); color:#0284c7; border:1px solid rgba(2,132,199,0.25); padding:2px 7px; border-radius:4px; letter-spacing:1px;">${escapeHtml(log.server_code)}</span>`
+                    : `<span style="color:var(--text-muted); font-size:11px;">Direct Token</span>`;
+
+                const safeUid = (log.user_uid || "").replace(/'/g, "\\'");
+                const uidDisplay = (log.user_uid && log.user_uid !== "Direct Portal")
+                    ? `<div style="display:flex; align-items:center; gap:6px;">
+                         <span style="font-family:'JetBrains Mono', monospace; font-size:11.5px; font-weight:700; background:var(--bg-body); border:1px solid var(--border-color); padding:2px 6px; border-radius:4px; color:var(--text-primary);">${escapeHtml(log.user_uid)}</span>
+                         <button onclick="navigator.clipboard.writeText('${safeUid}'); showToast('UID Copied!');" title="Copy UID" style="background:none; border:none; cursor:pointer; color:var(--text-muted); padding:2px;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                         </button>
+                       </div>`
+                    : `<span style="font-size:11px; color:var(--text-muted); font-weight:600;">🌐 Direct Portal</span>`;
+
+                html += `
+                    <tr style="border-bottom:1px solid var(--border-color); transition:background 0.15s ease;">
+                        <td style="text-align:center; font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-muted);">${index + 1}</td>
+                        <td style="white-space:nowrap;">
+                            <div style="font-size:12px; font-weight:700; color:var(--text-primary);">${escapeHtml(log.datetime || 'Just now')}</div>
+                            <div style="font-size:10px; color:var(--text-muted);">${escapeHtml(log.source || 'Web App')}</div>
+                        </td>
+                        <td>${uidDisplay}</td>
+                        <td>
+                            <div style="font-size:13px; font-weight:700; color:var(--text-primary);">${escapeHtml(log.account_name || 'Gamer')}</div>
+                            <div style="font-size:11px; color:var(--text-secondary); font-family:'JetBrains Mono', monospace;">${escapeHtml(log.email || '—')}</div>
+                        </td>
+                        <td>${codeBadge}</td>
+                        <td>
+                            <div style="font-size:13px; font-weight:700; color:var(--text-primary);">${escapeHtml(log.game_title || 'Game Quests')}</div>
+                            <div style="font-size:10.5px; color:var(--text-muted);">ID: ${escapeHtml(log.game_id || '—')}</div>
+                        </td>
+                        <td>
+                            <span style="font-family:'JetBrains Mono', monospace; font-size:11.5px; font-weight:700; color:var(--text-primary);">${log.unlocked_count} / ${log.total_count}</span>
+                        </td>
+                        <td>${statusBadge}</td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        function filterServicedHistory() {
+            const query = (document.getElementById("historySearchInput").value || "").toLowerCase().trim();
+            const status = document.getElementById("historyStatusFilter").value;
+
+            const filtered = allServicedLogs.filter(log => {
+                const matchStatus = (status === "ALL") ||
+                    (status === "COMPLETED" && (log.status === "COMPLETED" || log.status === "SUCCESS")) ||
+                    (status === "ALREADY_DONE" && log.status === "ALREADY_DONE") ||
+                    (status === "FAILED" && log.status === "FAILED");
+
+                const matchQuery = !query ||
+                    (log.account_name && log.account_name.toLowerCase().includes(query)) ||
+                    (log.email && log.email.toLowerCase().includes(query)) ||
+                    (log.server_code && log.server_code.toLowerCase().includes(query)) ||
+                    (log.user_uid && log.user_uid.toLowerCase().includes(query)) ||
+                    (log.game_title && log.game_title.toLowerCase().includes(query));
+
+                return matchStatus && matchQuery;
+            });
+
+            renderServicedHistoryTable(filtered);
+        }
+
+        // Auto load cached history on startup
+        document.addEventListener("DOMContentLoaded", () => {
+            loadServicedHistory();
+        });
+
     </script>
 
 </body>

@@ -611,6 +611,18 @@
                 </button>
             </div>
 
+            
+            <!-- Game Search Bar & Live Sync Status -->
+            <div style="margin-top:16px; margin-bottom:18px; position:relative;">
+                <input type="text" id="portalGameSearchInput" placeholder="🔍 Search quest games (e.g. 8 Ball Pool, Angry Birds, Arknights...)" oninput="onPortalSearchInput()" style="width:100%; padding:13px 18px 13px 44px; border-radius:var(--radius-md); border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-primary); font-size:13.5px; font-weight:600; outline:none; box-shadow:var(--shadow-card); transition:all 0.2s ease;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="position:absolute; left:15px; top:13px; color:var(--text-muted);"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <button id="portalClearSearchBtn" onclick="clearPortalSearch()" style="display:none; position:absolute; right:14px; top:12px; background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:16px;">✕</button>
+            </div>
+            <div id="portalLiveSyncNotice" style="display:none; align-items:center; gap:8px; margin-bottom:14px; padding:8px 14px; background:rgba(2,132,199,0.08); border:1px solid rgba(2,132,199,0.25); border-radius:var(--radius-md); font-size:12px; color:var(--accent-cyan); font-weight:600;">
+                <div class="spinner" style="width:14px; height:14px; border-width:2px; border-top-color:var(--accent-cyan);"></div>
+                <span>Checking real-time live achievement progress from Google Play Games servers...</span>
+            </div>
+
             <div class="services-grid" id="portalServicesList">
                 <div style="text-align:center; padding:40px; grid-column:1/-1; color:var(--text-muted);">
                     Loading active quest services...
@@ -710,8 +722,33 @@
         }
 
         
-        // Real-Time Google Play Games Live Progress
+        
+        function onPortalSearchInput() {
+            const input = document.getElementById("portalGameSearchInput");
+            const clearBtn = document.getElementById("portalClearSearchBtn");
+            if (clearBtn) {
+                clearBtn.style.display = (input && input.value.trim().length > 0) ? "block" : "none";
+            }
+            renderPortalServices();
+        }
+
+        function clearPortalSearch() {
+            const input = document.getElementById("portalGameSearchInput");
+            if (input) input.value = "";
+            const clearBtn = document.getElementById("portalClearSearchBtn");
+            if (clearBtn) clearBtn.style.display = "none";
+            renderPortalServices();
+        }
+
+        // Real-Time Google Play Games Live Progress with instant local cache
         window.liveServiceProgress = {};
+        try {
+            const savedProg = sessionStorage.getItem("pp_portal_live_progress");
+            if (savedProg) {
+                window.liveServiceProgress = JSON.parse(savedProg);
+            }
+        } catch(e) {}
+
         window.isCheckingLiveProgress = false;
 
         async function checkPortalLiveProgress() {
@@ -737,6 +774,9 @@
                 const data = await res.json();
                 if (data.ok && data.services) {
                     window.liveServiceProgress = data.services;
+                    try {
+                        sessionStorage.setItem("pp_portal_live_progress", JSON.stringify(data.services));
+                    } catch(e) {}
                     renderPortalServices();
                 }
             } catch(e) {
@@ -752,20 +792,32 @@
             const badge = document.getElementById("serviceCountBadge");
             if (!container) return;
 
-            const filtered = (activePortalSection === "all")
-                ? allPortalServices
-                : allPortalServices.filter(s => (s.section || "quest_unlocker") === activePortalSection);
+            const searchInput = document.getElementById("portalGameSearchInput");
+            const query = (searchInput ? searchInput.value : "").toLowerCase().trim();
+
+            const filtered = allPortalServices.filter(s => {
+                const matchSection = (activePortalSection === "all") || ((s.section || "quest_unlocker") === activePortalSection);
+                const matchQuery = !query ||
+                    (s.title && s.title.toLowerCase().includes(query)) ||
+                    (s.developer && s.developer.toLowerCase().includes(query)) ||
+                    (s.category && s.category.toLowerCase().includes(query)) ||
+                    (s.game_id && String(s.game_id).includes(query)) ||
+                    (s.id && String(s.id).includes(query));
+                return matchSection && matchQuery;
+            });
 
             if (badge) badge.innerText = `${filtered.length} Active Services`;
 
             if (filtered.length === 0) {
-                const emptyMsg = (allPortalServices.length === 0)
-                    ? `No active services have been published by the admin yet. Please check back later.`
-                    : `No services found in this specific category. Please switch tabs to view other services.`;
+                const emptyMsg = query
+                    ? `No games matching "${escapeHtml(query)}" found in this category. Try clearing the search filter.`
+                    : ((allPortalServices.length === 0)
+                        ? `No active services have been published by the admin yet. Please check back later.`
+                        : `No services found in this specific category. Please switch tabs to view other services.`);
                 container.innerHTML = `
                     <div style="grid-column:1/-1; text-align:center; padding:60px 20px; background:var(--bg-card); border:1px dashed var(--border-color); border-radius:var(--radius-xl);">
                         <span style="font-size:42px; display:block; margin-bottom:12px;">🛡️</span>
-                        <strong style="font-size:16px; color:var(--text-primary); display:block; margin-bottom:6px;">No Services Currently Configured</strong>
+                        <strong style="font-size:16px; color:var(--text-primary); display:block; margin-bottom:6px;">No Games Found</strong>
                         <p style="font-size:12.5px; color:var(--text-muted); max-width:440px; margin:0 auto;">${emptyMsg}</p>
                     </div>
                 `;
@@ -778,9 +830,15 @@
                 const quests = s.selected_quests || [];
                 const isLevelUp = (s.section || "quest_unlocker") === "level_up";
 
-                // Real-time check from Google Play Games API
-                const srvKey = s.id || s.game_id;
-                const prog = window.liveServiceProgress ? (window.liveServiceProgress[srvKey] || window.liveServiceProgress[s.game_id] || window.liveServiceProgress[s.id]) : null;
+                // Real-time lookup from Google Play Games API response
+                const srvKey = String(s.id || s.game_id);
+                const prog = window.liveServiceProgress ? (
+                    window.liveServiceProgress[srvKey] ||
+                    window.liveServiceProgress[String(s.game_id)] ||
+                    window.liveServiceProgress[String(s.id)] ||
+                    window.liveServiceProgress[String(s.service_id)]
+                ) : null;
+
                 const isCompleted = prog && prog.is_completed;
                 const completedCount = prog ? (prog.completed_count || 0) : 0;
                 const completedIds = (prog && prog.completed_quest_ids) ? prog.completed_quest_ids : [];
