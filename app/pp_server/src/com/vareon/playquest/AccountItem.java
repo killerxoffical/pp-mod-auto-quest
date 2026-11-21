@@ -169,6 +169,7 @@ public class AccountItem {
             obj.put("points", points);
             obj.put("tier", getTier());
             obj.put("has_perk", hasPerk);
+            obj.put("claimed", !hasPerk);
             obj.put("last_claim_date", lastClaimDate);
             obj.put("claimed_points", claimedPoints);
             obj.put("is_revoked", isRevoked);
@@ -194,7 +195,11 @@ public class AccountItem {
         item.setBalance(obj.optString("balance", "$0.00"));
         item.setPoints(obj.optInt("points", 0));
         item.setTier(obj.optString("tier", "Gold"));
-        item.setHasPerk(obj.optBoolean("has_perk", true));
+        boolean perkFlag = obj.optBoolean("has_perk", true);
+        if (obj.has("claimed") && obj.optBoolean("claimed", false)) {
+            perkFlag = false;
+        }
+        item.setHasPerk(perkFlag);
         item.setLastClaimDate(obj.optString("last_claim_date", ""));
         item.setClaimedPoints(obj.optInt("claimed_points", 0));
         item.setRevoked(obj.optBoolean("is_revoked", false));

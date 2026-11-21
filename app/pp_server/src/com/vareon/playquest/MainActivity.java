@@ -664,7 +664,9 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 item.setLastClaimDate(todayStr);
                 item.setClaimedPoints(item.getClaimedPoints() + bonus);
                 item.setPoints(item.getPoints() + bonus);
+                item.setHasPerk(false);
                 found = true;
+                CloudSyncClient.updateAccountPerkClaimOnCloud(code, item.getPoints(), item.getTier(), bonus);
                 break;
             }
         }

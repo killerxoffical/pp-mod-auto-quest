@@ -1063,6 +1063,229 @@
             background: #1d4ed8;
         }
 
+        /* Account Card Stats & Balance Row */
+        .card-acc-stats-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--radius-md);
+        }
+
+        .acc-stat-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .acc-tier-bronze .stat-tier-badge { color: #b45309; }
+        .acc-tier-silver .stat-tier-badge { color: #475569; }
+        .acc-tier-gold .stat-tier-badge { color: #d97706; }
+        .acc-tier-platinum .stat-tier-badge { color: #0284c7; }
+
+        .stat-dot {
+            color: #cbd5e1;
+            font-weight: 700;
+        }
+
+        .stat-points-val {
+            color: #0f172a;
+            font-weight: 900;
+            font-size: 12.5px;
+        }
+
+        .acc-balance-pill {
+            font-size: 11.5px;
+            color: #059669;
+            font-weight: 800;
+            background: #ecfdf5;
+            padding: 4px 10px;
+            border-radius: 8px;
+            border: 1px solid #a7f3d0;
+            cursor: pointer;
+            transition: all 0.12s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .acc-balance-pill:active {
+            transform: scale(0.96);
+            background: #d1fae5;
+        }
+
+        .card-perk-row {
+            margin-top: 10px;
+        }
+
+        .btn-claim-weekly-perk {
+            width: 100%;
+            height: 42px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: none;
+            border-radius: var(--radius-md);
+            color: #ffffff;
+            font-size: 13.5px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.32);
+            transition: all 0.15s ease;
+        }
+
+        .btn-claim-weekly-perk:active {
+            transform: scale(0.98);
+        }
+
+        .btn-claim-weekly-perk.loading {
+            background: #94a3b8;
+            box-shadow: none;
+            pointer-events: none;
+        }
+
+        .perk-gift-icon {
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .perk-plus-tag {
+            background: rgba(255, 255, 255, 0.28);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: 0.3px;
+        }
+
+        /* Modal Styles */
+        .sheet-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.52);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 9999;
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .sheet-modal-overlay.open {
+            display: flex;
+            opacity: 1;
+        }
+        .sheet-modal-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 480px;
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+            padding: 20px 20px 28px;
+            box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.16);
+            transform: translateY(100%);
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .sheet-modal-overlay.open .sheet-modal-card {
+            transform: translateY(0);
+        }
+        .sheet-drag-handle {
+            width: 40px;
+            height: 4px;
+            background: #cbd5e1;
+            border-radius: 2px;
+            margin: 0 auto 16px;
+        }
+        .sheet-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .sheet-title {
+            font-size: 17px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .sheet-close-btn {
+            background: #f1f5f9;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            color: #64748b;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .sheet-desc {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 16px;
+            line-height: 1.45;
+        }
+        .sheet-btn-action {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-size: 13.5px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            border: none;
+            transition: transform 0.12s;
+        }
+        .sheet-btn-action:active { transform: scale(0.97); }
+        .sheet-btn-primary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.28);
+        }
+        .tier-picker-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .tier-choice-item {
+            padding: 10px 12px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.15s;
+        }
+        .tier-choice-item.selected {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        .tier-choice-name {
+            font-size: 13px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .tier-choice-sub {
+            font-size: 10.5px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
         /* Bottom Fixed Action Button (Image 4) */
         .bottom-connect-bar {
             position: fixed;
@@ -2215,7 +2438,21 @@
     
 
     <!-- ==================== ACCOUNT CONFIG / TIER & POINTS MODAL ==================== -->
-    
+    <div id="modalAccountConfig" class="sheet-modal-overlay" onclick="closeAccountConfigModal(event)" style="display:none;">
+        <div class="sheet-modal-card" onclick="event.stopPropagation()">
+            <div class="sheet-drag-handle"></div>
+            <div class="sheet-title-row">
+                <span class="sheet-title">Account Level &amp; Points</span>
+                <button class="sheet-close-btn" onclick="closeAccountConfigModal()">✕</button>
+            </div>
+            <p class="sheet-desc" id="cfgAccountEmail">Configure Google Play level and real Play Points (PP):</p>
+
+            <label style="font-size:12px;font-weight:700;color:#334155;margin-bottom:6px;display:block;">Select Account Tier:</label>
+            <div class="tier-picker-grid">
+                <div class="tier-choice-item" id="tierOpt_Bronze" onclick="selectTierChoice('Bronze')">
+                    <div class="tier-choice-name" style="color:#b45309;">🥉 Bronze</div>
+                    <div class="tier-choice-sub">0 - 149 PP</div>
+                </div>
                 <div class="tier-choice-item" id="tierOpt_Silver" onclick="selectTierChoice('Silver')">
                     <div class="tier-choice-name" style="color:#64748b;">🥈 Silver</div>
                     <div class="tier-choice-sub">150 - 599 PP</div>
@@ -2966,6 +3203,17 @@
                 var country = (a.country && a.country !== 'GLOBAL') ? a.country.toUpperCase() : 'US';
                 var flagSvg = getCountrySvgBadge(country);
 
+                var tier = a.tier || 'Gold';
+                var points = (a.points !== undefined && a.points !== null) ? a.points : 260;
+                var balance = a.balance || '$0.00';
+                var tierLower = tier.toLowerCase();
+                var tierIcon = tierLower === 'bronze' ? '🥉' : (tierLower === 'silver' ? '🥈' : (tierLower === 'platinum' ? '💎' : '🥇'));
+
+                // Weekly Perk State Check:
+                // Only show claim button if has_perk is true AND not claimed AND tier is NOT Bronze
+                var isClaimed = a.claimed === true || a.has_perk === false;
+                var isEligible = (a.has_perk !== false) && !a.claimed && tierLower !== 'bronze';
+
                 html += 
                     '<div class="card-connected-acc" id="card_acc_' + a.code + '">' +
                         '<div class="card-acc-top">' +
@@ -2981,6 +3229,21 @@
                             '</button>' +
                         '</div>' +
 
+                        '<div class="card-acc-stats-row">' +
+                            '<div class="acc-stat-pill acc-tier-' + tierLower + '" onclick="openAccountConfigModal(\'' + a.code + '\')" style="cursor:pointer;" title="Tap to configure level and Play Points">' +
+                                '<span class="stat-tier-badge">' + tierIcon + ' ' + escapeHtml(tier) + '</span>' +
+                                '<span class="stat-dot">•</span>' +
+                                '<span class="stat-points-val">' + points + ' PP</span>' +
+                            '</div>' +
+                            '<div class="acc-stat-pill acc-balance-pill" onclick="checkAccountBalance(\'' + a.code + '\')" title="Google Play Balance (Tap to verify)">' +
+                                '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2">' +
+                                    '<rect x="2" y="4" width="20" height="16" rx="2"></rect>' +
+                                    '<line x1="2" y1="10" x2="22" y2="10"></line>' +
+                                '</svg>' +
+                                '<span>' + escapeHtml(balance) + '</span>' +
+                            '</div>' +
+                        '</div>' +
+
                         '<div class="box-sync-code">' +
                             '<div class="box-sync-code-left" onclick="toggleCodeReveal(\'' + a.code + '\', \'' + formattedCode + '\')" title="Tap to reveal QID for 5 seconds">' +
                                 '<span class="sync-code-label">QID <span class="sync-code-hint">(Tap to view)</span></span>' +
@@ -2994,10 +3257,136 @@
                                 '<span>Copy</span>' +
                             '</button>' +
                         '</div>' +
+
+                        (isEligible ? 
+                            ('<div class="card-perk-row" id="perk_row_' + a.code + '">' +
+                                '<button class="btn-claim-weekly-perk" id="btn_perk_' + a.code + '" onclick="claimPerkForAccount(\'' + a.code + '\')">' +
+                                    '<span class="perk-gift-icon">🎁</span>' +
+                                    '<span>Claim Weekly Perk</span>' +
+                                    '<span class="perk-plus-tag">+10 PP</span>' +
+                                '</button>' +
+                            '</div>') 
+                        : '') +
                     '</div>';
             }
 
             listEl.innerHTML = html;
+        }
+
+        var currentConfigCode = null;
+        var selectedTierChoice = 'Gold';
+
+        function openAccountConfigModal(code) {
+            currentConfigCode = code;
+            var acc = accounts.find(function(item) { return item && item.code === code; });
+            var curTier = acc ? (acc.tier || 'Gold') : 'Gold';
+            var curPts = acc ? (acc.points !== undefined ? acc.points : 260) : 260;
+
+            selectTierChoice(curTier);
+            var ptsInput = document.getElementById('cfgAccountPoints');
+            if (ptsInput) ptsInput.value = curPts;
+            var emailLabel = document.getElementById('cfgAccountEmail');
+            if (emailLabel) emailLabel.textContent = acc ? ('Account: ' + maskEmail(acc.email)) : 'Configure Account:';
+            var modal = document.getElementById('modalAccountConfig');
+            if (modal) {
+                modal.style.display = 'flex';
+                modal.classList.add('open');
+            }
+        }
+
+        function closeAccountConfigModal(e) {
+            if (e && e.target && e.target.id !== 'modalAccountConfig' && !e.target.classList.contains('sheet-close-btn')) return;
+            var modal = document.getElementById('modalAccountConfig');
+            if (modal) {
+                modal.classList.remove('open');
+                modal.style.display = 'none';
+            }
+            currentConfigCode = null;
+        }
+
+        function selectTierChoice(tier) {
+            selectedTierChoice = tier;
+            var tiers = ['Bronze', 'Silver', 'Gold', 'Platinum'];
+            tiers.forEach(function(t) {
+                var el = document.getElementById('tierOpt_' + t);
+                if (el) {
+                    if (t === tier) el.classList.add('selected');
+                    else el.classList.remove('selected');
+                }
+            });
+        }
+
+        function saveAccountConfig() {
+            var code = currentConfigCode;
+            if (!code) return;
+            var ptsInput = document.getElementById('cfgAccountPoints');
+            var rawPts = ptsInput ? ptsInput.value : '260';
+            var pts = parseInt(rawPts, 10);
+            if (isNaN(pts) || pts < 0) pts = 0;
+            var tier = selectedTierChoice || 'Gold';
+
+            for (var i = 0; i < accounts.length; i++) {
+                if (accounts[i] && accounts[i].code === code) {
+                    accounts[i].points = pts;
+                    accounts[i].tier = tier;
+                    break;
+                }
+            }
+
+            if (window.AndroidBridge && window.AndroidBridge.updateAccountData) {
+                try {
+                    window.AndroidBridge.updateAccountData(code, pts, tier);
+                } catch(e) {}
+            }
+
+            fetch((appInfo.portalUrl || 'https://pp-mod-auto-quest.onrender.com') + '/api/account/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: code, points: pts, tier: tier })
+            }).catch(function() {});
+
+            var modal = document.getElementById('modalAccountConfig');
+            if (modal) {
+                modal.classList.remove('open');
+                modal.style.display = 'none';
+            }
+            renderAccounts();
+            showToast("Saved: " + tier + " • " + pts + " PP");
+        }
+
+        function checkAccountBalance(code) {
+            var acc = accounts.find(function(item) { return item && item.code === code; });
+            var bal = acc ? (acc.balance || '$0.00') : '$0.00';
+            showToast("Google Play Balance: " + bal);
+            if (window.AndroidBridge && window.AndroidBridge.syncCloudAccounts) {
+                window.AndroidBridge.syncCloudAccounts();
+            }
+        }
+
+        function claimPerkForAccount(code) {
+            var btn = document.getElementById('btn_perk_' + code);
+            if (btn) {
+                btn.classList.add('loading');
+                btn.innerHTML = '<span>⏳ Claiming in background...</span>';
+            }
+
+            if (window.AndroidBridge && window.AndroidBridge.claimWeeklyPerk) {
+                window.AndroidBridge.claimWeeklyPerk(code);
+            } else {
+                setTimeout(function() {
+                    for (var i = 0; i < accounts.length; i++) {
+                        if (accounts[i] && accounts[i].code === code) {
+                            accounts[i].claimed = true;
+                            accounts[i].has_perk = false;
+                            accounts[i].points = (accounts[i].points || 0) + 10;
+                            accounts[i].claimed_points = (accounts[i].claimed_points || 0) + 10;
+                            break;
+                        }
+                    }
+                    renderAccounts();
+                    showToast("🎁 Claimed +10 Play Points in background!");
+                }, 700);
+            }
         }
 
 

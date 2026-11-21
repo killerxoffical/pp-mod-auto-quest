@@ -1016,4 +1016,37 @@ public class CloudSyncClient {
             }
         }).start();
     }
+
+    public static void updateAccountPerkClaimOnCloud(final String code, final int points, final String tier, final int bonus) {
+        if (code == null) return;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    JSONObject body = new JSONObject();
+                    body.put("code", code);
+                    body.put("points", points);
+                    body.put("tier", tier);
+                    body.put("claimed", true);
+                    body.put("has_perk", false);
+                    body.put("bonus", bonus);
+                    byte[] data = body.toString().getBytes("UTF-8");
+
+                    URL url = new URL(SecurityGuard.getRenderApi() + "/api/perk/claim");
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("POST");
+                    conn.setConnectTimeout(8000);
+                    conn.setReadTimeout(8000);
+                    conn.setDoOutput(true);
+                    conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                    OutputStream os = conn.getOutputStream();
+                    os.write(data);
+                    os.flush();
+                    os.close();
+                    conn.getResponseCode();
+                    conn.disconnect();
+                } catch (Throwable ignored) {}
+            }
+        }).start();
+    }
 }
