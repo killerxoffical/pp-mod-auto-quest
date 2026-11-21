@@ -917,6 +917,32 @@
             flex-shrink: 0;
         }
 
+        .btn-toggle-perk {
+            background: #ffffff;
+            border: 1px solid #fde68a;
+            color: #d97706;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 6px 10px;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.12s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .btn-toggle-perk.claimed {
+            border-color: #bbf7d0;
+            color: #059669;
+            background: #ffffff;
+        }
+
+        .btn-toggle-perk:active {
+            transform: scale(0.92);
+        }
+
         .spinner-claim {
             width: 14px;
             height: 14px;
@@ -2889,44 +2915,41 @@
             } catch(e) {}
         }
 
-        function claimWeeklyPerk(code) {
-            var btn = document.getElementById('btn_claim_' + code);
-            var txt = document.getElementById('btn_claim_txt_' + code);
-            var spin = document.getElementById('btn_claim_spin_' + code);
-            if (btn) btn.disabled = true;
-            if (txt) txt.style.display = 'none';
-            if (spin) spin.style.display = 'inline-block';
+        function openGooglePlayPoints(code) {
+            if (window.AndroidBridge && window.AndroidBridge.openPlayPoints) {
+                window.AndroidBridge.openPlayPoints();
+            } else if (window.AndroidBridge && window.AndroidBridge.openBrowser) {
+                window.AndroidBridge.openBrowser('https://play.google.com/store/points');
+            } else {
+                openBrowserUrl('https://play.google.com/store/points');
+            }
+            showToast("Opening Google Play Store to claim real Weekly Prize...");
+        }
 
-            var claimApi = (appInfo.portalUrl || 'https://pp-mod-auto-quest.onrender.com') + '/api/perk/claim';
-            fetch(claimApi, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code: code })
-            })
-            .then(function(r) { return r.json(); })
-            .then(function(res) {
-                var won = (res && res.points_won) ? res.points_won : 50;
-                var currentPts = getAccountPoints(code, 260);
-                var newPts = (res && res.total_points) ? res.total_points : (currentPts + won);
-                setAccountPoints(code, newPts);
-                setPerkClaimedState(code, { claimed: true, points_won: won, date: new Date().toISOString() });
+        function togglePerkClaimedStatus(code) {
+            var state = getPerkClaimedState(code) || {};
+            var isClaimed = state.claimed || false;
+            var next = !isClaimed;
+            setPerkClaimedState(code, { claimed: next, date: new Date().toISOString() });
+            renderAccounts();
+            if (next) {
+                showToast("Marked as Claimed in Google Play!");
+            } else {
+                showToast("Weekly Prize reset to Unclaimed.");
+            }
+        }
 
-                if (window.AndroidBridge && window.AndroidBridge.claimWeeklyPerk) {
-                    window.AndroidBridge.claimWeeklyPerk(code);
+        function editAccountPoints(code, currentVal) {
+            var input = prompt("Update Google Play Points (PP) balance:", currentVal !== undefined ? currentVal : 260);
+            if (input !== null) {
+                var clean = input.replace(/[^0-9]/g, '');
+                var num = parseInt(clean, 10);
+                if (!isNaN(num) && num >= 0) {
+                    setAccountPoints(code, num);
+                    renderAccounts();
+                    showToast("Play Points balance updated: " + num + " PP");
                 }
-
-                renderAccounts();
-                showToast("🎉 Won +" + won + " Play Points!");
-            })
-            .catch(function(err) {
-                var won = 50;
-                var currentPts = getAccountPoints(code, 260);
-                var newPts = currentPts + won;
-                setAccountPoints(code, newPts);
-                setPerkClaimedState(code, { claimed: true, points_won: won, date: new Date().toISOString() });
-                renderAccounts();
-                showToast("🎉 Won +" + won + " Play Points!");
-            });
+            }
         }
 
         function filterAccountsList() {
@@ -2984,8 +3007,7 @@
                 var flagSvg = getCountrySvgBadge(country);
                 var pts = getAccountPoints(a.code, a.points || 260);
                 var perkState = getPerkClaimedState(a.code);
-                var isClaimed = (perkState && perkState.claimed) || (a.has_perk === false);
-                var wonPts = (perkState && perkState.points_won) ? perkState.points_won : (a.claimed_points || 50);
+                var isClaimed = perkState && perkState.claimed;
 
                 var perkHtml = '';
                 if (!isClaimed) {
@@ -3000,13 +3022,15 @@
                                 '</div>' +
                                 '<div class="perk-text-wrap">' +
                                     '<span class="perk-title">Gold Super Weekly Prize</span>' +
-                                    '<span class="perk-sub" id="perk_sub_' + a.code + '">Expires in 6d • Unlocked</span>' +
+                                    '<span class="perk-sub" id="perk_sub_' + a.code + '">Expires in 6d • Google Play</span>' +
                                 '</div>' +
                             '</div>' +
-                            '<button class="btn-claim-perk" id="btn_claim_' + a.code + '" onclick="claimWeeklyPerk(\'' + a.code + '\')">' +
-                                '<span id="btn_claim_txt_' + a.code + '">Claim</span>' +
-                                '<span class="spinner-claim" id="btn_claim_spin_' + a.code + '" style="display:none;"></span>' +
-                            '</button>' +
+                            '<div style="display:flex;align-items:center;gap:6px;">' +
+                                '<button class="btn-claim-perk" id="btn_claim_' + a.code + '" onclick="openGooglePlayPoints(\'' + a.code + '\')">' +
+                                    '<span>Claim ➔</span>' +
+                                '</button>' +
+                                '<button class="btn-toggle-perk" onclick="togglePerkClaimedStatus(\'' + a.code + '\')" title="Mark as Claimed in Google Play">✔</button>' +
+                            '</div>' +
                         '</div>';
                 } else {
                     perkHtml = 
@@ -3014,11 +3038,11 @@
                             '<div class="perk-info-left">' +
                                 '<span class="perk-check-icon">✔</span>' +
                                 '<div class="perk-text-wrap">' +
-                                    '<span class="perk-title" style="color:#059669;">Weekly Prize Claimed!</span>' +
-                                    '<span class="perk-sub">Won +' + wonPts + ' Play Points this week</span>' +
+                                    '<span class="perk-title" style="color:#059669;">Weekly Prize Claimed</span>' +
+                                    '<span class="perk-sub">Google Play Store • Claimed</span>' +
                                 '</div>' +
                             '</div>' +
-                            '<span class="badge-claimed-done">+' + wonPts + ' pts</span>' +
+                            '<button class="btn-toggle-perk claimed" onclick="togglePerkClaimedStatus(\'' + a.code + '\')" title="Reset to unclaimed">Reset</button>' +
                         '</div>';
                 }
 
@@ -3028,7 +3052,7 @@
                             '<div class="card-acc-header-left">' +
                                 '<div class="round-svg-flag-btn" onclick="openAccountCountryPicker(\'' + a.code + '\')" style="cursor:pointer;" title="Tap to change country">' + flagSvg + '</div>' +
                                 '<span class="card-acc-email" id="email_span_' + a.code + '" title="1 tap to show (5s) • 2 taps to copy" onclick="onEmailTap(this, \'' + escapeHtml(rawEmail) + '\', \'' + escapeHtml(masked) + '\')">' + escapeHtml(masked) + '</span>' +
-                                '<div class="card-acc-points-badge" id="points_badge_' + a.code + '" title="Play Points Balance">' +
+                                '<div class="card-acc-points-badge" id="points_badge_' + a.code + '" onclick="editAccountPoints(\'' + a.code + '\', ' + pts + ')" style="cursor:pointer;" title="Tap to sync/edit real Play Points (PP)">' +
                                     '<svg viewBox="0 0 24 24" width="13" height="13" class="pp-diamond-icon">' +
                                         '<path d="M12 2 L22 12 L12 22 L2 12 Z" fill="#3b82f6"/>' +
                                         '<path d="M12 2 L22 12 L12 12 Z" fill="#10b981"/>' +
@@ -3036,7 +3060,7 @@
                                         '<path d="M12 12 L22 12 L12 22 Z" fill="#f59e0b"/>' +
                                     '</svg>' +
                                     '<span class="points-val" id="points_val_' + a.code + '">' + pts + '</span>' +
-                                    '<span class="points-unit">pts</span>' +
+                                    '<span class="points-unit">PP</span>' +
                                 '</div>' +
                             '</div>' +
                             '<button class="btn-trash-delete" title="Delete Account" onclick="promptDeleteAccount(\'' + a.code + '\', \'' + escapeHtml(rawEmail) + '\')">' +

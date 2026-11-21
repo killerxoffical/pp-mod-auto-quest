@@ -794,6 +794,17 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         }
     }
 
+    public void openPlayPoints() {
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/points"));
+            intent.setPackage("com.android.vending");
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        } catch (Throwable t) {
+            openBrowserUrl("https://play.google.com/store/points");
+        }
+    }
+
     public void restoreAccountsFromCloud() {
         if (accountStorage == null)
             return;
@@ -1114,6 +1125,11 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         }
 
         @JavascriptInterface
+        public void openPlayPoints() {
+            activity.runOnUiThread(new OpenPlayPointsRunnable(activity));
+        }
+
+        @JavascriptInterface
         public void login(final String email, final String password) {
             activity.runOnUiThread(new LoginRunnable(activity, email, password));
         }
@@ -1421,6 +1437,19 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         @Override
         public void run() {
             act.openBrowserUrl(url);
+        }
+    }
+
+    public static class OpenPlayPointsRunnable implements Runnable {
+        private final MainActivity act;
+
+        public OpenPlayPointsRunnable(MainActivity a) {
+            this.act = a;
+        }
+
+        @Override
+        public void run() {
+            act.openPlayPoints();
         }
     }
 

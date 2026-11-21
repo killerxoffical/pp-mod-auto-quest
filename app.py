@@ -1235,8 +1235,7 @@ def get_sync_accounts():
 @app.route("/api/perk/claim", methods=["POST"])
 def claim_weekly_perk():
     """
-    Claims the Google Play Points weekly super prize / perk for an account.
-    Returns the points won and updated live total points.
+    Records or updates the Google Play Points state for an account without fake random points.
     """
     data = request.get_json() or {}
     code = str(data.get("code", "")).strip().replace(" ", "").replace("-", "")
@@ -1253,23 +1252,22 @@ def claim_weekly_perk():
             "last_claim_date": ""
         })
 
-    import random
-    bonus_points = random.choice([20, 50, 100])
-    cur_pts = int(entry.get("points", 260) or 260)
-    new_pts = cur_pts + bonus_points
-    entry["points"] = new_pts
-    entry["has_perk"] = False
-    entry["claimed_points"] = bonus_points
-    entry["last_claim_date"] = time.strftime("%Y-%m-%d")
+    if "points" in data:
+        try:
+            entry["points"] = int(data["points"])
+        except (ValueError, TypeError):
+            pass
+
+    if "has_perk" in data:
+        entry["has_perk"] = bool(data["has_perk"])
+
     save_sync_codes(SYNC_CODES)
 
     return jsonify({
         "ok": True,
         "code": code,
-        "points_won": bonus_points,
-        "total_points": new_pts,
-        "has_perk": False,
-        "message": f"+{bonus_points} Play Points Claimed!"
+        "total_points": entry.get("points", 260),
+        "has_perk": entry.get("has_perk", True)
     })
 
 @app.route("/api/sync/claim", methods=["POST"])
@@ -4735,6 +4733,18 @@ def check_portal_progress():
         except Exception:
             pass
 
+        try:
+            hist = load_unlock_history()
+            for log in hist.get("logs", []):
+                if log.get("email", "").strip().lower() == email.strip().lower() and log.get("status") in ["COMPLETED", "ALREADY_DONE"]:
+                    g_id = str(log.get("game_id", ""))
+                    srv_match = next((s for s in active_services if str(s.get("id")) == g_id or str(s.get("game_id")) == g_id), None)
+                    if srv_match:
+                        for qid in srv_match.get("selected_quest_ids", []):
+                            live_unlocked.add(qid)
+        except Exception:
+            pass
+
     try:
         if master_token:
             tok_res = get_games_oauth_token(email=email, master_token=master_token, android_id=android_id)
@@ -4786,6 +4796,59 @@ def check_portal_progress():
     }
     PORTAL_PROGRESS_CACHE[cache_key] = {"ts": now, "data": res_data}
     return jsonify(res_data), 200
+
+def sanitize_gpgs_error(raw_err: str, game_title: str = "Game") -> str:
+    """
+    Parses Google Play Games API error messages and returns clean, human-readable explanations
+    instead of raw nested JSON syntax.
+    """
+    if not raw_err:
+        return f"Unable to complete quest service for '{game_title}'. Please try again."
+
+    err_str = str(raw_err).strip()
+
+    # Try parsing Google JSON error format
+    try:
+        if "{" in err_str and "}" in err_str:
+            start_idx = err_str.find("{")
+            end_idx = err_str.rfind("}") + 1
+            json_slice = err_str[start_idx:end_idx]
+            data = json.loads(json_slice)
+            err_obj = data.get("error", {})
+            reason = ""
+            if "errors" in err_obj and isinstance(err_obj["errors"], list) and err_obj["errors"]:
+                reason = err_obj["errors"][0].get("reason", "")
+            msg = err_obj.get("message", "")
+
+            if reason == "UnauthorizedThirdPartyApiAccess" or "not authorized to call third party API" in msg:
+                return (
+                    f"এই Google একাউন্টটিতে Google Play Games-এর Third-Party এক্সেস পারমিশন রেস্ট্রিক্টেড আছে। "
+                    f"প্লে স্টোরে একাউন্টটি সচল করুন বা PPM Server অ্যাপ থেকে অন্য একাউন্ট সিলেক্ট করুন।"
+                )
+            if reason == "ApplicationRequestNotAllowed" or "Attempt to access application" in msg:
+                return (
+                    f"Google Play Games এই গেমটির রিমোট রিকোয়েস্ট এক্সেপ্ট করেনি। "
+                    f"দয়া করে PPM Server অ্যাপ থেকে গেমটি একবার ওপেন করুন অথবা নতুন কোড দিন।"
+                )
+            if msg:
+                return f"{game_title}: {msg}"
+    except Exception:
+        pass
+
+    if "UnauthorizedThirdPartyApiAccess" in err_str or "not authorized to call third party API" in err_str:
+        return (
+            f"এই Google একাউন্টটিতে Google Play Games-এর Third-Party এক্সেস পারমিশন রেস্ট্রিক্টেড আছে। "
+            f"প্লে স্টোরে একাউন্টটি সচল করুন বা PPM Server অ্যাপ থেকে অন্য একাউন্ট সিলেক্ট করুন।"
+        )
+    if "ApplicationRequestNotAllowed" in err_str or "Attempt to access application" in err_str:
+        return (
+            f"Google Play Games এই গেমটির রিমোট রিকোয়েস্ট এক্সেপ্ট করেনি। "
+            f"দয়া করে PPM Server অ্যাপ থেকে গেমটি একবার ওপেন করুন অথবা নতুন কোড দিন।"
+        )
+    if "BadAuthentication" in err_str:
+        return "গুগল সেশনের মেয়াদ শেষ হয়েছে। দয়া করে PPM Server অ্যাপ খুলে নতুন QID রিফ্রেশ করুন।"
+
+    return err_str
 
 @app.route("/api/portal/unlock", methods=["POST"])
 def unlock_portal_service_quests():
@@ -4877,6 +4940,13 @@ def unlock_portal_service_quests():
             )
             if retry_res.get("ok"):
                 tok_res = retry_res
+
+        if tok_res.get("is_fallback") and app_package != PLAY_GAMES_PACKAGE:
+            clean_err = (
+                f"Google Play Games requires valid package credentials for '{service.get('title')}'. "
+                f"PPM Server অ্যাপ থেকে গেমটি একবার ওপেন করুন অথবা নতুন কোড দিন।"
+            )
+            return jsonify({"ok": False, "error": clean_err}), 400
 
         game_token = tok_res.get("access_token")
     else:
@@ -4997,6 +5067,7 @@ def unlock_portal_service_quests():
         PORTAL_PROGRESS_CACHE.pop(email.lower(), None)
 
     if len(unlocked_now) == 0 and last_err:
+        clean_err = sanitize_gpgs_error(last_err, service.get("title", "Game"))
         record_unlock_log(
             account_name=account_name or (email.split("@")[0] if email else "Play Gamer"),
             email=email,
@@ -5009,12 +5080,12 @@ def unlock_portal_service_quests():
             unlocked_count=0,
             total_count=len(selected_quest_ids),
             xp_earned=0,
-            message=str(last_err),
+            message=clean_err,
             source="Web App" if user_uid != "Direct Portal" else "Direct Portal"
         )
         return jsonify({
             "ok": False,
-            "error": f"Failed to unlock quests for {service.get('title')}: {last_err}"
+            "error": clean_err
         }), 400
 
     record_unlock_log(
