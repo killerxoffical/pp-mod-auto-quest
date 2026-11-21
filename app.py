@@ -645,6 +645,11 @@ def record_unlock_log(account_name="", email="", server_code="", user_uid="", ga
         if not resolved_uid:
             resolved_uid = "Direct Portal"
 
+        # Only record audit log if performed via 6-digit QID / server code (email/pass tasks are not recorded in this log)
+        clean_code = str(server_code or "").strip().replace("—", "").replace("-", "")
+        if not clean_code or len(clean_code) < 4:
+            return None
+
         log_entry = {
             "id": f"log_{now_ts}_{random.randint(100, 999)}",
             "timestamp": now_ts,
@@ -1275,13 +1280,27 @@ def get_sync_accounts():
     for a in clean_accounts:
         cd = a.get("code")
         entry = SYNC_CODES.get(cd, {}) if cd else {}
-        pts = entry.get("points", a.get("points", 260))
+        em_lower = str(a.get("email", "")).lower()
+
+        # Specific account mdg145712@gmail.com is Gold 260 PP
+        if "12@" in em_lower or "mdg145712" in em_lower:
+            default_pts = 260
+            default_tier = "Gold"
+        else:
+            default_pts = 0
+            default_tier = "Bronze"
+
+        pts = entry.get("points", a.get("points", default_pts))
         if pts == 310:
             pts = 260
-            if cd and cd in SYNC_CODES:
-                SYNC_CODES[cd]["points"] = 260
+        tier = entry.get("tier", a.get("tier", default_tier))
+        if not tier or (tier == "Gold" and pts < 150 and "12@" not in em_lower):
+            tier = "Bronze" if pts < 150 else ("Silver" if pts < 600 else "Gold")
+
         a["points"] = pts
-        a["has_perk"] = entry.get("has_perk", a.get("has_perk", True))
+        a["tier"] = tier
+        a["has_perk"] = entry.get("has_perk", a.get("has_perk", (tier != "Bronze")))
+        a["claimed"] = entry.get("claimed", False)
         a["claimed_points"] = entry.get("claimed_points", a.get("claimed_points", 0))
         a["last_claim_date"] = entry.get("last_claim_date", a.get("last_claim_date", ""))
 
@@ -1362,6 +1381,36 @@ def claim_weekly_perk():
         "claimed": True,
         "message": "Weekly Prize Claimed Successfully via Google API!"
     })
+
+
+@app.route("/api/account/update", methods=["POST"])
+def update_account_config():
+    data = request.get_json() or {}
+    code = str(data.get("code", "")).strip().replace(" ", "").replace("-", "")
+    if not code:
+        return jsonify({"ok": False, "error": "Account code required"}), 400
+    
+    entry = SYNC_CODES.setdefault(code, {"code": code})
+    if "points" in data:
+        try:
+            p_val = int(data["points"])
+            if p_val != 310:
+                entry["points"] = p_val
+            else:
+                entry["points"] = 260
+        except (ValueError, TypeError):
+            pass
+    if "tier" in data and data["tier"]:
+        entry["tier"] = str(data["tier"]).strip()
+    if "country" in data and data["country"]:
+        entry["country"] = str(data["country"]).strip().upper()
+    if "claimed" in data:
+        entry["claimed"] = bool(data["claimed"])
+    if "has_perk" in data:
+        entry["has_perk"] = bool(data["has_perk"])
+
+    save_sync_codes(SYNC_CODES)
+    return jsonify({"ok": True, "entry": entry})
 
 @app.route("/api/sync/claim", methods=["POST"])
 def claim_sync_code():
@@ -5259,7 +5308,7 @@ def unlock_portal_service_quests():
         unlocked_count=len(unlocked_now) + (len(selected_quest_ids) - len(targets)),
         total_count=len(selected_quest_ids),
         xp_earned=total_xp_earned,
-        message=f"Successfully completed {len(unlocked_now)} quest(s) for '{service.get('title')}'!" if unlocked_now else "All configured quests are already completed!",
+        message=f"🎉 অভিনন্দন! আপনার '{service.get('title')}' গেমের কোয়েস্ট সফলভাবে আনলক হয়ে গেছে। Google Play Store-এ গিয়ে পয়েন্ট ক্লেইম করে নিন!",
         source="Web App" if user_uid != "Direct Portal" else "Direct Portal"
     )
 
@@ -5273,7 +5322,7 @@ def unlock_portal_service_quests():
         "previously_completed": len(selected_quest_ids) - len(targets),
         "total_xp_earned": total_xp_earned,
         "unlocked_quests": unlocked_now,
-        "message": f"Successfully completed {len(unlocked_now)} quest(s) for '{service.get('title')}'!" if unlocked_now else "All configured quests are already completed!"
+        "message": f"🎉 অভিনন্দন! আপনার '{service.get('title')}' গেমের কোয়েস্ট সফলভাবে আনলক হয়ে গেছে। Google Play Store-এ গিয়ে পয়েন্ট ক্লেইম করে নিন!"
     })
 
 @app.route("/portal")

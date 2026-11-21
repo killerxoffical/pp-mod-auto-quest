@@ -1239,23 +1239,13 @@
             
             if (data.ok) {
                 if (iconEl) iconEl.innerText = "🎉";
-                title.innerText = `Quests Completed: ${data.service_title || 'Game'}`;
-                if (subtitle) subtitle.innerText = "Official Google Play Games Objectives Fulfilled!";
+                title.innerText = `Quest Completed: ${data.service_title || 'Game'}`;
+                if (subtitle) subtitle.innerText = "Google Play Points Quest Ready to Claim!";
                 body.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                        <span style="color:var(--text-secondary);">Newly Unlocked:</span>
-                        <strong style="color:var(--accent-green); font-family:'JetBrains Mono';">${data.newly_unlocked_count || 0} Objectives</strong>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                        <span style="color:var(--text-secondary);">Total GPGS XP Earned:</span>
-                        <strong style="color:var(--accent-cyan); font-family:'JetBrains Mono';">+${(data.total_xp_earned || 0).toLocaleString()} XP</strong>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                        <span style="color:var(--text-secondary);">Configured Scope:</span>
-                        <strong style="color:var(--text-primary); font-family:'JetBrains Mono';">${data.total_configured_quests || 0} Objectives</strong>
-                    </div>
-                    <div style="margin-top:14px; padding-top:10px; border-top:1px solid var(--border-color); color:var(--accent-green); font-weight:700; text-align:center;">
-                        ${data.message || 'All selected objectives have been fulfilled in Google cloud!'}
+                    <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:14px; padding:16px 14px; margin-bottom:12px; text-align:center;">
+                        <p style="font-size:13px; font-weight:800; color:var(--text-primary); line-height:1.6; margin:0;">
+                            🎉 অভিনন্দন! আপনার <b>"${data.service_title || 'গেম'}"</b>-এর কোয়েস্ট সফলভাবে আনলক হয়ে গেছে। Google Play Store-এ গিয়ে পয়েন্ট ক্লেইম করে নিন!
+                        </p>
                     </div>
                 `;
             } else {
