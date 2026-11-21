@@ -1276,34 +1276,9 @@ def get_sync_accounts():
         and a.get("email") != "Google Play User"
     ]
 
-    # Re-verify and auto-update countries if missing or GLOBAL, and attach live points/perk data
+    # Re-verify and auto-update countries if missing or GLOBAL
     for a in clean_accounts:
         cd = a.get("code")
-        entry = SYNC_CODES.get(cd, {}) if cd else {}
-        em_lower = str(a.get("email", "")).lower()
-
-        # Specific account mdg145712@gmail.com is Gold 260 PP
-        if "12@" in em_lower or "mdg145712" in em_lower:
-            default_pts = 260
-            default_tier = "Gold"
-        else:
-            default_pts = 0
-            default_tier = "Bronze"
-
-        pts = entry.get("points", a.get("points", default_pts))
-        if pts == 310:
-            pts = 260
-        tier = entry.get("tier", a.get("tier", default_tier))
-        if not tier or (tier == "Gold" and pts < 150 and "12@" not in em_lower):
-            tier = "Bronze" if pts < 150 else ("Silver" if pts < 600 else "Gold")
-
-        a["points"] = pts
-        a["tier"] = tier
-        a["has_perk"] = entry.get("has_perk", a.get("has_perk", (tier != "Bronze")))
-        a["claimed"] = entry.get("claimed", False)
-        a["claimed_points"] = entry.get("claimed_points", a.get("claimed_points", 0))
-        a["last_claim_date"] = entry.get("last_claim_date", a.get("last_claim_date", ""))
-
         c = (a.get("country") or "").strip().upper()
         tok = a.get("token") or a.get("master_token", "")
         em = a.get("email", "")
