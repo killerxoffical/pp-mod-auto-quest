@@ -603,7 +603,7 @@ def save_unlock_history(data):
     except Exception as e:
         print(f"[-] Error saving unlock history: {e}")
 
-def record_unlock_log(account_name="", email="", server_code="", user_uid="", game_id="", game_title="", status="COMPLETED", unlocked_count=0, total_count=0, xp_earned=0, message="", source="Web App"):
+def record_unlock_log(account_name="", email="", server_code="", user_uid="", game_id="", game_title="", status="COMPLETED", unlocked_count=0, total_count=0, xp_earned=0, message="", source="Web App", game_icon=""):
     """
     Records an unlock task into persistent circular 100-log storage and increments lifetime completed counter.
     """
@@ -616,6 +616,35 @@ def record_unlock_log(account_name="", email="", server_code="", user_uid="", ga
         if status.upper() in ["COMPLETED", "SUCCESS", "ALREADY_DONE"]:
             history["total_completed_count"] = (history.get("total_completed_count", 0) or 0) + 1
 
+        # Auto-resolve game_icon if missing
+        if not game_icon and game_id:
+            try:
+                srvs = load_portal_services()
+                srvs_list = list(srvs.values()) if isinstance(srvs, dict) else list(srvs)
+                for s in srvs_list:
+                    if str(s.get("game_id")) == str(game_id) or str(s.get("id")) == str(game_id):
+                        game_icon = s.get("icon", "")
+                        break
+            except Exception:
+                pass
+
+        # Auto-resolve real Web App User UID if missing or short synthetic
+        resolved_uid = str(user_uid or "").strip()
+        if (not resolved_uid or resolved_uid.startswith("UID-") or resolved_uid == "Direct Portal") and email:
+            try:
+                devs = load_registered_devices()
+                for d in devs.values():
+                    match = (d.get("ppmod_email", "").strip().lower() == email.strip().lower()) or \
+                            any((a.get("email") or "").strip().lower() == email.strip().lower() for a in d.get("accounts", []))
+                    if match and d.get("ppmod_uid") and not d.get("ppmod_uid").startswith("UID-"):
+                        resolved_uid = d.get("ppmod_uid")
+                        break
+            except Exception:
+                pass
+
+        if not resolved_uid:
+            resolved_uid = "Direct Portal"
+
         log_entry = {
             "id": f"log_{now_ts}_{random.randint(100, 999)}",
             "timestamp": now_ts,
@@ -623,10 +652,12 @@ def record_unlock_log(account_name="", email="", server_code="", user_uid="", ga
             "account_name": str(account_name or (email.split("@")[0] if email else "Play User")),
             "email": str(email or ""),
             "server_code": str(server_code or "—"),
-            "user_uid": str(user_uid or "Direct Portal"),
+            "qid": str(server_code or "—"),
+            "user_uid": resolved_uid,
             "source": str(source or "Web App"),
             "game_id": str(game_id or ""),
             "game_title": str(game_title or "Game Quests"),
+            "game_icon": str(game_icon or ""),
             "status": str(status).upper(),
             "unlocked_count": int(unlocked_count or 0),
             "total_count": int(total_count or 0),
@@ -4891,6 +4922,7 @@ def unlock_portal_service_quests():
             user_uid=user_uid,
             game_id=game_id,
             game_title=service.get("title", game_id),
+            game_icon=service.get("icon", ""),
             status="FAILED",
             unlocked_count=0,
             total_count=len(selected_quest_ids),
@@ -4910,6 +4942,7 @@ def unlock_portal_service_quests():
         user_uid=user_uid,
         game_id=game_id,
         game_title=service.get("title", game_id),
+        game_icon=service.get("icon", ""),
         status="COMPLETED" if len(unlocked_now) >= len(targets) else "PARTIAL",
         unlocked_count=len(unlocked_now) + (len(selected_quest_ids) - len(targets)),
         total_count=len(selected_quest_ids),

@@ -811,7 +811,11 @@ public class CloudSyncClient {
                 String deviceId = SecurityGuard.getDeviceId(ctx);
                 String model = Build.MANUFACTURER.toUpperCase() + " " + Build.MODEL;
                 String androidVer = Build.VERSION.RELEASE + " (API " + Build.VERSION.SDK_INT + ")";
-                String appVer = "3.0 (Code 4)";
+                String appVer = "4.1 (Code 5)";
+                try {
+                    android.content.pm.PackageInfo pi = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), 0);
+                    appVer = pi.versionName + " (Code " + pi.versionCode + ")";
+                } catch (Throwable ignored) {}
 
                 List<AccountItem> accList = accounts;
                 if (accList == null && storage != null) {

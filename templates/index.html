@@ -3048,14 +3048,14 @@
                         <table class="users-data-table" style="width:100%; border-collapse:collapse;">
                             <thead>
                                 <tr>
-                                    <th style="width:50px; text-align:center;">#</th>
-                                    <th>Date &amp; Time</th>
-                                    <th>User UID (Web App)</th>
-                                    <th>Play Games Account</th>
-                                    <th>Server Code</th>
-                                    <th>Game &amp; Service</th>
-                                    <th>Quests</th>
-                                    <th>Status</th>
+                                    <th style="width:45px; text-align:center;">#</th>
+                                    <th style="width:130px;">Date &amp; Time</th>
+                                    <th style="min-width:180px;">Web User UID</th>
+                                    <th style="min-width:190px;">Play Games Account</th>
+                                    <th style="width:110px; text-align:center;">QID</th>
+                                    <th style="min-width:240px;">Game &amp; Service</th>
+                                    <th style="width:110px; text-align:center;">Fulfillment</th>
+                                    <th style="width:130px; text-align:center;">Status</th>
                                 </tr>
                             </thead>
                             <tbody id="servicedHistoryTableBody">
@@ -6920,6 +6920,20 @@
 
         async function loadServicedHistory(force = false) {
             const tbody = document.getElementById("servicedHistoryTableBody");
+
+            // Preload portal services for high-res game icons
+            if (!window.portalAllServices || window.portalAllServices.length === 0) {
+                fetch(`${API_BASE}/api/portal/services`)
+                    .then(r => r.json())
+                    .then(d => {
+                        if (d && d.ok && Array.isArray(d.services)) {
+                            window.portalAllServices = d.services;
+                            if (allServicedLogs && allServicedLogs.length > 0) {
+                                renderServicedHistoryTable(allServicedLogs);
+                            }
+                        }
+                    }).catch(() => {});
+            }
             
             // 1. Instant Cache Render: load immediately from localStorage with 0ms delay!
             let hasCache = false;
@@ -6970,7 +6984,7 @@
                 tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:40px 20px; color:var(--text-muted);">
                     <div style="font-size:32px; margin-bottom:8px;">📭</div>
                     <strong style="color:var(--text-primary); font-size:14px;">No Serviced Account Logs Yet</strong>
-                    <p style="font-size:12px; margin-top:4px;">When users unlock quests via Web App or Public Portal, their Play Point accounts, 6-digit codes, and UIDs will appear here automatically.</p>
+                    <p style="font-size:12px; margin-top:4px;">When users unlock quests via Web App or Public Portal, their Play Point accounts, 6-digit QIDs, and Web UIDs will appear here automatically.</p>
                 </td></tr>`;
                 return;
             }
@@ -6982,48 +6996,106 @@
 
                 let statusBadge = "";
                 if (isCompleted) {
-                    statusBadge = `<span style="background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3); padding:3px 8px; border-radius:4px; font-size:11px; font-weight:800; display:inline-flex; align-items:center; gap:4px;">✓ COMPLETED</span>`;
+                    statusBadge = `<span style="background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3); padding:4px 10px; border-radius:6px; font-size:11px; font-weight:800; display:inline-flex; align-items:center; gap:4px; box-shadow:0 1px 4px rgba(16,185,129,0.1);">✓ COMPLETED</span>`;
                 } else if (isAlready) {
-                    statusBadge = `<span style="background:rgba(2,132,199,0.15); color:#0284c7; border:1px solid rgba(2,132,199,0.3); padding:3px 8px; border-radius:4px; font-size:11px; font-weight:800; display:inline-flex; align-items:center; gap:4px;">ℹ️ ALREADY DONE</span>`;
+                    statusBadge = `<span style="background:rgba(2,132,199,0.15); color:#0284c7; border:1px solid rgba(2,132,199,0.3); padding:4px 10px; border-radius:6px; font-size:11px; font-weight:800; display:inline-flex; align-items:center; gap:4px;">ℹ️ ALREADY DONE</span>`;
                 } else {
-                    statusBadge = `<span style="background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3); padding:3px 8px; border-radius:4px; font-size:11px; font-weight:800; display:inline-flex; align-items:center; gap:4px;">✕ FAILED</span>`;
+                    statusBadge = `<span style="background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3); padding:4px 10px; border-radius:6px; font-size:11px; font-weight:800; display:inline-flex; align-items:center; gap:4px;">✕ FAILED</span>`;
                 }
 
-                const codeBadge = (log.server_code && log.server_code !== "—")
-                    ? `<span style="font-family:'JetBrains Mono', monospace; font-size:12px; font-weight:700; background:rgba(2,132,199,0.1); color:#0284c7; border:1px solid rgba(2,132,199,0.25); padding:2px 7px; border-radius:4px; letter-spacing:1px;">${escapeHtml(log.server_code)}</span>`
-                    : `<span style="color:var(--text-muted); font-size:11px;">Direct Token</span>`;
+                // Resolve App QID (6-Digit Sync Code)
+                const qidVal = log.qid || log.server_code || "—";
+                const hasQid = qidVal && qidVal !== "—" && qidVal !== "Direct Token";
+                const qidBadge = hasQid
+                    ? `<div style="text-align:center;">
+                         <span style="font-family:'JetBrains Mono', monospace; font-size:12px; font-weight:900; background:rgba(2,132,199,0.12); color:#0284c7; border:1px solid rgba(2,132,199,0.35); padding:3px 9px; border-radius:6px; letter-spacing:1px; display:inline-flex; align-items:center; gap:5px; box-shadow:0 1px 4px rgba(2,132,199,0.1);" title="App QID: ${escapeHtml(qidVal)}">
+                            ⚡ ${escapeHtml(qidVal)}
+                         </span>
+                       </div>`
+                    : `<div style="text-align:center;"><span style="color:var(--text-muted); font-size:11px; font-family:'JetBrains Mono';">Direct Token</span></div>`;
 
-                const safeUid = (log.user_uid || "").replace(/'/g, "\\'");
-                const uidDisplay = (log.user_uid && log.user_uid !== "Direct Portal")
+                // Real Web App User UID Display (Firebase / Cloudflare 28-char UID)
+                const rawUid = log.user_uid || "Direct Portal";
+                const safeUid = rawUid.replace(/'/g, "\\'");
+                const uidDisplay = (rawUid && rawUid !== "Direct Portal")
                     ? `<div style="display:flex; align-items:center; gap:6px;">
-                         <span style="font-family:'JetBrains Mono', monospace; font-size:11.5px; font-weight:700; background:var(--bg-body); border:1px solid var(--border-color); padding:2px 6px; border-radius:4px; color:var(--text-primary);">${escapeHtml(log.user_uid)}</span>
-                         <button onclick="navigator.clipboard.writeText('${safeUid}'); showToast('UID Copied!');" title="Copy UID" style="background:none; border:none; cursor:pointer; color:var(--text-muted); padding:2px;">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                         <span style="font-family:'JetBrains Mono', monospace; font-size:11.5px; font-weight:800; background:rgba(14,165,233,0.08); border:1px solid rgba(14,165,233,0.3); color:var(--accent-cyan); padding:3px 8px; border-radius:6px; max-width:210px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:inline-block;" title="${escapeHtml(rawUid)}">${escapeHtml(rawUid)}</span>
+                         <button onclick="navigator.clipboard.writeText('${safeUid}'); showToast('Web User UID Copied!');" title="Copy UID" class="btn-copy-mini">
+                            📋
                          </button>
                        </div>`
                     : `<span style="font-size:11px; color:var(--text-muted); font-weight:600;">🌐 Direct Portal</span>`;
 
+                // Resolve Game Icon (Logo from DB, services list, or log entry)
+                let gameIcon = log.game_icon || "";
+                let gameDev = "";
+                if (!gameIcon && window.portalAllServices && Array.isArray(window.portalAllServices)) {
+                    const match = window.portalAllServices.find(s => String(s.game_id) === String(log.game_id) || String(s.id) === String(log.game_id));
+                    if (match) {
+                        gameIcon = match.icon || "";
+                        gameDev = match.developer || "";
+                    }
+                }
+                if (!gameIcon) {
+                    if (String(log.game_id) === "53" || (log.game_title && log.game_title.toLowerCase().includes("endfield"))) {
+                        gameIcon = "https://play-lh.googleusercontent.com/l6FVNa293RykBWy88TqEhUakIcGSC8bRygSnKOBgztln48JX-WzMWnrBAETrKZsxDNC4HhwCsvfle_UI7rBE=s0-br30";
+                        gameDev = "GRYPHLINE";
+                    } else {
+                        gameIcon = "/static/images/achievements/badge_1.svg";
+                    }
+                }
+
+                const gameDisplay = `
+                    <div style="display:flex; align-items:center; gap:11px;">
+                        <img src="${gameIcon}" alt="${escapeHtml(log.game_title)}" style="width:40px; height:40px; border-radius:10px; object-fit:cover; border:1px solid var(--border-color); box-shadow:0 3px 8px rgba(0,0,0,0.14); flex-shrink:0;" onerror="this.src='/static/images/achievements/badge_1.svg'">
+                        <div style="min-width:0;">
+                            <strong style="font-size:13.5px; font-weight:800; color:var(--text-primary); display:block; max-width:220px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${escapeHtml(log.game_title || 'Game Quests')}">
+                                ${escapeHtml(log.game_title || 'Game Quests')}
+                            </strong>
+                            <div style="font-size:10.5px; color:var(--text-muted); font-family:'JetBrains Mono', monospace; display:flex; align-items:center; gap:6px; margin-top:2px;">
+                                <span>ID: <strong style="color:var(--text-secondary);">${escapeHtml(log.game_id || '—')}</strong></span>
+                                ${gameDev ? `<span style="color:var(--text-secondary); max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">• ${escapeHtml(gameDev)}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Fulfillment Badge
+                const fulfillmentBadge = `
+                    <div style="text-align:center;">
+                        <span style="font-family:'JetBrains Mono', monospace; font-size:11.5px; font-weight:800; color:var(--accent-green); background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.25); padding:3px 9px; border-radius:6px; white-space:nowrap;">
+                            🎯 ${log.unlocked_count} / ${log.total_count}
+                        </span>
+                    </div>
+                `;
+
                 html += `
                     <tr style="border-bottom:1px solid var(--border-color); transition:background 0.15s ease;">
-                        <td style="text-align:center; font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-muted);">${index + 1}</td>
+                        <td style="text-align:center; font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-muted);">
+                            <div style="width:26px; height:26px; border-radius:50%; background:var(--bg-body); border:1px solid var(--border-color); display:flex; align-items:center; justify-content:center; margin:0 auto; font-weight:700;">${index + 1}</div>
+                        </td>
                         <td style="white-space:nowrap;">
-                            <div style="font-size:12px; font-weight:700; color:var(--text-primary);">${escapeHtml(log.datetime || 'Just now')}</div>
-                            <div style="font-size:10px; color:var(--text-muted);">${escapeHtml(log.source || 'Web App')}</div>
+                            <div style="font-size:12px; font-weight:700; color:var(--text-primary);">📅 ${escapeHtml(log.datetime || 'Just now')}</div>
+                            <span style="font-size:10px; font-weight:700; color:#0284c7; background:rgba(2,132,199,0.1); border:1px solid rgba(2,132,199,0.25); border-radius:4px; padding:1px 6px; display:inline-block; margin-top:3px;">
+                                ${escapeHtml(log.source || 'Web App')}
+                            </span>
                         </td>
                         <td>${uidDisplay}</td>
                         <td>
-                            <div style="font-size:13px; font-weight:700; color:var(--text-primary);">${escapeHtml(log.account_name || 'Gamer')}</div>
-                            <div style="font-size:11px; color:var(--text-secondary); font-family:'JetBrains Mono', monospace;">${escapeHtml(log.email || '—')}</div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <div style="width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg, #10b981, #06b6d4); color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; flex-shrink:0;">
+                                    🎮
+                                </div>
+                                <div>
+                                    <div style="font-size:13px; font-weight:800; color:var(--text-primary);">${escapeHtml(log.account_name || 'Gamer')}</div>
+                                    <div style="font-size:11px; color:var(--text-secondary); font-family:'JetBrains Mono', monospace;">${escapeHtml(log.email || '—')}</div>
+                                </div>
+                            </div>
                         </td>
-                        <td>${codeBadge}</td>
-                        <td>
-                            <div style="font-size:13px; font-weight:700; color:var(--text-primary);">${escapeHtml(log.game_title || 'Game Quests')}</div>
-                            <div style="font-size:10.5px; color:var(--text-muted);">ID: ${escapeHtml(log.game_id || '—')}</div>
-                        </td>
-                        <td>
-                            <span style="font-family:'JetBrains Mono', monospace; font-size:11.5px; font-weight:700; color:var(--text-primary);">${log.unlocked_count} / ${log.total_count}</span>
-                        </td>
-                        <td>${statusBadge}</td>
+                        <td>${qidBadge}</td>
+                        <td>${gameDisplay}</td>
+                        <td>${fulfillmentBadge}</td>
+                        <td style="text-align:center;">${statusBadge}</td>
                     </tr>
                 `;
             });
@@ -7045,6 +7117,7 @@
                     (log.account_name && log.account_name.toLowerCase().includes(query)) ||
                     (log.email && log.email.toLowerCase().includes(query)) ||
                     (log.server_code && log.server_code.toLowerCase().includes(query)) ||
+                    (log.qid && log.qid.toLowerCase().includes(query)) ||
                     (log.user_uid && log.user_uid.toLowerCase().includes(query)) ||
                     (log.game_title && log.game_title.toLowerCase().includes(query));
 

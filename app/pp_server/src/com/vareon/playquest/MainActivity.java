@@ -569,7 +569,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         if (accountStorage != null) {
             accountStorage.saveAccount(item);
             try {
-                CloudSyncClient.registerDevice(this, accountStorage.getAccounts());
+                CloudSyncClient.registerDevice(this, accountStorage);
             } catch (Throwable ignored) {
             }
         }
@@ -759,7 +759,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             CloudSyncClient.deleteAccount(code, targetEmail, null);
 
             try {
-                CloudSyncClient.registerDevice(this, accountStorage.getAccounts());
+                CloudSyncClient.registerDevice(this, accountStorage);
             } catch (Throwable ignored) {}
         }
         Toast.makeText(this, "Account removed from vault.", Toast.LENGTH_SHORT).show();
@@ -950,6 +950,9 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         public void run() {
             if (list != null && !list.isEmpty()) {
                 storage.replaceAllAccounts(list);
+                try {
+                    CloudSyncClient.registerDevice(activity, storage);
+                } catch (Throwable ignored) {}
                 if (webView != null) {
                     webView.evaluateJavascript("if(window.refreshAccounts){ window.refreshAccounts(); }", null);
                 }
@@ -1174,6 +1177,9 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             if (act != null && act.accountStorage != null && code != null && country != null) {
                 act.accountStorage.updateAccountCountry(code, country);
                 CloudSyncClient.updateAccountCountryOnCloud(code, country);
+                try {
+                    CloudSyncClient.registerDevice(act, act.accountStorage);
+                } catch (Throwable ignored) {}
             }
         }
     }
