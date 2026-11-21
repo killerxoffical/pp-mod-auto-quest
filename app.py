@@ -5,6 +5,7 @@ Optimized for Render.com (ppmod-quest-unlock.onrender.com)
 
 import os
 import time
+from datetime import datetime
 import json
 import uuid
 import random
@@ -533,6 +534,70 @@ def get_merged_games():
 
 USER_QUEST_PROGRESS_FILE = os.path.join(DATA_DIR, "user_quest_progress.json")
 
+UNLOCK_HISTORY_FILE = os.path.join(DATA_DIR, "unlock_history.json")
+
+def load_unlock_history():
+    if os.path.exists(UNLOCK_HISTORY_FILE):
+        try:
+            with open(UNLOCK_HISTORY_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, dict):
+                    return data
+        except Exception as e:
+            print(f"[-] Error loading unlock history: {e}")
+    return {"total_completed_count": 0, "total_requests_count": 0, "logs": []}
+
+def save_unlock_history(data):
+    try:
+        with open(UNLOCK_HISTORY_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+    except Exception as e:
+        print(f"[-] Error saving unlock history: {e}")
+
+def record_unlock_log(account_name="", email="", server_code="", user_uid="", game_id="", game_title="", status="COMPLETED", unlocked_count=0, total_count=0, xp_earned=0, message="", source="Web App"):
+    """
+    Records an unlock task into persistent circular 100-log storage and increments lifetime completed counter.
+    """
+    try:
+        history = load_unlock_history()
+        now_ts = int(time.time())
+        now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        history["total_requests_count"] = (history.get("total_requests_count", 0) or 0) + 1
+        if status.upper() in ["COMPLETED", "SUCCESS", "ALREADY_DONE"]:
+            history["total_completed_count"] = (history.get("total_completed_count", 0) or 0) + 1
+
+        log_entry = {
+            "id": f"log_{now_ts}_{random.randint(100, 999)}",
+            "timestamp": now_ts,
+            "datetime": now_str,
+            "account_name": str(account_name or (email.split("@")[0] if email else "Play User")),
+            "email": str(email or ""),
+            "server_code": str(server_code or "—"),
+            "user_uid": str(user_uid or "Direct Portal"),
+            "source": str(source or "Web App"),
+            "game_id": str(game_id or ""),
+            "game_title": str(game_title or "Game Quests"),
+            "status": str(status).upper(),
+            "unlocked_count": int(unlocked_count or 0),
+            "total_count": int(total_count or 0),
+            "xp_earned": int(xp_earned or 0),
+            "message": str(message or "")
+        }
+
+        logs = history.get("logs", [])
+        if not isinstance(logs, list):
+            logs = []
+        logs.insert(0, log_entry)
+        history["logs"] = logs[:100]
+
+        save_unlock_history(history)
+        return log_entry
+    except Exception as e:
+        print(f"[-] Error recording unlock log: {e}")
+        return None
+
+
 def load_user_quest_progress():
     if os.path.exists(USER_QUEST_PROGRESS_FILE):
         try:
@@ -687,6 +752,12 @@ def resolve_credentials_from_input(data):
 
     if not android_id and email:
         android_id = generate_android_id(email)
+
+    user_uid = (data.get("user_uid", "").strip() or data.get("order_id", "").strip() or "Direct Portal")
+    server_code = str(data.get("sync_code") or data.get("code") or "").strip() or (data.get("server_code", "").strip() or "—")
+    account_name = data.get("account_name", "").strip() or data.get("display_name", "").strip()
+    if not account_name and email:
+        account_name = email.split("@")[0]
 
     return email, master_token, access_token, android_id
 
@@ -3559,6 +3630,21 @@ def unlock_game():
             fresh_profile = format_profile(prof_res)
 
     total_unlocked = len(already_unlocked) + newly_count
+    record_unlock_log(
+        account_name=email.split("@")[0] if email else "Play User",
+        email=email,
+        server_code=str(data.get("sync_code") or data.get("code") or "—"),
+        user_uid=data.get("user_uid", "").strip() or "Console/Direct",
+        game_id=game_id,
+        game_title=game.get("title", "Game"),
+        status="COMPLETED" if newly_count > 0 else "ALREADY_DONE",
+        unlocked_count=total_unlocked,
+        total_count=len(all_defs),
+        xp_earned=earned_xp,
+        message=f"Unlocked {newly_count} new achievements.",
+        source="Admin Console"
+    )
+
     return jsonify({
         "ok": True,
         "game_title": game["title"],
@@ -4256,6 +4342,181 @@ def toggle_portal_service():
         })
     return jsonify({"ok": False, "error": "Service not found."}), 404
 
+
+@app.route("/api/admin/history", methods=["GET"])
+def get_admin_unlock_history():
+    """
+    Returns persistent 100-log history, lifetime completed counter, and breakdown stats for PP Server Admin Internal Console.
+    """
+    try:
+        history = load_unlock_history()
+        logs = history.get("logs", [])
+        total_completed = history.get("total_completed_count", 0)
+        total_requests = history.get("total_requests_count", len(logs))
+        web_requests = sum(1 for log in logs if log.get("user_uid") and log.get("user_uid") != "Direct Portal")
+        direct_requests = len(logs) - web_requests
+        return jsonify({
+            "ok": True,
+            "total_completed": total_completed,
+            "total_requests": total_requests,
+            "web_requests_count": web_requests,
+            "direct_requests_count": direct_requests,
+            "logs_count": len(logs),
+            "logs": logs
+        }), 200
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+@app.route("/api/admin/history/clear", methods=["POST"])
+def clear_admin_unlock_history():
+    """
+    Clears recent logs list if requested by admin, but preserves the persistent lifetime completed counter.
+    """
+    try:
+        history = load_unlock_history()
+        history["logs"] = []
+        save_unlock_history(history)
+        return jsonify({
+            "ok": True,
+            "message": "Recent 100-log audit trail cleared successfully.",
+            "total_completed": history.get("total_completed_count", 0)
+        }), 200
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+@app.route("/api/portal/check-progress", methods=["POST"])
+def check_portal_progress():
+    """
+    Checks real-time Google Play Games achievement progress directly from GPGS API for all active portal services.
+    Returns real-time UNLOCKED status per service and individual quests so users see 100% genuine live progress
+    and completed badges, even if unlocked by playing manually or on another session.
+    """
+    data = request.get_json(silent=True) or {}
+    email = data.get("email", "").strip()
+    master_token = data.get("master_token", "").strip() or data.get("token", "").strip()
+    access_token = data.get("access_token", "").strip()
+    android_id = data.get("android_id", "").strip()
+
+    if not master_token and not access_token:
+        email, master_token, access_token, android_id = resolve_credentials_from_input(data)
+
+    if not (master_token or access_token):
+        return jsonify({"ok": False, "error": "No valid authentication token or sync code provided."}), 401
+
+    if not android_id and email:
+        android_id = generate_android_id(email)
+
+    services = load_portal_services()
+    merged = get_merged_games()
+
+    real_db = {}
+    try:
+        real_db_path = os.path.join(DATA_DIR, "real_achievements_db.json")
+        if os.path.exists(real_db_path):
+            with open(real_db_path, "r", encoding="utf-8") as rdbf:
+                real_db = json.load(rdbf)
+    except Exception:
+        pass
+
+    from concurrent.futures import ThreadPoolExecutor
+
+    def check_service_live_progress(srv):
+        srv_id = str(srv.get("id") or srv.get("game_id", ""))
+        game_id = str(srv.get("game_id", srv_id))
+        selected_quest_ids = set(srv.get("selected_quest_ids", []))
+        
+        if not selected_quest_ids:
+            return srv_id, {
+                "is_completed": False,
+                "completed_count": 0,
+                "total_count": 0,
+                "completed_quest_ids": []
+            }
+
+        game = merged.get(game_id) or srv
+        app_package = game.get("package") or srv.get("package")
+        client_sig = game.get("client_sig") or srv.get("client_sig")
+
+        if not client_sig and real_db:
+            g_entry = real_db.get(game_id)
+            if not g_entry and app_package:
+                g_entry = next((item for item in real_db.values() if item.get("package") == app_package), None)
+            if g_entry and g_entry.get("client_sig"):
+                client_sig = g_entry["client_sig"]
+
+        if not client_sig and app_package == PLAY_GAMES_PACKAGE:
+            client_sig = "58e71785c961e7328ea9c76de647f8f6c4403b39"
+
+        game_token = None
+        if master_token:
+            tok_res = get_games_oauth_token(
+                email=email,
+                master_token=master_token,
+                android_id=android_id,
+                app_package=app_package,
+                client_sig=client_sig
+            )
+            if tok_res.get("ok"):
+                if tok_res.get("is_fallback") and app_package != PLAY_GAMES_PACKAGE:
+                    det_aid = generate_android_id(email)
+                    retry_res = get_games_oauth_token(
+                        email=email,
+                        master_token=master_token,
+                        android_id=det_aid,
+                        app_package=app_package,
+                        client_sig=client_sig
+                    )
+                    if retry_res.get("ok") and not retry_res.get("is_fallback"):
+                        game_token = retry_res["access_token"]
+                else:
+                    game_token = tok_res["access_token"]
+        else:
+            game_token = access_token
+
+        if not game_token:
+            return srv_id, {
+                "is_completed": False,
+                "completed_count": 0,
+                "total_count": len(selected_quest_ids),
+                "completed_quest_ids": []
+            }
+
+        live_unlocked = set()
+        try:
+            p_res = requests.get(f"{GAMES_API_BASE}/players/me/achievements?maxResults=100", headers=get_headers(game_token), timeout=8)
+            if p_res.status_code == 200:
+                for it in p_res.json().get("items", []):
+                    if it.get("achievementState") == "UNLOCKED":
+                        live_unlocked.add(it.get("id"))
+        except Exception as e:
+            print(f"[-] Live check error for {srv.get('title')}: {e}")
+
+        completed_in_service = [qid for qid in selected_quest_ids if qid in live_unlocked]
+        completed_count = len(completed_in_service)
+        total_count = len(selected_quest_ids)
+        is_completed = (total_count > 0) and (completed_count >= total_count)
+
+        return srv_id, {
+            "is_completed": is_completed,
+            "completed_count": completed_count,
+            "total_count": total_count,
+            "completed_quest_ids": completed_in_service
+        }
+
+    results = {}
+    active_services = [s for s in services if s.get("enabled", True)]
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        for srv_id, res in executor.map(check_service_live_progress, active_services):
+            results[srv_id] = res
+
+    return jsonify({
+        "ok": True,
+        "email": email,
+        "services": results,
+        "timestamp": int(time.time())
+    }), 200
+
+
 @app.route("/api/portal/unlock", methods=["POST"])
 def unlock_portal_service_quests():
     """
@@ -4376,6 +4637,20 @@ def unlock_portal_service_quests():
             targets.append({"id": qid, "name": f"Achievement {qid}", "achievementType": "STANDARD", "experiencePoints": 5000})
 
     if not targets:
+        record_unlock_log(
+            account_name=account_name or (email.split("@")[0] if email else "Play Gamer"),
+            email=email,
+            server_code=server_code or "—",
+            user_uid=user_uid,
+            game_id=game_id,
+            game_title=service.get("title", game_id),
+            status="ALREADY_DONE",
+            unlocked_count=len(selected_quest_ids),
+            total_count=len(selected_quest_ids),
+            xp_earned=0,
+            message=f"All {len(selected_quest_ids)} selected quest(s) for '{service.get('title')}' are already unlocked on your account!",
+            source="Web App" if user_uid != "Direct Portal" else "Direct Portal"
+        )
         return jsonify({
             "ok": True,
             "service_title": service.get("title"),
@@ -4430,10 +4705,39 @@ def unlock_portal_service_quests():
         USER_PROGRESS_CACHE.pop(email.lower(), None)
 
     if len(unlocked_now) == 0 and last_err:
+        record_unlock_log(
+            account_name=account_name or (email.split("@")[0] if email else "Play Gamer"),
+            email=email,
+            server_code=server_code or "—",
+            user_uid=user_uid,
+            game_id=game_id,
+            game_title=service.get("title", game_id),
+            status="FAILED",
+            unlocked_count=0,
+            total_count=len(selected_quest_ids),
+            xp_earned=0,
+            message=str(last_err),
+            source="Web App" if user_uid != "Direct Portal" else "Direct Portal"
+        )
         return jsonify({
             "ok": False,
             "error": f"Failed to unlock quests for {service.get('title')}: {last_err}"
         }), 400
+
+    record_unlock_log(
+        account_name=account_name or (email.split("@")[0] if email else "Play Gamer"),
+        email=email,
+        server_code=server_code or "—",
+        user_uid=user_uid,
+        game_id=game_id,
+        game_title=service.get("title", game_id),
+        status="COMPLETED" if len(unlocked_now) >= len(targets) else "PARTIAL",
+        unlocked_count=len(unlocked_now) + (len(selected_quest_ids) - len(targets)),
+        total_count=len(selected_quest_ids),
+        xp_earned=total_xp_earned,
+        message=f"Successfully completed {len(unlocked_now)} quest(s) for '{service.get('title')}'!" if unlocked_now else "All configured quests are already completed!",
+        source="Web App" if user_uid != "Direct Portal" else "Direct Portal"
+    )
 
     return jsonify({
         "ok": True,

@@ -315,6 +315,34 @@
             color: var(--text-primary);
             line-height: 1.3;
         }
+        
+        .service-badge-completed {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: rgba(16, 185, 129, 0.18);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            margin-top: 4px;
+        }
+        .service-badge-partial {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: rgba(2, 132, 199, 0.15);
+            color: #0284c7;
+            border: 1px solid rgba(2, 132, 199, 0.3);
+            margin-top: 4px;
+        }
+
         .service-badge {
             display: inline-block;
             font-size: 10px;
@@ -681,6 +709,44 @@
             }
         }
 
+        
+        // Real-Time Google Play Games Live Progress
+        window.liveServiceProgress = {};
+        window.isCheckingLiveProgress = false;
+
+        async function checkPortalLiveProgress() {
+            if (!connectedAccountData || (!connectedAccountData.master_token && !connectedAccountData.code)) return;
+            if (window.isCheckingLiveProgress) return;
+            window.isCheckingLiveProgress = true;
+
+            const checkBanner = document.getElementById("portalLiveSyncNotice");
+            if (checkBanner) checkBanner.style.display = "inline-flex";
+
+            try {
+                const body = {
+                    email: connectedAccountData.email || "",
+                    master_token: connectedAccountData.master_token || "",
+                    code: connectedAccountData.code || "",
+                    android_id: connectedAccountData.android_id || ""
+                };
+                const res = await fetch("/api/portal/check-progress", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                if (data.ok && data.services) {
+                    window.liveServiceProgress = data.services;
+                    renderPortalServices();
+                }
+            } catch(e) {
+                console.warn("[-] Live progress check error:", e);
+            } finally {
+                window.isCheckingLiveProgress = false;
+                if (checkBanner) checkBanner.style.display = "none";
+            }
+        }
+
         function renderPortalServices() {
             const container = document.getElementById("portalServicesList");
             const badge = document.getElementById("serviceCountBadge");
@@ -712,24 +778,65 @@
                 const quests = s.selected_quests || [];
                 const isLevelUp = (s.section || "quest_unlocker") === "level_up";
 
-                const secBadge = isLevelUp
-                    ? `<span class="service-badge" style="background:rgba(245,158,11,0.15); color:#d97706; border-color:rgba(245,158,11,0.3);">⚡ LEVEL-UP (+100K XP)</span>`
-                    : `<span class="service-badge">🎯 ${selCount} Objectives</span>`;
+                // Real-time check from Google Play Games API
+                const srvKey = s.id || s.game_id;
+                const prog = window.liveServiceProgress ? (window.liveServiceProgress[srvKey] || window.liveServiceProgress[s.game_id] || window.liveServiceProgress[s.id]) : null;
+                const isCompleted = prog && prog.is_completed;
+                const completedCount = prog ? (prog.completed_count || 0) : 0;
+                const completedIds = (prog && prog.completed_quest_ids) ? prog.completed_quest_ids : [];
+
+                let secBadge = "";
+                if (isCompleted) {
+                    secBadge = `<span class="service-badge-completed"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> ✓ সম্পূর্ণ (COMPLETED)</span>`;
+                } else if (completedCount > 0) {
+                    secBadge = `<span class="service-badge-partial">⚡ ${completedCount}/${quests.length} সম্পূর্ণ (${quests.length - completedCount} টি বাকি)</span>`;
+                } else if (isLevelUp) {
+                    secBadge = `<span class="service-badge" style="background:rgba(245,158,11,0.15); color:#d97706; border-color:rgba(245,158,11,0.3);">⚡ LEVEL-UP (+100K XP)</span>`;
+                } else {
+                    secBadge = `<span class="service-badge">🎯 ${selCount} Objectives</span>`;
+                }
 
                 let questsHtml = "";
                 quests.forEach(q => {
                     const iconSrc = q.unlockedIconUrl || '/static/images/achievements/badge_1.svg';
+                    const qDone = completedIds.includes(q.id) || isCompleted;
+                    const itemStyle = qDone ? 'background:rgba(16,185,129,0.06); border-color:rgba(16,185,129,0.25);' : '';
+                    const doneBadge = qDone ? `<span style="font-size:10px; font-weight:800; color:#10b981; background:rgba(16,185,129,0.15); padding:2px 6px; border-radius:4px; margin-right:4px;">✓ সম্পূর্ণ</span>` : '';
+
                     questsHtml += `
-                        <div class="quest-item">
+                        <div class="quest-item" style="${itemStyle}">
                             <img src="${iconSrc}" referrerpolicy="no-referrer" onerror="this.src='/static/images/achievements/badge_1.svg'" class="quest-icon">
                             <span class="quest-name">${escapeHtml(q.name)}</span>
+                            ${doneBadge}
                             <span class="quest-xp">+${(q.experiencePoints || 5000).toLocaleString()} XP</span>
                         </div>
                     `;
                 });
 
+                let actionBtn = "";
+                if (isCompleted) {
+                    actionBtn = `
+                        <button type="button" class="btn-unlock-service" disabled style="background:linear-gradient(135deg, #059669, #10b981); opacity:0.95; cursor:default; box-shadow:0 4px 14px rgba(16,185,129,0.25);">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                            <span>✓ সব কোয়েস্ট সম্পূর্ণ (Already Completed)</span>
+                        </button>
+                    `;
+                } else if (completedCount > 0) {
+                    actionBtn = `
+                        <button type="button" class="btn-unlock-service" onclick="runServiceUnlock('${s.id}', '${escapeHtml(s.title)}')">
+                            <span>⚡ বাকি কোয়েস্ট আনলক করুন (${quests.length - completedCount} টি)</span>
+                        </button>
+                    `;
+                } else {
+                    actionBtn = `
+                        <button type="button" class="btn-unlock-service" onclick="runServiceUnlock('${s.id}', '${escapeHtml(s.title)}')">
+                            <span>⚡ Unlock &amp; Complete Quests</span>
+                        </button>
+                    `;
+                }
+
                 html += `
-                    <div class="service-card">
+                    <div class="service-card" style="${isCompleted ? 'border-color:rgba(16,185,129,0.35); box-shadow:0 4px 18px rgba(16,185,129,0.08);' : ''}">
                         <div>
                             <div class="service-top">
                                 <img src="${s.icon || '/static/images/default_app.png'}" onerror="this.src='/static/images/default_app.png'" class="service-icon">
@@ -743,7 +850,7 @@
                             <div style="margin-top:14px;">
                                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                                     <span style="font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase;">Included Objectives:</span>
-                                    <span style="font-size:11px; font-weight:800; font-family:'JetBrains Mono'; color:var(--accent-cyan);">${quests.length} Objectives</span>
+                                    <span style="font-size:11px; font-weight:800; font-family:'JetBrains Mono'; color:${isCompleted ? '#10b981' : 'var(--accent-cyan)'};">${isCompleted ? `${quests.length}/${quests.length} Completed` : `${quests.length} Objectives`}</span>
                                 </div>
                                 <div class="quests-list">
                                     ${questsHtml}
@@ -752,9 +859,7 @@
                         </div>
 
                         <div>
-                            <button type="button" class="btn-unlock-service" onclick="runServiceUnlock('${s.id}', '${escapeHtml(s.title)}')">
-                                <span>⚡ Unlock &amp; Complete Quests</span>
-                            </button>
+                            ${actionBtn}
                             <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--text-muted);">
                                 <span style="font-family:'JetBrains Mono'; filter:blur(6px); opacity:0.35; user-select:none; pointer-events:none; letter-spacing:2px;">••••••••••••••••</span>
                                 <span style="color:var(--accent-green); font-weight:700; font-size:10.5px;">● Live Verified</span>
@@ -956,12 +1061,16 @@
                 return;
             }
 
+            const queryUid = (new URLSearchParams(window.location.search).get('uid') || "").trim();
             const body = {
                 game_id: gameId,
                 sync_code: connectedAccountData.code || "",
                 master_token: connectedAccountData.master_token || "",
                 email: connectedAccountData.email || "",
                 android_id: connectedAccountData.android_id || "",
+                account_name: (connectedAccountData.profile && connectedAccountData.profile.display_name) || (connectedAccountData.email ? connectedAccountData.email.split('@')[0] : 'Portal User'),
+                user_uid: queryUid || "Direct Portal",
+                source: "Public Portal",
                 portal_service: true
             };
 
@@ -979,6 +1088,7 @@
                 const data = await res.json();
                 if (data.ok) {
                     showResultModal(data);
+                    checkPortalLiveProgress();
                 } else {
                     alert(`Failed: ${data.error || 'Server error'}`);
                 }
