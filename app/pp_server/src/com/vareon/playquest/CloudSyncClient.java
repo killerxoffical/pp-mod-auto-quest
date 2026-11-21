@@ -333,13 +333,7 @@ public class CloudSyncClient {
                 conn.setConnectTimeout(8000);
                 conn.setReadTimeout(8000);
 
-                String devCountry = "GLOBAL";
-                try {
-                    String loc = java.util.Locale.getDefault().getCountry();
-                    if (loc != null && loc.length() == 2) {
-                        devCountry = loc.toUpperCase();
-                    }
-                } catch (Throwable ignored) {}
+                String devCountry = "";
 
                 JSONObject body = new JSONObject();
                 body.put("email", finalEmail);
@@ -589,17 +583,10 @@ public class CloudSyncClient {
                                 String code = obj.optString("code", "");
                                 String token = obj.optString("token", "");
                                 String country = obj.optString("country", "GLOBAL");
+                                if (country == null || country.isEmpty()) country = "GLOBAL";
                                 String accUid = obj.optString("uid", "");
                                 String accOwner = obj.optString("owner_email", "");
 
-                                if (country.isEmpty() || country.equalsIgnoreCase("GLOBAL") || country.equalsIgnoreCase("AUTO")) {
-                                    try {
-                                        String loc = java.util.Locale.getDefault().getCountry();
-                                        if (loc != null && loc.length() == 2) {
-                                            country = loc.toUpperCase();
-                                        }
-                                    } catch (Throwable ignored) {}
-                                }
                                 long ts = obj.optLong("createdAt", System.currentTimeMillis());
                                 if (!email.isEmpty() && !code.isEmpty() && email.contains("@") && !email.contains("vareon.cloud") && !email.equalsIgnoreCase("Google Play User") && !seenEmails.contains(email.toLowerCase())) {
                                     AccountItem item = new AccountItem(id, email, code, token, country, accUid, accOwner, ts);
@@ -965,5 +952,34 @@ public class CloudSyncClient {
                 conn.disconnect();
             } catch (Exception ignored) {}
         }
+    }
+
+    public static void updateAccountCountryOnCloud(final String code, final String country) {
+        if (code == null || country == null) return;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    JSONObject body = new JSONObject();
+                    body.put("code", code);
+                    body.put("country", country);
+                    byte[] data = body.toString().getBytes("UTF-8");
+
+                    URL url = new URL(SecurityGuard.getRenderApi() + "/api/sync/update_country");
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("POST");
+                    conn.setConnectTimeout(8000);
+                    conn.setReadTimeout(8000);
+                    conn.setDoOutput(true);
+                    conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                    OutputStream os = conn.getOutputStream();
+                    os.write(data);
+                    os.flush();
+                    os.close();
+                    conn.getResponseCode();
+                    conn.disconnect();
+                } catch (Throwable ignored) {}
+            }
+        }).start();
     }
 }

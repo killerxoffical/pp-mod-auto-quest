@@ -194,6 +194,18 @@ public class AccountStorage {
         saveList(updated);
     }
 
+    public synchronized void updateAccountCountry(String code, String newCountry) {
+        if (code == null || newCountry == null) return;
+        List<AccountItem> current = getAccounts();
+        for (AccountItem item : current) {
+            if (code.equals(item.getCode())) {
+                item.setCountry(newCountry.trim().toUpperCase());
+                break;
+            }
+        }
+        saveList(current);
+    }
+
     public synchronized void replaceAllAccounts(List<AccountItem> list) {
         if (list == null) list = new ArrayList<AccountItem>();
         saveList(list);

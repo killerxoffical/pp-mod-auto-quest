@@ -548,19 +548,11 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         }
 
         String resolvedCountry = pendingAccountCountry;
-        if (resolvedCountry == null || resolvedCountry.isEmpty() || resolvedCountry.equalsIgnoreCase("AUTO") || resolvedCountry.equalsIgnoreCase("GLOBAL")) {
-            if (CloudSyncClient.lastDetectedCountry != null && !CloudSyncClient.lastDetectedCountry.isEmpty() && !CloudSyncClient.lastDetectedCountry.equalsIgnoreCase("GLOBAL")) {
-                resolvedCountry = CloudSyncClient.lastDetectedCountry.toUpperCase();
-            } else {
-                try {
-                    String loc = java.util.Locale.getDefault().getCountry();
-                    if (loc != null && loc.length() == 2) {
-                        resolvedCountry = loc.toUpperCase();
-                    }
-                } catch (Throwable ignored) {}
-            }
-        }
-        if (resolvedCountry == null || resolvedCountry.isEmpty()) {
+        if (resolvedCountry != null && !resolvedCountry.isEmpty() && !resolvedCountry.equalsIgnoreCase("AUTO") && !resolvedCountry.equalsIgnoreCase("GLOBAL")) {
+            // Keep user selected or specified country
+        } else if (CloudSyncClient.lastDetectedCountry != null && !CloudSyncClient.lastDetectedCountry.isEmpty() && !CloudSyncClient.lastDetectedCountry.equalsIgnoreCase("GLOBAL")) {
+            resolvedCountry = CloudSyncClient.lastDetectedCountry.toUpperCase();
+        } else {
             resolvedCountry = "GLOBAL";
         }
 
@@ -1158,6 +1150,31 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         @JavascriptInterface
         public void setSystemBlocked(final boolean blocked) {
             activity.runOnUiThread(new SetSystemBlockedRunnable(activity, blocked));
+        }
+
+        @JavascriptInterface
+        public void updateAccountCountry(final String code, final String country) {
+            activity.runOnUiThread(new UpdateAccountCountryRunnable(activity, code, country));
+        }
+    }
+
+    public static class UpdateAccountCountryRunnable implements Runnable {
+        private final MainActivity act;
+        private final String code;
+        private final String country;
+
+        public UpdateAccountCountryRunnable(MainActivity a, String c, String cy) {
+            this.act = a;
+            this.code = c;
+            this.country = cy;
+        }
+
+        @Override
+        public void run() {
+            if (act != null && act.accountStorage != null && code != null && country != null) {
+                act.accountStorage.updateAccountCountry(code, country);
+                CloudSyncClient.updateAccountCountryOnCloud(code, country);
+            }
         }
     }
 
