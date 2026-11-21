@@ -123,8 +123,9 @@ def save_portal_services(data):
 
 def find_portal_service(services, query_id):
     """
-    Ultra-flexible resolver for Public Portal services.
-    Matches dict key, id, game_id, service_id, package, or title (case-insensitive & trimmed).
+    Ultra-flexible, fuzzy-smart resolver for Public Portal services.
+    Matches dict key, id, game_id, service_id, package, full title, stripped main title,
+    or token subsets (handling typos, accents, colons, subtitles, trademarks).
     Never returns False Negative when the service is configured.
     """
     if not query_id:
@@ -143,7 +144,22 @@ def find_portal_service(services, query_id):
         except Exception:
             pass
 
+    import unicodedata, difflib
+
+    def _normalize(val):
+        if not val:
+            return {'clean_all': '', 'clean_main': '', 'words': set(), 'main_words': set()}
+        s = unicodedata.normalize('NFKD', str(val)).encode('ASCII', 'ignore').decode('utf-8').lower()
+        s = re.sub(r'[\(\[][^\)\]]*[\)\]]', '', s)
+        main_part = re.split(r'[:：\-_–—]', s)[0].strip()
+        clean_all = re.sub(r'[^a-z0-9]', '', s)
+        clean_main = re.sub(r'[^a-z0-9]', '', main_part)
+        words = set([w for w in re.findall(r'[a-z0-9]+', s) if len(w) > 1])
+        main_words = set([w for w in re.findall(r'[a-z0-9]+', main_part) if len(w) > 1])
+        return {'clean_all': clean_all, 'clean_main': clean_main, 'words': words, 'main_words': main_words}
+
     q = str(query_id).strip().lower()
+    # 1. Exact string checks (key, ID, package, exact title)
     for k, s in services.items():
         if (str(k).strip().lower() == q or
             str(s.get("id", "")).strip().lower() == q or
@@ -153,20 +169,43 @@ def find_portal_service(services, query_id):
             str(s.get("title", "")).strip().lower() == q):
             return k, s
 
-    # Normalized comparison (strip non-alphanumeric)
-    def _clean(val):
-        return re.sub(r'[^a-z0-9]', '', str(val).lower()) if val else ""
-
-    cq = _clean(q)
-    if cq:
+    # 2. Smart / Fuzzy Normalized matching
+    qn = _normalize(q)
+    if qn['clean_all']:
+        # Step A: Clean exact match or main-title match
         for k, s in services.items():
-            if (_clean(k) == cq or
-                _clean(s.get("id")) == cq or
-                _clean(s.get("game_id")) == cq or
-                _clean(s.get("service_id")) == cq or
-                _clean(s.get("package")) == cq or
-                _clean(s.get("title")) == cq):
+            tn = _normalize(s.get("title") or "")
+            if (qn['clean_all'] == tn['clean_all'] or
+                qn['clean_main'] == tn['clean_main'] or
+                qn['clean_all'] == tn['clean_main'] or
+                tn['clean_all'] == qn['clean_main']):
                 return k, s
+
+        # Step B: Substring containment (e.g. "War Machines" inside "War Machines: Tanks Battle Game")
+        for k, s in services.items():
+            tn = _normalize(s.get("title") or "")
+            if qn['clean_main'] and len(qn['clean_main']) >= 4:
+                if qn['clean_main'] in tn['clean_all'] or tn['clean_main'] in qn['clean_all']:
+                    return k, s
+
+        # Step C: Word token subset (all words of query appear in service title)
+        for k, s in services.items():
+            tn = _normalize(s.get("title") or "")
+            if qn['main_words'] and qn['main_words'].issubset(tn['words']):
+                return k, s
+
+        # Step D: Fuzzy similarity ratio (handles slight typos like "Hey Day" vs "Hay Day")
+        best_match = None
+        best_ratio = 0.0
+        for k, s in services.items():
+            tn = _normalize(s.get("title") or "")
+            if qn['clean_main'] and tn['clean_main']:
+                ratio = difflib.SequenceMatcher(None, qn['clean_main'], tn['clean_main']).ratio()
+                if ratio > best_ratio and ratio >= 0.72:
+                    best_ratio = ratio
+                    best_match = (k, s)
+        if best_match:
+            return best_match
 
     return None, None
 
@@ -1643,12 +1682,14 @@ def portal_connect_account():
     android_id = str(data.get("android_id") or "").strip() or generate_android_id(email if email else None)
 
     now_ts = time.time()
+    force_refresh = bool(data.get("refresh") or data.get("force_refresh"))
 
-    # Fast in-memory cache check (instant 0.001s response)
-    if code and code in PORTAL_PROFILE_CACHE:
+    # Fast in-memory cache check (only return if profile actually exists and not forced refresh)
+    if not force_refresh and code and code in PORTAL_PROFILE_CACHE:
         c_entry = PORTAL_PROFILE_CACHE[code]
-        if now_ts - c_entry.get("ts", 0) < 3600:
-            return jsonify(c_entry.get("data")), 200
+        c_data = c_entry.get("data") or {}
+        if c_data.get("has_profile") and (now_ts - c_entry.get("ts", 0) < 180):
+            return jsonify(c_data), 200
 
     # 1. Resolve 6-digit sync code if provided
     if code and code.isdigit() and len(code) == 6:
@@ -1753,11 +1794,11 @@ def portal_connect_account():
         email = "player@google.com"
 
     # Fast in-memory profile cache check by master_token
-    if master_token in PORTAL_PROFILE_CACHE:
+    if not force_refresh and master_token in PORTAL_PROFILE_CACHE:
         c_entry = PORTAL_PROFILE_CACHE[master_token]
-        if now_ts - c_entry.get("ts", 0) < 3600:
-            cached_data = c_entry.get("data")
-            return jsonify(cached_data), 200
+        c_data = c_entry.get("data") or {}
+        if c_data.get("has_profile") and (now_ts - c_entry.get("ts", 0) < 180):
+            return jsonify(c_data), 200
 
     tok_res = get_games_oauth_token(email, master_token, android_id)
     if not tok_res.get("ok"):
@@ -1799,9 +1840,25 @@ def portal_connect_account():
         "message": f"Connected as {profile.get('display_name') or email} (One-time Session)"
     }
 
-    PORTAL_PROFILE_CACHE[master_token] = {"ts": now_ts, "data": res_data}
-    if code:
-        PORTAL_PROFILE_CACHE[code] = {"ts": now_ts, "data": res_data}
+    if profile.get("has_profile", False):
+        PORTAL_PROFILE_CACHE[master_token] = {"ts": now_ts, "data": res_data}
+        if code:
+            PORTAL_PROFILE_CACHE[code] = {"ts": now_ts, "data": res_data}
+            try:
+                if code in SYNC_CODES:
+                    SYNC_CODES[code]["player_name"] = profile.get("display_name")
+                    SYNC_CODES[code]["level"] = profile.get("current_level")
+                    SYNC_CODES[code]["avatar"] = profile.get("avatar_url")
+                    save_sync_codes(SYNC_CODES)
+            except Exception as e:
+                print(f"[-] Error updating sync codes cache: {e}")
+    else:
+        # User has no Google Play Games profile yet: NEVER cache "has_profile: False"
+        # so when they create a profile and connect again, it checks live!
+        if code in PORTAL_PROFILE_CACHE:
+            PORTAL_PROFILE_CACHE.pop(code, None)
+        if master_token in PORTAL_PROFILE_CACHE:
+            PORTAL_PROFILE_CACHE.pop(master_token, None)
 
     return jsonify(res_data), 200
 
