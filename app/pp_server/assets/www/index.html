@@ -154,7 +154,7 @@
             justify-content: center;
             max-width: 440px;
             margin: 0 auto;
-            animation: fadeIn 0.25s ease;
+            /* no flicker */
         }
 
         .login-brand-header {
@@ -656,7 +656,7 @@
             flex-direction: column;
             overflow: hidden;
             background: var(--bg-base);
-            animation: fadeIn 0.25s ease;
+            /* no flicker */
         }
 
         /* Top Bar */
@@ -1145,7 +1145,7 @@
             padding: 24px 18px 40px;
             max-width: 540px;
             margin: 0 auto;
-            animation: fadeIn 0.25s ease;
+            /* no flicker */
         }
 
         .dev-portal-card {
@@ -1520,7 +1520,7 @@
             flex-direction: column;
             overflow: hidden;
             background: var(--bg-base);
-            animation: fadeIn 0.25s ease;
+            /* no flicker */
         }
 
         .settings-container {
@@ -1696,7 +1696,63 @@
             transform: scale(0.98);
         }
     
-        </style>
+        
+        /* ==================== SKELETON LOADING SHIMMER ==================== */
+        .skeleton-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            box-shadow: var(--shadow-card);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skeleton-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .skeleton-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skeleton-bar {
+            background: #e2e8f0;
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skeleton-card::after,
+        .skeleton-circle::after,
+        .skeleton-bar::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+            animation: skeleton-shimmer 1.5s infinite;
+        }
+
+        @keyframes skeleton-shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+    </style>
 </head>
 <body>
 
@@ -2282,6 +2338,10 @@
             } else if (appInfo.isLoggedIn && appInfo.userEmail) {
                 showView('viewHome');
                 loadAccounts();
+                if (!accounts || accounts.length === 0) {
+                    renderSkeletonLoading();
+                }
+                syncCloudAccounts();
             } else {
                 showView('viewLogin');
             }
@@ -2812,6 +2872,50 @@
         }
 
         // ==================== CLEAN CONNECTED ACCOUNTS RENDERER ====================
+        
+        // ==================== LOAD ACCOUNTS (INSTANT ZERO-DELAY) ====================
+        function loadAccounts() {
+            try {
+                if (window.AndroidBridge && window.AndroidBridge.getAccounts) {
+                    var raw = window.AndroidBridge.getAccounts();
+                    if (raw) {
+                        var parsed = JSON.parse(raw);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            accounts = parsed.filter(function(a) {
+                                if (!a || !a.email) return false;
+                                var em = (a.email || '').toLowerCase().trim();
+                                return em.includes('@') && !em.includes('vareon.cloud') && em !== 'google play user' && !em.includes('google play user');
+                            });
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("loadAccounts error", e);
+            }
+            renderAccounts();
+        }
+
+        function renderSkeletonLoading() {
+            var listEl = document.getElementById('homeAccountsList');
+            var emptyEl = document.getElementById('homeEmptyState');
+            var countLabel = document.getElementById('labelAccountsCount');
+            if (!listEl) return;
+            if (emptyEl) emptyEl.style.display = 'none';
+            if (countLabel) countLabel.textContent = "Loading...";
+            listEl.style.display = 'flex';
+            var sk = '';
+            for (var i = 0; i < 3; i++) {
+                sk += '<div class="skeleton-card">' +
+                      '  <div class="skeleton-header">' +
+                      '    <div class="skeleton-circle"></div>' +
+                      '    <div class="skeleton-bar" style="width:55%;height:16px;"></div>' +
+                      '  </div>' +
+                      '  <div class="skeleton-bar" style="width:100%;height:44px;margin-top:6px;border-radius:12px;"></div>' +
+                      '</div>';
+            }
+            listEl.innerHTML = sk;
+        }
+
         function renderAccounts() {
             var listEl = document.getElementById('homeAccountsList');
             var emptyEl = document.getElementById('homeEmptyState');
@@ -2859,7 +2963,7 @@
                 var masked = maskEmail(rawEmail);
                 var code = a.code || '000000';
                 var formattedCode = code.length === 6 ? (code.substring(0, 3) + ' ' + code.substring(3)) : code;
-                var country = (a.country || 'GLOBAL').toUpperCase();
+                var country = (a.country && a.country !== 'GLOBAL') ? a.country.toUpperCase() : 'US';
                 var flagSvg = getCountrySvgBadge(country);
 
                 html += 
@@ -3121,6 +3225,9 @@
                 showToast("Please log in to sync accounts.");
                 return;
             }
+            if (!accounts || accounts.length === 0) {
+                renderSkeletonLoading();
+            }
             showToast("Syncing your cloud accounts...");
             checkSystemStatus();
             var params = [];
@@ -3131,31 +3238,24 @@
             fetch((appInfo.portalUrl || 'https://pp-mod-auto-quest.onrender.com') + '/api/sync/accounts' + queryStr)
                 .then(function(r) { return r.json(); })
                 .then(function(d) {
-                    if (d.ok && Array.isArray(d.accounts)) {
-                        accounts = d.accounts.filter(function(a) {
+                    if (d && d.ok && Array.isArray(d.accounts)) {
+                        var valid = d.accounts.filter(function(a) {
                             if (!a || !a.email) return false;
                             var em = (a.email || '').toLowerCase().trim();
                             return em.includes('@') && !em.includes('vareon.cloud') && em !== 'google play user' && !em.includes('google play user');
                         });
-                        for (var j = 0; j < accounts.length; j++) {
-                            var acc = accounts[j];
-                            if (acc.points !== undefined) {
-                                setAccountPoints(acc.code, acc.points);
-                            }
-                            if (acc.has_perk !== undefined) {
-                                var existingState = getPerkClaimedState(acc.code) || {};
-                                if (acc.has_perk === false) {
-                                    existingState.claimed = true;
-                                    existingState.points_won = acc.claimed_points || 50;
-                                    setPerkClaimedState(acc.code, existingState);
-                                }
-                            }
+                        if (valid.length > 0 || accounts.length === 0) {
+                            accounts = valid;
                         }
                         renderAccounts();
-                        showToast("Live balances & perks updated!");
+                        showToast("Accounts updated!");
+                    } else {
+                        renderAccounts();
                     }
                 })
-                .catch(function(e) {});
+                .catch(function(e) {
+                    renderAccounts();
+                });
 
             if (window.AndroidBridge && window.AndroidBridge.syncCloudAccounts) {
                 window.AndroidBridge.syncCloudAccounts();

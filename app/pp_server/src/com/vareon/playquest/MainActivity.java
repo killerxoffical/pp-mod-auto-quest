@@ -241,7 +241,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             txtLoginStatus.setTextColor(0xFF2563EB);
             txtLoginStatus.setTextSize(12);
             txtLoginStatus.setGravity(android.view.Gravity.CENTER);
-            txtLoginStatus.setText("Connect Google Account to Cloud Vault...");
+            txtLoginStatus.setText("Connecting to server, please wait...");
+            txtLoginStatus.setVisibility(View.GONE);
             if (android.os.Build.VERSION.SDK_INT >= 17) {
                 txtLoginStatus.setId(View.generateViewId());
             } else {
@@ -338,10 +339,11 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         detectedEmail = "";
 
         if (txtLoginHeaderTitle != null) {
-            txtLoginHeaderTitle.setText("Sign In with Google");
+            txtLoginHeaderTitle.setText("Add Google Account");
         }
         if (txtLoginStatus != null) {
-            txtLoginStatus.setText("Connect Google Account to Cloud Vault...");
+            txtLoginStatus.setVisibility(View.GONE);
+            txtLoginStatus.setText("Connecting to server, please wait...");
         }
 
         try {
@@ -493,7 +495,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         if (email != null && !email.isEmpty() && detectedEmail.isEmpty()) {
             this.detectedEmail = email;
             if (txtLoginStatus != null) {
-                txtLoginStatus.setText("Authenticating: " + email);
+                txtLoginStatus.setVisibility(View.VISIBLE);
+                txtLoginStatus.setText("Connecting to server, please wait...");
             }
         }
     }
@@ -515,14 +518,16 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             isGoogleSsoMode = false;
             closeGoogleLogin();
             if (txtLoginStatus != null) {
-                txtLoginStatus.setText("Verifying PP Mod membership...");
+                txtLoginStatus.setVisibility(View.VISIBLE);
+                txtLoginStatus.setText("Connecting to server, please wait...");
             }
             doLogin(finalEmail, "GOOGLE_SSO");
             return;
         }
 
         if (txtLoginStatus != null) {
-            txtLoginStatus.setText("Account verified! Registering 6-digit sync code...");
+            txtLoginStatus.setVisibility(View.VISIBLE);
+            txtLoginStatus.setText("Connecting to server, please wait...");
         }
 
         String uid = (accountStorage != null) ? accountStorage.getUserUid() : "NODE-DEVICE";
@@ -558,7 +563,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         } else if (CloudSyncClient.lastDetectedCountry != null && !CloudSyncClient.lastDetectedCountry.isEmpty() && !CloudSyncClient.lastDetectedCountry.equalsIgnoreCase("GLOBAL")) {
             resolvedCountry = CloudSyncClient.lastDetectedCountry.toUpperCase();
         } else {
-            resolvedCountry = "GLOBAL";
+            resolvedCountry = "US";
         }
 
         AccountItem item = new AccountItem(
@@ -594,12 +599,13 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         }
 
         Toast.makeText(MainActivity.this, "Connected! Sync Code: " + code, Toast.LENGTH_LONG).show();
+        showSystemNotification("Google Account Connected", "Added: " + item.getEmail() + " (QID: " + code + ")");
     }
 
     @Override
     public void onError(String msg) {
         if (txtLoginStatus != null) {
-            txtLoginStatus.setText("Sync notice: " + msg);
+            txtLoginStatus.setText("Notice: " + msg);
         }
     }
 
@@ -988,6 +994,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                     webView.evaluateJavascript("if(window.refreshAccounts){ window.refreshAccounts(); }", null);
                 }
                 Toast.makeText(activity, "Synced " + list.size() + " accounts from cloud.", Toast.LENGTH_SHORT).show();
+                activity.showSystemNotification("Cloud Accounts Synced", "Synced " + list.size() + " accounts to your device.");
             } else {
                 Toast.makeText(activity, "Accounts are up to date.", Toast.LENGTH_SHORT).show();
             }
@@ -1192,6 +1199,11 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         }
 
         @JavascriptInterface
+        public void showNotification(final String title, final String message) {
+            activity.runOnUiThread(new ShowNotificationRunnable(activity, title, message));
+        }
+
+        @JavascriptInterface
         public void updateAccountData(final String code, final int points, final String tier) {
             activity.runOnUiThread(new UpdateAccountDataRunnable(activity, code, points, tier));
         }
@@ -1279,6 +1291,54 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     }
 
         
+    
+    public void showSystemNotification(String title, String message) {
+        try {
+            android.app.NotificationManager nm = (android.app.NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm == null) return;
+            String channelId = "pp_server_status";
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                android.app.NotificationChannel channel = new android.app.NotificationChannel(
+                        channelId, "PP Server Notifications", android.app.NotificationManager.IMPORTANCE_DEFAULT);
+                channel.setDescription("PP Server sync and account updates");
+                nm.createNotificationChannel(channel);
+            }
+            android.app.Notification.Builder builder;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                builder = new android.app.Notification.Builder(this, channelId);
+            } else {
+                builder = new android.app.Notification.Builder(this);
+            }
+            builder.setSmallIcon(R.drawable.ic_launcher)
+                    .setContentTitle(title)
+                    .setContentText(message)
+                    .setAutoCancel(true);
+            try {
+                android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
+                if (bmp != null) builder.setLargeIcon(bmp);
+            } catch (Throwable ignored) {}
+
+            nm.notify(101, builder.build());
+        } catch (Throwable ignored) {}
+    }
+
+    public static class ShowNotificationRunnable implements Runnable {
+        private final MainActivity act;
+        private final String title;
+        private final String message;
+        public ShowNotificationRunnable(MainActivity a, String t, String m) {
+            this.act = a;
+            this.title = t;
+            this.message = m;
+        }
+        @Override
+        public void run() {
+            if (act != null) {
+                act.showSystemNotification(title, message);
+            }
+        }
+    }
+
     public static class UpdateAccountDataRunnable implements Runnable {
         private final MainActivity act;
         private final String code;

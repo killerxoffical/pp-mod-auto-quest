@@ -29,7 +29,7 @@ public class AccountItem {
         this.email = email;
         this.code = code;
         this.token = token;
-        this.country = (country != null && !country.isEmpty()) ? country : "GLOBAL";
+        this.country = (country != null && !country.isEmpty() && !country.equalsIgnoreCase("GLOBAL")) ? country : "US";
         this.timestamp = timestamp;
     }
 
@@ -40,7 +40,7 @@ public class AccountItem {
     }
 
     public AccountItem(String id, String email, String code, String token, long timestamp) {
-        this(id, email, code, token, "GLOBAL", timestamp);
+        this(id, email, code, token, "US", timestamp);
     }
 
     public String getId() {
@@ -72,7 +72,7 @@ public class AccountItem {
     }
 
     public String getCountry() {
-        return country != null ? country : "GLOBAL";
+        return (country != null && !country.isEmpty() && !country.equalsIgnoreCase("GLOBAL")) ? country : "US";
     }
 
     public void setCountry(String country) {
@@ -186,7 +186,8 @@ public class AccountItem {
         String email = obj.optString("email", "");
         String code = obj.optString("code", "");
         String token = obj.optString("token", "");
-        String country = obj.optString("country", "GLOBAL");
+        String country = obj.optString("country", "US");
+        if (country == null || country.isEmpty() || country.equalsIgnoreCase("GLOBAL")) country = "US";
         long timestamp = obj.optLong("timestamp", System.currentTimeMillis());
         
         AccountItem item = new AccountItem(id, email, code, token, country, timestamp);

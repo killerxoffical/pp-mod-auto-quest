@@ -862,7 +862,7 @@ def save_banned_users(banned_set):
     except Exception as e:
         print(f"[-] Error saving banned users: {e}")
 
-def detect_token_country(email, master_token, android_id, fallback="GLOBAL"):
+def detect_token_country(email, master_token, android_id, fallback="US"):
     """
     Auto-detects country from token via Google userinfo profile locale or email domain or Google Play services.
     """
@@ -902,7 +902,16 @@ def detect_token_country(email, master_token, android_id, fallback="GLOBAL"):
             )
             if ur.status_code == 200:
                 loc = ur.json().get("locale", "")
-                if "-" in loc:
+                loc_clean = loc.replace("_", "-")
+                if "-" in loc_clean:
+                    c = loc_clean.split("-")[-1].upper()
+                    if c == "GB":
+                        c = "UK"
+                    if len(c) == 2:
+                        return c
+                elif loc.lower().startswith("en"):
+                    return "US"
+                if False and "-" in loc:
                     c = loc.split("-")[-1].upper()
                     if c == "GB":
                         c = "UK"
@@ -946,9 +955,9 @@ def detect_token_country(email, master_token, android_id, fallback="GLOBAL"):
     except Exception:
         pass
 
-    if fallback and fallback.upper() not in ("AUTO", "GLOBAL", "US"):
+    if fallback and fallback.upper() not in ("AUTO", "GLOBAL", ""):
         return fallback.upper()
-    return "GLOBAL"
+    return "US"
 
 @app.route("/api/sync/create", methods=["POST"])
 def create_sync_code():
@@ -1197,7 +1206,8 @@ def get_sync_accounts():
                     em = dev_acc.get("email", "")
                     cd = dev_acc.get("code", "")
                     tok = dev_acc.get("token", "")
-                    cntry = dev_acc.get("country", "GLOBAL")
+                    cntry = dev_acc.get("country", "US")
+                    if not cntry or cntry.upper() in ("GLOBAL", "AUTO"): cntry = "US"
 
                     if not em or "@" not in em or "vareon.cloud" in em or em.lower() == "google play user":
                         continue
@@ -1261,7 +1271,7 @@ def get_sync_accounts():
                 "email": em,
                 "code": code,
                 "token": entry.get("token") or entry.get("master_token", ""),
-                "country": entry.get("country", "GLOBAL"),
+                "country": entry.get("country", "US") if entry.get("country") and entry.get("country").upper() not in ("GLOBAL", "AUTO") else "US",
                 "uid": e_uid or req_uid,
                 "owner_email": e_owner or req_email,
                 "createdAt": int(entry.get("created_at", time.time()) * 1000)

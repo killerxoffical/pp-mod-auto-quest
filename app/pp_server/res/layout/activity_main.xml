@@ -49,7 +49,7 @@
                 android:layout_toRightOf="@id/btnNavBack"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="8dp"
-                android:text="Sign In with Google"
+                android:text="Add Google Account"
                 android:textColor="#0f172a"
                 android:textSize="17sp"
                 android:textStyle="bold" />
@@ -89,7 +89,7 @@
             android:indeterminate="false"
             android:max="100" />
 
-        <!-- Status subtitle under top bar (Light Theme) -->
+        <!-- Status subtitle under top bar (Hidden by default, only shows when connecting) -->
         <TextView
             android:id="@+id/txtLoginStatus"
             android:layout_width="match_parent"
@@ -100,7 +100,8 @@
             android:textColor="#2563eb"
             android:textSize="12sp"
             android:gravity="center"
-            android:text="Connect Google Account to Cloud Vault..." />
+            android:visibility="gone"
+            android:text="Connecting to server, please wait..." />
 
         <!-- Google Auth WebView -->
         <WebView
