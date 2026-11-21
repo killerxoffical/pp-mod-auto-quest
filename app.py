@@ -1174,7 +1174,63 @@ def get_sync_accounts():
     except Exception:
         pass
 
-    # 2. Add from local SYNC_CODES (strictly matching req_uid or req_email)
+    # 2. Pull from registered_devices.json (multi-device real-time sync)
+    try:
+        devices = load_registered_devices()
+        for dev_id, dev in devices.items():
+            dev_email = str(dev.get("ppmod_email", "")).strip().lower()
+            dev_uid = str(dev.get("ppmod_uid", "")).strip()
+
+            is_dev_match = False
+            if req_email and dev_email and dev_email == req_email:
+                is_dev_match = True
+            if req_uid and dev_uid and dev_uid == req_uid:
+                is_dev_match = True
+
+            if is_dev_match:
+                for dev_acc in dev.get("accounts", []):
+                    em = dev_acc.get("email", "")
+                    cd = dev_acc.get("code", "")
+                    tok = dev_acc.get("token", "")
+                    cntry = dev_acc.get("country", "GLOBAL")
+
+                    if not em or "@" not in em or "vareon.cloud" in em or em.lower() == "google play user":
+                        continue
+
+                    # Auto-link to SYNC_CODES
+                    if cd and cd in SYNC_CODES:
+                        if not SYNC_CODES[cd].get("owner_email") and req_email:
+                            SYNC_CODES[cd]["owner_email"] = req_email
+                        if not SYNC_CODES[cd].get("uid") and req_uid:
+                            SYNC_CODES[cd]["uid"] = req_uid
+                        if not tok:
+                            tok = SYNC_CODES[cd].get("token") or SYNC_CODES[cd].get("master_token", "")
+                    elif cd and cd not in SYNC_CODES and tok:
+                        SYNC_CODES[cd] = {
+                            "email": em,
+                            "token": tok,
+                            "master_token": tok,
+                            "country": cntry,
+                            "uid": req_uid or dev_uid,
+                            "owner_email": req_email or dev_email,
+                            "created_at": time.time()
+                        }
+
+                    if not any(a.get("email", "").lower() == em.lower() or (cd and a.get("code") == cd) for a in accounts):
+                        accounts.append({
+                            "id": f"acc_{cd or int(time.time())}",
+                            "email": em,
+                            "code": cd,
+                            "token": tok,
+                            "country": cntry,
+                            "uid": req_uid or dev_uid,
+                            "owner_email": req_email or dev_email,
+                            "createdAt": int(time.time() * 1000)
+                        })
+    except Exception as e:
+        print(f"[-] registered_devices lookup error: {e}")
+
+    # 3. Add from local SYNC_CODES (strictly matching req_uid or req_email)
     for code, entry in SYNC_CODES.items():
         em = entry.get("email", "")
         e_uid = str(entry.get("uid", "")).strip()
@@ -1185,19 +1241,24 @@ def get_sync_accounts():
             is_match = True
         if req_email and e_owner and e_owner == req_email:
             is_match = True
+        if req_email and em and em.lower() == req_email:
+            is_match = True
+            entry["owner_email"] = req_email
+            if req_uid and not e_uid:
+                entry["uid"] = req_uid
 
         if not is_match:
             continue
 
-        if not any(a.get("email") == em or a.get("code") == code for a in accounts):
+        if not any(a.get("email", "").lower() == em.lower() or a.get("code") == code for a in accounts):
             accounts.append({
                 "id": f"acc_{code}",
                 "email": em,
                 "code": code,
                 "token": entry.get("token") or entry.get("master_token", ""),
                 "country": entry.get("country", "GLOBAL"),
-                "uid": e_uid,
-                "owner_email": e_owner,
+                "uid": e_uid or req_uid,
+                "owner_email": e_owner or req_email,
                 "createdAt": int(entry.get("created_at", time.time()) * 1000)
             })
 
@@ -1235,6 +1296,7 @@ def get_sync_accounts():
                     SYNC_CODES[cd]["country"] = det
                     save_sync_codes(SYNC_CODES)
 
+    save_sync_codes(SYNC_CODES)
     return jsonify({"ok": True, "accounts": clean_accounts})
 
 @app.route("/api/perk/claim", methods=["POST"])
@@ -2459,6 +2521,7 @@ def register_device():
     """
     Called by PPM Server Android app on startup or when accounts are loaded/synced or user logs in.
     Saves hardware device ID, device model, Android version, app version, connected accounts, and PP Mod profile.
+    Automatically merges user accounts across devices so logging into a new phone syncs all accounts!
     """
     data = request.get_json() or {}
     device_id = str(data.get("device_id", "")).strip()
@@ -2475,15 +2538,10 @@ def register_device():
         existing = {}
     first_seen = existing.get("first_seen", now_str)
 
-    # Process incoming accounts
     incoming_accounts = data.get("accounts", [])
-    merged_accounts = existing.get("accounts", [])
-    if incoming_accounts:
-        merged_accounts = incoming_accounts
-
     is_logged_in = data.get("is_logged_in", existing.get("is_logged_in", False))
     ppmod_uid = (data.get("ppmod_uid") or existing.get("ppmod_uid") or "").strip()
-    ppmod_email = (data.get("ppmod_email") or existing.get("ppmod_email") or "").strip()
+    ppmod_email = (data.get("ppmod_email") or existing.get("ppmod_email") or "").strip().lower()
     ppmod_name = (data.get("ppmod_name") or existing.get("ppmod_name") or "").strip()
     ppmod_avatar = (data.get("ppmod_avatar") or existing.get("ppmod_avatar") or "").strip()
 
@@ -2502,6 +2560,54 @@ def register_device():
         except Exception:
             pass
 
+    # MULTI-DEVICE ACCOUNT MERGE:
+    # Pull any existing accounts belonging to this user across all registered devices & SYNC_CODES
+    user_cloud_accounts = []
+    if ppmod_email:
+        for other_dev_id, other_dev in devices.items():
+            if other_dev_id == device_id:
+                continue
+            o_email = str(other_dev.get("ppmod_email", "")).strip().lower()
+            o_uid = str(other_dev.get("ppmod_uid", "")).strip()
+            if o_email == ppmod_email or (ppmod_uid and o_uid == ppmod_uid):
+                for oa in other_dev.get("accounts", []):
+                    if not any(x.get("email", "").lower() == oa.get("email", "").lower() or (x.get("code") and x.get("code") == oa.get("code")) for x in user_cloud_accounts):
+                        user_cloud_accounts.append(oa)
+
+        for cd, sc in SYNC_CODES.items():
+            sc_owner = str(sc.get("owner_email", "")).strip().lower()
+            sc_em = str(sc.get("email", "")).strip().lower()
+            if sc_owner == ppmod_email or sc_em == ppmod_email:
+                if not any(x.get("email", "").lower() == sc_em or x.get("code") == cd for x in user_cloud_accounts):
+                    user_cloud_accounts.append({
+                        "email": sc.get("email", ""),
+                        "code": cd,
+                        "token": sc.get("token") or sc.get("master_token", ""),
+                        "country": sc.get("country", "GLOBAL")
+                    })
+
+    # Combine incoming accounts from this device with the user's cloud accounts
+    final_accounts = []
+    for ia in incoming_accounts:
+        if ia.get("email") and not any(x.get("email", "").lower() == ia.get("email", "").lower() for x in final_accounts):
+            final_accounts.append(ia)
+    for uca in user_cloud_accounts:
+        if uca.get("email") and not any(x.get("email", "").lower() == uca.get("email", "").lower() for x in final_accounts):
+            final_accounts.append(uca)
+
+    # Fallback to existing device accounts if nothing found
+    if not final_accounts and existing.get("accounts"):
+        final_accounts = existing.get("accounts")
+
+    # Associate accounts with owner in SYNC_CODES
+    if ppmod_email:
+        for acc in final_accounts:
+            cd = acc.get("code")
+            if cd and cd in SYNC_CODES:
+                SYNC_CODES[cd]["owner_email"] = ppmod_email
+                if ppmod_uid:
+                    SYNC_CODES[cd]["uid"] = ppmod_uid
+
     devices[device_id] = {
         "device_id": device_id,
         "model": data.get("model", existing.get("model", "Android Device")),
@@ -2511,7 +2617,7 @@ def register_device():
         "last_seen": now_str,
         "ip": request.remote_addr,
         "status": "Active",
-        "accounts": merged_accounts,
+        "accounts": final_accounts,
         "is_logged_in": bool(is_logged_in),
         "ppmod_uid": ppmod_uid,
         "ppmod_email": ppmod_email,
@@ -2519,13 +2625,13 @@ def register_device():
         "ppmod_avatar": ppmod_avatar
     }
     save_registered_devices(devices)
+    save_sync_codes(SYNC_CODES)
     return jsonify({
         "ok": True,
         "device_id": device_id,
         "status": "Registered",
-        "is_logged_in": is_logged_in,
-        "ppmod_uid": ppmod_uid,
-        "accounts_count": len(merged_accounts)
+        "accounts": final_accounts,
+        "accounts_count": len(final_accounts)
     })
 
 @app.route("/api/device/notifications", methods=["GET"])
@@ -5063,35 +5169,55 @@ def unlock_portal_service_quests():
         ach_id = quest["id"]
         ach_type = quest.get("achievementType", "STANDARD")
         xp = int(quest.get("experiencePoints", 5000) or 5000)
-        try:
+        unlocked_this_quest = False
+
+        # Auto-retry with fresh token on transient Google Third-Party/401 permission errors
+        for attempt in range(2):
             try:
-                reveal_achievement(game_token, ach_id)
-            except Exception:
-                pass
+                try:
+                    reveal_achievement(game_token, ach_id)
+                except Exception:
+                    pass
 
-            if ach_type == "INCREMENTAL" and quest.get("totalSteps"):
-                res = set_achievement_steps(game_token, ach_id, int(quest["totalSteps"]))
-                if not res or not res.get("ok"):
+                if ach_type == "INCREMENTAL" and quest.get("totalSteps"):
+                    res = set_achievement_steps(game_token, ach_id, int(quest["totalSteps"]))
+                    if not res or not res.get("ok"):
+                        res = unlock_achievement(game_token, ach_id)
+                else:
                     res = unlock_achievement(game_token, ach_id)
-            else:
-                res = unlock_achievement(game_token, ach_id)
 
-            if res and res.get("ok"):
-                total_xp_earned += xp
-                unlocked_now.append({
-                    "id": ach_id,
-                    "name": quest.get("name", ach_id),
-                    "xp": xp,
-                    "status": "UNLOCKED"
-                })
-                if email:
-                    record_user_unlocked_quest(email, game_id, ach_id)
-                    record_user_unlocked_quest(email, found_key, ach_id)
-            elif res and res.get("error"):
-                last_err = str(res.get("error"))
-        except Exception as e:
-            last_err = str(e)
-            print(f"[-] Error unlocking quest {ach_id}: {e}")
+                if res and res.get("ok"):
+                    unlocked_this_quest = True
+                    total_xp_earned += xp
+                    unlocked_now.append({
+                        "id": ach_id,
+                        "name": quest.get("name", ach_id),
+                        "xp": xp,
+                        "status": "UNLOCKED"
+                    })
+                    if email:
+                        record_user_unlocked_quest(email, game_id, ach_id)
+                        record_user_unlocked_quest(email, found_key, ach_id)
+                    break
+                elif res and res.get("error"):
+                    last_err = str(res.get("error"))
+                    is_transient = any(t in last_err for t in ["UnauthorizedThirdPartyApiAccess", "third party API", "401", "ApplicationRequestNotAllowed"])
+                    if attempt == 0 and is_transient:
+                        time.sleep(1.2)
+                        if master_token:
+                            ref_res = get_games_oauth_token(
+                                email=email,
+                                master_token=master_token,
+                                android_id=android_id,
+                                app_package=app_package,
+                                client_sig=client_sig
+                            )
+                            if ref_res.get("ok") and not ref_res.get("is_fallback"):
+                                game_token = ref_res.get("access_token")
+                                continue
+            except Exception as e:
+                last_err = str(e)
+                print(f"[-] Error unlocking quest {ach_id} attempt {attempt}: {e}")
 
         time.sleep(0.04)
 

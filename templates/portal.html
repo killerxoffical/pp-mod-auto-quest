@@ -1130,7 +1130,7 @@
             } catch(e) {}
         }
 
-        async function runServiceUnlock(gameId, gameTitle, btnElement) {
+        async function runServiceUnlock(gameId, gameTitle, btnElement, isRetry = false) {
             if (!connectedAccountData || (!connectedAccountData.master_token && !connectedAccountData.code)) {
                 alert("Please connect your Google Account first in Step 1 (via 6-digit sync code or Master Token)!");
                 window.scrollTo({ top: 120, behavior: 'smooth' });
@@ -1153,13 +1153,16 @@
             const btn = btnElement || (window.event ? (window.event.currentTarget || window.event.target) : null);
             let originalHtml = "";
             if (btn) {
-                originalHtml = btn.innerHTML;
+                originalHtml = btn.getAttribute("data-orig-html") || btn.innerHTML;
+                if (!btn.getAttribute("data-orig-html")) {
+                    btn.setAttribute("data-orig-html", originalHtml);
+                }
                 btn.disabled = true;
-                btn.innerHTML = "<span>⏳ Unlocking on Google Servers...</span>";
+                btn.innerHTML = isRetry ? "<span>🔄 Google সার্ভারে পারমিশন ভেরিফাই হচ্ছে... (২য় চেষ্টা)</span>" : "<span>⏳ Unlocking on Google Servers...</span>";
             }
 
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 18000);
+            const timeoutId = setTimeout(() => controller.abort(), 22000);
 
             try {
                 const res = await fetch("/api/portal/unlock", {
@@ -1189,6 +1192,20 @@
                     }, 400);
                 } else {
                     const err = (data && data.error) ? data.error : 'Failed to complete quests.';
+                    const isTransient = typeof err === 'string' && (
+                        err.includes('Third-Party') ||
+                        err.includes('রেস্ট্রিক্টেড') ||
+                        err.includes('UnauthorizedThirdPartyApiAccess') ||
+                        err.includes('401') ||
+                        err.includes('timed out')
+                    );
+                    if (isTransient && !isRetry) {
+                        if (btn) {
+                            btn.innerHTML = "<span>🔄 Google সার্ভারে পারমিশন ভেরিফাই হচ্ছে... (পুনরায় চেষ্টা করা হচ্ছে)</span>";
+                        }
+                        await new Promise(r => setTimeout(r, 1500));
+                        return await runServiceUnlock(gameId, gameTitle, btn, true);
+                    }
                     showResultModal({ ok: false, error: err, service_title: gameTitle });
                     if (btn) {
                         btn.disabled = false;
@@ -1197,6 +1214,13 @@
                 }
             } catch(e) {
                 const isTimeout = e.name === "AbortError";
+                if (isTimeout && !isRetry) {
+                    if (btn) {
+                        btn.innerHTML = "<span>🔄 Google সংযোগ নিশ্চিত করা হচ্ছে... (পুনরায় চেষ্টা)</span>";
+                    }
+                    await new Promise(r => setTimeout(r, 1500));
+                    return await runServiceUnlock(gameId, gameTitle, btn, true);
+                }
                 const errTxt = isTimeout ? "Request timed out on Google Play. Please try again." : e.message;
                 showResultModal({ ok: false, error: errTxt, service_title: gameTitle });
                 if (btn) {
