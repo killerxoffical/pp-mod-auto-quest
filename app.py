@@ -1494,6 +1494,7 @@ def portal_connect_account():
     Dedicated, isolated account connection for the Public Portal.
     Accepts 6-digit sync code OR direct master_token / access_token or full OAuth URL.
     Validates with Google Play Games and returns the player profile.
+    Ultra-fast in-memory caching and persistent local sync code resolution.
     Does NOT modify the Admin panel session.
     """
     data = request.get_json() or {}
@@ -1501,6 +1502,14 @@ def portal_connect_account():
     token_str = extract_token_from_string(str(data.get("token") or data.get("master_token") or data.get("url") or "").strip())
     email = str(data.get("email") or "").strip()
     android_id = str(data.get("android_id") or "").strip() or generate_android_id(email if email else None)
+
+    now_ts = time.time()
+
+    # Fast in-memory cache check (instant 0.001s response)
+    if code and code in PORTAL_PROFILE_CACHE:
+        c_entry = PORTAL_PROFILE_CACHE[code]
+        if now_ts - c_entry.get("ts", 0) < 3600:
+            return jsonify(c_entry.get("data")), 200
 
     # 1. Resolve 6-digit sync code if provided
     if code and code.isdigit() and len(code) == 6:
@@ -1534,7 +1543,7 @@ def portal_connect_account():
         if not token_str:
             try:
                 cf_url = f"https://ppmod-api.tredarskvt.workers.dev/api/sync/get?code={code}"
-                cf_res = requests.get(cf_url, timeout=3.5)
+                cf_res = requests.get(cf_url, timeout=5)
                 if cf_res.status_code == 200:
                     cf_data = cf_res.json()
                     acc = cf_data.get("account") or cf_data
@@ -1592,7 +1601,7 @@ def portal_connect_account():
                 if "BadAuthentication" in err:
                     return jsonify({
                         "ok": False,
-                        "error": "This sync code has expired (Google temporary tokens expire in 5 minutes). Please generate a fresh code in the app or paste Master Token."
+                        "error": "This Google temporary session has expired on Google servers. Please refresh the sync code in PPM Server app or paste Master Token."
                     }), 401
                 return jsonify({"ok": False, "error": f"Google token exchange failed: {err}"}), 401
         else:
@@ -1604,24 +1613,22 @@ def portal_connect_account():
     if not email:
         email = "player@google.com"
 
-    # Fast in-memory profile cache check (instant response if connected recently)
-    now_ts = time.time()
+    # Fast in-memory profile cache check by master_token
     if master_token in PORTAL_PROFILE_CACHE:
         c_entry = PORTAL_PROFILE_CACHE[master_token]
-        if now_ts - c_entry.get("ts", 0) < 1800:
-            cached_prof = c_entry.get("profile")
-            return jsonify({
-                "ok": True,
-                "email": email,
-                "master_token": master_token,
-                "android_id": android_id,
-                "profile": cached_prof,
-                "message": f"Connected as {cached_prof.get('display_name', email)} (One-time Public Session)"
-            })
+        if now_ts - c_entry.get("ts", 0) < 3600:
+            cached_data = c_entry.get("data")
+            return jsonify(cached_data), 200
 
     tok_res = get_games_oauth_token(email, master_token, android_id)
     if not tok_res.get("ok"):
-        return jsonify({"ok": False, "error": f"Google Play Games authentication failed: {tok_res.get('error')}"}), 401
+        err_msg = tok_res.get("error", "Failed")
+        if "BadAuthentication" in err_msg:
+            return jsonify({
+                "ok": False,
+                "error": "This Google Play account session has expired on Google's servers. Please open the PPM Server app to refresh your sync code or paste Master Token."
+            }), 401
+        return jsonify({"ok": False, "error": f"Google Play Games authentication failed: {err_msg}"}), 401
 
     access_token = tok_res["access_token"]
     profile_res = get_player_profile(access_token)
@@ -1641,16 +1648,21 @@ def portal_connect_account():
     else:
         profile = format_profile(profile_res)
 
-    PORTAL_PROFILE_CACHE[master_token] = {"ts": now_ts, "profile": profile}
-
-    return jsonify({
+    res_data = {
         "ok": True,
         "email": email,
         "master_token": master_token,
+        "access_token": access_token,
         "android_id": android_id,
         "profile": profile,
         "message": f"Connected as {profile.get('display_name', email)} (One-time Public Session)"
-    })
+    }
+
+    PORTAL_PROFILE_CACHE[master_token] = {"ts": now_ts, "data": res_data}
+    if code:
+        PORTAL_PROFILE_CACHE[code] = {"ts": now_ts, "data": res_data}
+
+    return jsonify(res_data), 200
 
 @app.route("/api/login/token", methods=["POST"])
 def login_with_token():
@@ -4870,16 +4882,25 @@ def unlock_portal_service_quests():
     else:
         game_token = access_token
 
-    # Query player's existing unlocked achievements
+    # Query player's existing unlocked achievements with instant local cache check
     already_unlocked = set()
-    try:
-        p_res = requests.get(f"{GAMES_API_BASE}/players/me/achievements?maxResults=50", headers=get_headers(game_token), timeout=6)
-        if p_res.status_code == 200:
-            for p in p_res.json().get("items", []):
-                if p.get("achievementState") == "UNLOCKED":
-                    already_unlocked.add(p.get("id"))
-    except Exception:
-        pass
+    if email:
+        try:
+            local_done = get_user_unlocked_quest_ids(email, game_id).union(get_user_unlocked_quest_ids(email, found_key))
+            already_unlocked.update(local_done)
+        except Exception:
+            pass
+
+    # If not all selected quests are known locally, query Google Play Games achievements
+    if not selected_quest_ids.issubset(already_unlocked) and game_token:
+        try:
+            p_res = requests.get(f"{GAMES_API_BASE}/players/me/achievements?maxResults=50", headers=get_headers(game_token), timeout=4)
+            if p_res.status_code == 200:
+                for p in p_res.json().get("items", []):
+                    if p.get("achievementState") == "UNLOCKED":
+                        already_unlocked.add(p.get("id"))
+        except Exception:
+            pass
 
     # STRICT FILTER: ONLY selected quests that are NOT yet unlocked
     all_game_quests = get_game_quest_definitions(game)

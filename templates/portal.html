@@ -987,7 +987,7 @@
             }
 
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 12000);
+            const timeoutId = setTimeout(() => controller.abort(), 35000);
 
             try {
                 const res = await fetch("/api/portal/connect", {
@@ -1014,6 +1014,7 @@
                         profile: data.profile
                     };
                     sessionStorage.setItem("pp_portal_session", JSON.stringify(connectedAccountData));
+                    localStorage.setItem("pp_portal_session", JSON.stringify(connectedAccountData));
                     if (window.history && window.history.replaceState) {
                         window.history.replaceState({}, document.title, window.location.pathname);
                     }
@@ -1026,7 +1027,7 @@
             } catch(e) {
                 const isTimeout = e.name === "AbortError";
                 statusDiv.style.color = "#ef4444";
-                statusDiv.innerText = isTimeout ? "❌ Verification timed out. Please try again or paste Master Token." : `❌ Error: ${e.message}`;
+                statusDiv.innerText = isTimeout ? "❌ Verification timed out on Google servers. Please try again or paste Master Token." : `❌ Error: ${e.message}`;
             } finally {
                 if (document.getElementById("btnConnectCode")) document.getElementById("btnConnectCode").disabled = false;
                 if (document.getElementById("btnConnectToken")) document.getElementById("btnConnectToken").disabled = false;
@@ -1066,6 +1067,7 @@
         function disconnectPortalAccount() {
             connectedAccountData = null;
             sessionStorage.removeItem("pp_portal_session");
+            localStorage.removeItem("pp_portal_session");
             if (window.history && window.history.replaceState) {
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
@@ -1115,9 +1117,9 @@
                 console.error("URL Auto-Sync error:", e);
             }
 
-            // 2. Fallback to existing sessionStorage
+            // 2. Fallback to existing sessionStorage or localStorage
             try {
-                const saved = sessionStorage.getItem("pp_portal_session");
+                const saved = sessionStorage.getItem("pp_portal_session") || localStorage.getItem("pp_portal_session");
                 if (saved) {
                     const parsed = JSON.parse(saved);
                     if (parsed && (parsed.master_token || parsed.email)) {
