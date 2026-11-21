@@ -8,11 +8,13 @@ $buildTools = "$sdk\build-tools\34.0.0"
 $platform = "$sdk\platforms\android-34"
 
 $aapt = "$buildTools\aapt.exe"
-$d8 = "$buildTools\d8.bat"
 $zipalign = "$buildTools\zipalign.exe"
-$apksigner = "$buildTools\apksigner.bat"
 $androidJar = "$platform\android.jar"
+$java = "$env:JAVA_HOME\bin\java.exe"
 $javac = "$env:JAVA_HOME\bin\javac.exe"
+$jar = "$env:JAVA_HOME\bin\jar.exe"
+$d8Jar = "$buildTools\lib\d8.jar"
+$apksignerJar = "$buildTools\lib\apksigner.jar"
 
 Set-Location $PSScriptRoot
 
@@ -26,12 +28,12 @@ New-Item -ItemType Directory -Path "bin" -Force | Out-Null
 New-Item -ItemType Directory -Path "bin\dex" -Force | Out-Null
 
 $javaFiles = Get-ChildItem -Path "src\com\vareon\gateway\*.java" | ForEach-Object { $_.FullName }
-& $javac -d "bin" -cp "$androidJar" -sourcepath "src" $javaFiles -source 1.8 -target 1.8
+& $javac --release 8 -XDstringConcat=inline -d "bin" -cp "$androidJar" $javaFiles
 if ($LASTEXITCODE -ne 0) { throw "javac compilation failed!" }
 
 Write-Host ">>> Step 3: Generating DEX with d8..."
-$classFiles = Get-ChildItem -Path "bin\com\vareon\gateway\*.class" | ForEach-Object { $_.FullName }
-& $d8 --lib "$androidJar" --output "bin\dex" $classFiles
+& $jar cf bin\gateway.jar -C bin com
+& $java -cp "$d8Jar" com.android.tools.r8.D8 --min-api 21 --lib "$androidJar" --output "bin\dex" bin\gateway.jar
 if ($LASTEXITCODE -ne 0) { throw "d8 failed!" }
 
 Write-Host ">>> Step 4: Packaging APK..."
@@ -46,11 +48,11 @@ if ($LASTEXITCODE -ne 0) { throw "zipalign failed!" }
 
 Write-Host ">>> Step 6: Signing APK with official release certificate..."
 if (Test-Path "PP_Gateway.apk") { Remove-Item "PP_Gateway.apk" -Force }
-& $apksigner sign --ks release.keystore --ks-pass pass:ppserver123 --ks-key-alias ppserver --key-pass pass:ppserver123 --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true --v4-signing-enabled false --out PP_Gateway.apk PP_Gateway_aligned.apk
+& $java -jar "$apksignerJar" sign --ks release.keystore --ks-pass pass:ppserver123 --ks-key-alias ppserver --key-pass pass:ppserver123 --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true --v4-signing-enabled false --out PP_Gateway.apk PP_Gateway_aligned.apk
 if ($LASTEXITCODE -ne 0) { throw "apksigner failed!" }
 
 Write-Host ">>> Step 7: Verifying signature..."
-& $apksigner verify --verbose PP_Gateway.apk
+& $java -jar "$apksignerJar" verify --verbose PP_Gateway.apk
 
 # Copy to root and distribution folders
 Copy-Item "PP_Gateway.apk" "..\..\PP_Gateway.apk" -Force

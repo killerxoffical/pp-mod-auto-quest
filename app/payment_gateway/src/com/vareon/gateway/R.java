@@ -37,13 +37,14 @@ public final class R {
         public static final int ic_launcher_192=0x7f020017;
         public static final int ic_launcher_48=0x7f020018;
         public static final int ic_launcher_96=0x7f020019;
-        public static final int ic_money=0x7f02001a;
-        public static final int ic_power=0x7f02001b;
-        public static final int ic_refresh=0x7f02001c;
-        public static final int ic_settings=0x7f02001d;
-        public static final int ic_shield=0x7f02001e;
-        public static final int ic_sms=0x7f02001f;
-        public static final int ic_test=0x7f020020;
+        public static final int ic_launcher_round=0x7f02001a;
+        public static final int ic_money=0x7f02001b;
+        public static final int ic_power=0x7f02001c;
+        public static final int ic_refresh=0x7f02001d;
+        public static final int ic_settings=0x7f02001e;
+        public static final int ic_shield=0x7f02001f;
+        public static final int ic_sms=0x7f020020;
+        public static final int ic_test=0x7f020021;
     }
     public static final class id {
         public static final int btnRefresh=0x7f050003;
