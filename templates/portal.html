@@ -876,18 +876,18 @@
                     actionBtn = `
                         <button type="button" class="btn-unlock-service" disabled style="background:linear-gradient(135deg, #059669, #10b981); opacity:0.95; cursor:default; box-shadow:0 4px 14px rgba(16,185,129,0.25);">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                            <span>✓ সব কোয়েস্ট সম্পূর্ণ (Already Completed)</span>
+                            <span>✓ All Quests Completed</span>
                         </button>
                     `;
                 } else if (completedCount > 0) {
                     actionBtn = `
-                        <button type="button" class="btn-unlock-service" onclick="runServiceUnlock('${s.id}', '${escapeHtml(s.title)}')">
-                            <span>⚡ বাকি কোয়েস্ট আনলক করুন (${quests.length - completedCount} টি)</span>
+                        <button type="button" class="btn-unlock-service" onclick="runServiceUnlock('${s.id}', '${escapeHtml(s.title)}', this)">
+                            <span>⚡ Unlock Remaining Quests (${quests.length - completedCount})</span>
                         </button>
                     `;
                 } else {
                     actionBtn = `
-                        <button type="button" class="btn-unlock-service" onclick="runServiceUnlock('${s.id}', '${escapeHtml(s.title)}')">
+                        <button type="button" class="btn-unlock-service" onclick="runServiceUnlock('${s.id}', '${escapeHtml(s.title)}', this)">
                             <span>⚡ Unlock &amp; Complete Quests</span>
                         </button>
                     `;
@@ -962,15 +962,15 @@
             let reqBody = {};
             const statusDiv = document.getElementById("portalConnectStatus");
             statusDiv.style.display = "block";
-            statusDiv.style.color = "var(--text-muted)";
-            statusDiv.innerText = "⏳ Verifying account with Google Play Games...";
+            statusDiv.style.color = "var(--accent-cyan)";
+            statusDiv.innerHTML = "⏳ Verifying account with Google Play Games...";
 
             if (mode === 'token') {
                 const tok = (document.getElementById("portalMasterTokenInput").value || "").trim();
                 const em = (document.getElementById("portalEmailInput").value || "").trim();
                 if (!tok) {
-                    alert("Please paste a valid Google Master Token (aas_et/...).");
-                    statusDiv.style.display = "none";
+                    statusDiv.style.color = "#ef4444";
+                    statusDiv.innerText = "❌ Please paste a valid Google Master Token (aas_et/...).";
                     return;
                 }
                 reqBody = { master_token: tok, email: em };
@@ -978,22 +978,34 @@
             } else {
                 const code = (document.getElementById("portalSyncCodeInput").value || "").trim().replace(" ", "").replace("-", "");
                 if (!code || code.length < 6) {
-                    alert("Please enter a valid 6-digit sync code from the PPM Server app.");
-                    statusDiv.style.display = "none";
+                    statusDiv.style.color = "#ef4444";
+                    statusDiv.innerText = "❌ Please enter a valid 6-digit sync code from the PPM Server app.";
                     return;
                 }
                 reqBody = { code: code };
                 document.getElementById("btnConnectCode").disabled = true;
             }
 
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 12000);
+
             try {
                 const res = await fetch("/api/portal/connect", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(reqBody)
+                    body: JSON.stringify(reqBody),
+                    signal: controller.signal
                 });
-                const data = await res.json();
-                if (data.ok) {
+                clearTimeout(timeoutId);
+
+                let data = null;
+                try {
+                    data = await res.json();
+                } catch(e) {
+                    data = { ok: false, error: "Server returned unexpected response." };
+                }
+
+                if (data && data.ok) {
                     connectedAccountData = {
                         email: data.email,
                         master_token: data.master_token,
@@ -1008,14 +1020,13 @@
                     renderConnectedUI(connectedAccountData);
                     statusDiv.style.display = "none";
                 } else {
-                    alert(`Connection Failed: ${data.error || 'Server error'}`);
                     statusDiv.style.color = "#ef4444";
-                    statusDiv.innerText = `❌ ${data.error || 'Failed to connect.'}`;
+                    statusDiv.innerText = `❌ ${data.error || 'Failed to connect. Please check your code.'}`;
                 }
             } catch(e) {
-                alert(`Network error connecting to portal: ${e.message}`);
+                const isTimeout = e.name === "AbortError";
                 statusDiv.style.color = "#ef4444";
-                statusDiv.innerText = `❌ Error: ${e.message}`;
+                statusDiv.innerText = isTimeout ? "❌ Verification timed out. Please try again or paste Master Token." : `❌ Error: ${e.message}`;
             } finally {
                 if (document.getElementById("btnConnectCode")) document.getElementById("btnConnectCode").disabled = false;
                 if (document.getElementById("btnConnectToken")) document.getElementById("btnConnectToken").disabled = false;
@@ -1117,7 +1128,7 @@
             } catch(e) {}
         }
 
-        async function runServiceUnlock(gameId, gameTitle) {
+        async function runServiceUnlock(gameId, gameTitle, btnElement) {
             if (!connectedAccountData || (!connectedAccountData.master_token && !connectedAccountData.code)) {
                 alert("Please connect your Google Account first in Step 1 (via 6-digit sync code or Master Token)!");
                 window.scrollTo({ top: 120, behavior: 'smooth' });
@@ -1137,29 +1148,59 @@
                 portal_service: true
             };
 
-            const btn = event.currentTarget;
-            const originalHtml = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = "<span>⏳ Unlocking on Google Servers...</span>";
+            const btn = btnElement || (window.event ? (window.event.currentTarget || window.event.target) : null);
+            let originalHtml = "";
+            if (btn) {
+                originalHtml = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = "<span>⏳ Unlocking on Google Servers...</span>";
+            }
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 18000);
 
             try {
                 const res = await fetch("/api/portal/unlock", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(body)
+                    body: JSON.stringify(body),
+                    signal: controller.signal
                 });
-                const data = await res.json();
-                if (data.ok) {
+                clearTimeout(timeoutId);
+
+                let data = null;
+                try {
+                    data = await res.json();
+                } catch(e) {
+                    data = { ok: false, error: "Server returned unexpected response." };
+                }
+
+                if (data && data.ok) {
                     showResultModal(data);
-                    checkPortalLiveProgress();
+                    if (btn) {
+                        btn.style.background = "linear-gradient(135deg, #059669, #10b981)";
+                        btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:4px;"><polyline points="20 6 9 17 4 12"/></svg><span>✓ Quests Completed</span>`;
+                        btn.disabled = true;
+                    }
+                    setTimeout(() => {
+                        checkPortalLiveProgress();
+                    }, 400);
                 } else {
-                    alert(`Failed: ${data.error || 'Server error'}`);
+                    const err = (data && data.error) ? data.error : 'Failed to complete quests.';
+                    showResultModal({ ok: false, error: err, service_title: gameTitle });
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = originalHtml;
+                    }
                 }
             } catch(e) {
-                alert(`Connection error: ${e.message}`);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = originalHtml;
+                const isTimeout = e.name === "AbortError";
+                const errTxt = isTimeout ? "Request timed out on Google Play. Please try again." : e.message;
+                showResultModal({ ok: false, error: errTxt, service_title: gameTitle });
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                }
             }
         }
 
@@ -1167,25 +1208,40 @@
             const modal = document.getElementById("resultModal");
             const body = document.getElementById("modalResBody");
             const title = document.getElementById("modalResTitle");
+            const subtitle = document.getElementById("modalResSubtitle");
+            const iconEl = modal.querySelector(".modal-card > div:first-child > div:first-child");
             
-            title.innerText = `Completed: ${data.service_title}`;
-            body.innerHTML = `
-                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                    <span style="color:var(--text-secondary);">Newly Unlocked:</span>
-                    <strong style="color:var(--accent-green); font-family:'JetBrains Mono';">${data.newly_unlocked_count || 0} Objectives</strong>
-                </div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                    <span style="color:var(--text-secondary);">Total GPGS XP Earned:</span>
-                    <strong style="color:var(--accent-cyan); font-family:'JetBrains Mono';">+${(data.total_xp_earned || 0).toLocaleString()} XP</strong>
-                </div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                    <span style="color:var(--text-secondary);">Configured Scope:</span>
-                    <strong style="color:var(--text-primary); font-family:'JetBrains Mono';">${data.total_configured_quests || 0} Objectives</strong>
-                </div>
-                <div style="margin-top:14px; padding-top:10px; border-top:1px solid var(--border-color); color:var(--accent-green); font-weight:700;">
-                    ${data.message || 'All selected objectives have been fulfilled in Google cloud!'}
-                </div>
-            `;
+            if (data.ok) {
+                if (iconEl) iconEl.innerText = "🎉";
+                title.innerText = `Quests Completed: ${data.service_title || 'Game'}`;
+                if (subtitle) subtitle.innerText = "Official Google Play Games Objectives Fulfilled!";
+                body.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                        <span style="color:var(--text-secondary);">Newly Unlocked:</span>
+                        <strong style="color:var(--accent-green); font-family:'JetBrains Mono';">${data.newly_unlocked_count || 0} Objectives</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                        <span style="color:var(--text-secondary);">Total GPGS XP Earned:</span>
+                        <strong style="color:var(--accent-cyan); font-family:'JetBrains Mono';">+${(data.total_xp_earned || 0).toLocaleString()} XP</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                        <span style="color:var(--text-secondary);">Configured Scope:</span>
+                        <strong style="color:var(--text-primary); font-family:'JetBrains Mono';">${data.total_configured_quests || 0} Objectives</strong>
+                    </div>
+                    <div style="margin-top:14px; padding-top:10px; border-top:1px solid var(--border-color); color:var(--accent-green); font-weight:700; text-align:center;">
+                        ${data.message || 'All selected objectives have been fulfilled in Google cloud!'}
+                    </div>
+                `;
+            } else {
+                if (iconEl) iconEl.innerText = "⚠️";
+                title.innerText = `Notice: ${data.service_title || 'Quest Service'}`;
+                if (subtitle) subtitle.innerText = "Google Play Games Quest Status";
+                body.innerHTML = `
+                    <div style="padding:12px; color:#ef4444; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2); border-radius:8px; font-weight:600; text-align:center; font-size:13px; line-height:1.5;">
+                        ${data.error || 'Failed to complete quest service. Please check your account connection or retry.'}
+                    </div>
+                `;
+            }
             modal.style.display = "flex";
         }
 
