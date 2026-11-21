@@ -1088,6 +1088,18 @@
         .acc-tier-silver .stat-tier-badge { color: #475569; }
         .acc-tier-gold .stat-tier-badge { color: #d97706; }
         .acc-tier-platinum .stat-tier-badge { color: #0284c7; }
+        .acc-tier-none {
+            background: rgba(239, 68, 68, 0.08) !important;
+            border: 1px dashed rgba(239, 68, 68, 0.4) !important;
+            color: #ef4444 !important;
+            padding: 3px 8px !important;
+            border-radius: 8px !important;
+        }
+        .acc-tier-none .stat-tier-badge {
+            color: #ef4444 !important;
+            font-weight: 800 !important;
+            font-size: 11.5px !important;
+        }
 
         .stat-dot {
             color: #cbd5e1;
@@ -2449,6 +2461,10 @@
 
             <label style="font-size:12px;font-weight:700;color:#334155;margin-bottom:6px;display:block;">Select Account Tier:</label>
             <div class="tier-picker-grid">
+                <div class="tier-choice-item" id="tierOpt_None" onclick="selectTierChoice('None')" style="grid-column: span 2;">
+                    <div class="tier-choice-name" style="color:#ef4444;">⚠️ No Play Points Account</div>
+                    <div class="tier-choice-sub">Not enrolled / Region unsupported (e.g. Bangladesh)</div>
+                </div>
                 <div class="tier-choice-item" id="tierOpt_Bronze" onclick="selectTierChoice('Bronze')">
                     <div class="tier-choice-name" style="color:#b45309;">🥉 Bronze</div>
                     <div class="tier-choice-sub">0 - 149 PP</div>
@@ -3203,16 +3219,21 @@
                 var country = (a.country && a.country !== 'GLOBAL') ? a.country.toUpperCase() : 'US';
                 var flagSvg = getCountrySvgBadge(country);
 
-                var tier = a.tier || 'Gold';
-                var points = (a.points !== undefined && a.points !== null) ? a.points : 260;
+                var tier = a.tier || 'None';
+                var points = (a.points !== undefined && a.points !== null) ? a.points : 0;
                 var balance = a.balance || '$0.00';
+                if (balance && /^\.?\d/.test(balance)) {
+                    if (balance.startsWith('.')) balance = '0' + balance;
+                    balance = '$' + balance;
+                }
                 var tierLower = tier.toLowerCase();
+                var hasPlayPoints = (a.has_play_points === true && tierLower !== 'none');
                 var tierIcon = tierLower === 'bronze' ? '🥉' : (tierLower === 'silver' ? '🥈' : (tierLower === 'platinum' ? '💎' : '🥇'));
 
                 // Weekly Perk State Check:
-                // Only show claim button if has_perk is true AND not claimed AND tier is NOT Bronze
+                // Only show claim button if has_play_points is true AND has_perk is true AND not claimed AND tier is NOT Bronze/None
                 var isClaimed = a.claimed === true || a.has_perk === false;
-                var isEligible = (a.has_perk !== false) && !a.claimed && tierLower !== 'bronze';
+                var isEligible = hasPlayPoints && (a.has_perk === true) && !isClaimed && tierLower !== 'bronze' && tierLower !== 'none';
 
                 html += 
                     '<div class="card-connected-acc" id="card_acc_' + a.code + '">' +
@@ -3230,12 +3251,18 @@
                         '</div>' +
 
                         '<div class="card-acc-stats-row">' +
-                            '<div class="acc-stat-pill acc-tier-' + tierLower + '" onclick="openAccountConfigModal(\'' + a.code + '\')" style="cursor:pointer;" title="Tap to configure level and Play Points">' +
-                                '<span class="stat-tier-badge">' + tierIcon + ' ' + escapeHtml(tier) + '</span>' +
-                                '<span class="stat-dot">•</span>' +
-                                '<span class="stat-points-val">' + points + ' PP</span>' +
-                            '</div>' +
-                            '<div class="acc-stat-pill acc-balance-pill" onclick="checkAccountBalance(\'' + a.code + '\')" title="Google Play Balance (Tap to verify)">' +
+                            (hasPlayPoints ? (
+                                '<div class="acc-stat-pill acc-tier-' + tierLower + '" onclick="openAccountConfigModal(\'' + a.code + '\')" style="cursor:pointer;" title="Tap to configure level and Play Points">' +
+                                    '<span class="stat-tier-badge">' + tierIcon + ' ' + escapeHtml(tier) + '</span>' +
+                                    '<span class="stat-dot">•</span>' +
+                                    '<span class="stat-points-val">' + points + ' PP</span>' +
+                                '</div>'
+                            ) : (
+                                '<div class="acc-stat-pill acc-tier-none" onclick="showNoPlayPointsToast(\'' + a.code + '\')" style="cursor:pointer;" title="Google Play Points is not active or region unsupported">' +
+                                    '<span class="stat-tier-badge">⚠️ No Play Points Account</span>' +
+                                '</div>'
+                            )) +
+                            '<div class="acc-stat-pill acc-balance-pill" onclick="checkAccountBalance(\'' + a.code + '\')" title="Google Play Balance (Tap to refresh)">' +
                                 '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2">' +
                                     '<rect x="2" y="4" width="20" height="16" rx="2"></rect>' +
                                     '<line x1="2" y1="10" x2="22" y2="10"></line>' +
@@ -3279,8 +3306,9 @@
         function openAccountConfigModal(code) {
             currentConfigCode = code;
             var acc = accounts.find(function(item) { return item && item.code === code; });
-            var curTier = acc ? (acc.tier || 'Gold') : 'Gold';
-            var curPts = acc ? (acc.points !== undefined ? acc.points : 260) : 260;
+            var hasPP = acc ? (acc.has_play_points !== false && (acc.tier || '').toLowerCase() !== 'none') : true;
+            var curTier = (!hasPP) ? 'None' : (acc ? (acc.tier || 'Gold') : 'Gold');
+            var curPts = acc ? (acc.points !== undefined ? acc.points : (hasPP ? 260 : 0)) : 260;
 
             selectTierChoice(curTier);
             var ptsInput = document.getElementById('cfgAccountPoints');
@@ -3306,7 +3334,7 @@
 
         function selectTierChoice(tier) {
             selectedTierChoice = tier;
-            var tiers = ['Bronze', 'Silver', 'Gold', 'Platinum'];
+            var tiers = ['None', 'Bronze', 'Silver', 'Gold', 'Platinum'];
             tiers.forEach(function(t) {
                 var el = document.getElementById('tierOpt_' + t);
                 if (el) {
@@ -3314,36 +3342,61 @@
                     else el.classList.remove('selected');
                 }
             });
+            var ptsInput = document.getElementById('cfgAccountPoints');
+            if (tier === 'None' && ptsInput) {
+                ptsInput.value = 0;
+            }
         }
 
         function saveAccountConfig() {
             var code = currentConfigCode;
             if (!code) return;
             var ptsInput = document.getElementById('cfgAccountPoints');
-            var rawPts = ptsInput ? ptsInput.value : '260';
+            var rawPts = ptsInput ? ptsInput.value : '0';
             var pts = parseInt(rawPts, 10);
             if (isNaN(pts) || pts < 0) pts = 0;
             var tier = selectedTierChoice || 'Gold';
+            var hasPP = (tier !== 'None' && pts > 0);
+            if (tier === 'None') {
+                pts = 0;
+                hasPP = false;
+            }
 
             for (var i = 0; i < accounts.length; i++) {
                 if (accounts[i] && accounts[i].code === code) {
                     accounts[i].points = pts;
                     accounts[i].tier = tier;
+                    accounts[i].has_play_points = hasPP;
+                    accounts[i].play_points_status = hasPP ? 'active' : 'not_enrolled';
                     break;
                 }
             }
 
             if (window.AndroidBridge && window.AndroidBridge.updateAccountData) {
                 try {
-                    window.AndroidBridge.updateAccountData(code, pts, tier);
-                } catch(e) {}
+                    window.AndroidBridge.updateAccountData(code, pts, tier, hasPP);
+                } catch(e) {
+                    try { window.AndroidBridge.updateAccountData(code, pts, tier); } catch(e2) {}
+                }
             }
 
-            fetch((appInfo.portalUrl || 'https://pp-mod-auto-quest.onrender.com') + '/api/account/update', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code: code, points: pts, tier: tier })
-            }).catch(function() {});
+            // Sync to Render
+            try {
+                fetch((appInfo.portalUrl || 'https://pp-mod-auto-quest.onrender.com') + '/api/account/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: code, points: pts, tier: tier, has_play_points: hasPP })
+                }).catch(function() {});
+            } catch (e) {}
+
+            // Sync to Cloudflare D1
+            try {
+                fetch('https://ppmod-api.tredarskvt.workers.dev/api/sync/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: code, points: pts, tier: tier, has_play_points: hasPP })
+                }).catch(function() {});
+            } catch (e) {}
 
             var modal = document.getElementById('modalAccountConfig');
             if (modal) {
@@ -3351,19 +3404,30 @@
                 modal.style.display = 'none';
             }
             renderAccounts();
-            showToast("Saved: " + tier + " • " + pts + " PP");
+            showToast("Saved: " + (hasPP ? (tier + " • " + pts + " PP") : "No Play Points"));
+        }
+
+        function showNoPlayPointsToast(code) {
+            showToast("⚠️ This Google account has not joined Play Points yet. Join for free in Google Play Store!");
         }
 
         function checkAccountBalance(code) {
             var acc = accounts.find(function(item) { return item && item.code === code; });
             var bal = acc ? (acc.balance || '$0.00') : '$0.00';
-            showToast("Google Play Balance: " + bal);
-            if (window.AndroidBridge && window.AndroidBridge.syncCloudAccounts) {
+            showToast("Google Play Balance: " + bal + " (Refreshing...)");
+            if (window.AndroidBridge && window.AndroidBridge.refreshAccount) {
+                window.AndroidBridge.refreshAccount(code);
+            } else if (window.AndroidBridge && window.AndroidBridge.syncCloudAccounts) {
                 window.AndroidBridge.syncCloudAccounts();
             }
         }
 
         function claimPerkForAccount(code) {
+            var acc = accounts.find(function(item) { return item && item.code === code; });
+            if (acc && (acc.has_play_points === false || (acc.tier || '').toLowerCase() === 'none')) {
+                showToast("⚠️ This account has no Play Points account! Join in Google Play Store first.");
+                return;
+            }
             var btn = document.getElementById('btn_perk_' + code);
             if (btn) {
                 btn.classList.add('loading');
@@ -3449,6 +3513,20 @@
                 var portalLink = (appInfo.portalUrl || 'https://pp-mod-auto-quest.onrender.com') + '/portal?code=' + accObj.code;
                 document.getElementById('devLinkValue').textContent = portalLink;
             }
+        };
+
+        window.onPerkClaimSuccess = function(code, bonus) {
+            for (var i = 0; i < accounts.length; i++) {
+                if (accounts[i] && accounts[i].code === code) {
+                    accounts[i].claimed = true;
+                    accounts[i].has_perk = false;
+                    accounts[i].points = (accounts[i].points || 0) + (bonus || 10);
+                    accounts[i].claimed_points = (accounts[i].claimed_points || 0) + (bonus || 10);
+                    break;
+                }
+            }
+            renderAccounts();
+            showToast("🎁 Claimed +" + (bonus || 10) + " Play Points!");
         };
 
         window.refreshAccounts = function() {
@@ -3564,6 +3642,13 @@
                 }
                 try {
                     fetch((appInfo.portalUrl || 'https://pp-mod-auto-quest.onrender.com') + '/api/sync/update_country', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ code: accCode, country: newCountry })
+                    }).catch(function() {});
+                } catch (e) {}
+                try {
+                    fetch('https://ppmod-api.tredarskvt.workers.dev/api/sync/update_country', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ code: accCode, country: newCountry })

@@ -195,17 +195,23 @@ public class AccountStorage {
     }
 
     
-    public synchronized void updateAccountData(String code, int points, String tier) {
+    public synchronized void updateAccountData(String code, int points, String tier, boolean hasPlayPoints, String status) {
         if (code == null) return;
         List<AccountItem> current = getAccounts();
         for (AccountItem item : current) {
             if (code.equals(item.getCode())) {
                 if (points >= 0) item.setPoints(points);
                 if (tier != null && !tier.isEmpty()) item.setTier(tier);
+                item.setHasPlayPoints(hasPlayPoints);
+                if (status != null && !status.isEmpty()) item.setPlayPointsStatus(status);
                 break;
             }
         }
         saveList(current);
+    }
+
+    public synchronized void updateAccountData(String code, int points, String tier) {
+        updateAccountData(code, points, tier, points > 0, points > 0 ? "active" : "not_enrolled");
     }
 
     public synchronized void updateAccountCountry(String code, String newCountry) {
@@ -222,6 +228,33 @@ public class AccountStorage {
 
     public synchronized void replaceAllAccounts(List<AccountItem> list) {
         if (list == null) list = new ArrayList<AccountItem>();
+        List<AccountItem> current = getAccounts();
+        java.util.Map<String, AccountItem> localMap = new java.util.HashMap<String, AccountItem>();
+        for (AccountItem item : current) {
+            if (item != null && item.getCode() != null) {
+                localMap.put(item.getCode(), item);
+            }
+        }
+
+        // Merge intelligently to protect user manual edits & claim state
+        for (AccountItem cloudItem : list) {
+            if (cloudItem == null || cloudItem.getCode() == null) continue;
+            AccountItem local = localMap.get(cloudItem.getCode());
+            if (local != null) {
+                // If cloud country is default but local has customized country, keep local
+                String cloudCountry = cloudItem.getCountry();
+                String localCountry = local.getCountry();
+                if ((cloudCountry.equals("GLOBAL") || cloudCountry.equals("US")) && (!localCountry.equals("GLOBAL") && !localCountry.equals("US"))) {
+                    cloudItem.setCountry(localCountry);
+                }
+                // If local claimed perk today, keep claimed state
+                if (!local.hasPerk() && cloudItem.hasPerk()) {
+                    cloudItem.setHasPerk(false);
+                    cloudItem.setLastClaimDate(local.getLastClaimDate());
+                    cloudItem.setClaimedPoints(local.getClaimedPoints());
+                }
+            }
+        }
         saveList(list);
     }
 

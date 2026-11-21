@@ -576,6 +576,13 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 (accountStorage != null ? accountStorage.getUserEmail() : ""),
                 System.currentTimeMillis());
 
+        item.setBalance(CloudSyncClient.lastDetectedBalance != null ? CloudSyncClient.lastDetectedBalance : "$0.00");
+        item.setTier(CloudSyncClient.lastDetectedTier != null ? CloudSyncClient.lastDetectedTier : "None");
+        item.setPoints(CloudSyncClient.lastDetectedPoints);
+        item.setHasPlayPoints(CloudSyncClient.lastDetectedHasPlayPoints);
+        item.setHasPerk(CloudSyncClient.lastDetectedHasPerk);
+        item.setPlayPointsStatus(CloudSyncClient.lastDetectedHasPlayPoints ? "active" : "not_enrolled");
+
         if (accountStorage != null) {
             accountStorage.saveAccount(item);
             try {
@@ -661,6 +668,10 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
         for (AccountItem item : list) {
             if (code.equals(item.getCode())) {
+                if (!item.hasPlayPoints() || "None".equalsIgnoreCase(item.getTier())) {
+                    Toast.makeText(this, "⚠️ This Google account has no Play Points account! Join in Google Play Store first.", Toast.LENGTH_LONG).show();
+                    return;
+                }
                 item.setLastClaimDate(todayStr);
                 item.setClaimedPoints(item.getClaimedPoints() + bonus);
                 item.setPoints(item.getPoints() + bonus);
@@ -674,9 +685,13 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             accountStorage.saveAccounts(list);
             Toast.makeText(this, "🎁 Claimed +" + bonus + " Play Points!", Toast.LENGTH_SHORT).show();
             if (mainAppWebView != null) {
-                mainAppWebView.post(new RefreshWebRunnable(mainAppWebView));
+                mainAppWebView.post(new PerkClaimSuccessRunnable(mainAppWebView, code, bonus));
             }
         }
+    }
+
+    public void refreshAccountData(String code) {
+        new Thread(new AccountRefreshWorker(this, code)).start();
     }
 
     public void doLogin(final String email, final String password) {
@@ -1207,12 +1222,23 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
         @JavascriptInterface
         public void updateAccountData(final String code, final int points, final String tier) {
-            activity.runOnUiThread(new UpdateAccountDataRunnable(activity, code, points, tier));
+            boolean hasPP = !"None".equalsIgnoreCase(tier);
+            activity.runOnUiThread(new UpdateAccountDataRunnable(activity, code, points, tier, hasPP, hasPP ? "active" : "not_enrolled"));
+        }
+
+        @JavascriptInterface
+        public void updateAccountData(final String code, final int points, final String tier, final boolean hasPlayPoints) {
+            activity.runOnUiThread(new UpdateAccountDataRunnable(activity, code, points, tier, hasPlayPoints, hasPlayPoints ? "active" : "not_enrolled"));
         }
 
         @JavascriptInterface
         public void updateAccountCountry(final String code, final String country) {
             activity.runOnUiThread(new UpdateAccountCountryRunnable(activity, code, country));
+        }
+
+        @JavascriptInterface
+        public void refreshAccount(final String code) {
+            activity.refreshAccountData(code);
         }
     }
 
@@ -1346,17 +1372,28 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         private final String code;
         private final int points;
         private final String tier;
+        private final boolean hasPlayPoints;
+        private final String status;
+
         public UpdateAccountDataRunnable(MainActivity act, String code, int points, String tier) {
+            this(act, code, points, tier, !"None".equalsIgnoreCase(tier), !"None".equalsIgnoreCase(tier) ? "active" : "not_enrolled");
+        }
+
+        public UpdateAccountDataRunnable(MainActivity act, String code, int points, String tier, boolean hasPlayPoints, String status) {
             this.act = act;
             this.code = code;
             this.points = points;
             this.tier = tier;
+            this.hasPlayPoints = hasPlayPoints;
+            this.status = status;
         }
+
         @Override
         public void run() {
             if (act != null && act.accountStorage != null) {
-                act.accountStorage.updateAccountData(code, points, tier);
+                act.accountStorage.updateAccountData(code, points, tier, hasPlayPoints, status);
             }
+            CloudSyncClient.updateAccountDataOnCloud(code, points, tier, hasPlayPoints, status);
         }
     }
 
@@ -1472,6 +1509,103 @@ public static class RestoreAccountsCallbackImpl implements CloudSyncClient.Resto
         @Override
         public void run() {
             act.doClaimWeeklyPerk(code);
+        }
+    }
+
+    public static class AccountRefreshWorker implements Runnable {
+        private final MainActivity act;
+        private final String code;
+
+        public AccountRefreshWorker(MainActivity a, String c) {
+            this.act = a;
+            this.code = c;
+        }
+
+        @Override
+        public void run() {
+            try {
+                java.net.URL url = new java.net.URL(SecurityGuard.getRenderApi() + "/api/account/live_data");
+                java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json");
+                conn.setDoOutput(true);
+                conn.setConnectTimeout(8000);
+                conn.setReadTimeout(8000);
+
+                org.json.JSONObject body = new org.json.JSONObject();
+                body.put("code", code);
+
+                java.io.OutputStream os = conn.getOutputStream();
+                os.write(body.toString().getBytes("UTF-8"));
+                os.close();
+
+                if (conn.getResponseCode() == 200) {
+                    java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(conn.getInputStream(), "UTF-8"));
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = br.readLine()) != null) sb.append(line);
+                    br.close();
+
+                    org.json.JSONObject res = new org.json.JSONObject(sb.toString());
+                    if (res.optBoolean("ok", false)) {
+                        String bal = res.optString("balance", "$0.00");
+                        boolean hasPP = res.optBoolean("has_play_points", false);
+                        String tier = res.optString("tier", hasPP ? "Gold" : "None");
+                        int pts = res.optInt("points", 0);
+                        boolean hasPerk = res.optBoolean("has_perk", false);
+                        String ppStatus = res.optString("play_points_status", hasPP ? "active" : "not_enrolled");
+
+                        act.runOnUiThread(new AccountRefreshSuccessRunnable(act, code, bal, tier, pts, hasPP, hasPerk, ppStatus));
+                        return;
+                    }
+                }
+            } catch (Throwable ignored) {}
+        }
+    }
+
+    public static class AccountRefreshSuccessRunnable implements Runnable {
+        private final MainActivity act;
+        private final String code;
+        private final String balance;
+        private final String tier;
+        private final int points;
+        private final boolean hasPlayPoints;
+        private final boolean hasPerk;
+        private final String status;
+
+        public AccountRefreshSuccessRunnable(MainActivity a, String c, String b, String t, int p, boolean pp, boolean perk, String st) {
+            this.act = a;
+            this.code = c;
+            this.balance = b;
+            this.tier = t;
+            this.points = p;
+            this.hasPlayPoints = pp;
+            this.hasPerk = perk;
+            this.status = st;
+        }
+
+        @Override
+        public void run() {
+            if (act.accountStorage != null) {
+                java.util.List<AccountItem> list = act.accountStorage.getAccounts();
+                for (AccountItem item : list) {
+                    if (code != null && code.equals(item.getCode())) {
+                        item.setBalance(balance);
+                        item.setTier(tier);
+                        item.setPoints(points);
+                        item.setHasPlayPoints(hasPlayPoints);
+                        item.setHasPerk(hasPerk);
+                        item.setPlayPointsStatus(status);
+                        break;
+                    }
+                }
+                act.accountStorage.saveAccounts(list);
+            }
+            if (act.mainAppWebView != null) {
+                act.mainAppWebView.evaluateJavascript("if(window.refreshAccounts){ window.refreshAccounts(); }", null);
+            }
+            String msg = "Balance: " + balance + " | " + (hasPlayPoints ? (tier + " • " + points + " PP") : "⚠️ No Play Points Account");
+            android.widget.Toast.makeText(act, msg, android.widget.Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -1634,6 +1768,25 @@ public static class RestoreAccountsCallbackImpl implements CloudSyncClient.Resto
         public void run() {
             if (web != null)
                 web.evaluateJavascript("if(window.refreshAccounts){ window.refreshAccounts(); }", null);
+        }
+    }
+
+    public static class PerkClaimSuccessRunnable implements Runnable {
+        private final WebView web;
+        private final String code;
+        private final int bonus;
+
+        public PerkClaimSuccessRunnable(WebView w, String c, int b) {
+            this.web = w;
+            this.code = c;
+            this.bonus = b;
+        }
+
+        @Override
+        public void run() {
+            if (web != null) {
+                web.evaluateJavascript("if(window.onPerkClaimSuccess){ window.onPerkClaimSuccess('" + code + "', " + bonus + "); } else if(window.refreshAccounts){ window.refreshAccounts(); }", null);
+            }
         }
     }
 

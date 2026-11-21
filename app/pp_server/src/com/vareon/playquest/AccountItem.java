@@ -14,11 +14,13 @@ public class AccountItem {
     // Real Account State & Balance
     private String balance = "$0.00";
     private int points = 0;
-    private String tier = "Gold";
-    private boolean hasPerk = true;
+    private String tier = "None";
+    private boolean hasPerk = false;
     private String lastClaimDate = "";
     private int claimedPoints = 0;
     private boolean isRevoked = false;
+    private boolean hasPlayPoints = false;
+    private String playPointsStatus = "not_enrolled"; // "active", "not_enrolled", "unsupported_region"
 
     // Strict Account Ownership Isolation
     private String ownerUid = "";
@@ -84,7 +86,14 @@ public class AccountItem {
     }
 
     public String getBalance() {
-        return balance != null && !balance.isEmpty() ? balance : "$0.00";
+        if (balance == null || balance.isEmpty()) return "$0.00";
+        String b = balance.trim();
+        if (b.startsWith(".")) {
+            return "$0" + b;
+        } else if (Character.isDigit(b.charAt(0))) {
+            return "$" + b;
+        }
+        return b;
     }
 
     public void setBalance(String balance) {
@@ -93,11 +102,14 @@ public class AccountItem {
 
     
     public String getTier() {
-        return (tier != null && !tier.isEmpty()) ? tier : "Gold";
+        if (tier != null && !tier.isEmpty()) {
+            return tier;
+        }
+        return hasPlayPoints ? "Gold" : "None";
     }
 
     public void setTier(String tier) {
-        this.tier = (tier != null && !tier.isEmpty()) ? tier : "Gold";
+        this.tier = (tier != null && !tier.isEmpty()) ? tier : (hasPlayPoints ? "Gold" : "None");
     }
 
     public int getPoints() {
@@ -156,6 +168,22 @@ public class AccountItem {
         this.ownerEmail = ownerEmail;
     }
 
+    public boolean hasPlayPoints() {
+        return hasPlayPoints;
+    }
+
+    public void setHasPlayPoints(boolean hasPlayPoints) {
+        this.hasPlayPoints = hasPlayPoints;
+    }
+
+    public String getPlayPointsStatus() {
+        return playPointsStatus != null ? playPointsStatus : "active";
+    }
+
+    public void setPlayPointsStatus(String playPointsStatus) {
+        this.playPointsStatus = playPointsStatus;
+    }
+
     public JSONObject toJson() {
         JSONObject obj = new JSONObject();
         try {
@@ -163,7 +191,7 @@ public class AccountItem {
             obj.put("email", email);
             obj.put("code", code);
             obj.put("token", token);
-            obj.put("country", country);
+            obj.put("country", getCountry());
             obj.put("timestamp", timestamp);
             obj.put("balance", balance);
             obj.put("points", points);
@@ -173,6 +201,8 @@ public class AccountItem {
             obj.put("last_claim_date", lastClaimDate);
             obj.put("claimed_points", claimedPoints);
             obj.put("is_revoked", isRevoked);
+            obj.put("has_play_points", hasPlayPoints);
+            obj.put("play_points_status", getPlayPointsStatus());
             obj.put("owner_uid", ownerUid);
             obj.put("owner_email", ownerEmail);
         } catch (JSONException ignored) {
@@ -194,9 +224,21 @@ public class AccountItem {
         AccountItem item = new AccountItem(id, email, code, token, country, timestamp);
         item.setBalance(obj.optString("balance", "$0.00"));
         item.setPoints(obj.optInt("points", 0));
-        item.setTier(obj.optString("tier", "Gold"));
-        boolean perkFlag = obj.optBoolean("has_perk", true);
+        
+        boolean hasPP = obj.optBoolean("has_play_points", false);
+        String tierVal = obj.optString("tier", hasPP ? "Gold" : "None");
+        if ("None".equalsIgnoreCase(tierVal)) {
+            hasPP = false;
+        }
+        item.setTier(tierVal);
+        item.setHasPlayPoints(hasPP);
+        item.setPlayPointsStatus(obj.optString("play_points_status", hasPP ? "active" : "not_enrolled"));
+
+        boolean perkFlag = obj.optBoolean("has_perk", false);
         if (obj.has("claimed") && obj.optBoolean("claimed", false)) {
+            perkFlag = false;
+        }
+        if (!hasPP || "None".equalsIgnoreCase(tierVal) || "Bronze".equalsIgnoreCase(tierVal)) {
             perkFlag = false;
         }
         item.setHasPerk(perkFlag);

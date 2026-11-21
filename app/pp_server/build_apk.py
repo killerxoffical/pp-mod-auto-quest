@@ -163,13 +163,11 @@ package_and_sign("AndroidManifest_tokenfinder.xml", "PlayQuest_Token_Finder.apk"
 shutil.copy2("AndroidManifest_ppserver.xml", "AndroidManifest.xml")
 
 # STEP 5: Distribute
-print("\n>>> Step 5: Distributing APKs and synchronizing web portal...")
+print("\n>>> Step 5: Distributing APKs...")
 dist_dirs = [
-    r"..\..",
     r"..",
-    r"..\..\achievement_unlocker",
-    r"..\..\achievement_unlocker\static",
-    r"..\..\achievement_unlocker\app\pp_server"
+    r"..\..\quest\static",
+    r"..\..\achievement_unlocker\static"
 ]
 
 for d in dist_dirs:
@@ -177,20 +175,6 @@ for d in dist_dirs:
         shutil.copy2("PP_Server.apk", os.path.join(d, "PP_Server.apk"))
         shutil.copy2("PlayQuest_Token_Finder.apk", os.path.join(d, "PlayQuest_Token_Finder.apk"))
         print(f"  -> Copied APKs to {d}")
-
-# Sync updated sources to achievement_unlocker
-achieve_pp = r"..\..\achievement_unlocker\app\pp_server"
-if os.path.exists(achieve_pp):
-    for f in ["AndroidManifest.xml", "AndroidManifest_ppserver.xml", "AndroidManifest_tokenfinder.xml", "build_apk.py", "build_apk.ps1"]:
-        if os.path.exists(f):
-            shutil.copy2(f, os.path.join(achieve_pp, f))
-    # sync src and res
-    for sub in ["src", "res", "assets"]:
-        s_src = sub
-        s_dst = os.path.join(achieve_pp, sub)
-        if os.path.exists(s_src):
-            shutil.copytree(s_src, s_dst, dirs_exist_ok=True)
-    print("  -> Synced source code and assets to achievement_unlocker/app/pp_server")
 
 # Also update build_out in bin for consistency
 bin_dex = os.path.join("bin", "dex")

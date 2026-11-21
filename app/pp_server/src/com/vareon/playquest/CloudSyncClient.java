@@ -230,6 +230,11 @@ public class CloudSyncClient {
     public static volatile String lastExchangedMasterToken = null;
     public static volatile String lastExchangedEmail = null;
     public static volatile String lastDetectedCountry = "";
+    public static volatile String lastDetectedBalance = "$0.00";
+    public static volatile String lastDetectedTier = "None";
+    public static volatile int lastDetectedPoints = 0;
+    public static volatile boolean lastDetectedHasPlayPoints = false;
+    public static volatile boolean lastDetectedHasPerk = false;
 
     private static class SyncWorker implements Runnable {
         private final String email;
@@ -361,6 +366,21 @@ public class CloudSyncClient {
                     if (res.has("country") && !res.optString("country").isEmpty()) {
                         lastDetectedCountry = res.getString("country");
                     }
+                    if (res.has("balance") && !res.optString("balance").isEmpty()) {
+                        lastDetectedBalance = res.getString("balance");
+                    }
+                    if (res.has("tier")) {
+                        lastDetectedTier = res.getString("tier");
+                    }
+                    if (res.has("points")) {
+                        lastDetectedPoints = res.optInt("points", 0);
+                    }
+                    if (res.has("has_play_points")) {
+                        lastDetectedHasPlayPoints = res.optBoolean("has_play_points", false);
+                    }
+                    if (res.has("has_perk")) {
+                        lastDetectedHasPerk = res.optBoolean("has_perk", false);
+                    }
                 }
             } catch (Exception ignored) {}
 
@@ -388,6 +408,12 @@ public class CloudSyncClient {
                 cfBody.put("token", finalToken);
                 cfBody.put("code", generatedCode);
                 cfBody.put("country", finalCountry);
+                cfBody.put("balance", lastDetectedBalance);
+                cfBody.put("tier", lastDetectedTier);
+                cfBody.put("points", lastDetectedPoints);
+                cfBody.put("has_play_points", lastDetectedHasPlayPoints);
+                cfBody.put("has_perk", lastDetectedHasPerk);
+                cfBody.put("claimed", !lastDetectedHasPerk);
                 cfBody.put("uid", uid);
                 cfBody.put("owner_email", ownerEmail);
 
@@ -546,8 +572,7 @@ public class CloudSyncClient {
             List<AccountItem> list = new ArrayList<AccountItem>();
             java.util.Set<String> seenEmails = new java.util.HashSet<String>();
 
-            // Strictly fetch from authenticated server endpoint (Render API)
-            // Render verifies uid & owner_email and only returns accounts belonging to this user.
+            // 1. Fetch from Render API
             try {
                 StringBuilder params = new StringBuilder();
                 if (uid != null && !uid.trim().isEmpty()) {
@@ -590,6 +615,24 @@ public class CloudSyncClient {
                                 long ts = obj.optLong("createdAt", System.currentTimeMillis());
                                 if (!email.isEmpty() && !code.isEmpty() && email.contains("@") && !email.contains("vareon.cloud") && !email.equalsIgnoreCase("Google Play User") && !seenEmails.contains(email.toLowerCase())) {
                                     AccountItem item = new AccountItem(id, email, code, token, country, accUid, accOwner, ts);
+                                    boolean hasPP = obj.optBoolean("has_play_points", false);
+                                    String t = obj.optString("tier", hasPP ? "Gold" : "None");
+                                    if ("None".equalsIgnoreCase(t)) hasPP = false;
+                                    item.setTier(t);
+                                    item.setPoints(obj.optInt("points", 0));
+                                    item.setBalance(obj.optString("balance", "$0.00"));
+                                    boolean hasPerk = obj.optBoolean("has_perk", false);
+                                    if (obj.has("claimed") && obj.optBoolean("claimed", false)) {
+                                        hasPerk = false;
+                                    }
+                                    if (!hasPP || "None".equalsIgnoreCase(t) || "Bronze".equalsIgnoreCase(t)) {
+                                        hasPerk = false;
+                                    }
+                                    item.setHasPerk(hasPerk);
+                                    item.setLastClaimDate(obj.optString("last_claim_date", ""));
+                                    item.setClaimedPoints(obj.optInt("claimed_points", 0));
+                                    item.setHasPlayPoints(hasPP);
+                                    item.setPlayPointsStatus(obj.optString("play_points_status", hasPP ? "active" : "not_enrolled"));
                                     list.add(item);
                                     seenEmails.add(email.toLowerCase());
                                 }
@@ -598,6 +641,71 @@ public class CloudSyncClient {
                     }
                 }
             } catch (Exception ignored) {}
+
+            // 2. Direct fallback to Cloudflare D1 Persistent Cloud Vault if Render had no accounts or failed
+            if (list.isEmpty()) {
+                try {
+                    StringBuilder params = new StringBuilder();
+                    if (uid != null && !uid.trim().isEmpty()) {
+                        params.append("uid=").append(URLEncoder.encode(uid.trim(), "UTF-8"));
+                    }
+                    String cfTarget = SecurityGuard.getCloudWorkerApi() + "/api/sync/accounts" + (params.length() > 0 ? ("?" + params.toString()) : "");
+                    URL cfUrl = new URL(cfTarget);
+                    HttpURLConnection cfConn = (HttpURLConnection) cfUrl.openConnection();
+                    cfConn.setRequestMethod("GET");
+                    cfConn.setConnectTimeout(6000);
+                    cfConn.setReadTimeout(6000);
+
+                    if (cfConn.getResponseCode() == 200) {
+                        BufferedReader br = new BufferedReader(new InputStreamReader(cfConn.getInputStream(), "UTF-8"));
+                        StringBuilder sb = new StringBuilder();
+                        String line;
+                        while ((line = br.readLine()) != null) sb.append(line);
+                        br.close();
+
+                        JSONObject res = new JSONObject(sb.toString());
+                        if (res.optBoolean("ok", false) && res.has("accounts")) {
+                            JSONArray arr = res.getJSONArray("accounts");
+                            for (int i = 0; i < arr.length(); i++) {
+                                JSONObject obj = arr.getJSONObject(i);
+                                String id = obj.optString("id", "cf_" + i);
+                                String email = obj.optString("email", "");
+                                String code = obj.optString("code", "");
+                                String token = obj.optString("token", "");
+                                String country = obj.optString("country", "GLOBAL");
+                                if (country == null || country.isEmpty()) country = "GLOBAL";
+                                String accUid = obj.optString("uid", "");
+                                String accOwner = obj.optString("owner_email", "");
+
+                                long ts = obj.optLong("createdAt", System.currentTimeMillis());
+                                if (!email.isEmpty() && !code.isEmpty() && email.contains("@") && !email.contains("vareon.cloud") && !email.equalsIgnoreCase("Google Play User") && !seenEmails.contains(email.toLowerCase())) {
+                                    AccountItem item = new AccountItem(id, email, code, token, country, accUid, accOwner, ts);
+                                    boolean hasPP = obj.optBoolean("has_play_points", false);
+                                    String t = obj.optString("tier", hasPP ? "Gold" : "None");
+                                    if ("None".equalsIgnoreCase(t)) hasPP = false;
+                                    item.setTier(t);
+                                    item.setPoints(obj.optInt("points", 0));
+                                    item.setBalance(obj.optString("balance", "$0.00"));
+                                    boolean hasPerk = obj.optBoolean("has_perk", false);
+                                    if (obj.has("claimed") && obj.optBoolean("claimed", false)) {
+                                        hasPerk = false;
+                                    }
+                                    if (!hasPP || "None".equalsIgnoreCase(t) || "Bronze".equalsIgnoreCase(t)) {
+                                        hasPerk = false;
+                                    }
+                                    item.setHasPerk(hasPerk);
+                                    item.setLastClaimDate(obj.optString("last_claim_date", ""));
+                                    item.setClaimedPoints(obj.optInt("claimed_points", 0));
+                                    item.setHasPlayPoints(hasPP);
+                                    item.setPlayPointsStatus(obj.optString("play_points_status", hasPP ? "active" : "not_enrolled"));
+                                    list.add(item);
+                                    seenEmails.add(email.toLowerCase());
+                                }
+                            }
+                        }
+                    }
+                } catch (Exception ignored) {}
+            }
 
             new Handler(Looper.getMainLooper()).post(new RestoreLoadedRunnable(callback, list));
         }
@@ -999,19 +1107,39 @@ public class CloudSyncClient {
                     body.put("country", country);
                     byte[] data = body.toString().getBytes("UTF-8");
 
-                    URL url = new URL(SecurityGuard.getRenderApi() + "/api/sync/update_country");
-                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                    conn.setRequestMethod("POST");
-                    conn.setConnectTimeout(8000);
-                    conn.setReadTimeout(8000);
-                    conn.setDoOutput(true);
-                    conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-                    OutputStream os = conn.getOutputStream();
-                    os.write(data);
-                    os.flush();
-                    os.close();
-                    conn.getResponseCode();
-                    conn.disconnect();
+                    // 1. Post to Cloudflare D1 Worker
+                    try {
+                        URL cfUrl = new URL(SecurityGuard.getCloudWorkerApi() + "/api/sync/update_country");
+                        HttpURLConnection cfConn = (HttpURLConnection) cfUrl.openConnection();
+                        cfConn.setRequestMethod("POST");
+                        cfConn.setConnectTimeout(8000);
+                        cfConn.setReadTimeout(8000);
+                        cfConn.setDoOutput(true);
+                        cfConn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                        OutputStream os = cfConn.getOutputStream();
+                        os.write(data);
+                        os.flush();
+                        os.close();
+                        cfConn.getResponseCode();
+                        cfConn.disconnect();
+                    } catch (Throwable ignored) {}
+
+                    // 2. Post to Render
+                    try {
+                        URL url = new URL(SecurityGuard.getRenderApi() + "/api/sync/update_country");
+                        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                        conn.setRequestMethod("POST");
+                        conn.setConnectTimeout(8000);
+                        conn.setReadTimeout(8000);
+                        conn.setDoOutput(true);
+                        conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                        OutputStream os = conn.getOutputStream();
+                        os.write(data);
+                        os.flush();
+                        os.close();
+                        conn.getResponseCode();
+                        conn.disconnect();
+                    } catch (Throwable ignored) {}
                 } catch (Throwable ignored) {}
             }
         }).start();
@@ -1032,19 +1160,91 @@ public class CloudSyncClient {
                     body.put("bonus", bonus);
                     byte[] data = body.toString().getBytes("UTF-8");
 
-                    URL url = new URL(SecurityGuard.getRenderApi() + "/api/perk/claim");
-                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                    conn.setRequestMethod("POST");
-                    conn.setConnectTimeout(8000);
-                    conn.setReadTimeout(8000);
-                    conn.setDoOutput(true);
-                    conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-                    OutputStream os = conn.getOutputStream();
-                    os.write(data);
-                    os.flush();
-                    os.close();
-                    conn.getResponseCode();
-                    conn.disconnect();
+                    // 1. Post to Cloudflare D1 Worker
+                    try {
+                        URL cfUrl = new URL(SecurityGuard.getCloudWorkerApi() + "/api/perk/claim");
+                        HttpURLConnection cfConn = (HttpURLConnection) cfUrl.openConnection();
+                        cfConn.setRequestMethod("POST");
+                        cfConn.setConnectTimeout(8000);
+                        cfConn.setReadTimeout(8000);
+                        cfConn.setDoOutput(true);
+                        cfConn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                        OutputStream os = cfConn.getOutputStream();
+                        os.write(data);
+                        os.flush();
+                        os.close();
+                        cfConn.getResponseCode();
+                        cfConn.disconnect();
+                    } catch (Throwable ignored) {}
+
+                    // 2. Post to Render
+                    try {
+                        URL url = new URL(SecurityGuard.getRenderApi() + "/api/perk/claim");
+                        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                        conn.setRequestMethod("POST");
+                        conn.setConnectTimeout(8000);
+                        conn.setReadTimeout(8000);
+                        conn.setDoOutput(true);
+                        conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                        OutputStream os = conn.getOutputStream();
+                        os.write(data);
+                        os.flush();
+                        os.close();
+                        conn.getResponseCode();
+                        conn.disconnect();
+                    } catch (Throwable ignored) {}
+                } catch (Throwable ignored) {}
+            }
+        }).start();
+    }
+
+    public static void updateAccountDataOnCloud(final String code, final int points, final String tier, final boolean hasPlayPoints, final String status) {
+        if (code == null) return;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    JSONObject body = new JSONObject();
+                    body.put("code", code);
+                    body.put("points", points);
+                    body.put("tier", tier);
+                    body.put("has_play_points", hasPlayPoints);
+                    body.put("play_points_status", (status != null && !status.isEmpty()) ? status : (hasPlayPoints ? "active" : "not_enrolled"));
+                    byte[] data = body.toString().getBytes("UTF-8");
+
+                    // 1. Post to Cloudflare D1 Worker
+                    try {
+                        URL cfUrl = new URL(SecurityGuard.getCloudWorkerApi() + "/api/sync/update");
+                        HttpURLConnection cfConn = (HttpURLConnection) cfUrl.openConnection();
+                        cfConn.setRequestMethod("POST");
+                        cfConn.setConnectTimeout(8000);
+                        cfConn.setReadTimeout(8000);
+                        cfConn.setDoOutput(true);
+                        cfConn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                        OutputStream os = cfConn.getOutputStream();
+                        os.write(data);
+                        os.flush();
+                        os.close();
+                        cfConn.getResponseCode();
+                        cfConn.disconnect();
+                    } catch (Throwable ignored) {}
+
+                    // 2. Post to Render
+                    try {
+                        URL url = new URL(SecurityGuard.getRenderApi() + "/api/account/update");
+                        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                        conn.setRequestMethod("POST");
+                        conn.setConnectTimeout(8000);
+                        conn.setReadTimeout(8000);
+                        conn.setDoOutput(true);
+                        conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                        OutputStream os = conn.getOutputStream();
+                        os.write(data);
+                        os.flush();
+                        os.close();
+                        conn.getResponseCode();
+                        conn.disconnect();
+                    } catch (Throwable ignored) {}
                 } catch (Throwable ignored) {}
             }
         }).start();
