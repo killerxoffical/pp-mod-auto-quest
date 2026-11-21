@@ -1878,6 +1878,215 @@
             background: #fee2e2;
             transform: scale(0.98);
         }
+    
+        /* Tier badges and themes */
+        .box-weekly-perk.tier-bronze {
+            background: linear-gradient(135deg, #fdfbf7 0%, #f6f0ea 100%);
+            border: 1px solid #e7ded5;
+            box-shadow: 0 2px 6px rgba(180, 83, 9, 0.05);
+        }
+        .box-weekly-perk.tier-bronze .perk-title { color: #78350f; }
+        .box-weekly-perk.tier-bronze .perk-sub { color: #9a3412; }
+
+        .box-weekly-perk.tier-silver {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 2px 6px rgba(100, 116, 139, 0.08);
+        }
+        .box-weekly-perk.tier-silver .perk-title { color: #334155; }
+        .box-weekly-perk.tier-silver .perk-sub { color: #64748b; }
+
+        .box-weekly-perk.tier-gold {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border: 1px solid #fde68a;
+            box-shadow: 0 2px 6px rgba(245, 158, 11, 0.08);
+        }
+        .box-weekly-perk.tier-gold .perk-title { color: #92400e; }
+        .box-weekly-perk.tier-gold .perk-sub { color: #b45309; }
+
+        .box-weekly-perk.tier-platinum {
+            background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%);
+            border: 1px solid #bae6fd;
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.08);
+        }
+        .box-weekly-perk.tier-platinum .perk-title { color: #0369a1; }
+        .box-weekly-perk.tier-platinum .perk-sub { color: #0284c7; }
+
+        .perk-tier-badge {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+        .perk-tier-badge:active { transform: scale(0.92); }
+        .perk-tier-badge.bronze { background: #fdf2e9; border: 1.5px solid #cd7f32; }
+        .perk-tier-badge.silver { background: #f1f5f9; border: 1.5px solid #94a3b8; }
+        .perk-tier-badge.gold { background: #fef3c7; border: 1.5px solid #f59e0b; }
+        .perk-tier-badge.platinum { background: #e0f2fe; border: 1.5px solid #0284c7; }
+
+        .btn-claim-perk.silver {
+            background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+            box-shadow: 0 2px 6px rgba(71, 85, 105, 0.28);
+        }
+        .btn-claim-perk.gold {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            box-shadow: 0 2px 6px rgba(217, 119, 6, 0.28);
+        }
+        .btn-claim-perk.platinum {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            box-shadow: 0 2px 6px rgba(3, 105, 161, 0.28);
+        }
+
+        .badge-tier-locked {
+            font-size: 11px;
+            font-weight: 700;
+            color: #64748b;
+            background: #e2e8f0;
+            padding: 5px 11px;
+            border-radius: 14px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Action sheet & Config modals */
+        .sheet-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.52);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .sheet-modal-overlay.open {
+            display: flex;
+            opacity: 1;
+        }
+        .sheet-modal-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 480px;
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+            padding: 20px 20px 28px;
+            box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.16);
+            transform: translateY(100%);
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .sheet-modal-overlay.open .sheet-modal-card {
+            transform: translateY(0);
+        }
+        .sheet-drag-handle {
+            width: 40px;
+            height: 4px;
+            background: #cbd5e1;
+            border-radius: 2px;
+            margin: 0 auto 16px;
+        }
+        .sheet-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .sheet-title {
+            font-size: 17px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .sheet-close-btn {
+            background: #f1f5f9;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            color: #64748b;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .sheet-desc {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 16px;
+            line-height: 1.45;
+        }
+        .sheet-btn-action {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-size: 13.5px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            border: none;
+            transition: transform 0.12s;
+        }
+        .sheet-btn-action:active { transform: scale(0.97); }
+        .sheet-btn-primary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.28);
+        }
+        .sheet-btn-secondary {
+            background: #f1f5f9;
+            color: #334155;
+            border: 1px solid #e2e8f0;
+        }
+        .sheet-btn-warning {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        .tier-picker-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .tier-choice-item {
+            padding: 10px 12px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.15s;
+        }
+        .tier-choice-item.selected {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        .tier-choice-name {
+            font-size: 13px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .tier-choice-sub {
+            font-size: 10.5px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
     </style>
 </head>
 <body>
@@ -2046,7 +2255,7 @@
     </main>
 
     <!-- ==================== 3. 3D SUCCESS POPUP ==================== -->
-    <div id="modalSuccess3D">
+    <div id="modalSuccess3D" onclick="confirmSuccessEnter()">
         <div class="card-3d-success">
             <div class="trophy-3d-wrap">
                 <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -2330,6 +2539,106 @@
                 <button class="btn-dialog btn-dialog-cancel" onclick="closeConfirmDialog()">Cancel</button>
                 <button class="btn-dialog btn-dialog-danger" id="btnDialogConfirm">Confirm</button>
             </div>
+        </div>
+    </div>
+
+    
+    <!-- ==================== CLAIM WEEKLY PRIZE ACTION SHEET ==================== -->
+    <div id="modalPerkAction" class="sheet-modal-overlay" onclick="closePerkClaimModal(event)">
+        <div class="sheet-modal-card" onclick="event.stopPropagation()">
+            <div class="sheet-drag-handle"></div>
+            <div class="sheet-title-row">
+                <span class="sheet-title" id="perkActionTitle">Claim Weekly Prize</span>
+                <button class="sheet-close-btn" onclick="closePerkClaimModal()">✕</button>
+            </div>
+            <p class="sheet-desc" id="perkActionDesc">Google Play requires you to scratch the prize inside Google Play Store. Launch directly to your prize card:</p>
+
+            <button class="sheet-btn-action sheet-btn-primary" onclick="executePlayStorePerkDirect()">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.3">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                <span>🎁 Open Google Play Perks &amp; Scratch</span>
+            </button>
+
+            <button class="sheet-btn-action sheet-btn-secondary" onclick="promptMarkPerkClaimed()">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>✅ Mark Claimed &amp; Update Points</span>
+            </button>
+
+            <button class="sheet-btn-action sheet-btn-secondary" onclick="executeApiPerkAttempt()">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
+                <span>⚡ Auto Token Scratch Attempt</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== CLAIMED PERK STATUS / RESET SHEET ==================== -->
+    <div id="modalClaimedOptions" class="sheet-modal-overlay" onclick="closeClaimedOptions(event)">
+        <div class="sheet-modal-card" onclick="event.stopPropagation()">
+            <div class="sheet-drag-handle"></div>
+            <div class="sheet-title-row">
+                <span class="sheet-title">Weekly Prize Claimed</span>
+                <button class="sheet-close-btn" onclick="closeClaimedOptions()">✕</button>
+            </div>
+            <p class="sheet-desc">This account is currently marked as Claimed. If nothing was claimed in Google Play, you can revert back to unclaimed anytime:</p>
+
+            <button class="sheet-btn-action sheet-btn-warning" onclick="executeResetClaim()">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <polyline points="1 4 1 10 7 10"></polyline>
+                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                </svg>
+                <span>🔄 Revert / Reset to Unclaimed</span>
+            </button>
+
+            <button class="sheet-btn-action sheet-btn-secondary" onclick="executeOpenPointsFromClaimed()">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <path d="M12 2 L22 12 L12 22 L2 12 Z"></path>
+                </svg>
+                <span>💎 Update Play Points (PP) Balance</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== ACCOUNT CONFIG / TIER & POINTS MODAL ==================== -->
+    <div id="modalAccountConfig" class="sheet-modal-overlay" onclick="closeAccountConfigModal(event)">
+        <div class="sheet-modal-card" onclick="event.stopPropagation()">
+            <div class="sheet-drag-handle"></div>
+            <div class="sheet-title-row">
+                <span class="sheet-title">Account Level &amp; Points</span>
+                <button class="sheet-close-btn" onclick="closeAccountConfigModal()">✕</button>
+            </div>
+            <p class="sheet-desc" id="cfgAccountEmail">Configure Google Play level and real Play Points (PP):</p>
+
+            <label style="font-size:12px;font-weight:700;color:#334155;margin-bottom:6px;display:block;">Select Account Tier:</label>
+            <div class="tier-picker-grid">
+                <div class="tier-choice-item" id="tierOpt_Bronze" onclick="selectTierChoice('Bronze')">
+                    <div class="tier-choice-name" style="color:#b45309;">🥉 Bronze</div>
+                    <div class="tier-choice-sub">0 - 149 PP</div>
+                </div>
+                <div class="tier-choice-item" id="tierOpt_Silver" onclick="selectTierChoice('Silver')">
+                    <div class="tier-choice-name" style="color:#64748b;">🥈 Silver</div>
+                    <div class="tier-choice-sub">150 - 599 PP</div>
+                </div>
+                <div class="tier-choice-item" id="tierOpt_Gold" onclick="selectTierChoice('Gold')">
+                    <div class="tier-choice-name" style="color:#d97706;">🥇 Gold</div>
+                    <div class="tier-choice-sub">600 - 2,999 PP</div>
+                </div>
+                <div class="tier-choice-item" id="tierOpt_Platinum" onclick="selectTierChoice('Platinum')">
+                    <div class="tier-choice-name" style="color:#0284c7;">💎 Platinum</div>
+                    <div class="tier-choice-sub">3,000+ PP</div>
+                </div>
+            </div>
+
+            <label style="font-size:12px;font-weight:700;color:#334155;margin-bottom:6px;display:block;">Real Play Points (PP):</label>
+            <input type="number" id="cfgAccountPoints" placeholder="e.g. 260" style="width:100%;padding:10px 14px;border:1.5px solid #cbd5e1;border-radius:12px;font-size:14px;font-weight:700;margin-bottom:16px;box-sizing:border-box;">
+
+            <button class="sheet-btn-action sheet-btn-primary" onclick="saveAccountConfig()">
+                <span>Save &amp; Sync Data ➔</span>
+            </button>
         </div>
     </div>
 
@@ -2753,6 +3062,7 @@
         }
 
         function executeLogin(email, pass) {
+            window.isManualLoginSubmission = true;
             setLoginBtnLoading(true);
             document.getElementById('loginAlertBox').style.display = 'none';
 
@@ -2802,7 +3112,10 @@
             showToast("Login Failed: " + msg);
         }
 
-        // Bridge Auth Callbacks
+
+        // Authentication & Session
+        window.isManualLoginSubmission = false;
+
         window.onLoginSuccess = function(u) {
             setLoginBtnLoading(false);
             appInfo.isLoggedIn = true;
@@ -2816,97 +3129,98 @@
                 if (u.balance !== undefined) appInfo.userCoins = u.balance;
             }
 
-            // Populate 3D Popup
-            document.getElementById('popUserName').textContent = appInfo.userName || 'User';
-            document.getElementById('popUserEmail').textContent = appInfo.userEmail || '';
-            document.getElementById('popUserUid').textContent = appInfo.userUid || 'UID-';
+            renderTopbarProfile();
 
-            var popAvatar = document.getElementById('popUserAvatar');
-            if (popAvatar) {
-                if (appInfo.userAvatar && appInfo.userAvatar.length > 5) {
-                    popAvatar.src = appInfo.userAvatar;
-                    popAvatar.style.display = 'block';
-                } else {
-                    popAvatar.style.display = 'none';
+            // ONLY show 3D Success Popup if currently on Login screen AND user submitted manual login!
+            var loginView = document.getElementById('viewLogin');
+            var isLoginVisible = loginView && loginView.style.display !== 'none';
+            if (isLoginVisible && window.isManualLoginSubmission === true) {
+                document.getElementById('popUserName').textContent = appInfo.userName || 'User';
+                document.getElementById('popUserEmail').textContent = appInfo.userEmail || '';
+                document.getElementById('popUserUid').textContent = appInfo.userUid || 'UID-';
+
+                var popAvatar = document.getElementById('popUserAvatar');
+                if (popAvatar) {
+                    if (appInfo.userAvatar && appInfo.userAvatar.length > 5) {
+                        popAvatar.src = appInfo.userAvatar;
+                        popAvatar.style.display = 'block';
+                    } else {
+                        popAvatar.style.display = 'none';
+                    }
                 }
+                document.getElementById('modalSuccess3D').classList.add('open');
+            } else {
+                // Background restore or already on home/settings: ensure 3D popup stays hidden!
+                document.getElementById('modalSuccess3D').classList.remove('open');
             }
+        };
 
-            // Show 3D Success Popup
-            document.getElementById('modalSuccess3D').classList.add('open');
+        window.onProfileUpdated = function(u) {
+            if (u) {
+                if (u.uid) appInfo.userUid = u.uid;
+                if (u.email) appInfo.userEmail = u.email;
+                if (u.name) appInfo.userName = u.name;
+                if (u.display_name) appInfo.userName = u.display_name;
+                if (u.avatar) appInfo.userAvatar = u.avatar;
+                if (u.coins !== undefined) appInfo.userCoins = u.coins;
+                if (u.balance !== undefined) appInfo.userCoins = u.balance;
+            }
+            renderTopbarProfile();
         };
 
         function confirmSuccessEnter() {
+            window.isManualLoginSubmission = false;
             document.getElementById('modalSuccess3D').classList.remove('open');
             renderTopbarProfile();
             showView('viewHome');
             loadAccounts();
-            syncCloudAccounts(); // Auto-restore all connected accounts on new mobile device!
+            syncCloudAccounts();
             showToast("Welcome back, " + (appInfo.userName || 'User') + "!");
         }
 
-        window.onLoginError = function(err) {
-            showLoginError(err || "Authentication failed. No PP Mod account found.");
-        };
-
-        window.onLogoutSuccess = function() {
-            appInfo.isLoggedIn = false;
-            appInfo.userUid = '';
-            appInfo.userEmail = '';
-            appInfo.userName = 'PP Mod User';
-            accounts = [];
-            showView('viewLogin');
-            setLoginBtnLoading(false);
-            showToast("Logged out of PPM Server Node.");
-        };
-
-        function promptLogout() {
-            pendingLogout = true;
-            pendingDeleteCode = null;
-            document.getElementById('dialogHeader').textContent = "Log Out of PP Server?";
-            document.getElementById('dialogBody').textContent = "Are you sure you want to log out? Your local session and accounts will be cleared on this device.";
-            document.getElementById('btnDialogConfirm').textContent = "Log Out";
-            document.getElementById('dialogConfirm').classList.add('open');
-        }
-
-        // ==================== ACCOUNTS LIST & MANAGEMENT (IMAGE 4) ====================
-        function loadAccounts() {
-            try {
-                if (window.AndroidBridge && window.AndroidBridge.getAccounts) {
-                    var raw = window.AndroidBridge.getAccounts();
-                    if (raw) {
-                        var parsed = JSON.parse(raw);
-                        if (Array.isArray(parsed)) {
-                            accounts = parsed.filter(function(a) {
-                                if (!a || !a.email) return false;
-                                var em = (a.email || '').toLowerCase().trim();
-                                return em.includes('@') && !em.includes('vareon.cloud') && em !== 'google play user' && !em.includes('google play user');
-                            });
-                        }
-                    }
-                }
-            } catch (e) {}
-            renderAccounts();
-        }
-
+        // ==================== TIER & PLAY POINTS LOGIC ====================
         function getAccountPoints(code, fallback) {
             try {
                 var cached = localStorage.getItem('play_points_' + code);
-                if (cached === '310' || cached === 310) {
-                    localStorage.removeItem('play_points_' + code);
-                    cached = null;
-                }
                 if (cached !== null && cached !== '') {
                     var n = parseInt(cached, 10);
-                    if (!isNaN(n) && n !== 310) return n;
+                    if (!isNaN(n)) return n;
                 }
             } catch(e) {}
-            return fallback !== undefined ? fallback : 260;
+            if (fallback !== undefined && fallback !== null && !isNaN(fallback)) return parseInt(fallback, 10);
+            return 0; // Default is 0, not hardcoded 260!
         }
 
         function setAccountPoints(code, pts) {
             try {
                 if (pts === 310) pts = 260;
                 localStorage.setItem('play_points_' + code, pts.toString());
+            } catch(e) {}
+        }
+
+        function getAccountTier(a) {
+            if (!a) return 'Bronze';
+            var code = a.code || '';
+            try {
+                var cachedTier = localStorage.getItem('play_tier_' + code);
+                if (cachedTier) return cachedTier;
+            } catch(e) {}
+
+            if (a.tier && a.tier.trim() !== '') return a.tier.trim();
+
+            var em = (a.email || '').toLowerCase();
+            if (em.includes('12@') || em.includes('mdg145712')) return 'Gold'; // Verified Gold account
+
+            var pts = getAccountPoints(code, a.points);
+            if (pts >= 3000) return 'Platinum';
+            if (pts >= 600) return 'Gold';
+            if (pts >= 150) return 'Silver';
+            return 'Bronze';
+        }
+
+        function setAccountTier(code, tier) {
+            try {
+                localStorage.setItem('play_tier_' + code, tier);
             } catch(e) {}
         }
 
@@ -2920,29 +3234,86 @@
 
         function setPerkClaimedState(code, stateObj) {
             try {
-                localStorage.setItem('perk_claimed_' + code, JSON.stringify(stateObj));
+                if (stateObj === null) {
+                    localStorage.removeItem('perk_claimed_' + code);
+                } else {
+                    localStorage.setItem('perk_claimed_' + code, JSON.stringify(stateObj));
+                }
             } catch(e) {}
         }
 
-        function claimPerkViaApi(code) {
-            var btn = document.getElementById('btn_claim_' + code);
-            var subEl = document.getElementById('perk_sub_' + code);
-            if (btn) {
-                btn.disabled = true;
-                btn.innerHTML = '<span class="spinner-claim"></span> <span>Claiming...</span>';
-            }
-            if (subEl) {
-                subEl.textContent = 'Processing via Google API...';
-            }
+        // ==================== CLAIM ACTION SHEET FLOW ====================
+        var currentActivePerkCode = null;
 
-            var acc = null;
-            for (var i = 0; i < accounts.length; i++) {
-                if (accounts[i] && accounts[i].code === code) {
-                    acc = accounts[i];
-                    break;
+        function openPerkClaimModal(code) {
+            currentActivePerkCode = code;
+            var acc = accounts.find(function(item) { return item && item.code === code; });
+            var tier = acc ? getAccountTier(acc) : 'Gold';
+            var titleEl = document.getElementById('perkActionTitle');
+            if (titleEl) {
+                titleEl.textContent = tier + " Weekly Prize";
+            }
+            document.getElementById('modalPerkAction').classList.add('open');
+        }
+
+        function closePerkClaimModal(e) {
+            if (e && e.target && e.target.id !== 'modalPerkAction') return;
+            document.getElementById('modalPerkAction').classList.remove('open');
+        }
+
+        function executePlayStorePerkDirect() {
+            document.getElementById('modalPerkAction').classList.remove('open');
+            try {
+                if (window.AndroidBridge && window.AndroidBridge.openPlayPoints) {
+                    window.AndroidBridge.openPlayPoints();
+                } else {
+                    window.open("https://play.google.com/store/points", "_blank");
                 }
+            } catch(e) {
+                window.open("https://play.google.com/store/points", "_blank");
             }
+            showToast("Opening Google Play Store Perks... Scratch your prize!");
+        }
 
+        function promptMarkPerkClaimed() {
+            document.getElementById('modalPerkAction').classList.remove('open');
+            var code = currentActivePerkCode;
+            if (!code) return;
+            var curPts = getAccountPoints(code, 0);
+            var won = prompt("How many points (PP) did you win from the scratch card? (e.g. 50, 100):", "50");
+            if (won !== null) {
+                var clean = won.replace(/[^0-9]/g, '');
+                var add = parseInt(clean, 10) || 0;
+                var total = curPts + add;
+                setAccountPoints(code, total);
+                setPerkClaimedState(code, { claimed: true, date: new Date().toISOString() });
+                
+                // Sync to Android and Server
+                if (window.AndroidBridge && window.AndroidBridge.updateAccountData) {
+                    try {
+                        var acc = accounts.find(function(item) { return item && item.code === code; });
+                        var tier = acc ? getAccountTier(acc) : 'Gold';
+                        window.AndroidBridge.updateAccountData(code, total, tier);
+                    } catch(e) {}
+                }
+                fetch((appInfo.portalUrl || 'https://pp-mod-auto-quest.onrender.com') + '/api/account/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: code, points: total, claimed: true })
+                }).catch(function() {});
+
+                renderAccounts();
+                showToast("🎉 Marked as Claimed! Total: " + total + " PP");
+            }
+        }
+
+        function executeApiPerkAttempt() {
+            var code = currentActivePerkCode;
+            if (!code) return;
+            document.getElementById('modalPerkAction').classList.remove('open');
+            showToast("Verifying Google Play token...");
+
+            var acc = accounts.find(function(item) { return item && item.code === code; });
             var payload = {
                 code: code,
                 email: acc ? acc.email : '',
@@ -2957,49 +3328,124 @@
             .then(function(res) { return res.json(); })
             .then(function(data) {
                 if (data.ok) {
-                    setPerkClaimedState(code, { claimed: true, date: new Date().toISOString() });
-                    if (data.total_points !== undefined && data.total_points !== 310) {
-                        setAccountPoints(code, data.total_points);
-                    }
-                    renderAccounts();
-                    showToast("🎉 Weekly Prize claimed successfully via API!");
+                    showToast("Google Play account verified! Launching Play Store to scratch...");
+                    executePlayStorePerkDirect();
                 } else {
-                    if (btn) {
-                        btn.disabled = false;
-                        btn.innerHTML = '<span>Claim ➔</span>';
-                    }
-                    if (subEl) subEl.textContent = 'Expires in 6d • Google Play';
-                    showToast("Claim notice: " + (data.error || 'Server error'));
+                    showToast("Notice: " + (data.error || 'Opening Google Play...'));
+                    executePlayStorePerkDirect();
                 }
             })
             .catch(function(err) {
-                setPerkClaimedState(code, { claimed: true, date: new Date().toISOString() });
-                renderAccounts();
-                showToast("🎉 Weekly Prize claimed successfully via API!");
+                executePlayStorePerkDirect();
             });
         }
 
-        function editAccountPoints(code, currentVal) {
-            var cur = currentVal !== undefined ? currentVal : 260;
-            var input = prompt("Update Google Play Points (PP) balance:", cur);
-            if (input !== null) {
-                var clean = input.replace(/[^0-9]/g, '');
-                var num = parseInt(clean, 10);
-                if (!isNaN(num) && num >= 0) {
-                    setAccountPoints(code, num);
-                    fetch((appInfo.portalUrl || 'https://pp-mod-auto-quest.onrender.com') + '/api/perk/claim', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ code: code, points: num })
-                    }).catch(function() {});
-                    renderAccounts();
-                    showToast("Play Points balance updated: " + num + " PP");
-                }
-            }
+        // ==================== CLAIMED OPTIONS / RESET FLOW ====================
+        var currentClaimedDetailCode = null;
+
+        function openClaimedDetails(code) {
+            currentClaimedDetailCode = code;
+            document.getElementById('modalClaimedOptions').classList.add('open');
         }
 
-        function filterAccountsList() {
+        function closeClaimedOptions(e) {
+            if (e && e.target && e.target.id !== 'modalClaimedOptions') return;
+            document.getElementById('modalClaimedOptions').classList.remove('open');
+        }
+
+        function executeResetClaim() {
+            var code = currentClaimedDetailCode;
+            if (!code) return;
+            document.getElementById('modalClaimedOptions').classList.remove('open');
+            setPerkClaimedState(code, null); // Clear from localStorage!
+
+            // Sync to server
+            fetch((appInfo.portalUrl || 'https://pp-mod-auto-quest.onrender.com') + '/api/account/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: code, claimed: false })
+            }).catch(function() {});
+
             renderAccounts();
+            showToast("Perk status reset! You can now claim again.");
+        }
+
+        function executeOpenPointsFromClaimed() {
+            var code = currentClaimedDetailCode;
+            document.getElementById('modalClaimedOptions').classList.remove('open');
+            if (code) openAccountConfigModal(code);
+        }
+
+        // ==================== ACCOUNT CONFIG / TIER & POINTS ====================
+        var currentConfigCode = null;
+        var selectedTierChoice = 'Gold';
+
+        function openAccountConfigModal(code) {
+            currentConfigCode = code;
+            var acc = accounts.find(function(item) { return item && item.code === code; });
+            var curTier = acc ? getAccountTier(acc) : 'Gold';
+            var curPts = acc ? getAccountPoints(code, acc.points) : 0;
+
+            selectTierChoice(curTier);
+            document.getElementById('cfgAccountPoints').value = curPts;
+            document.getElementById('cfgAccountEmail').textContent = acc ? ('Account: ' + maskEmail(acc.email)) : 'Configure Account:';
+            document.getElementById('modalAccountConfig').classList.add('open');
+        }
+
+        function closeAccountConfigModal(e) {
+            if (e && e.target && e.target.id !== 'modalAccountConfig') return;
+            document.getElementById('modalAccountConfig').classList.remove('open');
+        }
+
+        function selectTierChoice(tier) {
+            selectedTierChoice = tier;
+            var tiers = ['Bronze', 'Silver', 'Gold', 'Platinum'];
+            tiers.forEach(function(t) {
+                var el = document.getElementById('tierOpt_' + t);
+                if (el) {
+                    if (t === tier) el.classList.add('selected');
+                    else el.classList.remove('selected');
+                }
+            });
+        }
+
+        function saveAccountConfig() {
+            var code = currentConfigCode;
+            if (!code) return;
+            var rawPts = document.getElementById('cfgAccountPoints').value;
+            var pts = parseInt(rawPts, 10);
+            if (isNaN(pts) || pts < 0) pts = 0;
+            var tier = selectedTierChoice || 'Gold';
+
+            setAccountPoints(code, pts);
+            setAccountTier(code, tier);
+
+            // Update in accounts array
+            for (var i = 0; i < accounts.length; i++) {
+                if (accounts[i] && accounts[i].code === code) {
+                    accounts[i].points = pts;
+                    accounts[i].tier = tier;
+                    break;
+                }
+            }
+
+            // Sync with Android Bridge
+            if (window.AndroidBridge && window.AndroidBridge.updateAccountData) {
+                try {
+                    window.AndroidBridge.updateAccountData(code, pts, tier);
+                } catch(e) {}
+            }
+
+            // Sync with Server API
+            fetch((appInfo.portalUrl || 'https://pp-mod-auto-quest.onrender.com') + '/api/account/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: code, points: pts, tier: tier })
+            }).catch(function() {});
+
+            document.getElementById('modalAccountConfig').classList.remove('open');
+            renderAccounts();
+            showToast("Updated: " + tier + " • " + pts + " PP");
         }
 
         function renderAccounts() {
@@ -3051,41 +3497,81 @@
                 var formattedCode = code.length === 6 ? (code.substring(0, 3) + ' ' + code.substring(3)) : code;
                 var country = (a.country || 'GLOBAL').toUpperCase();
                 var flagSvg = getCountrySvgBadge(country);
-                var pts = getAccountPoints(a.code, a.points || 260);
+
+                var tier = getAccountTier(a);
+                var pts = getAccountPoints(a.code, a.points);
                 var perkState = getPerkClaimedState(a.code);
                 var isClaimed = perkState && perkState.claimed;
+
+                // Configure visual parameters per tier
+                var tierBoxClass = "tier-" + tier.toLowerCase();
+                var tierTitle = "Gold Super Weekly Prize";
+                var tierSub = "Expires in 6d • Google Play";
+                var tierBadgeClass = tier.toLowerCase();
+                var tierBadgeSvg = '';
+                var actionBtnHtml = '';
+
+                if (tier === 'Bronze') {
+                    tierTitle = "Bronze Member";
+                    tierSub = "Weekly prize unlocks at Silver (150 PP)";
+                    tierBadgeSvg = '<polygon points="12,2 21,7 21,17 12,22 3,17 3,7" fill="#cd7f32"/><polygon points="12,6 13.8,9.6 17.8,10.2 14.9,13 15.6,17 12,15.1 8.4,17 9.1,13 6.2,10.2 10.2,9.6" fill="#ffffff"/>';
+                    actionBtnHtml = '<span class="badge-tier-locked" onclick="openAccountConfigModal(\'' + a.code + '\')">🔒 Locked</span>';
+                } else if (tier === 'Silver') {
+                    tierTitle = "Silver Weekly Prize";
+                    tierSub = "Win up to 100 PP • Google Play";
+                    tierBadgeSvg = '<polygon points="12,2 21,7 21,17 12,22 3,17 3,7" fill="#94a3b8"/><polygon points="12,6 13.8,9.6 17.8,10.2 14.9,13 15.6,17 12,15.1 8.4,17 9.1,13 6.2,10.2 10.2,9.6" fill="#ffffff"/>';
+                    if (!isClaimed) {
+                        actionBtnHtml = '<button class="btn-claim-perk silver" id="btn_claim_' + a.code + '" onclick="openPerkClaimModal(\'' + a.code + '\')"><span>Claim ➔</span></button>';
+                    } else {
+                        actionBtnHtml = '<span class="badge-claimed-done" onclick="openClaimedDetails(\'' + a.code + '\')" title="Tap to reset or edit points">Claimed ✔</span>';
+                    }
+                } else if (tier === 'Platinum') {
+                    tierTitle = "Platinum Super Weekly Prize";
+                    tierSub = "Expires in 6d • Up to 5,000 PP";
+                    tierBadgeSvg = '<polygon points="12,2 21,7 21,17 12,22 3,17 3,7" fill="#0284c7"/><polygon points="12,6 13.8,9.6 17.8,10.2 14.9,13 15.6,17 12,15.1 8.4,17 9.1,13 6.2,10.2 10.2,9.6" fill="#ffffff"/>';
+                    if (!isClaimed) {
+                        actionBtnHtml = '<button class="btn-claim-perk platinum" id="btn_claim_' + a.code + '" onclick="openPerkClaimModal(\'' + a.code + '\')"><span>Claim ➔</span></button>';
+                    } else {
+                        actionBtnHtml = '<span class="badge-claimed-done" onclick="openClaimedDetails(\'' + a.code + '\')" title="Tap to reset or edit points">Claimed ✔</span>';
+                    }
+                } else {
+                    // Gold
+                    tierTitle = "Gold Super Weekly Prize";
+                    tierSub = "Expires in 6d • Google Play";
+                    tierBadgeSvg = '<polygon points="12,2 21,7 21,17 12,22 3,17 3,7" fill="#f59e0b"/><polygon points="12,6 13.8,9.6 17.8,10.2 14.9,13 15.6,17 12,15.1 8.4,17 9.1,13 6.2,10.2 10.2,9.6" fill="#ffffff"/>';
+                    if (!isClaimed) {
+                        actionBtnHtml = '<button class="btn-claim-perk gold" id="btn_claim_' + a.code + '" onclick="openPerkClaimModal(\'' + a.code + '\')"><span>Claim ➔</span></button>';
+                    } else {
+                        actionBtnHtml = '<span class="badge-claimed-done" onclick="openClaimedDetails(\'' + a.code + '\')" title="Tap to reset or edit points">Claimed ✔</span>';
+                    }
+                }
 
                 var perkHtml = '';
                 if (!isClaimed) {
                     perkHtml = 
-                        '<div class="box-weekly-perk" id="perk_box_' + a.code + '">' +
+                        '<div class="box-weekly-perk ' + tierBoxClass + '" id="perk_box_' + a.code + '">' +
                             '<div class="perk-info-left">' +
-                                '<div class="perk-gold-badge">' +
-                                    '<svg viewBox="0 0 24 24" width="16" height="16">' +
-                                        '<polygon points="12,2 21,7 21,17 12,22 3,17 3,7" fill="#f59e0b"/>' +
-                                        '<polygon points="12,6 13.8,9.6 17.8,10.2 14.9,13 15.6,17 12,15.1 8.4,17 9.1,13 6.2,10.2 10.2,9.6" fill="#ffffff"/>' +
-                                    '</svg>' +
+                                '<div class="perk-tier-badge ' + tierBadgeClass + '" onclick="openAccountConfigModal(\'' + a.code + '\')" title="Tap to change tier">' +
+                                    '<svg viewBox="0 0 24 24" width="16" height="16">' + tierBadgeSvg + '</svg>' +
                                 '</div>' +
-                                '<div class="perk-text-wrap">' +
-                                    '<span class="perk-title">Gold Super Weekly Prize</span>' +
-                                    '<span class="perk-sub" id="perk_sub_' + a.code + '">Expires in 6d • Google Play</span>' +
+                                '<div class="perk-text-wrap" onclick="openAccountConfigModal(\'' + a.code + '\')" style="cursor:pointer;" title="Tap to change level">' +
+                                    '<span class="perk-title">' + tierTitle + '</span>' +
+                                    '<span class="perk-sub" id="perk_sub_' + a.code + '">' + tierSub + '</span>' +
                                 '</div>' +
                             '</div>' +
-                            '<button class="btn-claim-perk" id="btn_claim_' + a.code + '" onclick="claimPerkViaApi(\'' + a.code + '\')">' +
-                                '<span>Claim ➔</span>' +
-                            '</button>' +
+                            actionBtnHtml +
                         '</div>';
                 } else {
                     perkHtml = 
-                        '<div class="box-weekly-perk claimed" id="perk_box_' + a.code + '">' +
-                            '<div class="perk-info-left">' +
+                        '<div class="box-weekly-perk claimed ' + tierBoxClass + '" id="perk_box_' + a.code + '">' +
+                            '<div class="perk-info-left" onclick="openClaimedDetails(\'' + a.code + '\')" style="cursor:pointer;" title="Tap to view / reset">' +
                                 '<span class="perk-check-icon">✔</span>' +
                                 '<div class="perk-text-wrap">' +
-                                    '<span class="perk-title" style="color:#059669;font-weight:700;">Gold Weekly Prize Claimed!</span>' +
-                                    '<span class="perk-sub">Google Play • Verified via API</span>' +
+                                    '<span class="perk-title" style="color:#059669;font-weight:700;">' + tier + ' Prize Claimed!</span>' +
+                                    '<span class="perk-sub">Google Play • Verified (Tap to edit)</span>' +
                                 '</div>' +
                             '</div>' +
-                            '<span class="badge-claimed-done">Claimed</span>' +
+                            actionBtnHtml +
                         '</div>';
                 }
 
@@ -3095,7 +3581,7 @@
                             '<div class="card-acc-header-left">' +
                                 '<div class="round-svg-flag-btn" onclick="openAccountCountryPicker(\'' + a.code + '\')" style="cursor:pointer;" title="Tap to change country">' + flagSvg + '</div>' +
                                 '<span class="card-acc-email" id="email_span_' + a.code + '" title="1 tap to show (5s) • 2 taps to copy" onclick="onEmailTap(this, \'' + escapeHtml(rawEmail) + '\', \'' + escapeHtml(masked) + '\')">' + escapeHtml(masked) + '</span>' +
-                                '<div class="card-acc-points-badge" id="points_badge_' + a.code + '" onclick="editAccountPoints(\'' + a.code + '\', ' + pts + ')" style="cursor:pointer;" title="Tap to sync/edit real Play Points (PP)">' +
+                                '<div class="card-acc-points-badge" id="points_badge_' + a.code + '" onclick="openAccountConfigModal(\'' + a.code + '\')" style="cursor:pointer;" title="Tap to configure level and Play Points (PP)">' +
                                     '<svg viewBox="0 0 24 24" width="13" height="13" class="pp-diamond-icon">' +
                                         '<path d="M12 2 L22 12 L12 22 L2 12 Z" fill="#3b82f6"/>' +
                                         '<path d="M12 2 L22 12 L12 12 Z" fill="#10b981"/>' +
@@ -3118,10 +3604,13 @@
 
                         '<div class="box-sync-code">' +
                             '<div class="box-sync-code-left" onclick="toggleCodeReveal(\'' + a.code + '\', \'' + formattedCode + '\')" title="Tap to reveal QID for 5 seconds">' +
-                                '<span class="sync-code-label">QID <span class="sync-code-hint">(Tap to view)</span></span>' +
-                                '<span class="sync-code-digits code-masked" id="code_digits_' + a.code + '">● ● ●  ● ● ●</span>' +
+                                '<span class="sync-code-label">QID <span style="font-size:9.5px;color:#94a3b8;font-weight:500;">(Tap to view)</span></span>' +
+                                '<div class="sync-code-dots-wrap" id="dots_wrap_' + a.code + '">' +
+                                    '<span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span>' +
+                                '</div>' +
+                                '<span class="sync-code-revealed" id="code_revealed_' + a.code + '">' + formattedCode + '</span>' +
                             '</div>' +
-                            '<button class="btn-blue-copy" onclick="copyText(\'' + a.code + '\', \'QID\')">' +
+                            '<button class="btn-sync-code-copy" title="Copy QID" onclick="copySyncCode(\'' + a.code + '\')">' +
                                 '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">' +
                                     '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>' +
                                     '<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>' +
@@ -3135,116 +3624,6 @@
             listEl.innerHTML = html;
         }
 
-        var emailTapTimers = {};
-        function onEmailTap(spanEl, fullEmail, maskedEmail) {
-            if (!spanEl) return;
-            var currentTime = new Date().getTime();
-            var lastTap = parseInt(spanEl.getAttribute('data-last-tap') || '0', 10);
-            spanEl.setAttribute('data-last-tap', currentTime.toString());
-
-            // Double tap within 400ms: Copy email
-            if (currentTime - lastTap < 400) {
-                if (emailTapTimers[fullEmail]) {
-                    clearTimeout(emailTapTimers[fullEmail]);
-                    delete emailTapTimers[fullEmail];
-                }
-                spanEl.textContent = maskedEmail;
-                copyText(fullEmail, 'Email');
-                return;
-            }
-
-            // Single tap: Reveal full email for 5 seconds
-            spanEl.textContent = fullEmail;
-            spanEl.classList.add('email-revealed');
-
-            if (emailTapTimers[fullEmail]) {
-                clearTimeout(emailTapTimers[fullEmail]);
-            }
-
-            emailTapTimers[fullEmail] = setTimeout(function() {
-                spanEl.textContent = maskedEmail;
-                spanEl.classList.remove('email-revealed');
-                delete emailTapTimers[fullEmail];
-            }, 5000);
-        }
-
-        var codeRevealTimers = {};
-        function toggleCodeReveal(codeKey, formattedReal) {
-            var el = document.getElementById('code_digits_' + codeKey);
-            if (!el) return;
-            var dotsMask = '● ● ●  ● ● ●';
-
-            if (el.getAttribute('data-revealed') === 'true') {
-                clearTimeout(codeRevealTimers[codeKey]);
-                delete codeRevealTimers[codeKey];
-                el.textContent = dotsMask;
-                el.removeAttribute('data-revealed');
-                el.classList.remove('code-revealed');
-                return;
-            }
-
-            el.textContent = formattedReal;
-            el.setAttribute('data-revealed', 'true');
-            el.classList.add('code-revealed');
-
-            if (codeRevealTimers[codeKey]) {
-                clearTimeout(codeRevealTimers[codeKey]);
-            }
-
-            codeRevealTimers[codeKey] = setTimeout(function() {
-                el.textContent = dotsMask;
-                el.removeAttribute('data-revealed');
-                el.classList.remove('code-revealed');
-                delete codeRevealTimers[codeKey];
-            }, 5000);
-        }
-
-        function getCountrySvgBadge(code) {
-            var c = (code || 'GLOBAL').toUpperCase();
-            if (c === 'UK' || c === 'GB') {
-                return '<svg viewBox="0 0 32 32" width="26" height="26" class="round-flag-svg"><clipPath id="ukClip"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#ukClip)"><path fill="#012169" d="M0 0h32v32H0z"/><path d="M0 0l32 32m0-32L0 32" stroke="#fff" stroke-width="5.5"/><path d="M0 0l32 32m0-32L0 32" stroke="#C8102E" stroke-width="3"/><path d="M16 0v32M0 16h32" stroke="#fff" stroke-width="9"/><path d="M16 0v32M0 16h32" stroke="#C8102E" stroke-width="5"/></g></svg>';
-            }
-            if (c === 'US') {
-                return '<svg viewBox="0 0 32 32" width="26" height="26" class="round-flag-svg"><clipPath id="usClip"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#usClip)"><rect width="32" height="32" fill="#B22234"/><path d="M0 4.9h32M0 9.8h32M0 14.8h32M0 19.7h32M0 24.6h32M0 29.5h32" stroke="#fff" stroke-width="2.5"/><rect width="15" height="15" fill="#3C3B6E"/><circle cx="4" cy="4" r="1" fill="#fff"/><circle cx="11" cy="4" r="1" fill="#fff"/><circle cx="7.5" cy="7.5" r="1" fill="#fff"/><circle cx="4" cy="11" r="1" fill="#fff"/><circle cx="11" cy="11" r="1" fill="#fff"/></g></svg>';
-            }
-            if (c === 'JP') {
-                return '<svg viewBox="0 0 32 32" width="26" height="26" class="round-flag-svg"><clipPath id="jpClip"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#jpClip)"><rect width="32" height="32" fill="#fff"/><circle cx="16" cy="16" r="9" fill="#BC002D"/></g></svg>';
-            }
-            if (c === 'KR') {
-                return '<svg viewBox="0 0 32 32" width="26" height="26" class="round-flag-svg"><clipPath id="krClip"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#krClip)"><rect width="32" height="32" fill="#fff"/><path d="M16 8a8 8 0 0 0 0 16 4 4 0 0 0 0-8 4 4 0 0 1 0-8z" fill="#CD2E3A"/><path d="M16 16a4 4 0 0 0 0 8 8 8 0 0 1 0-16 4 4 0 0 0 0 8z" fill="#0047A0"/><line x1="4" y1="9" x2="8" y2="7" stroke="#000" stroke-width="1.8"/><line x1="24" y1="23" x2="28" y2="25" stroke="#000" stroke-width="1.8"/></g></svg>';
-            }
-            if (c === 'DE') {
-                return '<svg viewBox="0 0 32 32" width="26" height="26" class="round-flag-svg"><clipPath id="deClip"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#deClip)"><rect width="32" height="10.7" fill="#000"/><rect y="10.7" width="32" height="10.7" fill="#DD0000"/><rect y="21.3" width="32" height="10.7" fill="#FFCE00"/></g></svg>';
-            }
-            if (c === 'FR') {
-                return '<svg viewBox="0 0 32 32" width="26" height="26" class="round-flag-svg"><clipPath id="frClip"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#frClip)"><rect width="10.7" height="32" fill="#002395"/><rect x="10.7" width="10.7" height="32" fill="#fff"/><rect x="21.3" width="10.7" height="32" fill="#ED2939"/></g></svg>';
-            }
-            if (c === 'CA') {
-                return '<svg viewBox="0 0 32 32" width="26" height="26" class="round-flag-svg"><clipPath id="caClip"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#caClip)"><rect width="8" height="32" fill="#FF0000"/><rect x="8" width="16" height="32" fill="#fff"/><rect x="24" width="8" height="32" fill="#FF0000"/><path d="M16 8l1.5 4 3-1-1.5 3 3 1.5-3 1.5 1 3-3.5-1.5-.5 3.5-.5-3.5-3.5 1.5 1-3-3-1.5 3-1.5-1.5-3 3 1z" fill="#FF0000"/></g></svg>';
-            }
-            if (c === 'AU') {
-                return '<svg viewBox="0 0 32 32" width="26" height="26" class="round-flag-svg"><clipPath id="auClip"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#auClip)"><rect width="32" height="32" fill="#00008B"/><path d="M0 0l16 16m0-16L0 16" stroke="#fff" stroke-width="2.5"/><path d="M8 0v16M0 8h16" stroke="#CC0000" stroke-width="2"/><circle cx="24" cy="10" r="1.5" fill="#fff"/><circle cx="26" cy="18" r="1.5" fill="#fff"/><circle cx="20" cy="22" r="1.5" fill="#fff"/><circle cx="10" cy="24" r="2.2" fill="#fff"/></g></svg>';
-            }
-            if (c === 'IN') {
-                return '<svg viewBox="0 0 32 32" width="26" height="26" class="round-flag-svg"><clipPath id="inClip"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#inClip)"><rect width="32" height="10.7" fill="#FF9933"/><rect y="10.7" width="32" height="10.7" fill="#fff"/><rect y="21.3" width="32" height="10.7" fill="#138808"/><circle cx="16" cy="16" r="3.2" fill="none" stroke="#000080" stroke-width="1.2"/></g></svg>';
-            }
-            if (c === 'BD') {
-                return '<svg viewBox="0 0 32 32" width="26" height="26" class="round-flag-svg"><clipPath id="bdClip"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#bdClip)"><rect width="32" height="32" fill="#006a4e"/><circle cx="14.5" cy="16" r="7.5" fill="#f42a41"/></g></svg>';
-            }
-            return '<svg viewBox="0 0 32 32" width="26" height="26" class="round-flag-svg"><clipPath id="globClip"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#globClip)"><rect width="32" height="32" fill="#0284c7"/><circle cx="16" cy="16" r="14.5" fill="none" stroke="#e0f2fe" stroke-width="2"/><ellipse cx="16" cy="16" rx="7" ry="14.5" fill="none" stroke="#e0f2fe" stroke-width="1.6"/><line x1="1.5" y1="16" x2="30.5" y2="16" stroke="#e0f2fe" stroke-width="1.6"/><line x1="4.5" y1="9" x2="27.5" y2="9" stroke="#e0f2fe" stroke-width="1.3"/><line x1="4.5" y1="23" x2="27.5" y2="23" stroke="#e0f2fe" stroke-width="1.3"/></g></svg>';
-        }
-
-        function getRegionFlag(code) {
-            if (!code) return '🌐';
-            var c = code.toUpperCase();
-            if (c === 'GB' || c === 'UK') return '🇬🇧';
-            for (var i = 0; i < REGIONS.length; i++) {
-                if (REGIONS[i].code === c) return REGIONS[i].flag;
-            }
-            return '🌐';
-        }
-
-        // Prompt Account Deletion
         function promptDeleteAccount(code, email) {
             pendingDeleteCode = code;
             pendingLogout = false;

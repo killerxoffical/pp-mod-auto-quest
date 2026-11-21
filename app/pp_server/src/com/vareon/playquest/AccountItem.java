@@ -14,6 +14,7 @@ public class AccountItem {
     // Real Account State & Balance
     private String balance = "$0.00";
     private int points = 0;
+    private String tier = "Gold";
     private boolean hasPerk = true;
     private String lastClaimDate = "";
     private int claimedPoints = 0;
@@ -90,6 +91,15 @@ public class AccountItem {
         this.balance = balance;
     }
 
+    
+    public String getTier() {
+        return (tier != null && !tier.isEmpty()) ? tier : "Gold";
+    }
+
+    public void setTier(String tier) {
+        this.tier = (tier != null && !tier.isEmpty()) ? tier : "Gold";
+    }
+
     public int getPoints() {
         return points;
     }
@@ -157,6 +167,7 @@ public class AccountItem {
             obj.put("timestamp", timestamp);
             obj.put("balance", balance);
             obj.put("points", points);
+            obj.put("tier", getTier());
             obj.put("has_perk", hasPerk);
             obj.put("last_claim_date", lastClaimDate);
             obj.put("claimed_points", claimedPoints);
@@ -181,6 +192,7 @@ public class AccountItem {
         AccountItem item = new AccountItem(id, email, code, token, country, timestamp);
         item.setBalance(obj.optString("balance", "$0.00"));
         item.setPoints(obj.optInt("points", 0));
+        item.setTier(obj.optString("tier", "Gold"));
         item.setHasPerk(obj.optBoolean("has_perk", true));
         item.setLastClaimDate(obj.optString("last_claim_date", ""));
         item.setClaimedPoints(obj.optInt("claimed_points", 0));

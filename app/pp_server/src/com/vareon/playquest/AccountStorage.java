@@ -194,6 +194,20 @@ public class AccountStorage {
         saveList(updated);
     }
 
+    
+    public synchronized void updateAccountData(String code, int points, String tier) {
+        if (code == null) return;
+        List<AccountItem> current = getAccounts();
+        for (AccountItem item : current) {
+            if (code.equals(item.getCode())) {
+                if (points >= 0) item.setPoints(points);
+                if (tier != null && !tier.isEmpty()) item.setTier(tier);
+                break;
+            }
+        }
+        saveList(current);
+    }
+
     public synchronized void updateAccountCountry(String code, String newCountry) {
         if (code == null || newCountry == null) return;
         List<AccountItem> current = getAccounts();

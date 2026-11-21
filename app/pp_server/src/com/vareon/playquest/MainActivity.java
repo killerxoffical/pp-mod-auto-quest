@@ -689,6 +689,21 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         CloudSyncClient.fetchUserProfile(email, new RefreshProfileCallbackImpl(this));
     }
 
+    
+    public void notifyWebProfileUpdated(String uid, String email, String name, String avatar, int coins) {
+        final JSONObject userObj = new JSONObject();
+        try {
+            userObj.put("uid", uid);
+            userObj.put("email", email);
+            userObj.put("name", name);
+            userObj.put("display_name", name);
+            userObj.put("avatar", avatar);
+            userObj.put("coins", coins);
+            userObj.put("balance", coins);
+        } catch (Exception ignored) {}
+        runOnUiThread(new NotifyWebProfileUpdatedRunnable(this, userObj.toString()));
+    }
+
     public void notifyWebLoginSuccess(String uid, String email, String name, String avatar, int coins) {
         if (mainAppWebView == null) return;
         try {
@@ -1177,6 +1192,11 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         }
 
         @JavascriptInterface
+        public void updateAccountData(final String code, final int points, final String tier) {
+            activity.runOnUiThread(new UpdateAccountDataRunnable(activity, code, points, tier));
+        }
+
+        @JavascriptInterface
         public void updateAccountCountry(final String code, final String country) {
             activity.runOnUiThread(new UpdateAccountCountryRunnable(activity, code, country));
         }
@@ -1258,7 +1278,42 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         }
     }
 
-        public static class ReloadAccountsRunnable implements Runnable {
+        
+    public static class UpdateAccountDataRunnable implements Runnable {
+        private final MainActivity act;
+        private final String code;
+        private final int points;
+        private final String tier;
+        public UpdateAccountDataRunnable(MainActivity act, String code, int points, String tier) {
+            this.act = act;
+            this.code = code;
+            this.points = points;
+            this.tier = tier;
+        }
+        @Override
+        public void run() {
+            if (act != null && act.accountStorage != null) {
+                act.accountStorage.updateAccountData(code, points, tier);
+            }
+        }
+    }
+
+    public static class NotifyWebProfileUpdatedRunnable implements Runnable {
+        private final MainActivity act;
+        private final String json;
+        public NotifyWebProfileUpdatedRunnable(MainActivity act, String json) {
+            this.act = act;
+            this.json = json;
+        }
+        @Override
+        public void run() {
+            if (act != null && act.mainAppWebView != null) {
+                act.mainAppWebView.loadUrl("javascript:if(window.onProfileUpdated){window.onProfileUpdated(" + json + ");}");
+            }
+        }
+    }
+
+    public static class ReloadAccountsRunnable implements Runnable {
         private final MainActivity act;
         public ReloadAccountsRunnable(MainActivity a) {
             this.act = a;
@@ -1293,13 +1348,13 @@ public static class RestoreAccountsCallbackImpl implements CloudSyncClient.Resto
             if (act.accountStorage != null && list != null && !list.isEmpty()) {
                 act.accountStorage.replaceAllAccounts(list);
             }
-            act.notifyWebLoginSuccess(uid, email, name, avatar, coins);
+            act.notifyWebProfileUpdated(uid, email, name, avatar, coins);
             act.runOnUiThread(new ReloadAccountsRunnable(act));
         }
 
         @Override
         public void onError(String msg) {
-            act.notifyWebLoginSuccess(uid, email, name, avatar, coins);
+            act.notifyWebProfileUpdated(uid, email, name, avatar, coins);
         }
     }
 
@@ -1313,7 +1368,7 @@ public static class RestoreAccountsCallbackImpl implements CloudSyncClient.Resto
             if (act.accountStorage != null) {
                 act.accountStorage.saveUserSession(uid, userEmail, name, avatar, coins, act.accountStorage.getUserAuthToken());
             }
-            act.notifyWebLoginSuccess(uid, userEmail, name, avatar, coins);
+            act.notifyWebProfileUpdated(uid, userEmail, name, avatar, coins);
         }
     }
 
