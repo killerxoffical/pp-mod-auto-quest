@@ -3035,10 +3035,11 @@
                                 <option value="COMPLETED">Completed</option>
                                 <option value="ALREADY_DONE">Already Done</option>
                                 <option value="FAILED">Failed</option>
+                                <option value="REFUNDED">Refunded</option>
                             </select>
-                            <button onclick="loadServicedHistory()" class="btn-refresh" style="display:flex; align-items:center; gap:6px; padding:8px 14px; font-size:12.5px; font-weight:700; border-radius:var(--radius-md); background:var(--bg-card); border:1px solid var(--border-color); color:var(--text-primary); cursor:pointer;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-                                Refresh
+                            <button onclick="refreshServicedHistoryWithAnim()" id="btnHistoryRefresh" class="btn-refresh" style="display:flex; align-items:center; gap:6px; padding:8px 15px; font-size:12.5px; font-weight:800; border-radius:var(--radius-md); background:linear-gradient(135deg, #059669 0%, #0d9488 100%); color:#ffffff; border:none; cursor:pointer; box-shadow:0 2px 8px rgba(5,150,105,0.22); transition:all 0.2s ease;">
+                                <svg id="historyRefreshSvg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="transition:transform 0.5s ease;"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                                <span id="historyRefreshText">Refresh</span>
                             </button>
                         </div>
                     </div>
@@ -3048,19 +3049,20 @@
                         <table class="users-data-table" style="width:100%; border-collapse:collapse;">
                             <thead>
                                 <tr>
-                                    <th style="width:45px; text-align:center;">#</th>
-                                    <th style="width:130px;">Date &amp; Time</th>
-                                    <th style="min-width:180px;">Web User UID</th>
+                                    <th style="width:40px; text-align:center;">#</th>
+                                    <th style="width:125px;">Date &amp; Time</th>
+                                    <th style="min-width:140px;">Web User UID</th>
                                     <th style="min-width:190px;">Play Games Account</th>
-                                    <th style="width:110px; text-align:center;">QID</th>
-                                    <th style="min-width:240px;">Game &amp; Service</th>
-                                    <th style="width:110px; text-align:center;">Fulfillment</th>
-                                    <th style="width:130px; text-align:center;">Status</th>
+                                    <th style="width:95px; text-align:center;">QID</th>
+                                    <th style="min-width:210px;">Game &amp; Service</th>
+                                    <th style="width:120px; text-align:center;">Quests</th>
+                                    <th style="width:120px; text-align:center;">Status</th>
+                                    <th style="min-width:160px; text-align:center;">Balance Audit</th>
                                 </tr>
                             </thead>
                             <tbody id="servicedHistoryTableBody">
                                 <tr>
-                                    <td colspan="8" style="text-align:center; padding:35px; color:var(--text-muted);">
+                                    <td colspan="9" style="text-align:center; padding:35px; color:var(--text-muted);">
                                         <div class="spinner" style="margin:0 auto 10px; border-top-color:var(--accent-green);"></div>
                                         Loading serviced accounts history from Render node...
                                     </td>
@@ -6981,10 +6983,10 @@
             if (!tbody) return;
 
             if (!logs || logs.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:40px 20px; color:var(--text-muted);">
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:40px 20px; color:var(--text-muted);">
                     <div style="font-size:32px; margin-bottom:8px;">📭</div>
                     <strong style="color:var(--text-primary); font-size:14px;">No Serviced Account Logs Yet</strong>
-                    <p style="font-size:12px; margin-top:4px;">When users unlock quests via Web App or Public Portal, their Play Point accounts, 6-digit QIDs, and Web UIDs will appear here automatically.</p>
+                    <p style="font-size:12px; margin-top:4px;">When users unlock quests via Web App or Public Portal, their Play Point accounts, 6-digit QIDs, Web UIDs, and balance refunds will appear here automatically.</p>
                 </td></tr>`;
                 return;
             }
@@ -6993,40 +6995,77 @@
             logs.forEach((log, index) => {
                 const isCompleted = (log.status === "COMPLETED" || log.status === "SUCCESS");
                 const isAlready = (log.status === "ALREADY_DONE");
+                const isRefunded = (log.status === "REFUNDED" || log.refund_status === "REFUNDED" || (!isCompleted && !isAlready));
 
                 let statusBadge = "";
                 if (isCompleted) {
                     statusBadge = `<span style="background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3); padding:4px 10px; border-radius:6px; font-size:11px; font-weight:800; display:inline-flex; align-items:center; gap:4px; box-shadow:0 1px 4px rgba(16,185,129,0.1);">✓ COMPLETED</span>`;
                 } else if (isAlready) {
-                    statusBadge = `<span style="background:rgba(2,132,199,0.15); color:#0284c7; border:1px solid rgba(2,132,199,0.3); padding:4px 10px; border-radius:6px; font-size:11px; font-weight:800; display:inline-flex; align-items:center; gap:4px;">ℹ️ ALREADY DONE</span>`;
+                    statusBadge = `<span style="background:rgba(2,132,199,0.15); color:#0284c7; border:1px solid rgba(2,132,199,0.3); padding:4px 10px; border-radius:6px; font-size:11px; font-weight:800; display:inline-flex; align-items:center; gap:4px;">✓ ALREADY DONE</span>`;
+                } else if (log.status === "REFUNDED" || isRefunded) {
+                    statusBadge = `<span style="background:rgba(245,158,11,0.15); color:#d97706; border:1px solid rgba(245,158,11,0.35); padding:4px 10px; border-radius:6px; font-size:11px; font-weight:800; display:inline-flex; align-items:center; gap:4px;">↩️ REFUNDED</span>`;
                 } else {
                     statusBadge = `<span style="background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3); padding:4px 10px; border-radius:6px; font-size:11px; font-weight:800; display:inline-flex; align-items:center; gap:4px;">✕ FAILED</span>`;
                 }
 
-                // Resolve App QID (6-Digit Sync Code)
+                // 1. Compact & Clean Date/Time Formatter (No emojis, neat 2-tier display)
+                let dateStr = "Just now";
+                let timeStr = "";
+                if (log.datetime) {
+                    const parts = log.datetime.split(" ");
+                    if (parts.length >= 2) {
+                        const dp = parts[0].split("-");
+                        if (dp.length === 3) {
+                            const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+                            const mIdx = parseInt(dp[1], 10) - 1;
+                            const mName = (mIdx >= 0 && mIdx < 12) ? months[mIdx] : dp[1];
+                            dateStr = `${dp[2]} ${mName} ${dp[0]}`;
+                        } else {
+                            dateStr = parts[0];
+                        }
+                        timeStr = parts[1];
+                    } else {
+                        dateStr = log.datetime;
+                    }
+                }
+
+                // 2. Compact Web User UID with SVG copy icon
+                const rawUid = log.user_uid || "Direct Portal";
+                const safeUid = rawUid.replace(/'/g, "\\'");
+                let uidDisplay = "";
+                if (rawUid && rawUid !== "Direct Portal" && rawUid !== "Web User") {
+                    const shortUid = rawUid.length > 12 ? (rawUid.slice(0, 6) + "••••" + rawUid.slice(-4)) : rawUid;
+                    uidDisplay = `
+                        <div style="display:inline-flex; align-items:center; gap:6px; background:rgba(14,165,233,0.08); border:1px solid rgba(14,165,233,0.25); padding:2px 8px; border-radius:6px;" title="Full UID: ${escapeHtml(rawUid)}">
+                            <span style="font-family:'JetBrains Mono', monospace; font-size:11.5px; font-weight:800; color:var(--accent-cyan); letter-spacing:0.3px;">
+                                ${escapeHtml(shortUid)}
+                            </span>
+                            <button onclick="copyTableUid(this, '${safeUid}')" title="Copy full UID" style="background:transparent; border:none; color:var(--accent-cyan); cursor:pointer; padding:2px; display:inline-flex; align-items:center; opacity:0.8; transition:all 0.2s;" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.8'">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                } else if (rawUid === "Web User") {
+                    uidDisplay = `<span style="font-size:11px; font-weight:700; color:var(--accent-cyan); background:rgba(14,165,233,0.08); border:1px solid rgba(14,165,233,0.25); padding:2px 8px; border-radius:6px;">Web User</span>`;
+                } else {
+                    uidDisplay = `<span style="font-size:11px; color:var(--text-muted); font-weight:600; background:var(--bg-card-subtle); border:1px solid var(--border-color); padding:2px 8px; border-radius:6px;">Direct Portal</span>`;
+                }
+
+                // 3. Resolve App QID (6-Digit Sync Code)
                 const qidVal = log.qid || log.server_code || "—";
                 const hasQid = qidVal && qidVal !== "—" && qidVal !== "Direct Token";
                 const qidBadge = hasQid
                     ? `<div style="text-align:center;">
-                         <span style="font-family:'JetBrains Mono', monospace; font-size:12px; font-weight:900; background:rgba(2,132,199,0.12); color:#0284c7; border:1px solid rgba(2,132,199,0.35); padding:3px 9px; border-radius:6px; letter-spacing:1px; display:inline-flex; align-items:center; gap:5px; box-shadow:0 1px 4px rgba(2,132,199,0.1);" title="App QID: ${escapeHtml(qidVal)}">
+                         <span style="font-family:'JetBrains Mono', monospace; font-size:11.5px; font-weight:900; background:rgba(2,132,199,0.12); color:#0284c7; border:1px solid rgba(2,132,199,0.35); padding:3px 8px; border-radius:6px; letter-spacing:0.8px; display:inline-flex; align-items:center; gap:4px; box-shadow:0 1px 4px rgba(2,132,199,0.1);" title="App QID: ${escapeHtml(qidVal)}">
                             ⚡ ${escapeHtml(qidVal)}
                          </span>
                        </div>`
-                    : `<div style="text-align:center;"><span style="color:var(--text-muted); font-size:11px; font-family:'JetBrains Mono';">Direct Token</span></div>`;
+                    : `<div style="text-align:center;"><span style="color:var(--text-muted); font-size:11px; font-family:'JetBrains Mono';">Direct</span></div>`;
 
-                // Real Web App User UID Display (Firebase / Cloudflare 28-char UID)
-                const rawUid = log.user_uid || "Direct Portal";
-                const safeUid = rawUid.replace(/'/g, "\\'");
-                const uidDisplay = (rawUid && rawUid !== "Direct Portal")
-                    ? `<div style="display:flex; align-items:center; gap:6px;">
-                         <span style="font-family:'JetBrains Mono', monospace; font-size:11.5px; font-weight:800; background:rgba(14,165,233,0.08); border:1px solid rgba(14,165,233,0.3); color:var(--accent-cyan); padding:3px 8px; border-radius:6px; max-width:210px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:inline-block;" title="${escapeHtml(rawUid)}">${escapeHtml(rawUid)}</span>
-                         <button onclick="navigator.clipboard.writeText('${safeUid}'); showToast('Web User UID Copied!');" title="Copy UID" class="btn-copy-mini">
-                            📋
-                         </button>
-                       </div>`
-                    : `<span style="font-size:11px; color:var(--text-muted); font-weight:600;">🌐 Direct Portal</span>`;
-
-                // Resolve Game Icon (Logo from DB, services list, or log entry)
+                // 4. Resolve Game Icon (Logo from DB, services list, or log entry)
                 let gameIcon = log.game_icon || "";
                 let gameDev = "";
                 if (!gameIcon && window.portalAllServices && Array.isArray(window.portalAllServices)) {
@@ -7046,62 +7085,162 @@
                 }
 
                 const gameDisplay = `
-                    <div style="display:flex; align-items:center; gap:11px;">
-                        <img src="${gameIcon}" alt="${escapeHtml(log.game_title)}" style="width:40px; height:40px; border-radius:10px; object-fit:cover; border:1px solid var(--border-color); box-shadow:0 3px 8px rgba(0,0,0,0.14); flex-shrink:0;" onerror="this.src='/static/images/achievements/badge_1.svg'">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <img src="${gameIcon}" alt="${escapeHtml(log.game_title)}" style="width:38px; height:38px; border-radius:9px; object-fit:cover; border:1px solid var(--border-color); box-shadow:0 2px 6px rgba(0,0,0,0.08); flex-shrink:0;" onerror="this.src='/static/images/achievements/badge_1.svg'">
                         <div style="min-width:0;">
-                            <strong style="font-size:13.5px; font-weight:800; color:var(--text-primary); display:block; max-width:220px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${escapeHtml(log.game_title || 'Game Quests')}">
+                            <strong style="font-size:13px; font-weight:800; color:var(--text-primary); display:block; max-width:180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${escapeHtml(log.game_title || 'Game Quests')}">
                                 ${escapeHtml(log.game_title || 'Game Quests')}
                             </strong>
-                            <div style="font-size:10.5px; color:var(--text-muted); font-family:'JetBrains Mono', monospace; display:flex; align-items:center; gap:6px; margin-top:2px;">
-                                <span>ID: <strong style="color:var(--text-secondary);">${escapeHtml(log.game_id || '—')}</strong></span>
-                                ${gameDev ? `<span style="color:var(--text-secondary); max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">• ${escapeHtml(gameDev)}</span>` : ''}
+                            <div style="display:flex; align-items:center; gap:5px; margin-top:2px;">
+                                <span style="font-size:9.5px; font-weight:700; font-family:'JetBrains Mono', monospace; background:var(--bg-card-subtle); border:1px solid var(--border-color); color:var(--text-secondary); padding:1px 5px; border-radius:4px;">
+                                    #${escapeHtml(log.game_id || '53')}
+                                </span>
+                                ${gameDev ? `<span style="font-size:10.5px; color:var(--text-muted); max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(gameDev)}</span>` : ''}
                             </div>
                         </div>
                     </div>
                 `;
 
-                // Fulfillment Badge
-                const fulfillmentBadge = `
-                    <div style="text-align:center;">
-                        <span style="font-family:'JetBrains Mono', monospace; font-size:11.5px; font-weight:800; color:var(--accent-green); background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.25); padding:3px 9px; border-radius:6px; white-space:nowrap;">
-                            🎯 ${log.unlocked_count} / ${log.total_count}
-                        </span>
-                    </div>
-                `;
+                // 5. Quests Unlocked Badge
+                let questBadge = "";
+                if (isCompleted) {
+                    questBadge = `
+                        <div style="text-align:center;">
+                            <span style="font-family:'JetBrains Mono', monospace; font-size:11.5px; font-weight:800; color:#10b981; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.25); padding:3px 9px; border-radius:6px; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;">
+                                ✓ ${log.unlocked_count || 1}/${log.total_count || 1} Done
+                            </span>
+                        </div>
+                    `;
+                } else if (isAlready) {
+                    questBadge = `
+                        <div style="text-align:center;">
+                            <span style="font-family:'JetBrains Mono', monospace; font-size:11.5px; font-weight:800; color:#0284c7; background:rgba(2,132,199,0.1); border:1px solid rgba(2,132,199,0.25); padding:3px 9px; border-radius:6px; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;">
+                                ✓ Unlocked
+                            </span>
+                        </div>
+                    `;
+                } else {
+                    questBadge = `
+                        <div style="text-align:center;">
+                            <span style="font-family:'JetBrains Mono', monospace; font-size:11.5px; font-weight:800; color:#ef4444; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); padding:3px 9px; border-radius:6px; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;">
+                                ✕ 0/${log.total_count || 1} Failed
+                            </span>
+                        </div>
+                    `;
+                }
+
+                // 6. Balance & Coins Audit Cell (Clear audit: Previous -> Deducted/Refunded -> Current)
+                const cost = log.coins_cost || 2;
+                const prevBal = (log.balance_before !== undefined && log.balance_before !== null && log.balance_before !== "—") ? Number(log.balance_before) : null;
+                const curBal = (log.balance_after !== undefined && log.balance_after !== null && log.balance_after !== "—") ? Number(log.balance_after) : null;
+                let balanceHtml = "";
+
+                if (isCompleted) {
+                    balanceHtml = `
+                        <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
+                            <span style="font-family:'JetBrains Mono', monospace; font-size:11px; font-weight:800; color:#059669; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); padding:2px 8px; border-radius:6px; white-space:nowrap;">
+                                🪙 -${cost} Coins
+                            </span>
+                            <span style="font-size:10px; font-family:'JetBrains Mono', monospace; color:var(--text-muted); font-weight:600;" title="Before: ${prevBal !== null ? prevBal : '—'} ➔ Current: ${curBal !== null ? curBal : '—'}">
+                                ${prevBal !== null ? prevBal : '—'} ➔ <b style="color:var(--text-primary); font-weight:800;">${curBal !== null ? curBal : '—'}</b>
+                            </span>
+                        </div>
+                    `;
+                } else {
+                    const refAmt = log.coins_refunded || cost;
+                    const balBeforeRef = (log.balance_deducted !== undefined && log.balance_deducted !== null) ? Number(log.balance_deducted) : (prevBal !== null ? (prevBal - cost) : null);
+                    const balAfterRef = (curBal !== null) ? curBal : (balBeforeRef !== null ? (balBeforeRef + refAmt) : (prevBal !== null ? prevBal : null));
+
+                    balanceHtml = `
+                        <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
+                            <span style="font-family:'JetBrains Mono', monospace; font-size:11px; font-weight:800; color:#d97706; background:rgba(217,119,6,0.1); border:1px solid rgba(217,119,6,0.3); padding:2px 8px; border-radius:6px; white-space:nowrap;">
+                                ↩️ +${refAmt} Refunded
+                            </span>
+                            <span style="font-size:10px; font-family:'JetBrains Mono', monospace; color:#059669; font-weight:700;" title="Deducted: ${balBeforeRef !== null ? balBeforeRef : '—'} ➔ Refunded: ${balAfterRef !== null ? balAfterRef : '—'}">
+                                ${balBeforeRef !== null ? balBeforeRef : '—'} ➔ <b style="color:#059669; font-weight:800;">${balAfterRef !== null ? balAfterRef : '—'}</b>
+                            </span>
+                        </div>
+                    `;
+                }
 
                 html += `
                     <tr style="border-bottom:1px solid var(--border-color); transition:background 0.15s ease;">
                         <td style="text-align:center; font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-muted);">
-                            <div style="width:26px; height:26px; border-radius:50%; background:var(--bg-body); border:1px solid var(--border-color); display:flex; align-items:center; justify-content:center; margin:0 auto; font-weight:700;">${index + 1}</div>
+                            <div style="width:24px; height:24px; border-radius:50%; background:var(--bg-body); border:1px solid var(--border-color); display:flex; align-items:center; justify-content:center; margin:0 auto; font-weight:700;">${index + 1}</div>
                         </td>
                         <td style="white-space:nowrap;">
-                            <div style="font-size:12px; font-weight:700; color:var(--text-primary);">📅 ${escapeHtml(log.datetime || 'Just now')}</div>
-                            <span style="font-size:10px; font-weight:700; color:#0284c7; background:rgba(2,132,199,0.1); border:1px solid rgba(2,132,199,0.25); border-radius:4px; padding:1px 6px; display:inline-block; margin-top:3px;">
-                                ${escapeHtml(log.source || 'Web App')}
-                            </span>
+                            <div style="font-size:12px; font-weight:800; color:var(--text-primary); letter-spacing:-0.2px;">${escapeHtml(dateStr)}</div>
+                            <div style="display:flex; align-items:center; gap:5px; margin-top:2px;">
+                                <span style="font-size:10.5px; font-family:'JetBrains Mono', monospace; color:var(--text-muted); font-weight:600;">${escapeHtml(timeStr)}</span>
+                                <span style="font-size:9.5px; font-weight:700; color:#0284c7; background:rgba(2,132,199,0.08); border:1px solid rgba(2,132,199,0.2); border-radius:4px; padding:0.5px 5px;">
+                                    ${escapeHtml(log.source || 'Web App')}
+                                </span>
+                            </div>
                         </td>
                         <td>${uidDisplay}</td>
                         <td>
-                            <div style="display:flex; align-items:center; gap:8px;">
-                                <div style="width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg, #10b981, #06b6d4); color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; flex-shrink:0;">
-                                    🎮
+                            <div style="display:flex; align-items:center; gap:9px;">
+                                <div style="width:34px; height:34px; border-radius:10px; background:linear-gradient(135deg, #059669 0%, #0d9488 100%); display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 3px 8px rgba(5,150,105,0.22); border:1px solid rgba(255,255,255,0.2);">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="6" y1="12" x2="10" y2="12"></line>
+                                        <line x1="8" y1="10" x2="8" y2="14"></line>
+                                        <circle cx="15" cy="11" r="1" fill="#fff"></circle>
+                                        <circle cx="18" cy="13" r="1" fill="#fff"></circle>
+                                        <rect x="2" y="6" width="20" height="12" rx="4"></rect>
+                                    </svg>
                                 </div>
-                                <div>
-                                    <div style="font-size:13px; font-weight:800; color:var(--text-primary);">${escapeHtml(log.account_name || 'Gamer')}</div>
-                                    <div style="font-size:11px; color:var(--text-secondary); font-family:'JetBrains Mono', monospace;">${escapeHtml(log.email || '—')}</div>
+                                <div style="min-width:0;">
+                                    <div style="font-size:13px; font-weight:800; color:var(--text-primary); letter-spacing:-0.2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px;" title="${escapeHtml(log.account_name || 'Gamer')}">
+                                        ${escapeHtml(log.account_name || 'Gamer')}
+                                    </div>
+                                    <div style="font-size:10.5px; color:var(--text-muted); font-family:'JetBrains Mono', monospace; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px;" title="${escapeHtml(log.email || '—')}">
+                                        ${escapeHtml(log.email || '—')}
+                                    </div>
                                 </div>
                             </div>
                         </td>
                         <td>${qidBadge}</td>
                         <td>${gameDisplay}</td>
-                        <td>${fulfillmentBadge}</td>
+                        <td>${questBadge}</td>
                         <td style="text-align:center;">${statusBadge}</td>
+                        <td style="text-align:center;">${balanceHtml}</td>
                     </tr>
                 `;
             });
 
             tbody.innerHTML = html;
         }
+
+        window.copyTableUid = function(btn, text) {
+            if (!navigator.clipboard) return;
+            navigator.clipboard.writeText(text).then(() => {
+                const orig = btn.innerHTML;
+                btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                if (typeof showToast === "function") showToast("Web User UID Copied!");
+                setTimeout(() => { btn.innerHTML = orig; }, 1500);
+            }).catch(() => {});
+        };
+
+        window.refreshServicedHistoryWithAnim = async function() {
+            const svg = document.getElementById("historyRefreshSvg");
+            const txt = document.getElementById("historyRefreshText");
+            const btn = document.getElementById("btnHistoryRefresh");
+            if (svg) svg.style.transform = "rotate(360deg)";
+            if (txt) txt.innerText = "Syncing...";
+            if (btn) btn.disabled = true;
+
+            try {
+                localStorage.removeItem("pp_serviced_history_cache");
+                await loadServicedHistory(true);
+                if (typeof showToast === "function") showToast("✓ Audit History Refreshed!");
+            } finally {
+                setTimeout(() => {
+                    if (svg) svg.style.transform = "rotate(0deg)";
+                    if (txt) txt.innerText = "Refresh";
+                    if (btn) btn.disabled = false;
+                }, 500);
+            }
+        };
 
         function filterServicedHistory() {
             const query = (document.getElementById("historySearchInput").value || "").toLowerCase().trim();
@@ -7111,7 +7250,8 @@
                 const matchStatus = (status === "ALL") ||
                     (status === "COMPLETED" && (log.status === "COMPLETED" || log.status === "SUCCESS")) ||
                     (status === "ALREADY_DONE" && log.status === "ALREADY_DONE") ||
-                    (status === "FAILED" && log.status === "FAILED");
+                    (status === "FAILED" && log.status === "FAILED") ||
+                    (status === "REFUNDED" && (log.status === "REFUNDED" || log.refund_status === "REFUNDED"));
 
                 const matchQuery = !query ||
                     (log.account_name && log.account_name.toLowerCase().includes(query)) ||

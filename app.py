@@ -603,7 +603,7 @@ def save_unlock_history(data):
     except Exception as e:
         print(f"[-] Error saving unlock history: {e}")
 
-def record_unlock_log(account_name="", email="", server_code="", user_uid="", game_id="", game_title="", status="COMPLETED", unlocked_count=0, total_count=0, xp_earned=0, message="", source="Web App", game_icon=""):
+def record_unlock_log(account_name="", email="", server_code="", user_uid="", game_id="", game_title="", status="COMPLETED", unlocked_count=0, total_count=0, xp_earned=0, message="", source="Web App", game_icon="", coins_cost=2, balance_before=None, balance_after=None, refund_status=None, coins_refunded=0):
     """
     Records an unlock task into persistent circular 100-log storage and increments lifetime completed counter.
     """
@@ -667,7 +667,12 @@ def record_unlock_log(account_name="", email="", server_code="", user_uid="", ga
             "unlocked_count": int(unlocked_count or 0),
             "total_count": int(total_count or 0),
             "xp_earned": int(xp_earned or 0),
-            "message": str(message or "")
+            "message": str(message or ""),
+            "coins_cost": int(coins_cost or 2),
+            "balance_before": balance_before,
+            "balance_after": balance_after,
+            "refund_status": str(refund_status).upper() if refund_status else None,
+            "coins_refunded": int(coins_refunded or 0)
         }
 
         logs = history.get("logs", [])
@@ -5055,6 +5060,9 @@ def unlock_portal_service_quests():
     server_code = str(data.get("server_code", "") or data.get("sync_code", "") or data.get("code", "")).strip()
     user_uid = str(data.get("user_uid", "")).strip() or "Direct Portal"
     source = str(data.get("source", "Public Portal")).strip()
+    coins_cost = int(data.get("coins_cost") or 2)
+    balance_before = data.get("balance_before")
+    balance_after = data.get("balance_after")
     if not account_name and email:
         account_name = email.split("@")[0]
 
@@ -5173,7 +5181,10 @@ def unlock_portal_service_quests():
             total_count=len(selected_quest_ids),
             xp_earned=0,
             message=f"All {len(selected_quest_ids)} selected quest(s) for '{service.get('title')}' are already unlocked on your account!",
-            source="Web App" if user_uid != "Direct Portal" else "Direct Portal"
+            source="Web App" if user_uid != "Direct Portal" else "Direct Portal",
+            coins_cost=coins_cost,
+            balance_before=balance_before,
+            balance_after=balance_after
         )
         if email:
             for qid in selected_quest_ids:
@@ -5274,7 +5285,12 @@ def unlock_portal_service_quests():
             total_count=len(selected_quest_ids),
             xp_earned=0,
             message=clean_err,
-            source="Web App" if user_uid != "Direct Portal" else "Direct Portal"
+            source="Web App" if user_uid != "Direct Portal" else "Direct Portal",
+            coins_cost=coins_cost,
+            balance_before=balance_before,
+            balance_after=balance_after,
+            refund_status="REFUNDED",
+            coins_refunded=coins_cost
         )
         return jsonify({
             "ok": False,
@@ -5294,7 +5310,10 @@ def unlock_portal_service_quests():
         total_count=len(selected_quest_ids),
         xp_earned=total_xp_earned,
         message=f"🎉 অভিনন্দন! আপনার '{service.get('title')}' গেমের কোয়েস্ট সফলভাবে আনলক হয়ে গেছে। Google Play Store-এ গিয়ে পয়েন্ট ক্লেইম করে নিন!",
-        source="Web App" if user_uid != "Direct Portal" else "Direct Portal"
+        source="Web App" if user_uid != "Direct Portal" else "Direct Portal",
+        coins_cost=coins_cost,
+        balance_before=balance_before,
+        balance_after=balance_after
     )
 
     return jsonify({
@@ -5309,6 +5328,44 @@ def unlock_portal_service_quests():
         "unlocked_quests": unlocked_now,
         "message": f"🎉 অভিনন্দন! আপনার '{service.get('title')}' গেমের কোয়েস্ট সফলভাবে আনলক হয়ে গেছে। Google Play Store-এ গিয়ে পয়েন্ট ক্লেইম করে নিন!"
     })
+
+@app.route("/api/portal/record-refund", methods=["POST"])
+def record_portal_refund():
+    """
+    Explicitly records an order cancellation or instant refund event into the persistent 100-log history table.
+    """
+    data = request.get_json(silent=True) or {}
+    user_uid = str(data.get("user_uid") or "").strip() or "Web User"
+    coins_ref = int(data.get("coins_refunded") or 2)
+    bal_before = data.get("balance_before")
+    bal_deducted = data.get("balance_deducted")
+    bal_after = data.get("balance_after")
+    account_name = str(data.get("account_name") or "")
+    email = str(data.get("email") or "")
+    server_code = str(data.get("server_code") or "—")
+    game_title = str(data.get("game_title") or "Game Quests")
+    reason = str(data.get("reason") or "Order Cancelled & 100% Refunded to Wallet")
+
+    log_entry = record_unlock_log(
+        account_name=account_name,
+        email=email,
+        server_code=server_code,
+        user_uid=user_uid,
+        game_id="",
+        game_title=game_title,
+        status="REFUNDED",
+        unlocked_count=0,
+        total_count=1,
+        xp_earned=0,
+        message=reason,
+        source="Web App",
+        coins_cost=coins_ref,
+        balance_before=bal_deducted,
+        balance_after=bal_after,
+        refund_status="REFUNDED",
+        coins_refunded=coins_ref
+    )
+    return jsonify({"ok": True, "log": log_entry}), 200
 
 @app.route("/portal")
 @app.route("/public-portal")
