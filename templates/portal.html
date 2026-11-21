@@ -1238,9 +1238,28 @@
                 if (iconEl) iconEl.innerText = "⚠️";
                 title.innerText = `Notice: ${data.service_title || 'Quest Service'}`;
                 if (subtitle) subtitle.innerText = "Google Play Games Quest Status";
+                
+                let cleanErr = data.error || 'Failed to complete quest service. Please check your account connection or retry.';
+                if (typeof cleanErr === "string" && cleanErr.includes('{') && cleanErr.includes('}')) {
+                    try {
+                        const start = cleanErr.indexOf('{');
+                        const end = cleanErr.lastIndexOf('}') + 1;
+                        const parsed = JSON.parse(cleanErr.slice(start, end));
+                        if (parsed.error) {
+                            const errObj = parsed.error;
+                            const reason = (errObj.errors && errObj.errors[0] && errObj.errors[0].reason) || "";
+                            if (reason === 'UnauthorizedThirdPartyApiAccess' || (errObj.message && errObj.message.includes('third party API'))) {
+                                cleanErr = "এই Google একাউন্টটিতে Google Play Games-এর Third-Party অ্যাক্সেস পারমিশন লিমিটেড (Account Third-Party Restricted)। প্লে স্টোরে একাউন্টটি সচল করুন বা অন্য সচল একাউন্ট দিয়ে চেষ্টা করুন।";
+                            } else if (errObj.message) {
+                                cleanErr = errObj.message;
+                            }
+                        }
+                    } catch(e) {}
+                }
+
                 body.innerHTML = `
-                    <div style="padding:12px; color:#ef4444; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2); border-radius:8px; font-weight:600; text-align:center; font-size:13px; line-height:1.5;">
-                        ${data.error || 'Failed to complete quest service. Please check your account connection or retry.'}
+                    <div style="padding:14px; color:#ef4444; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.22); border-radius:10px; font-weight:600; text-align:center; font-size:13px; line-height:1.6;">
+                        ${escapeHtml(cleanErr)}
                     </div>
                 `;
             }
