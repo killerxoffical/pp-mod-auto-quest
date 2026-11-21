@@ -499,15 +499,15 @@
             <div class="metric-tile">
                 <div class="tile-icon green">🎯</div>
                 <div class="tile-text">
-                    <h3 id="statQuestsCount">0 Objectives</h3>
-                    <p>Live Achievement Scope</p>
+                    <h3 id="statQuestsCount">0 Active Quests</h3>
+                    <p>Live Quest Catalog</p>
                 </div>
             </div>
             <div class="metric-tile">
                 <div class="tile-icon gold">⚡</div>
                 <div class="tile-text">
-                    <h3>+3,375,000 XP</h3>
-                    <p>Level Acceleration Pool</p>
+                    <h3>Instant Sync</h3>
+                    <p>Play Points Ready</p>
                 </div>
             </div>
             <div class="metric-tile">
@@ -590,7 +590,7 @@
                 <div>
                     <h2 style="font-size:20px; font-weight:900; letter-spacing:-0.4px;">Available Quest Services</h2>
                     <p style="font-size:12.5px; color:var(--text-muted); margin-top:2px;">
-                        Curated Play Games achievement &amp; level-up services available for completion.
+                        Curated Play Games quest services available for completion.
                     </p>
                 </div>
                 <span style="font-size:12px; font-weight:800; color:var(--accent-cyan); font-family:'JetBrains Mono';" id="serviceCountBadge">
@@ -604,7 +604,7 @@
                     <span>🎮 All Services (<span id="portalCountAll">0</span>)</span>
                 </button>
                 <button class="portal-section-pill" id="portalPillLevelUp" onclick="setPortalSection('level_up')" style="color:#d97706; border-color:rgba(217,119,6,0.3); background:rgba(245,158,11,0.08);">
-                    <span>⚡ LEVEL-UP XP Boosters (<span id="portalCountLevelUp">0</span>)</span>
+                    <span>⚡ LEVEL-UP Boosters (<span id="portalCountLevelUp">0</span>)</span>
                 </button>
                 <button class="portal-section-pill" id="portalPillQuests" onclick="setPortalSection('quest_unlocker')">
                     <span>🎯 Play Points Quests (<span id="portalCountQuests">0</span>)</span>
@@ -620,7 +620,7 @@
             </div>
             <div id="portalLiveSyncNotice" style="display:none; align-items:center; gap:8px; margin-bottom:14px; padding:8px 14px; background:rgba(2,132,199,0.08); border:1px solid rgba(2,132,199,0.25); border-radius:var(--radius-md); font-size:12px; color:var(--accent-cyan); font-weight:600;">
                 <div class="spinner" style="width:14px; height:14px; border-width:2px; border-top-color:var(--accent-cyan);"></div>
-                <span>Checking real-time live achievement progress from Google Play Games servers...</span>
+                <span>Checking real-time live quest progress from Google Play Games servers...</span>
             </div>
 
             <div class="services-grid" id="portalServicesList">
@@ -637,7 +637,7 @@
             <div style="text-align:center; margin-bottom:18px;">
                 <div style="font-size:42px; margin-bottom:8px;">🎉</div>
                 <h3 id="modalResTitle" style="font-size:18px; font-weight:900; color:var(--text-primary); margin:0;">Quests Completed Successfully!</h3>
-                <p id="modalResSubtitle" style="font-size:12.5px; color:var(--text-muted); margin-top:4px;">Official GPGS Quest Objectives Completed</p>
+                <p id="modalResSubtitle" style="font-size:12.5px; color:var(--text-muted); margin-top:4px;">Google Play Store Quests Unlocked</p>
             </div>
 
             <div id="modalResBody" style="background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:16px; margin-bottom:18px; font-size:12.5px; line-height:1.6;">
@@ -711,7 +711,7 @@
                         totalQ += (s.selected_quests_count || (s.selected_quests ? s.selected_quests.length : 0));
                     });
                     const statQuests = document.getElementById("statQuestsCount");
-                    if (statQuests) statQuests.innerText = `${totalQ} Active Objectives`;
+                    if (statQuests) statQuests.innerText = `${totalQ} Active Quests`;
 
                     renderPortalServices();
                 }
@@ -849,9 +849,9 @@
                 } else if (completedCount > 0) {
                     secBadge = `<span class="service-badge-partial">⚡ ${completedCount}/${quests.length} সম্পূর্ণ (${quests.length - completedCount} টি বাকি)</span>`;
                 } else if (isLevelUp) {
-                    secBadge = `<span class="service-badge" style="background:rgba(245,158,11,0.15); color:#d97706; border-color:rgba(245,158,11,0.3);">⚡ LEVEL-UP (+100K XP)</span>`;
+                    secBadge = `<span class="service-badge" style="background:rgba(245,158,11,0.15); color:#d97706; border-color:rgba(245,158,11,0.3);">⚡ LEVEL-UP Boost</span>`;
                 } else {
-                    secBadge = `<span class="service-badge">🎯 ${selCount} Objectives</span>`;
+                    secBadge = `<span class="service-badge">🎯 ${selCount} Quests</span>`;
                 }
 
                 let questsHtml = "";
@@ -866,7 +866,7 @@
                             <img src="${iconSrc}" referrerpolicy="no-referrer" onerror="this.src='/static/images/achievements/badge_1.svg'" class="quest-icon">
                             <span class="quest-name">${escapeHtml(q.name)}</span>
                             ${doneBadge}
-                            <span class="quest-xp">+${(q.experiencePoints || 5000).toLocaleString()} XP</span>
+                            <span class="quest-xp">🎯 Play Points Quest</span>
                         </div>
                     `;
                 });
@@ -907,8 +907,8 @@
 
                             <div style="margin-top:14px;">
                                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                                    <span style="font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase;">Included Objectives:</span>
-                                    <span style="font-size:11px; font-weight:800; font-family:'JetBrains Mono'; color:${isCompleted ? '#10b981' : 'var(--accent-cyan)'};">${isCompleted ? `${quests.length}/${quests.length} Completed` : `${quests.length} Objectives`}</span>
+                                    <span style="font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase;">Included Quests:</span>
+                                    <span style="font-size:11px; font-weight:800; font-family:'JetBrains Mono'; color:${isCompleted ? '#10b981' : 'var(--accent-cyan)'};">${isCompleted ? `${quests.length}/${quests.length} Completed` : `${quests.length} Quests`}</span>
                                 </div>
                                 <div class="quests-list">
                                     ${questsHtml}
