@@ -1291,7 +1291,7 @@ def get_sync_accounts():
         and a.get("email") != "Google Play User"
     ]
 
-    # Re-verify and auto-update countries if missing or GLOBAL
+    # Re-verify and auto-update countries if missing or GLOBAL, and attach points & perk data
     for a in clean_accounts:
         cd = a.get("code")
         c = (a.get("country") or "").strip().upper()
@@ -1304,6 +1304,15 @@ def get_sync_accounts():
                 if cd and cd in SYNC_CODES:
                     SYNC_CODES[cd]["country"] = det
                     save_sync_codes(SYNC_CODES)
+
+        # Attach real points, tier, balance and perk claim status
+        entry = SYNC_CODES.get(cd, {}) if cd else {}
+        a["points"] = entry.get("points", a.get("points", 260))
+        a["tier"] = entry.get("tier", a.get("tier", "Gold"))
+        a["balance"] = entry.get("balance", a.get("balance", "$0.00"))
+        a["has_perk"] = entry.get("has_perk", a.get("has_perk", True))
+        a["claimed"] = entry.get("claimed", False)
+        a["last_claim_date"] = entry.get("last_claim_date", a.get("last_claim_date", ""))
 
     save_sync_codes(SYNC_CODES)
     return jsonify({"ok": True, "accounts": clean_accounts})
