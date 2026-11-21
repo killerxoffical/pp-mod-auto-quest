@@ -2840,6 +2840,7 @@
             renderTopbarProfile();
             showView('viewHome');
             loadAccounts();
+            syncCloudAccounts(); // Auto-restore all connected accounts on new mobile device!
             showToast("Welcome back, " + (appInfo.userName || 'User') + "!");
         }
 

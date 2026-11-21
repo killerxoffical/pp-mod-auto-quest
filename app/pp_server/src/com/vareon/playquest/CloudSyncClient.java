@@ -866,7 +866,37 @@ public class CloudSyncClient {
                 OutputStream os = conn.getOutputStream();
                 os.write(body.toString().getBytes("UTF-8"));
                 os.close();
-                conn.getResponseCode();
+
+                int rCode = conn.getResponseCode();
+                if (rCode == 200 && storage != null) {
+                    BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = br.readLine()) != null) sb.append(line);
+                    br.close();
+
+                    JSONObject res = new JSONObject(sb.toString());
+                    JSONArray serverAccounts = res.optJSONArray("accounts");
+                    if (serverAccounts != null && serverAccounts.length() > 0) {
+                        List<AccountItem> localAccs = storage.getAccounts();
+                        if (localAccs.isEmpty() || localAccs.size() < serverAccounts.length()) {
+                            List<AccountItem> mergedList = new ArrayList<AccountItem>();
+                            for (int i = 0; i < serverAccounts.length(); i++) {
+                                JSONObject o = serverAccounts.getJSONObject(i);
+                                String em = o.optString("email", "");
+                                String cd = o.optString("code", "");
+                                String tok = o.optString("token", "");
+                                String cy = o.optString("country", "GLOBAL");
+                                if (!em.isEmpty() && !cd.isEmpty()) {
+                                    mergedList.add(new AccountItem("acc_" + cd, em, cd, tok, cy, storage.getUserUid(), storage.getUserEmail(), System.currentTimeMillis()));
+                                }
+                            }
+                            if (!mergedList.isEmpty()) {
+                                storage.replaceAllAccounts(mergedList);
+                            }
+                        }
+                    }
+                }
                 conn.disconnect();
             } catch (Exception ignored) {}
         }

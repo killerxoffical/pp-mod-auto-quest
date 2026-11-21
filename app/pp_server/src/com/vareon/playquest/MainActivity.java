@@ -107,6 +107,11 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 CloudSyncClient.registerDevice(this, accountStorage);
                 String deviceId = SecurityGuard.getDeviceId(this);
                 CloudSyncClient.checkDeviceLock(deviceId, new DeviceLockCallbackImpl(this));
+
+                // Auto-sync user accounts from cloud on app startup if logged in
+                if (accountStorage != null && accountStorage.isLoggedIn()) {
+                    restoreAccountsFromCloud();
+                }
             } catch (Throwable ignored) {
             }
         } catch (Throwable fatal) {
@@ -1253,7 +1258,20 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         }
     }
 
-    public static class RestoreAccountsCallbackImpl implements CloudSyncClient.RestoreCallback {
+        public static class ReloadAccountsRunnable implements Runnable {
+        private final MainActivity act;
+        public ReloadAccountsRunnable(MainActivity a) {
+            this.act = a;
+        }
+        @Override
+        public void run() {
+            if (act != null && act.mainAppWebView != null) {
+                act.mainAppWebView.loadUrl("javascript:(function(){ if(window.syncCloudAccounts) window.syncCloudAccounts(); else if(window.loadAccounts) window.loadAccounts(); })();");
+            }
+        }
+    }
+
+public static class RestoreAccountsCallbackImpl implements CloudSyncClient.RestoreCallback {
         private final MainActivity act;
         private final String uid;
         private final String email;
@@ -1273,9 +1291,10 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         @Override
         public void onLoaded(List<AccountItem> list) {
             if (act.accountStorage != null && list != null && !list.isEmpty()) {
-                act.accountStorage.saveAccounts(list);
+                act.accountStorage.replaceAllAccounts(list);
             }
             act.notifyWebLoginSuccess(uid, email, name, avatar, coins);
+            act.runOnUiThread(new ReloadAccountsRunnable(act));
         }
 
         @Override
