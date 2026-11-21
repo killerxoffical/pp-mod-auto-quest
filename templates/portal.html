@@ -1045,6 +1045,11 @@
                 document.getElementById("portalDisplayName").innerText = acc.email.split("@")[0] || "Connected User";
                 document.getElementById("portalEmail").innerText = acc.email || "Connected";
             }
+
+            // Immediately check live achievement progress from Google Play Games to show completed status on cards
+            setTimeout(() => {
+                checkPortalLiveProgress();
+            }, 50);
         }
 
         function disconnectPortalAccount() {

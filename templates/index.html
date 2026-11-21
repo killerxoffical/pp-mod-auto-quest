@@ -1614,7 +1614,7 @@
                                 <span>🏆</span> <span id="topAchievementsCount">592</span> Achievements Unlocked
                             </span>
                             <span id="topEmail"
-                                style="font-size:11.5px; color:var(--text-muted); font-family:'JetBrains Mono';">mdd145712@gmail.com</span>
+                                style="font-size:11.5px; color:var(--text-muted); font-family:'JetBrains Mono';">Active Master Account</span>
                             <button type="button" class="btn-sync-protocol"
                                 style="padding:3px 9px; font-size:10.5px; margin-left:6px; border-radius:10px; background:rgba(14,165,233,0.15); border:1px solid rgba(14,165,233,0.4); color:var(--accent-cyan); display:inline-flex; align-items:center; gap:4px;"
                                 onclick="openAccountSwitchModal()">🔄 Switch / Add Account</button>
@@ -2101,7 +2101,7 @@
                                                 Live</span></span>
                                     </div>
                                     <span id="fullPanelEmailSub"
-                                        style="font-size:13px; color:var(--accent-cyan); font-family:'JetBrains Mono'; font-weight:600; margin-top:3px; display:block;">user@gmail.com</span>
+                                        style="font-size:13px; color:var(--accent-cyan); font-family:'JetBrains Mono'; font-weight:600; margin-top:3px; display:block;">—</span>
                                 </div>
                             </div>
                             <div style="text-align:right;">
@@ -2110,7 +2110,7 @@
                                     Model</span>
                                 <div id="fullPanelDeviceTitle"
                                     style="font-size:15px; font-weight:800; color:var(--text-primary); margin-top:2px;">
-                                    📱 Xiaomi Redmi 13C</div>
+                                    📱 Android Device</div>
                             </div>
                         </div>
 
@@ -3362,7 +3362,7 @@
                     </div>
                     <div id="modalUserEmail" class="form-input-element"
                         style="font-family:'JetBrains Mono'; font-size:12.5px; background:var(--bg-card-subtle);">
-                        user@gmail.com</div>
+                        —</div>
                 </div>
 
                 <!-- Sync Credential with Full View and Copy -->
@@ -3677,7 +3677,7 @@
                     </div>
                     <div id="popAccountEmail" class="form-input-element"
                         style="font-family:'JetBrains Mono'; font-size:12px; background:var(--bg-card-subtle);">
-                        user@gmail.com</div>
+                        —</div>
                 </div>
 
                 <!-- Server Node URL Field -->
@@ -3751,7 +3751,7 @@
                             Active Session:</span>
                         <div id="switchModalCurrentEmail"
                             style="font-size:13.5px; font-weight:700; color:var(--text-primary); font-family:'JetBrains Mono'; margin-top:2px;">
-                            mdd145712@gmail.com</div>
+                            No Active Session</div>
                     </div>
                     <span class="badge-status active">● Connected</span>
                 </div>
@@ -4585,7 +4585,7 @@
             const listDiv = document.getElementById("switchModalAccountsList");
             const curEmailEl = document.getElementById("switchModalCurrentEmail");
 
-            const curEmail = (currentSession && currentSession.email) ? currentSession.email : "mdd145712@gmail.com";
+            const curEmail = (currentSession && currentSession.email) ? currentSession.email : "—";
             curEmailEl.innerText = curEmail;
             modal.classList.remove("hidden");
             listDiv.innerHTML = `<div style="font-size:12px; color:var(--text-muted); padding:10px; text-align:center;">Loading accounts...</div>`;
@@ -5065,6 +5065,31 @@
 
                 const accCount = u.accounts_count !== undefined ? u.accounts_count : (u.accounts ? u.accounts.length : 0);
 
+                let accountsPreviewHtml = '';
+                if (accCount === 0) {
+                    accountsPreviewHtml = `<span class="badge-status" style="background:rgba(100,116,139,0.12); color:#94a3b8; border-color:rgba(100,116,139,0.25); font-size:11px;">0 Accounts (Device Only)</span>`;
+                } else {
+                    const accList = (u.accounts && Array.isArray(u.accounts)) ? u.accounts : [];
+                    const renderedPills = accList.slice(0, 3).map(a => {
+                        const em = a.email || 'Account';
+                        const cd = a.code ? ` (${a.code})` : '';
+                        return `<div style="font-family:'JetBrains Mono'; font-size:10.5px; color:var(--text-secondary); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:210px;" title="${escapeHtml(em + cd)}">• <strong>${escapeHtml(em)}</strong><span style="color:var(--accent-cyan); font-weight:700;">${escapeHtml(cd)}</span></div>`;
+                    }).join('');
+                    const moreText = accCount > 3 ? `<div style="font-size:10px; font-weight:700; color:var(--accent-cyan); margin-top:3px; cursor:pointer;" onclick="event.stopPropagation(); openUserFullPanel(${actualIndex})">+${accCount - 3} more account(s) (Inspect ➔)</div>` : '';
+
+                    accountsPreviewHtml = `
+                        <div style="cursor:pointer;" onclick="openUserFullPanel(${actualIndex})" title="Click to inspect all ${accCount} accounts">
+                            <span class="badge-status active" style="font-size:11px; font-weight:800; background:rgba(16,185,129,0.15); border-color:rgba(16,185,129,0.3); color:#10b981;">
+                                📱 ${accCount} Synced Account${accCount === 1 ? '' : 's'}
+                            </span>
+                            <div style="margin-top:4px;">
+                                ${renderedPills}
+                                ${moreText}
+                            </div>
+                        </div>
+                    `;
+                }
+
                 tr.innerHTML = `
                 <td>
                     <div class="user-clickable-cell" onclick="openUserFullPanel(${actualIndex})" title="Click to view full profile">
@@ -5096,7 +5121,7 @@
                     </div>
                 </td>
                 <td>
-                    <span class="badge-status active" style="font-size:11px; font-weight:700;">${accCount} Account${accCount === 1 ? '' : 's'}</span>
+                    ${accountsPreviewHtml}
                 </td>
                 <td>
                     <span class="badge-status ${u.is_banned ? 'banned' : (u.is_locked ? 'banned' : 'active')}">${u.status}</span>

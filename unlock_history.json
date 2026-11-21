@@ -1,5 +1,18 @@
 {
-  "total_completed_count": 0,
-  "total_requests_count": 0,
-  "logs": []
+  "total_completed_count": 1,
+  "total_requests_count": 1,
+  "logs": [
+    {
+      "timestamp": "2026-11-21 07:15:22",
+      "account_name": "FullElucidation140",
+      "email": "mdsiamhasan99443@gmail.com",
+      "server_code": "524409",
+      "user_uid": "UID-784912",
+      "game_id": "53",
+      "game_title": "Arknights: Endfield",
+      "status": "COMPLETED",
+      "unlocked_count": 1,
+      "total_count": 1
+    }
+  ]
 }

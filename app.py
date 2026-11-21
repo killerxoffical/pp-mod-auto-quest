@@ -172,48 +172,94 @@ def find_portal_service(services, query_id):
 
 REGISTERED_DEVICES_CACHE = None
 
+def deep_merge_device_dicts(base_dict: dict, incoming_dict: dict) -> dict:
+    if not isinstance(base_dict, dict):
+        base_dict = {}
+    if not isinstance(incoming_dict, dict):
+        incoming_dict = {}
+
+    merged = dict(base_dict)
+    for dev_id, inc in incoming_dict.items():
+        if not isinstance(inc, dict):
+            continue
+        d_id = str(dev_id).strip()
+        if not d_id:
+            continue
+        if d_id not in merged or not isinstance(merged[d_id], dict):
+            merged[d_id] = inc
+        else:
+            cur = merged[d_id]
+            # Merge account items by email / code (remove placeholder dummy accounts)
+            cur_accs = {}
+            for a in cur.get("accounts", []):
+                if isinstance(a, dict):
+                    key = (a.get("email") or a.get("code") or "").strip().lower()
+                    if key and key not in ["mdd145712@gmail.com", "user@gmail.com"]:
+                        cur_accs[key] = a
+            for a in inc.get("accounts", []):
+                if isinstance(a, dict):
+                    key = (a.get("email") or a.get("code") or "").strip().lower()
+                    if key and key not in ["mdd145712@gmail.com", "user@gmail.com"]:
+                        if key not in cur_accs:
+                            cur_accs[key] = a
+                        else:
+                            if a.get("token") and not cur_accs[key].get("token"):
+                                cur_accs[key]["token"] = a["token"]
+                            if a.get("code") and not cur_accs[key].get("code"):
+                                cur_accs[key]["code"] = a["code"]
+                            if a.get("country") and not cur_accs[key].get("country"):
+                                cur_accs[key]["country"] = a["country"]
+            cur["accounts"] = list(cur_accs.values())
+
+            # Update profile info if missing
+            for field in ["ppmod_uid", "ppmod_email", "ppmod_name", "ppmod_avatar", "model", "android_version", "app_version"]:
+                if inc.get(field) and not cur.get(field):
+                    cur[field] = inc[field]
+
+            if inc.get("is_logged_in"):
+                cur["is_logged_in"] = True
+            if inc.get("last_seen"):
+                cur["last_seen"] = inc["last_seen"]
+            if inc.get("ip"):
+                cur["ip"] = inc["ip"]
+    return merged
+
 def load_registered_devices():
     global REGISTERED_DEVICES_CACHE
-    if REGISTERED_DEVICES_CACHE is not None and isinstance(REGISTERED_DEVICES_CACHE, dict):
-        return REGISTERED_DEVICES_CACHE
-
     data = {}
+    # 1. Load local file first
     if os.path.exists(REGISTERED_DEVICES_FILE):
         try:
             with open(REGISTERED_DEVICES_FILE, "r", encoding="utf-8") as f:
                 raw = json.load(f)
-                if isinstance(raw, dict) and raw:
+                if isinstance(raw, dict):
                     data = raw
-                    REGISTERED_DEVICES_CACHE = data
-                    return data
                 elif isinstance(raw, list):
-                    # Convert list to dict keyed by device_id
                     for item in raw:
                         if isinstance(item, dict) and item.get("device_id"):
                             data[str(item["device_id"])] = item
         except Exception:
             pass
 
-    # Fallback: check Cloudflare D1 persistent cloud store
+    # 2. ALWAYS fetch and deep-merge Cloudflare D1 persistent cloud store
     try:
-        cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/registered-devices", timeout=6)
+        cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/registered-devices", timeout=5)
         if cf_res.status_code == 200:
-            cloud_data = cf_res.json()
-            if isinstance(cloud_data, dict) and cloud_data:
-                data = cloud_data
-            elif isinstance(cloud_data, list):
-                # Convert list to dict keyed by device_id
-                for item in cloud_data:
-                    if isinstance(item, dict) and item.get("device_id"):
-                        data[str(item["device_id"])] = item
-            if data:
+            cloud_raw = cf_res.json()
+            cloud_dict = {}
+            if isinstance(cloud_raw, list):
+                cloud_dict = {str(item["device_id"]): item for item in cloud_raw if isinstance(item, dict) and item.get("device_id")}
+            elif isinstance(cloud_raw, dict):
+                cloud_dict = cloud_raw
+            if cloud_dict:
+                data = deep_merge_device_dicts(data, cloud_dict)
                 try:
                     with open(REGISTERED_DEVICES_FILE, "w", encoding="utf-8") as f:
                         json.dump(data, f, indent=2, ensure_ascii=False)
                 except Exception:
                     pass
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"[-] Cloudflare device fetch error: {e}")
 
     if not isinstance(data, dict):
         data = {}
@@ -232,10 +278,13 @@ def save_registered_devices(data):
     except Exception as e:
         print(f"[-] Error saving registered devices: {e}")
 
-    # Asynchronously persist registered devices to Cloudflare D1
+    # Asynchronously deep merge with Cloudflare D1 and persist (no devices dropped)
     def _sync_devs():
         try:
-            requests.post("https://ppmod-api.tredarskvt.workers.dev/api/cloud/registered-devices", json=data, timeout=8)
+            cf_get = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/registered-devices", timeout=5)
+            cloud_cur = cf_get.json() if (cf_get.status_code == 200 and isinstance(cf_get.json(), dict)) else {}
+            all_merged = deep_merge_device_dicts(cloud_cur, data)
+            requests.post("https://ppmod-api.tredarskvt.workers.dev/api/cloud/registered-devices", json=all_merged, timeout=8)
         except Exception as e:
             print(f"[-] Cloudflare D1 device sync error: {e}")
     threading.Thread(target=_sync_devs, daemon=True).start()
@@ -2589,9 +2638,21 @@ def get_admin_users():
             "created_at": dev_data.get("first_seen", "Active")
         })
 
-    # Ensure all authenticated accounts from known_tokens are present in the user panel
+    def email_already_covered(target_email: str) -> bool:
+        if not target_email:
+            return False
+        target_low = target_email.strip().lower()
+        for u in user_list:
+            if (u.get("email") or "").strip().lower() == target_low:
+                return True
+            for a in u.get("accounts", []):
+                if isinstance(a, dict) and (a.get("email") or "").strip().lower() == target_low:
+                    return True
+        return False
+
+    # Ensure all authenticated accounts from known_tokens are accounted for
     for k_email, k_token in load_known_tokens().items():
-        if not any(u.get("email") == k_email for u in user_list):
+        if not email_already_covered(k_email):
             dev_id = f"dev_{abs(hash(k_email)) % 9000000 + 1000000:x}00"
             display_name = k_email.split("@")[0].capitalize()
             avatar = ""
@@ -2619,9 +2680,9 @@ def get_admin_users():
                 "email": k_email,
                 "avatar": avatar,
                 "device_id": dev_id,
-                "model": "Xiaomi Redmi 13C",
-                "android_version": "Android 14",
-                "app_version": "3.0 (PPM Server)",
+                "model": "Cloud Synced Node",
+                "android_version": "Android",
+                "app_version": "v4.1 Official (Code 5)",
                 "is_locked": dev_id in locked_devices,
                 "sync_code": primary_code,
                 "accounts_count": 1,
@@ -2653,7 +2714,7 @@ def get_admin_users():
                 c_email = (c_acc.get("email") or "").strip()
                 c_code = (c_acc.get("code") or "").strip()
                 if c_email and "@" in c_email:
-                    if not any(u.get("email", "").lower() == c_email.lower() for u in user_list):
+                    if not email_already_covered(c_email):
                         dev_id = f"dev_{abs(hash(c_email)) % 9000000 + 1000000:x}00"
                         user_list.append({
                             "uid": f"UID-{abs(hash(c_email)) % 900000 + 100000}",
@@ -2661,9 +2722,9 @@ def get_admin_users():
                             "email": c_email,
                             "avatar": "",
                             "device_id": dev_id,
-                            "model": "Mobile Node (Paired)",
-                            "android_version": "Android 14",
-                            "app_version": "3.0 (PP Server)",
+                            "model": "Cloud Synced Node",
+                            "android_version": "Android",
+                            "app_version": "v4.1 Official (Code 5)",
                             "is_locked": False,
                             "sync_code": c_code,
                             "accounts_count": 1,
