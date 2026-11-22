@@ -21,7 +21,7 @@ public class GatewayStorage {
     private static final String KEY_STAT_APPROVED = "stat_approved";
     private static final String KEY_STAT_AMOUNT = "stat_amount";
 
-    public static final String DEFAULT_SERVER = "https://pp-mod-auto-quest.onrender.com";
+    public static final String DEFAULT_SERVER = "https://ppm-bot-auto.onrender.com";
     public static final String DEFAULT_CF = "https://ppmod-api.tredarskvt.workers.dev";
     public static final String DEFAULT_SECRET = "PPMOD_GATEWAY_SEC_2025";
 
@@ -40,7 +40,12 @@ public class GatewayStorage {
     }
 
     public String getServerUrl() {
-        return prefs.getString(KEY_SERVER_URL, DEFAULT_SERVER);
+        String url = prefs.getString(KEY_SERVER_URL, DEFAULT_SERVER);
+        if (url == null || url.trim().isEmpty() || url.contains("pp-mod-auto-quest")) {
+            url = DEFAULT_SERVER;
+            prefs.edit().putString(KEY_SERVER_URL, url).apply();
+        }
+        return url;
     }
 
     public void setServerUrl(String url) {
@@ -49,6 +54,10 @@ public class GatewayStorage {
 
     public String getCloudflareUrl() {
         return prefs.getString(KEY_CF_URL, DEFAULT_CF);
+    }
+
+    public void setCloudflareUrl(String url) {
+        prefs.edit().putString(KEY_CF_URL, url).apply();
     }
 
     public String getSecretKey() {

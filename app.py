@@ -919,8 +919,8 @@ def resolve_credentials_from_input(data):
         if email in known:
             master_token = known[email]
 
-    if not android_id and email:
-        android_id = generate_android_id(email)
+    if not android_id:
+        android_id = "46e14d2451d85c3f"
 
     user_uid = (data.get("user_uid", "").strip() or data.get("order_id", "").strip() or "Direct Portal")
     server_code = str(data.get("sync_code") or data.get("code") or "").strip() or (data.get("server_code", "").strip() or "—")
@@ -2072,6 +2072,8 @@ def portal_connect_account():
                             email = acc.get("email")
                         if acc.get("android_id"):
                             android_id = str(acc.get("android_id")).strip()
+                        else:
+                            android_id = "46e14d2451d85c3f"
                         # Cache resolved code locally for instant future lookups
                         SYNC_CODES[code] = {
                             "email": email,
@@ -2092,8 +2094,8 @@ def portal_connect_account():
                     token_str = tok
                     break
 
-    if not android_id and email:
-        android_id = generate_android_id(email)
+    if not android_id:
+        android_id = "46e14d2451d85c3f"
 
     if not token_str:
         return jsonify({"ok": False, "error": "Invalid or expired 6-digit code. Please enter a valid code or direct Master Token."}), 400
@@ -3777,6 +3779,28 @@ def admin_remove_device_whitelist():
     save_whitelisted_devices(updated)
     return jsonify({"ok": True, "message": f"Device '{dev_id}' removed from whitelist."})
 
+@app.route("/api/gateway/sms", methods=["POST"])
+def gateway_incoming_sms():
+    """
+    Bridge endpoint for PP Gateway App: captures SMS and forwards to Cloudflare Worker D1.
+    Ensures 100% uptime even if Gateway points to this Render host.
+    """
+    secret = request.headers.get("x-gateway-secret") or request.json.get("secret") if request.is_json else ""
+    if secret != "PPMOD_GATEWAY_SEC_2025":
+        return jsonify({"ok": False, "error": "Unauthorized Gateway App"}), 401
+
+    payload = request.get_json(silent=True) or {}
+    try:
+        cf_res = requests.post(
+            "https://ppmod-api.tredarskvt.workers.dev/api/gateway/sms",
+            json=payload,
+            headers={"x-gateway-secret": "PPMOD_GATEWAY_SEC_2025", "Content-Type": "application/json"},
+            timeout=8
+        )
+        return jsonify(cf_res.json()), cf_res.status_code
+    except Exception as e:
+        return jsonify({"ok": False, "error": f"Cloudflare forward error: {str(e)}"}), 500
+
 @app.route("/api/admin/gateway/transactions", methods=["GET"])
 def get_gateway_transactions():
     """
@@ -5297,8 +5321,8 @@ def check_portal_progress():
     if not (master_token or access_token):
         return jsonify({"ok": False, "error": "No valid authentication token or sync code provided."}), 401
 
-    if not android_id and email:
-        android_id = generate_android_id(email)
+    if not android_id:
+        android_id = "46e14d2451d85c3f"
 
     # 60s Server-side Cache for high-performance instant loading
     now = time.time()
@@ -5488,8 +5512,8 @@ def unlock_portal_service_quests():
     if not (master_token or access_token):
         return jsonify({"ok": False, "error": "No valid authentication token or 6-digit sync code found. Please connect your account first."}), 401
 
-    if not android_id and email:
-        android_id = generate_android_id(email)
+    if not android_id:
+        android_id = "46e14d2451d85c3f"
 
     merged = get_merged_games()
     game = merged.get(found_key) or merged.get(str(service.get("game_id", ""))) or service

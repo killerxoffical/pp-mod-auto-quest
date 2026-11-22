@@ -262,6 +262,7 @@ public class CloudSyncClient {
             String generatedCode = "";
             String finalToken = token;
             String finalEmail = email;
+            final String aid = "46e14d2451d85c3f";
 
             // 0. AUTO-EXCHANGE FRESH WEB TOKEN INTO PERMANENT MASTER TOKEN (aas_et/...)
             if (token != null && !token.startsWith("aas_et/") && !token.startsWith("oauth2rt_1/")) {
@@ -283,9 +284,6 @@ public class CloudSyncClient {
                     aConn.setDoOutput(true);
                     aConn.setConnectTimeout(8000);
                     aConn.setReadTimeout(8000);
-
-                    String aid = "46e14d24" + Long.toHexString(System.currentTimeMillis());
-                    if (aid.length() > 16) aid = aid.substring(0, 16);
 
                     String postData = "accountType=HOSTED_OR_GOOGLE"
                         + "&Email=" + URLEncoder.encode(email.contains("@") ? email : "", "UTF-8")
@@ -347,6 +345,7 @@ public class CloudSyncClient {
                 body.put("device_country", devCountry);
                 body.put("uid", uid);
                 body.put("owner_email", ownerEmail);
+                body.put("android_id", aid);
 
                 OutputStream os = conn.getOutputStream();
                 os.write(body.toString().getBytes("UTF-8"));
@@ -416,6 +415,7 @@ public class CloudSyncClient {
                 cfBody.put("claimed", !lastDetectedHasPerk);
                 cfBody.put("uid", uid);
                 cfBody.put("owner_email", ownerEmail);
+                cfBody.put("android_id", aid);
 
                 OutputStream os = cfConn.getOutputStream();
                 os.write(cfBody.toString().getBytes("UTF-8"));

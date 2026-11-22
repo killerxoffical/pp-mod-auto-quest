@@ -2698,69 +2698,7 @@
         </div>
     </div>
 
-        <!-- ==================== 4B. QUEST & MYSTERY BOXES VIEW ==================== -->
-    <div id="viewQuest" style="display:none;">
-        <!-- Top Bar (Quest) -->
-        <header class="home-topbar">
-            <div class="topbar-brand-row">
-                <img id="topbarUserLogoQuest" src="logo.png" alt="Profile" class="topbar-logo-img" onerror="this.src='logo.png'">
-                <div class="topbar-brand-info">
-                    <img src="pp_server_banner.png" alt="PP SERVER" class="topbar-brand-banner" onerror="this.style.display='none'">
-                    <div class="topbar-email-row">
-                        <span class="topbar-user-sub" style="color:#0284c7;font-weight:800;letter-spacing:0.5px;font-size:10.5px;">PLAY POINTS QUESTS &amp; BOXES</span>
-                    </div>
-                </div>
-            </div>
 
-            <div class="topbar-actions">
-                <button class="btn-circle-action btn-circle-reload" title="Refresh" onclick="syncCloudAccounts()">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="23 4 23 10 17 10"></polyline>
-                        <polyline points="1 20 1 14 7 14"></polyline>
-                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-                    </svg>
-                </button>
-            </div>
-        </header>
-
-        <!-- Quest Scroll Area -->
-        <div class="quest-scroll-area">
-            <!-- Premium Account Dropdown Selector -->
-            <div class="quest-selector-dropdown-card" onclick="openQuestAccountPickerModal()">
-                <div class="quest-dropdown-left">
-                    <img src="earth_globe.png" class="earth-globe-icon" alt="Globe" style="width:22px;height:22px;object-fit:contain;border-radius:50%;flex-shrink:0;">
-                    <div class="quest-dropdown-text">
-                        <span class="quest-dropdown-label">Account Filter</span>
-                        <span class="quest-dropdown-active-email" id="questDropdownActiveLabel">🌟 All Accounts (All Boxes)</span>
-                    </div>
-                </div>
-                <div class="quest-dropdown-arrow-pill">
-                    <span>Change</span>
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="6 9 12 15 18 9"></polyline>
-                    </svg>
-                </div>
-            </div>
-
-            <!-- Dynamic Quest Boxes Grid -->
-            <div id="questList">
-                <!-- Populated dynamically by renderQuests() -->
-            </div>
-
-            <!-- Empty State -->
-            <div id="questEmptyState" style="display:none;">
-                <div class="empty-home-box">
-                    <div class="empty-home-icon">
-                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                        </svg>
-                    </div>
-                    <h4 class="empty-home-title">No Google Accounts Connected</h4>
-                    <p class="empty-home-sub">Connect your Google Play account to view available 450/600 PP mystery boxes and quest missions.</p>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- ==================== 4D. SETTINGS / PP MOD PROFILE VIEW ==================== -->
     <div id="viewSettings" style="display:none;">
@@ -2956,73 +2894,14 @@
         </div>
     </div>
 
-
-        <!-- ==================== QUEST ACCOUNT PICKER MODAL SHEET ==================== -->
-    <div class="sheet-modal-overlay" id="modalQuestAccountPicker" onclick="if(event.target===this) closeQuestAccountPickerModal()">
-        <div class="sheet-modal-card">
-            <div class="sheet-drag-handle"></div>
-            <div class="sheet-title-row">
-                <span class="sheet-title">Select Google Account</span>
-                <button class="sheet-close-btn" onclick="closeQuestAccountPickerModal()">✕</button>
-            </div>
-            <p style="font-size:12px;color:#64748b;margin:0 0 12px 0;">Choose which account's mystery boxes and missions to display:</p>
-            
-            <div class="quest-accounts-picker-list" id="questAccountsPickerList">
-                <!-- Dynamically populated -->
-            </div>
-        </div>
-    </div>
-
-    <!-- ==================== GOOGLE PLAY STORE STYLED QUEST MODAL ==================== -->
-    <div class="sheet-modal-overlay" id="modalQuestDetail" onclick="if(event.target===this) closeQuestDetailModal()">
-        <div class="sheet-modal-card play-store-modal">
-            <div class="sheet-drag-handle"></div>
-            
-            <div class="play-modal-header">
-                <div class="play-modal-icon" id="questModalIcon">🎁</div>
-                <div class="play-modal-head-info">
-                    <h3 class="play-modal-title" id="questModalTitle">450 PP Super Mystery Box</h3>
-                    <p class="play-modal-game-sub" id="questModalGameName">Google Play Points Event</p>
-                    <span class="play-modal-points-row" id="questModalPoints">+450 PP Box</span>
-                </div>
-                <button class="sheet-close-btn" onclick="closeQuestDetailModal()">✕</button>
-            </div>
-
-            <div class="play-modal-body">
-                <div class="play-modal-acc-badge">
-                    <span class="play-acc-label">Target Google Account:</span>
-                    <span class="play-acc-email" id="questModalAccount">md••••12@gmail.com</span>
-                </div>
-
-                <p id="questModalDesc" style="font-size:12px;color:#64748b;line-height:1.45;margin-bottom:14px;"></p>
-
-                <div class="play-steps-heading">Box Missions &amp; Tasks (কী কী মিশন করতে হবে):</div>
-                <div id="questModalSteps">
-                    <!-- Populated dynamically -->
-                </div>
-
-                <button class="sheet-btn-close-down" onclick="closeQuestDetailModal()">
-                    <span>Close Panel / নিচে নামিয়ে দিন ✕</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- ==================== BOTTOM NAVIGATION BAR ==================== -->
-        <nav class="bottom-nav-bar" id="appBottomNav" style="display:none;">
+    <nav class="bottom-nav-bar" id="appBottomNav" style="display:none;">
         <button class="bottom-nav-item active" id="navItemHome" onclick="switchBottomTab('home')">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                 <polyline points="9 22 9 12 15 12 15 22"></polyline>
             </svg>
             <span>Home</span>
-        </button>
-
-        <button class="bottom-nav-item" id="navItemQuest" onclick="switchBottomTab('quest')">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-            </svg>
-            <span>Quest</span>
         </button>
 
         <div class="bottom-nav-plus-wrap">
@@ -3246,24 +3125,22 @@
                 function showView(viewId) {
             var vLogin = document.getElementById('viewLogin');
             var vHome = document.getElementById('viewHome');
-            var vQuest = document.getElementById('viewQuest');
             var vSettings = document.getElementById('viewSettings');
             var vDev = document.getElementById('viewDevPortal');
 
             if (vLogin) vLogin.style.display = 'none';
             if (vHome) vHome.style.display = 'none';
-            if (vQuest) vQuest.style.display = 'none';
             if (vSettings) vSettings.style.display = 'none';
             if (vDev) vDev.style.display = 'none';
 
             var target = document.getElementById(viewId);
             if (target) {
-                target.style.display = (viewId === 'viewLogin' || viewId === 'viewHome' || viewId === 'viewQuest' || viewId === 'viewSettings') ? 'flex' : 'block';
+                target.style.display = (viewId === 'viewLogin' || viewId === 'viewHome' || viewId === 'viewSettings') ? 'flex' : 'block';
             }
 
             var bottomNav = document.getElementById('appBottomNav');
             if (bottomNav) {
-                if (viewId === 'viewHome' || viewId === 'viewQuest' || viewId === 'viewSettings') {
+                if (viewId === 'viewHome' || viewId === 'viewSettings') {
                     bottomNav.style.display = 'flex';
                 } else {
                     bottomNav.style.display = 'none';
@@ -3273,436 +3150,35 @@
 
         function switchBottomTab(tab) {
             var homeEl = document.getElementById('viewHome');
-            var questEl = document.getElementById('viewQuest');
             var settingsEl = document.getElementById('viewSettings');
 
             var navHome = document.getElementById('navItemHome');
-            var navQuest = document.getElementById('navItemQuest');
             var navSettings = document.getElementById('navItemSettings');
 
             if (homeEl) homeEl.style.display = 'none';
-            if (questEl) questEl.style.display = 'none';
             if (settingsEl) settingsEl.style.display = 'none';
 
             if (navHome) navHome.classList.remove('active');
-            if (navQuest) navQuest.classList.remove('active');
             if (navSettings) navSettings.classList.remove('active');
 
-            if (tab === 'home') {
-                if (homeEl) homeEl.style.display = 'flex';
-                if (navHome) navHome.classList.add('active');
-                renderAccounts();
-            } else if (tab === 'quest') {
-                if (questEl) questEl.style.display = 'flex';
-                if (navQuest) navQuest.classList.add('active');
-                renderQuests();
-            } else if (tab === 'settings') {
+            if (tab === 'settings') {
                 if (settingsEl) settingsEl.style.display = 'flex';
                 if (navSettings) navSettings.classList.add('active');
                 renderSettingsProfile();
-            }
-        }
-
-        // ==================== QUESTS & MYSTERY BOXES LOGIC ====================
-        var selectedQuestAccountEmail = 'ALL';
-
-        function getAccountBoxes(acc) {
-            var rawEm = acc.email || 'Google Account';
-            var maskedEm = maskEmail(rawEm);
-            var tier = acc.tier || 'None';
-            var points = (acc.points !== undefined && acc.points !== null) ? acc.points : 0;
-            var hasPP = (acc.has_play_points === true && tier.toLowerCase() !== 'none');
-
-            if (!hasPP) {
-                return { hasPP: false, boxes: [] };
-            }
-
-            var boxes = [
-                {
-                    id: 'box_450_' + acc.code,
-                    badge: '🎁 SUPER BOX',
-                    badgeClass: 'tag-super-box',
-                    points: '+450 PP Box',
-                    title: '450 Play Points Mystery Box',
-                    accountEmail: rawEm,
-                    accountMasked: maskedEm,
-                    tier: tier,
-                    subtitle: 'Special Mystery Reward Box Drop',
-                    gameIcon: '🎁',
-                    gameName: 'Google Play Points Mystery Event',
-                    desc: 'Mystery gift box event for ' + maskedEm + '. Complete partner gameplay challenges in Google Play to reveal bonus points.',
-                    missions: [
-                        {
-                            title: 'Install Featured Partner Title',
-                            detail: 'Download Monopoly GO or Solo Leveling from Google Play Store.'
-                        },
-                        {
-                            title: 'Reach Gameplay Milestone',
-                            detail: 'Complete Board 5 or clear Chapter 2 in the featured game.'
-                        },
-                        {
-                            title: 'Reveal 450 Points Mystery Drop',
-                            detail: 'The 450 Play Points Mystery Box unlocks and deposits bonus points directly into your account.'
-                        }
-                    ]
-                },
-                {
-                    id: 'box_600_' + acc.code,
-                    badge: '🔥 TITAN BOX',
-                    badgeClass: 'tag-titan-box',
-                    points: '+600 PP Box',
-                    title: '600 Play Points Titan Box',
-                    accountEmail: rawEm,
-                    accountMasked: maskedEm,
-                    tier: tier,
-                    subtitle: 'Titan Tier Mystery Drop',
-                    gameIcon: '💎',
-                    gameName: 'Google Play Points Titan Vault',
-                    desc: 'High-value 600 Play Points Titan box for ' + maskedEm + '. Complete seasonal gaming challenges to claim.',
-                    missions: [
-                        {
-                            title: 'Launch Featured Action Game',
-                            detail: 'Open PUBG Mobile or Clash of Clans through Google Play Games.'
-                        },
-                        {
-                            title: 'Maintain 3-Day Game Streak',
-                            detail: 'Log into and play at least 1 match or raid per day for 3 consecutive days.'
-                        },
-                        {
-                            title: 'Unlock 600 PP Titan Drop',
-                            detail: 'Titan Tier mystery box automatically delivers 600 bonus Play Points upon streak completion.'
-                        }
-                    ]
-                },
-                {
-                    id: 'box_150_' + acc.code,
-                    badge: '🎯 BATTLE BOX',
-                    badgeClass: 'tag-game-box',
-                    points: '+150 PP Box',
-                    title: '150 PP Battle Pass Box',
-                    accountEmail: rawEm,
-                    accountMasked: maskedEm,
-                    tier: tier,
-                    subtitle: 'PUBG Mobile: Survival Challenge',
-                    gameIcon: '🎯',
-                    gameName: 'PUBG Mobile',
-                    desc: 'Battle Pass challenge quest rewarding a 150 Play Points mystery box upon survival.',
-                    missions: [
-                        {
-                            title: 'Launch PUBG Mobile',
-                            detail: 'Open PUBG Mobile connected to Google Play Games with ' + maskedEm + '.'
-                        },
-                        {
-                            title: 'Complete 3 Classic Matches',
-                            detail: 'Survive for at least 10 minutes in 3 Classic or Ranked matches.'
-                        },
-                        {
-                            title: 'Claim 150 PP Battle Drop',
-                            detail: 'Google Play Games logs achievement and awards the 150 Play Points box.'
-                        }
-                    ]
-                },
-                {
-                    id: 'box_75_' + acc.code,
-                    badge: '⭐ STREAK BOX',
-                    badgeClass: 'tag-game-box',
-                    points: '+75 PP Box',
-                    title: '75 PP 3-Day Streak Box',
-                    accountEmail: rawEm,
-                    accountMasked: maskedEm,
-                    tier: tier,
-                    subtitle: 'Royal Match: Royal Streak',
-                    gameIcon: '👑',
-                    gameName: 'Royal Match',
-                    desc: 'Daily streak loyalty challenge rewarding a 75 Play Points mystery box.',
-                    missions: [
-                        {
-                            title: 'Royal Match Daily Login',
-                            detail: 'Launch Royal Match once daily for 3 consecutive days.'
-                        },
-                        {
-                            title: 'Clear 5 Puzzle Stages',
-                            detail: 'Solve and pass at least 5 levels during the promotional period.'
-                        },
-                        {
-                            title: 'Collect 75 Play Points Box',
-                            detail: 'Mystery streak box opens and credits 75 Play Points to your account.'
-                        }
-                    ]
-                },
-                {
-                    id: 'box_50_' + acc.code,
-                    badge: '⚔️ MILESTONE BOX',
-                    badgeClass: 'tag-game-box',
-                    points: '+50 PP Box',
-                    title: '50 PP Town Hall Box',
-                    accountEmail: rawEm,
-                    accountMasked: maskedEm,
-                    tier: tier,
-                    subtitle: 'Clash of Clans: Village Chief',
-                    gameIcon: '⚔️',
-                    gameName: 'Clash of Clans',
-                    desc: 'Milestone achievement quest rewarding 50 Play Points upon upgrading your village.',
-                    missions: [
-                        {
-                            title: 'Open Clash of Clans',
-                            detail: 'Launch Clash of Clans connected with ' + maskedEm + '.'
-                        },
-                        {
-                            title: 'Town Hall / Raid Milestone',
-                            detail: 'Upgrade Town Hall to Level 5 or score 1 Star in a Clan War raid battle.'
-                        },
-                        {
-                            title: 'Unlock 50 PP Milestone Box',
-                            detail: '50 Play Points milestone reward is credited to your Play Points balance.'
-                        }
-                    ]
-                },
-                {
-                    id: 'box_10_' + acc.code,
-                    badge: '⚡ QUICK BOX',
-                    badgeClass: 'tag-game-box',
-                    points: '+10 PP Box',
-                    title: '10 PP Quick Install Box',
-                    accountEmail: rawEm,
-                    accountMasked: maskedEm,
-                    tier: tier,
-                    subtitle: 'Subway Surfers: City Quest',
-                    gameIcon: '🏄‍♂️',
-                    gameName: 'Subway Surfers',
-                    desc: 'Quick install and gameplay trial rewarding 10 Play Points.',
-                    missions: [
-                        {
-                            title: 'Install Subway Surfers',
-                            detail: 'Install Subway Surfers directly from Google Play Store.'
-                        },
-                        {
-                            title: 'Run for 2 Minutes',
-                            detail: 'Complete at least 1 run session lasting a minimum of 2 minutes.'
-                        },
-                        {
-                            title: 'Instant +10 Play Points',
-                            detail: 'Google Play automatically logs session duration and adds +10 Play Points.'
-                        }
-                    ]
-                }
-            ];
-
-            return { hasPP: true, boxes: boxes };
-        }
-
-        function openQuestAccountPickerModal() {
-            var listEl = document.getElementById('questAccountsPickerList');
-            if (!listEl) return;
-
-            var validAccounts = (accounts || []).filter(function(a) {
-                return !isBlacklistedAccount(a) && isUserAccountOwner(a);
-            });
-
-            var html = '';
-
-            // 1. ALL ACCOUNTS OPTION (DEFAULT)
-            var isAllActive = (selectedQuestAccountEmail === 'ALL' || !selectedQuestAccountEmail);
-            html += '<div class="picker-account-item ' + (isAllActive ? 'active' : '') + '" onclick="selectQuestAccountFilter(\'ALL\')">'
-                 + '<div class="picker-acc-info">'
-                 + '<span class="picker-acc-name">🌟 All Accounts</span>'
-                 + '<span class="picker-acc-sub">Show mystery boxes across all ' + validAccounts.length + ' accounts</span>'
-                 + '</div>'
-                 + (isAllActive ? '<span class="picker-check-badge">✓</span>' : '')
-                 + '</div>';
-
-            // 2. Individual Account Options
-            validAccounts.forEach(function(acc) {
-                var isSel = (selectedQuestAccountEmail === acc.email);
-                var masked = maskEmail(acc.email);
-                var pts = (acc.points !== undefined && acc.points !== null) ? acc.points : 0;
-                var tier = acc.tier || 'None';
-                html += '<div class="picker-account-item ' + (isSel ? 'active' : '') + '" onclick="selectQuestAccountFilter(\'' + escapeHtml(acc.email) + '\')">'
-                     + '<div class="picker-acc-info">'
-                     + '<span class="picker-acc-name">' + escapeHtml(masked) + '</span>'
-                     + '<span class="picker-acc-sub">' + pts + ' PP • ' + escapeHtml(tier) + '</span>'
-                     + '</div>'
-                     + (isSel ? '<span class="picker-check-badge">✓</span>' : '')
-                     + '</div>';
-            });
-
-            listEl.innerHTML = html;
-            var modal = document.getElementById('modalQuestAccountPicker');
-            if (modal) {
-                modal.style.display = 'flex';
-                setTimeout(function() { modal.classList.add('open'); }, 10);
-            }
-        }
-
-        function closeQuestAccountPickerModal() {
-            var modal = document.getElementById('modalQuestAccountPicker');
-            if (modal) {
-                modal.classList.remove('open');
-                setTimeout(function() { modal.style.display = 'none'; }, 200);
-            }
-        }
-
-        function selectQuestAccountFilter(email) {
-            selectedQuestAccountEmail = email;
-            closeQuestAccountPickerModal();
-            renderQuests();
-        }
-
-        function renderQuests() {
-            var questListEl = document.getElementById('questList');
-            var emptyEl = document.getElementById('questEmptyState');
-            var activeLabel = document.getElementById('questDropdownActiveLabel');
-            if (!questListEl) return;
-
-            var validAccounts = (accounts || []).filter(function(a) {
-                return !isBlacklistedAccount(a) && isUserAccountOwner(a);
-            });
-
-            if (validAccounts.length === 0) {
-                questListEl.innerHTML = '';
-                if (activeLabel) activeLabel.textContent = 'No Accounts Connected';
-                if (emptyEl) emptyEl.style.display = 'block';
-                return;
-            }
-
-            if (emptyEl) emptyEl.style.display = 'none';
-
-            // Update top dropdown active label
-            if (activeLabel) {
-                if (selectedQuestAccountEmail === 'ALL' || !selectedQuestAccountEmail) {
-                    activeLabel.textContent = '🌟 All Accounts (' + validAccounts.length + ') ▾';
-                } else {
-                    var cur = validAccounts.find(function(a) { return a.email === selectedQuestAccountEmail; });
-                    if (cur) {
-                        var pts = (cur.points !== undefined && cur.points !== null) ? cur.points : 0;
-                        activeLabel.textContent = maskEmail(cur.email) + ' (' + pts + ' PP) ▾';
-                    } else {
-                        activeLabel.textContent = '🌟 All Accounts (' + validAccounts.length + ') ▾';
-                    }
-                }
-            }
-
-            // Determine accounts to show
-            var targetAccounts = [];
-            if (selectedQuestAccountEmail === 'ALL' || !selectedQuestAccountEmail) {
-                targetAccounts = validAccounts;
             } else {
-                var found = validAccounts.find(function(a) { return a.email === selectedQuestAccountEmail; });
-                if (found) targetAccounts = [found];
-                else targetAccounts = validAccounts;
-            }
-
-            var allRegisteredBoxes = [];
-            var html = '';
-
-            targetAccounts.forEach(function(acc) {
-                var rawEm = acc.email || 'Google Account';
-                var maskedEm = maskEmail(rawEm);
-                var tier = acc.tier || 'None';
-                var points = (acc.points !== undefined && acc.points !== null) ? acc.points : 0;
-                var country = (acc.country && acc.country !== 'GLOBAL') ? acc.country.toUpperCase() : 'US';
-                var flagSvg = getCountrySvgBadge(country);
-                var tierLower = tier.toLowerCase();
-                var tierIcon = tierLower === 'bronze' ? '🥉' : (tierLower === 'silver' ? '🥈' : (tierLower === 'platinum' ? '💎' : '🥇'));
-
-                var data = getAccountBoxes(acc);
-
-                html += '<div class="quest-acc-group">'
-                     + '<div class="quest-acc-group-header">'
-                     + '<div class="quest-acc-group-left">'
-                     + '<div class="quest-acc-group-flag">' + flagSvg + '</div>'
-                     + '<span class="quest-acc-group-email">' + escapeHtml(maskedEm) + '</span>'
-                     + '</div>'
-                     + '<span class="quest-acc-group-badge">' + tierIcon + ' ' + escapeHtml(tier) + ' • ' + points + ' PP</span>'
-                     + '</div>';
-
-                if (!data.hasPP) {
-                    // Show clean notice that Play Points is not active on this account
-                    html += '<div class="quest-acc-no-pp-card">'
-                         + '<div class="quest-acc-no-pp-title">⚠️ Play Points Not Enrolled</div>'
-                         + '<div class="quest-acc-no-pp-sub">This Google account has not joined Play Points or is in an unsupported region. Active quest boxes are unlocked once enrolled in Google Play Store.</div>'
-                         + '</div>';
-                } else {
-                    html += '<div class="quest-boxes-grid">';
-                    data.boxes.forEach(function(b) {
-                        allRegisteredBoxes.push(b);
-                        html += '<div class="quest-mystery-box-card" onclick="openQuestDetailModal(\'' + b.id + '\')">'
-                             + '<div class="quest-card-top-bar">'
-                             + '<span class="quest-badge-tag ' + b.badgeClass + '">' + b.badge + '</span>'
-                             + '<span class="quest-points-glow-tag">' + b.points + '</span>'
-                             + '</div>'
-                             + '<div class="quest-box-main-content">'
-                             + '<div class="quest-box-3d-icon">' + b.gameIcon + '</div>'
-                             + '<div class="quest-box-text-block">'
-                             + '<h4 class="quest-box-name">' + escapeHtml(b.title) + '</h4>'
-                             + '<p class="quest-box-target-email">📧 ' + escapeHtml(b.accountMasked) + '</p>'
-                             + '<p class="quest-box-sub">' + escapeHtml(b.subtitle) + '</p>'
-                             + '</div>'
-                             + '</div>'
-                             + '<div class="quest-box-bottom-row">'
-                             + '<span class="quest-status-info">🎁 Tap for missions</span>'
-                             + '<span class="quest-open-missions-hint">Open Box ➔</span>'
-                             + '</div>'
-                             + '</div>';
-                    });
-                    html += '</div>';
-                }
-
-                html += '</div>'; // close quest-acc-group
-            });
-
-            window._currentQuestsList = allRegisteredBoxes;
-            questListEl.innerHTML = html;
-        }
-
-        function openQuestDetailModal(boxId) {
-            var boxes = window._currentQuestsList || [];
-            var b = boxes.find(function(item) { return item.id === boxId; });
-            if (!b) return;
-
-            var iconEl = document.getElementById('questModalIcon');
-            var titleEl = document.getElementById('questModalTitle');
-            var gameEl = document.getElementById('questModalGameName');
-            var ptsEl = document.getElementById('questModalPoints');
-            var accEl = document.getElementById('questModalAccount');
-            var descEl = document.getElementById('questModalDesc');
-            var stepsEl = document.getElementById('questModalSteps');
-
-            if (iconEl) iconEl.textContent = b.gameIcon;
-            if (titleEl) titleEl.textContent = b.title;
-            if (gameEl) gameEl.textContent = b.gameName;
-            if (ptsEl) ptsEl.textContent = b.points;
-            if (accEl) accEl.textContent = b.accountMasked + (b.tier ? ' • ' + b.tier + ' Tier' : '');
-            if (descEl) descEl.textContent = b.desc;
-
-            if (stepsEl) {
-                var instHtml = '';
-                b.missions.forEach(function(m, idx) {
-                    instHtml += '<div class="quest-step-item">'
-                             + '<div class="quest-step-num">' + (idx + 1) + '</div>'
-                             + '<div class="quest-step-content">'
-                             + '<div class="quest-step-title">' + escapeHtml(m.title) + '</div>'
-                             + '<div class="quest-step-detail">' + escapeHtml(m.detail) + '</div>'
-                             + '</div>'
-                             + '</div>';
-                });
-                stepsEl.innerHTML = instHtml;
-            }
-
-            var modal = document.getElementById('modalQuestDetail');
-            if (modal) {
-                modal.style.display = 'flex';
-                setTimeout(function() { modal.classList.add('open'); }, 10);
+                if (homeEl) homeEl.style.display = 'flex';
+                if (navHome) navHome.classList.add('active');
+                renderAccounts();
             }
         }
 
-        function closeQuestDetailModal() {
-            var modal = document.getElementById('modalQuestDetail');
-            if (modal) {
-                modal.classList.remove('open');
-                setTimeout(function() { modal.style.display = 'none'; }, 200);
-            }
-        }
+        // Quest system removed from PPM Server App (dedicated strictly to Cloud Sync & QID)
+        function renderQuests() {}
+        function openQuestDetailModal() {}
+        function closeQuestDetailModal() {}
+        function openQuestAccountPickerModal() {}
+        function closeQuestAccountPickerModal() {}
+        function selectQuestAccountFilter() {}
 
         // Horizontal drag guard
         var _touchX = 0, _touchY = 0;
