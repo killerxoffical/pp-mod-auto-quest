@@ -166,7 +166,7 @@ shutil.copy2("AndroidManifest_ppserver.xml", "AndroidManifest.xml")
 print("\n>>> Step 5: Distributing APKs...")
 dist_dirs = [
     r"..",
-    r"..\..\quest\static",
+    r"..\..\achievement_unlocker",
     r"..\..\achievement_unlocker\static"
 ]
 

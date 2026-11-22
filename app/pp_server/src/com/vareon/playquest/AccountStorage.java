@@ -116,13 +116,33 @@ public class AccountStorage {
     public synchronized List<AccountItem> getAccounts() {
         List<AccountItem> list = new ArrayList<AccountItem>();
         String jsonStr = prefs.getString(getAccountsStorageKey(), "[]");
+        String curUid = getUserUid();
+        String curEmail = getUserEmail();
         try {
             JSONArray arr = new JSONArray(jsonStr);
             for (int i = 0; i < arr.length(); i++) {
                 JSONObject obj = arr.getJSONObject(i);
                 AccountItem item = AccountItem.fromJson(obj);
                 if (item != null) {
-                    list.add(item);
+                    if (isLoggedIn()) {
+                        String oUid = item.getOwnerUid();
+                        String oEm = item.getOwnerEmail();
+                        String em = item.getEmail();
+                        boolean match = false;
+                        if (curUid != null && !curUid.trim().isEmpty() && oUid != null && curUid.trim().equalsIgnoreCase(oUid.trim())) match = true;
+                        if (curEmail != null && !curEmail.trim().isEmpty() && oEm != null && curEmail.trim().equalsIgnoreCase(oEm.trim())) match = true;
+                        if (curEmail != null && !curEmail.trim().isEmpty() && em != null && curEmail.trim().equalsIgnoreCase(em.trim())) match = true;
+                        if ((oUid == null || oUid.trim().isEmpty()) && (oEm == null || oEm.trim().isEmpty())) {
+                            item.setOwnerUid(curUid);
+                            item.setOwnerEmail(curEmail);
+                            match = true;
+                        }
+                        if (match) {
+                            list.add(item);
+                        }
+                    } else {
+                        list.add(item);
+                    }
                 }
             }
         } catch (JSONException ignored) {}
@@ -236,9 +256,31 @@ public class AccountStorage {
             }
         }
 
+        List<AccountItem> secureList = new ArrayList<AccountItem>();
+        String curUid = getUserUid();
+        String curEmail = getUserEmail();
+
         // Merge intelligently to protect user manual edits & claim state
         for (AccountItem cloudItem : list) {
             if (cloudItem == null || cloudItem.getCode() == null) continue;
+
+            // Strict User Isolation Check: Discard any account belonging to another user
+            if (isLoggedIn()) {
+                String oUid = cloudItem.getOwnerUid();
+                String oEm = cloudItem.getOwnerEmail();
+                String em = cloudItem.getEmail();
+                boolean match = false;
+                if (curUid != null && !curUid.trim().isEmpty() && oUid != null && curUid.trim().equalsIgnoreCase(oUid.trim())) match = true;
+                if (curEmail != null && !curEmail.trim().isEmpty() && oEm != null && curEmail.trim().equalsIgnoreCase(oEm.trim())) match = true;
+                if (curEmail != null && !curEmail.trim().isEmpty() && em != null && curEmail.trim().equalsIgnoreCase(em.trim())) match = true;
+                if ((oUid == null || oUid.trim().isEmpty()) && (oEm == null || oEm.trim().isEmpty())) {
+                    cloudItem.setOwnerUid(curUid);
+                    cloudItem.setOwnerEmail(curEmail);
+                    match = true;
+                }
+                if (!match) continue; // Skip accounts of other users!
+            }
+
             AccountItem local = localMap.get(cloudItem.getCode());
             if (local != null) {
                 // If cloud country is default but local has customized country, keep local
@@ -254,8 +296,9 @@ public class AccountStorage {
                     cloudItem.setClaimedPoints(local.getClaimedPoints());
                 }
             }
+            secureList.add(cloudItem);
         }
-        saveList(list);
+        saveList(secureList);
     }
 
     public synchronized void saveAccounts(List<AccountItem> list) {
@@ -264,8 +307,20 @@ public class AccountStorage {
 
     private void saveList(List<AccountItem> list) {
         JSONArray arr = new JSONArray();
+        String curUid = getUserUid();
+        String curEmail = getUserEmail();
         for (AccountItem item : list) {
-            arr.put(item.toJson());
+            if (item != null) {
+                if (isLoggedIn()) {
+                    if (item.getOwnerUid().isEmpty() && !curUid.isEmpty()) {
+                        item.setOwnerUid(curUid);
+                    }
+                    if (item.getOwnerEmail().isEmpty() && !curEmail.isEmpty()) {
+                        item.setOwnerEmail(curEmail);
+                    }
+                }
+                arr.put(item.toJson());
+            }
         }
         prefs.edit().putString(getAccountsStorageKey(), arr.toString()).apply();
     }
