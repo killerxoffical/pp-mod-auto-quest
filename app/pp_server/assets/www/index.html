@@ -2034,7 +2034,8 @@
         }
 
 
-        /* ==================== 5-TAB NAVIGATION & QUEST / PRICING VIEWS ==================== */
+        
+        /* ==================== 4-TAB NAVIGATION & QUEST DROPDOWN SYSTEM ==================== */
         .bottom-nav-bar {
             position: fixed;
             bottom: 0;
@@ -2048,7 +2049,7 @@
             display: flex;
             align-items: center;
             justify-content: space-around;
-            padding: 0 4px;
+            padding: 0 16px;
             z-index: 100;
             box-shadow: 0 -3px 12px rgba(0, 0, 0, 0.03);
         }
@@ -2058,16 +2059,14 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 2px;
+            gap: 3px;
             background: transparent;
             border: none;
             color: #64748b;
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 700;
             cursor: pointer;
-            padding: 6px 4px;
-            flex: 1;
-            max-width: 68px;
+            padding: 6px 14px;
             border-radius: 12px;
             transition: all 0.15s ease;
         }
@@ -2084,7 +2083,7 @@
             stroke: #2563eb;
         }
 
-        #viewQuest, #viewPricing {
+        #viewQuest {
             display: none;
             position: fixed;
             top: 0;
@@ -2096,180 +2095,160 @@
             background: var(--bg-base);
         }
 
-        .quest-scroll-area, .pricing-scroll-area {
+        .quest-scroll-area {
             flex: 1;
             min-height: 0;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             overscroll-behavior-y: contain;
-            padding: 16px;
+            padding: 14px 16px;
             padding-bottom: 28px;
             display: flex;
             flex-direction: column;
             gap: 14px;
         }
 
-        /* Quest Account Ribbon */
-        .quest-account-ribbon {
+        /* Top Dropdown Selector Card */
+        .quest-selector-dropdown-card {
             background: #ffffff;
-            border-radius: 14px;
-            padding: 12px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            border-radius: 16px;
+            padding: 12px 14px;
+            border: 1.5px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
             display: flex;
-            flex-direction: column;
-            gap: 8px;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.15s ease;
         }
 
-        .quest-ribbon-title {
-            font-size: 11px;
+        .quest-selector-dropdown-card:active {
+            transform: scale(0.98);
+            border-color: #2563eb;
+            background: #f8fafc;
+        }
+
+        .quest-dropdown-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .quest-dropdown-text {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            min-width: 0;
+        }
+
+        .quest-dropdown-label {
+            font-size: 10px;
             font-weight: 800;
             color: #64748b;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
-        .quest-chips-scroll {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            padding-bottom: 4px;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .quest-account-chip {
-            background: #f8fafc;
-            border: 1.5px solid #cbd5e1;
-            border-radius: 20px;
-            padding: 6px 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.15s ease;
-        }
-
-        .quest-account-chip.active {
-            background: #eff6ff;
-            border-color: #2563eb;
-            box-shadow: 0 2px 6px rgba(37,99,235,0.15);
-        }
-
-        .quest-account-chip .chip-email {
-            font-size: 11.5px;
-            font-weight: 700;
-            color: #1e293b;
-        }
-
-        .quest-account-chip.active .chip-email {
-            color: #1d4ed8;
-        }
-
-        .quest-account-chip .chip-badge {
-            font-size: 10px;
-            font-weight: 800;
-            background: #dbeafe;
-            color: #1e40af;
-            padding: 2px 7px;
-            border-radius: 10px;
-        }
-
-        /* Quest Sections */
-        .quest-section-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 4px;
-            margin-bottom: 2px;
-        }
-
-        .quest-sec-badge {
-            font-size: 9.5px;
-            font-weight: 800;
-            background: #fef3c7;
-            color: #b45309;
-            padding: 3px 8px;
-            border-radius: 12px;
-            letter-spacing: 0.5px;
-        }
-
-        .quest-sec-title {
+        .quest-dropdown-active-email {
             font-size: 13.5px;
             font-weight: 800;
             color: #0f172a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        /* Mystery Box Cards Grid */
-        .quest-grid-boxes {
+        .quest-dropdown-arrow-pill {
+            background: #eff6ff;
+            color: #2563eb;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 5px 10px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        /* Quest Box Cards Grid */
+        .quest-boxes-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
         }
 
-        .quest-box-card {
+        .quest-mystery-box-card {
             background: #ffffff;
             border: 1.5px solid #e2e8f0;
-            border-radius: 16px;
+            border-radius: 18px;
             padding: 14px;
             display: flex;
             flex-direction: column;
             gap: 10px;
             cursor: pointer;
             position: relative;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.03);
-            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.03);
+            transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
         }
 
-        .quest-box-card:active {
+        .quest-mystery-box-card:active {
             transform: scale(0.97);
             border-color: #2563eb;
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.12);
         }
 
-        .quest-box-top {
+        .quest-card-top-bar {
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
-        .quest-pill-badge {
+        .quest-badge-tag {
             font-size: 8.5px;
             font-weight: 800;
-            padding: 2px 6px;
+            padding: 2px 7px;
             border-radius: 8px;
             letter-spacing: 0.3px;
         }
 
-        .badge-box-gold {
+        .tag-super-box {
             background: #fef3c7;
             color: #d97706;
         }
 
-        .badge-box-purple {
+        .tag-titan-box {
             background: #f3e8ff;
             color: #7e22ce;
         }
 
-        .quest-points-glow {
+        .tag-game-box {
+            background: #e0f2fe;
+            color: #0284c7;
+        }
+
+        .quest-points-glow-tag {
             font-size: 11px;
             font-weight: 900;
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: #ffffff;
             padding: 3px 8px;
             border-radius: 12px;
-            box-shadow: 0 2px 6px rgba(16,185,129,0.3);
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
         }
 
-        .quest-box-content {
+        .quest-box-main-content {
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .quest-box-icon-wrap {
-            font-size: 26px;
-            width: 42px;
-            height: 42px;
+        .quest-box-3d-icon {
+            font-size: 28px;
+            width: 44px;
+            height: 44px;
             border-radius: 12px;
             background: #f8fafc;
             display: flex;
@@ -2279,21 +2258,31 @@
             border: 1px solid #f1f5f9;
         }
 
-        .quest-box-text {
+        .quest-box-text-block {
             flex: 1;
             min-width: 0;
         }
 
-        .quest-card-title {
-            font-size: 12px;
+        .quest-box-name {
+            font-size: 12.5px;
             font-weight: 800;
             color: #1e293b;
             margin: 0 0 2px 0;
             line-height: 1.25;
         }
 
-        .quest-card-sub {
+        .quest-box-target-email {
             font-size: 10px;
+            font-weight: 700;
+            color: #2563eb;
+            margin: 0 0 2px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .quest-box-sub {
+            font-size: 10.5px;
             color: #64748b;
             margin: 0;
             white-space: nowrap;
@@ -2301,7 +2290,7 @@
             text-overflow: ellipsis;
         }
 
-        .quest-box-bottom {
+        .quest-box-bottom-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -2309,453 +2298,100 @@
             border-top: 1px dashed #f1f5f9;
         }
 
-        .quest-status-txt {
+        .quest-status-info {
             font-size: 10px;
             font-weight: 700;
             color: #059669;
         }
 
-        .quest-action-hint {
+        .quest-open-missions-hint {
             font-size: 10px;
             font-weight: 800;
             color: #2563eb;
         }
 
-        /* Game Quest Cards */
-        .quest-grid-games {
+        /* Quest Modal Clean Close Button */
+        .sheet-btn-close-down {
+            width: 100%;
+            background: #f1f5f9;
+            color: #334155;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 14px;
+            padding: 13px 18px;
+            font-size: 13.5px;
+            font-weight: 800;
             display: flex;
-            flex-direction: column;
-            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            margin-top: 14px;
         }
 
-        .quest-game-card {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
+        .sheet-btn-close-down:active {
+            transform: scale(0.98);
+            background: #e2e8f0;
+        }
+
+        /* Account Picker Modal List */
+        .quest-accounts-picker-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .picker-account-item {
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
             border-radius: 14px;
             padding: 12px 14px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            justify-content: space-between;
             cursor: pointer;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
             transition: all 0.15s ease;
         }
 
-        .quest-game-card:active {
-            transform: scale(0.98);
+        .picker-account-item.active {
+            background: #eff6ff;
             border-color: #2563eb;
         }
 
-        .quest-game-icon {
-            font-size: 26px;
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            background: #f1f5f9;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .quest-game-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .quest-game-top-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 3px;
-        }
-
-        .quest-game-title {
-            font-size: 13px;
-            font-weight: 800;
-            color: #1e293b;
-            margin: 0;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .quest-points-pill {
-            font-size: 11px;
-            font-weight: 800;
-            background: #dcfce7;
-            color: #15803d;
-            padding: 2px 8px;
-            border-radius: 10px;
-            flex-shrink: 0;
-        }
-
-        .quest-game-sub {
-            font-size: 11px;
-            color: #64748b;
-            margin: 0 0 6px 0;
-        }
-
-        .quest-game-progress-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .quest-progress-track {
-            flex: 1;
-            height: 5px;
-            background: #e2e8f0;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .quest-progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #2563eb, #3b82f6);
-            border-radius: 4px;
-        }
-
-        .quest-progress-num {
-            font-size: 10px;
-            font-weight: 700;
-            color: #64748b;
-        }
-
-        /* Quest Detail Google Play Store Styled Modal */
-        .play-store-modal {
-            max-height: 85vh;
+        .picker-acc-info {
             display: flex;
             flex-direction: column;
+            gap: 2px;
         }
 
-        .play-modal-header {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding-bottom: 14px;
-            border-bottom: 1px solid #f1f5f9;
-        }
-
-        .play-modal-icon {
-            font-size: 34px;
-            width: 54px;
-            height: 54px;
-            border-radius: 14px;
-            background: #f8fafc;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid #e2e8f0;
-            flex-shrink: 0;
-        }
-
-        .play-modal-head-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .play-modal-title {
-            font-size: 15.5px;
+        .picker-acc-name {
+            font-size: 13px;
             font-weight: 800;
             color: #0f172a;
-            margin: 0 0 3px 0;
         }
 
-        .play-modal-game-sub {
-            font-size: 12px;
-            color: #059669;
+        .picker-acc-sub {
+            font-size: 11px;
             font-weight: 700;
-            margin: 0 0 4px 0;
-        }
-
-        .play-modal-points-row {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            background: #dbeafe;
-            color: #1d4ed8;
-            font-size: 11px;
-            font-weight: 800;
-            padding: 3px 9px;
-            border-radius: 12px;
-        }
-
-        .play-modal-body {
-            padding: 14px 0;
-            overflow-y: auto;
-            flex: 1;
-        }
-
-        .play-modal-acc-badge {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 8px 12px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 14px;
-        }
-
-        .play-acc-label {
-            font-size: 11px;
             color: #64748b;
-            font-weight: 600;
         }
 
-        .play-acc-email {
-            font-size: 12px;
-            color: #1e293b;
-            font-weight: 800;
-        }
-
-        .play-steps-heading {
-            font-size: 12px;
-            font-weight: 800;
-            color: #334155;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 10px;
-        }
-
-        .quest-step-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            margin-bottom: 10px;
-        }
-
-        .quest-step-num {
+        .picker-check-badge {
             width: 22px;
             height: 22px;
             border-radius: 50%;
-            background: #0284c7;
-            color: #ffffff;
-            font-size: 11px;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            margin-top: 1px;
-        }
-
-        .quest-step-txt {
-            font-size: 12px;
-            color: #334155;
-            line-height: 1.4;
-            flex: 1;
-        }
-
-        .play-btn-open-store {
-            width: 100%;
-            background: #01875f;
-            color: #ffffff;
-            border: none;
-            border-radius: 14px;
-            padding: 13px 18px;
-            font-size: 14px;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(1,135,95,0.3);
-            transition: all 0.15s ease;
-            margin-top: 12px;
-        }
-
-        .play-btn-open-store:active {
-            transform: scale(0.98);
-            background: #016f4e;
-        }
-
-        /* PRICING VIEW STYLES */
-        .pricing-hero {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            border-radius: 18px;
-            padding: 20px 18px;
-            color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 4px 16px rgba(15,23,42,0.15);
-        }
-
-        .pricing-hero::after {
-            content: "";
-            position: absolute;
-            right: -20px;
-            bottom: -20px;
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background: rgba(37,99,235,0.25);
-            filter: blur(20px);
-        }
-
-        .pricing-hero-badge {
-            font-size: 10px;
-            font-weight: 800;
-            background: rgba(255,255,255,0.15);
-            padding: 3px 8px;
-            border-radius: 10px;
-            align-self: flex-start;
-            letter-spacing: 0.5px;
-        }
-
-        .pricing-hero-title {
-            font-size: 18px;
-            font-weight: 900;
-            margin: 0;
-            line-height: 1.3;
-        }
-
-        .pricing-hero-sub {
-            font-size: 11.5px;
-            color: #94a3b8;
-            margin: 0;
-            line-height: 1.4;
-        }
-
-        .pricing-cards-list {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        .pricing-plan-card {
-            background: #ffffff;
-            border-radius: 16px;
-            border: 1.5px solid #e2e8f0;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            position: relative;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-            transition: all 0.15s ease;
-        }
-
-        .pricing-plan-card.featured {
-            border: 2px solid #2563eb;
-            background: linear-gradient(180deg, #ffffff 0%, #f0f7ff 100%);
-            box-shadow: 0 6px 18px rgba(37,99,235,0.12);
-        }
-
-        .pricing-plan-card.diamond {
-            border: 2px solid #8b5cf6;
-            background: linear-gradient(180deg, #ffffff 0%, #faf5ff 100%);
-            box-shadow: 0 6px 18px rgba(139,92,246,0.12);
-        }
-
-        .plan-ribbon-tag {
-            position: absolute;
-            top: -10px;
-            right: 16px;
             background: #2563eb;
             color: #ffffff;
-            font-size: 9.5px;
-            font-weight: 800;
-            padding: 3px 10px;
-            border-radius: 10px;
-            letter-spacing: 0.5px;
-            box-shadow: 0 2px 6px rgba(37,99,235,0.3);
-        }
-
-        .plan-ribbon-tag.tag-diamond {
-            background: #8b5cf6;
-            box-shadow: 0 2px 6px rgba(139,92,246,0.3);
-        }
-
-        .plan-head-row {
-            display: flex;
-            align-items: baseline;
-            justify-content: space-between;
-        }
-
-        .plan-name {
-            font-size: 15px;
-            font-weight: 800;
-            color: #0f172a;
-            margin: 0;
-        }
-
-        .plan-price-wrap {
-            text-align: right;
-        }
-
-        .plan-price-num {
-            font-size: 20px;
-            font-weight: 900;
-            color: #0f172a;
-        }
-
-        .plan-price-sub {
-            font-size: 10px;
-            font-weight: 600;
-            color: #64748b;
-        }
-
-        .plan-features-list {
-            display: flex;
-            flex-direction: column;
-            gap: 7px;
-            margin: 0;
-            padding: 0;
-            list-style: none;
-        }
-
-        .plan-feature-item {
-            font-size: 11.5px;
-            color: #334155;
-            display: flex;
-            align-items: center;
-            gap: 7px;
-        }
-
-        .plan-feature-item svg {
-            flex-shrink: 0;
-        }
-
-        .btn-plan-action {
-            width: 100%;
-            padding: 11px 16px;
-            border-radius: 12px;
-            border: none;
-            font-size: 13px;
-            font-weight: 800;
-            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            transition: all 0.15s ease;
+            font-size: 12px;
+            font-weight: 800;
         }
 
-        .btn-plan-action.btn-current {
-            background: #f1f5f9;
-            color: #64748b;
-            cursor: default;
-        }
-
-        .btn-plan-action.btn-pro {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            color: #ffffff;
-            box-shadow: 0 4px 12px rgba(37,99,235,0.3);
-        }
-
-        .btn-plan-action.btn-diamond {
-            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
-            color: #ffffff;
-            box-shadow: 0 4px 12px rgba(139,92,246,0.3);
-        }
-
-    </style>
+</style>
 </head>
 <body>
 
@@ -3062,7 +2698,7 @@
         </div>
     </div>
 
-    <!-- ==================== 4B. QUEST & MYSTERY BOXES VIEW ==================== -->
+        <!-- ==================== 4B. QUEST & MYSTERY BOXES VIEW ==================== -->
     <div id="viewQuest" style="display:none;">
         <!-- Top Bar (Quest) -->
         <header class="home-topbar">
@@ -3071,7 +2707,7 @@
                 <div class="topbar-brand-info">
                     <img src="pp_server_banner.png" alt="PP SERVER" class="topbar-brand-banner" onerror="this.style.display='none'">
                     <div class="topbar-email-row">
-                        <span class="topbar-user-sub" style="color:#0284c7;font-weight:800;letter-spacing:0.5px;font-size:10.5px;">PLAY POINTS QUESTS</span>
+                        <span class="topbar-user-sub" style="color:#0284c7;font-weight:800;letter-spacing:0.5px;font-size:10.5px;">PLAY POINTS QUESTS &amp; BOXES</span>
                     </div>
                 </div>
             </div>
@@ -3089,15 +2725,24 @@
 
         <!-- Quest Scroll Area -->
         <div class="quest-scroll-area">
-            <!-- Account Selector Ribbon -->
-            <div class="quest-account-ribbon">
-                <div class="quest-ribbon-title">Select Account For Quests &amp; Boxes:</div>
-                <div class="quest-chips-scroll" id="questAccountChips">
-                    <!-- Populated dynamically -->
+            <!-- Premium Account Dropdown Selector -->
+            <div class="quest-selector-dropdown-card" onclick="openQuestAccountPickerModal()">
+                <div class="quest-dropdown-left">
+                    <img src="earth_globe.png" class="earth-globe-icon" alt="Globe" style="width:22px;height:22px;object-fit:contain;border-radius:50%;flex-shrink:0;">
+                    <div class="quest-dropdown-text">
+                        <span class="quest-dropdown-label">Account Filter</span>
+                        <span class="quest-dropdown-active-email" id="questDropdownActiveLabel">🌟 All Accounts (All Boxes)</span>
+                    </div>
+                </div>
+                <div class="quest-dropdown-arrow-pill">
+                    <span>Change</span>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
                 </div>
             </div>
 
-            <!-- Dynamic Quest & Boxes Container -->
+            <!-- Dynamic Quest Boxes Grid -->
             <div id="questList">
                 <!-- Populated dynamically by renderQuests() -->
             </div>
@@ -3111,142 +2756,7 @@
                         </svg>
                     </div>
                     <h4 class="empty-home-title">No Google Accounts Connected</h4>
-                    <p class="empty-home-sub">Connect your Google Play account to view available 450/600 PP mystery boxes and game quests.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ==================== 4C. PRICING & VIP TIERS VIEW ==================== -->
-    <div id="viewPricing" style="display:none;">
-        <!-- Top Bar (Pricing) -->
-        <header class="home-topbar">
-            <div class="topbar-brand-row">
-                <img id="topbarUserLogoPricing" src="logo.png" alt="Profile" class="topbar-logo-img" onerror="this.src='logo.png'">
-                <div class="topbar-brand-info">
-                    <img src="pp_server_banner.png" alt="PP SERVER" class="topbar-brand-banner" onerror="this.style.display='none'">
-                    <div class="topbar-email-row">
-                        <span class="topbar-user-sub" style="color:#0284c7;font-weight:800;letter-spacing:0.5px;font-size:10.5px;">VIP MEMBERSHIP &amp; VAULT</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="topbar-actions">
-                <button class="btn-circle-action btn-circle-reload" title="Refresh" onclick="syncCloudAccounts()">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="23 4 23 10 17 10"></polyline>
-                        <polyline points="1 20 1 14 7 14"></polyline>
-                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-                    </svg>
-                </button>
-            </div>
-        </header>
-
-        <!-- Pricing Scroll Area -->
-        <div class="pricing-scroll-area">
-            <!-- Hero Card -->
-            <div class="pricing-hero">
-                <span class="pricing-hero-badge">⚡ VIP CLOUD RADAR</span>
-                <h3 class="pricing-hero-title">High Speed Quest Vault &amp; Multi-Device Sync</h3>
-                <p class="pricing-hero-sub">Keep your Google Play accounts secure in your encrypted personal Cloudflare D1 vault with real-time multi-device restore.</p>
-            </div>
-
-            <!-- Pricing Cards List -->
-            <div class="pricing-cards-list">
-                <!-- Free Tier -->
-                <div class="pricing-plan-card">
-                    <div class="plan-head-row">
-                        <h4 class="plan-name">Free Starter</h4>
-                        <div class="plan-price-wrap">
-                            <span class="plan-price-num">৳0</span>
-                            <span class="plan-price-sub"> / Free</span>
-                        </div>
-                    </div>
-                    <ul class="plan-features-list">
-                        <li class="plan-feature-item">
-                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            <span>1-2 Google Accounts Sync</span>
-                        </li>
-                        <li class="plan-feature-item">
-                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            <span>Basic Play Points Status Radar</span>
-                        </li>
-                        <li class="plan-feature-item">
-                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            <span>Standard Community Support</span>
-                        </li>
-                    </ul>
-                    <button class="btn-plan-action btn-current">Current Active Plan</button>
-                </div>
-
-                <!-- VIP Pro (Featured) -->
-                <div class="pricing-plan-card featured">
-                    <div class="plan-ribbon-tag">MOST POPULAR 🌟</div>
-                    <div class="plan-head-row">
-                        <h4 class="plan-name" style="color:#1d4ed8;">VIP Pro Monthly</h4>
-                        <div class="plan-price-wrap">
-                            <span class="plan-price-num" style="color:#1d4ed8;">৳250</span>
-                            <span class="plan-price-sub"> / $2.99 mo</span>
-                        </div>
-                    </div>
-                    <ul class="plan-features-list">
-                        <li class="plan-feature-item">
-                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#2563eb" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            <span><strong>Unlimited</strong> Google Accounts Cloud Vault</span>
-                        </li>
-                        <li class="plan-feature-item">
-                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#2563eb" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            <span><strong>Multi-Device Instant Auto-Restore</strong></span>
-                        </li>
-                        <li class="plan-feature-item">
-                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#2563eb" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            <span>450 PP &amp; 600 PP Mystery Box Radar Alerts</span>
-                        </li>
-                        <li class="plan-feature-item">
-                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#2563eb" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            <span>High-speed Play Points refresh engine</span>
-                        </li>
-                        <li class="plan-feature-item">
-                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#2563eb" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            <span>VIP Telegram Channel &amp; 24/7 Priority Support</span>
-                        </li>
-                    </ul>
-                    <button class="btn-plan-action btn-pro" onclick="upgradePlan('VIP Pro Monthly (৳250)')">
-                        <span>Upgrade to VIP Pro ➔</span>
-                    </button>
-                </div>
-
-                <!-- Lifetime Diamond VIP -->
-                <div class="pricing-plan-card diamond">
-                    <div class="plan-ribbon-tag tag-diamond">BEST VALUE 💎</div>
-                    <div class="plan-head-row">
-                        <h4 class="plan-name" style="color:#7e22ce;">Lifetime Diamond VIP</h4>
-                        <div class="plan-price-wrap">
-                            <span class="plan-price-num" style="color:#7e22ce;">৳850</span>
-                            <span class="plan-price-sub"> / $9.99 Once</span>
-                        </div>
-                    </div>
-                    <ul class="plan-features-list">
-                        <li class="plan-feature-item">
-                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#8b5cf6" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            <span><strong>All VIP Pro Features Forever</strong></span>
-                        </li>
-                        <li class="plan-feature-item">
-                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#8b5cf6" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            <span>Zero recurring monthly renewal fees</span>
-                        </li>
-                        <li class="plan-feature-item">
-                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#8b5cf6" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            <span>Early Access to Extension Quests &amp; AI Solvers</span>
-                        </li>
-                        <li class="plan-feature-item">
-                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#8b5cf6" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            <span>Direct 1-on-1 VIP Developer Assistance</span>
-                        </li>
-                    </ul>
-                    <button class="btn-plan-action btn-diamond" onclick="upgradePlan('Lifetime Diamond VIP (৳850)')">
-                        <span>Get Lifetime Diamond VIP ➔</span>
-                    </button>
+                    <p class="empty-home-sub">Connect your Google Play account to view available 450/600 PP mystery boxes and quest missions.</p>
                 </div>
             </div>
         </div>
@@ -3447,6 +2957,22 @@
     </div>
 
 
+        <!-- ==================== QUEST ACCOUNT PICKER MODAL SHEET ==================== -->
+    <div class="sheet-modal-overlay" id="modalQuestAccountPicker" onclick="if(event.target===this) closeQuestAccountPickerModal()">
+        <div class="sheet-modal-card">
+            <div class="sheet-drag-handle"></div>
+            <div class="sheet-title-row">
+                <span class="sheet-title">Select Google Account</span>
+                <button class="sheet-close-btn" onclick="closeQuestAccountPickerModal()">✕</button>
+            </div>
+            <p style="font-size:12px;color:#64748b;margin:0 0 12px 0;">Choose which account's mystery boxes and missions to display:</p>
+            
+            <div class="quest-accounts-picker-list" id="questAccountsPickerList">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </div>
+
     <!-- ==================== GOOGLE PLAY STORE STYLED QUEST MODAL ==================== -->
     <div class="sheet-modal-overlay" id="modalQuestDetail" onclick="if(event.target===this) closeQuestDetailModal()">
         <div class="sheet-modal-card play-store-modal">
@@ -3470,23 +2996,20 @@
 
                 <p id="questModalDesc" style="font-size:12px;color:#64748b;line-height:1.45;margin-bottom:14px;"></p>
 
-                <div class="play-steps-heading">How To Complete (কী কী করতে হবে):</div>
+                <div class="play-steps-heading">Box Missions &amp; Tasks (কী কী মিশন করতে হবে):</div>
                 <div id="questModalSteps">
                     <!-- Populated dynamically -->
                 </div>
 
-                <button class="play-btn-open-store" id="questModalPlayBtn">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                    </svg>
-                    <span>Open in Google Play Store</span>
+                <button class="sheet-btn-close-down" onclick="closeQuestDetailModal()">
+                    <span>Close Panel / নিচে নামিয়ে দিন ✕</span>
                 </button>
             </div>
         </div>
     </div>
 
     <!-- ==================== BOTTOM NAVIGATION BAR ==================== -->
-    <nav class="bottom-nav-bar" id="appBottomNav" style="display:none;">
+        <nav class="bottom-nav-bar" id="appBottomNav" style="display:none;">
         <button class="bottom-nav-item active" id="navItemHome" onclick="switchBottomTab('home')">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
@@ -3510,15 +3033,6 @@
                 </svg>
             </button>
         </div>
-
-        <button class="bottom-nav-item" id="navItemPricing" onclick="switchBottomTab('pricing')">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M6 3h12l4 6-10 13L2 9z"></path>
-                <path d="M2 9h20"></path>
-                <path d="M10 3L6 9l6 13 6-13-4-6"></path>
-            </svg>
-            <span>Pricing</span>
-        </button>
 
         <button class="bottom-nav-item" id="navItemSettings" onclick="switchBottomTab('settings')">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -3729,29 +3243,27 @@
             }
         }
 
-        function showView(viewId) {
+                function showView(viewId) {
             var vLogin = document.getElementById('viewLogin');
             var vHome = document.getElementById('viewHome');
             var vQuest = document.getElementById('viewQuest');
-            var vPricing = document.getElementById('viewPricing');
             var vSettings = document.getElementById('viewSettings');
             var vDev = document.getElementById('viewDevPortal');
 
             if (vLogin) vLogin.style.display = 'none';
             if (vHome) vHome.style.display = 'none';
             if (vQuest) vQuest.style.display = 'none';
-            if (vPricing) vPricing.style.display = 'none';
             if (vSettings) vSettings.style.display = 'none';
             if (vDev) vDev.style.display = 'none';
 
             var target = document.getElementById(viewId);
             if (target) {
-                target.style.display = (viewId === 'viewLogin' || viewId === 'viewHome' || viewId === 'viewQuest' || viewId === 'viewPricing' || viewId === 'viewSettings') ? 'flex' : 'block';
+                target.style.display = (viewId === 'viewLogin' || viewId === 'viewHome' || viewId === 'viewQuest' || viewId === 'viewSettings') ? 'flex' : 'block';
             }
 
             var bottomNav = document.getElementById('appBottomNav');
             if (bottomNav) {
-                if (viewId === 'viewHome' || viewId === 'viewQuest' || viewId === 'viewPricing' || viewId === 'viewSettings') {
+                if (viewId === 'viewHome' || viewId === 'viewQuest' || viewId === 'viewSettings') {
                     bottomNav.style.display = 'flex';
                 } else {
                     bottomNav.style.display = 'none';
@@ -3762,22 +3274,18 @@
         function switchBottomTab(tab) {
             var homeEl = document.getElementById('viewHome');
             var questEl = document.getElementById('viewQuest');
-            var pricingEl = document.getElementById('viewPricing');
             var settingsEl = document.getElementById('viewSettings');
 
             var navHome = document.getElementById('navItemHome');
             var navQuest = document.getElementById('navItemQuest');
-            var navPricing = document.getElementById('navItemPricing');
             var navSettings = document.getElementById('navItemSettings');
 
             if (homeEl) homeEl.style.display = 'none';
             if (questEl) questEl.style.display = 'none';
-            if (pricingEl) pricingEl.style.display = 'none';
             if (settingsEl) settingsEl.style.display = 'none';
 
             if (navHome) navHome.classList.remove('active');
             if (navQuest) navQuest.classList.remove('active');
-            if (navPricing) navPricing.classList.remove('active');
             if (navSettings) navSettings.classList.remove('active');
 
             if (tab === 'home') {
@@ -3788,9 +3296,6 @@
                 if (questEl) questEl.style.display = 'flex';
                 if (navQuest) navQuest.classList.add('active');
                 renderQuests();
-            } else if (tab === 'pricing') {
-                if (pricingEl) pricingEl.style.display = 'flex';
-                if (navPricing) navPricing.classList.add('active');
             } else if (tab === 'settings') {
                 if (settingsEl) settingsEl.style.display = 'flex';
                 if (navSettings) navSettings.classList.add('active');
@@ -3799,222 +3304,279 @@
         }
 
         // ==================== QUESTS & MYSTERY BOXES LOGIC ====================
-        var selectedQuestAccountEmail = '';
+        var selectedQuestAccountEmail = 'ALL';
+
+        function openQuestAccountPickerModal() {
+            var listEl = document.getElementById('questAccountsPickerList');
+            if (!listEl) return;
+
+            var validAccounts = (accounts || []).filter(isUserAccountOwner);
+            var html = '';
+
+            // 1. ALL ACCOUNTS OPTION (DEFAULT)
+            var isAllActive = (selectedQuestAccountEmail === 'ALL' || !selectedQuestAccountEmail);
+            html += '<div class="picker-account-item ' + (isAllActive ? 'active' : '') + '" onclick="selectQuestAccountFilter(\'ALL\')">'
+                 + '<div class="picker-acc-info">'
+                 + '<span class="picker-acc-name">🌟 All Accounts</span>'
+                 + '<span class="picker-acc-sub">Show mystery boxes across all ' + validAccounts.length + ' accounts</span>'
+                 + '</div>'
+                 + (isAllActive ? '<span class="picker-check-badge">✓</span>' : '')
+                 + '</div>';
+
+            // 2. Individual Account Options
+            validAccounts.forEach(function(acc) {
+                var isSel = (selectedQuestAccountEmail === acc.email);
+                var masked = maskEmail(acc.email);
+                var pts = (acc.points !== undefined && acc.points !== null) ? acc.points : 0;
+                var tier = acc.tier || 'None';
+                html += '<div class="picker-account-item ' + (isSel ? 'active' : '') + '" onclick="selectQuestAccountFilter(\'' + escapeHtml(acc.email) + '\')">'
+                     + '<div class="picker-acc-info">'
+                     + '<span class="picker-acc-name">' + escapeHtml(masked) + '</span>'
+                     + '<span class="picker-acc-sub">' + pts + ' PP • ' + escapeHtml(tier) + '</span>'
+                     + '</div>'
+                     + (isSel ? '<span class="picker-check-badge">✓</span>' : '')
+                     + '</div>';
+            });
+
+            listEl.innerHTML = html;
+            var modal = document.getElementById('modalQuestAccountPicker');
+            if (modal) {
+                modal.style.display = 'flex';
+                setTimeout(function() { modal.classList.add('open'); }, 10);
+            }
+        }
+
+        function closeQuestAccountPickerModal() {
+            var modal = document.getElementById('modalQuestAccountPicker');
+            if (modal) {
+                modal.classList.remove('open');
+                setTimeout(function() { modal.style.display = 'none'; }, 200);
+            }
+        }
+
+        function selectQuestAccountFilter(email) {
+            selectedQuestAccountEmail = email;
+            closeQuestAccountPickerModal();
+            renderQuests();
+        }
 
         function renderQuests() {
             var questListEl = document.getElementById('questList');
             var emptyEl = document.getElementById('questEmptyState');
-            var accountChipsEl = document.getElementById('questAccountChips');
+            var activeLabel = document.getElementById('questDropdownActiveLabel');
             if (!questListEl) return;
 
             var validAccounts = (accounts || []).filter(isUserAccountOwner);
 
             if (validAccounts.length === 0) {
                 questListEl.innerHTML = '';
-                if (accountChipsEl) accountChipsEl.innerHTML = '';
+                if (activeLabel) activeLabel.textContent = 'No Accounts Connected';
                 if (emptyEl) emptyEl.style.display = 'block';
                 return;
             }
 
             if (emptyEl) emptyEl.style.display = 'none';
 
-            var currentAcc = validAccounts.find(function(a) { return a.email === selectedQuestAccountEmail; });
-            if (!currentAcc) {
-                currentAcc = validAccounts[0];
-                selectedQuestAccountEmail = currentAcc.email;
-            }
-
-            if (accountChipsEl) {
-                var chipsHtml = '';
-                validAccounts.forEach(function(acc) {
-                    var isSel = (acc.email === selectedQuestAccountEmail);
-                    var masked = maskEmail(acc.email);
-                    var pts = acc.points || 0;
-                    var tier = acc.tier || 'Standard';
-                    chipsHtml += '<button class="quest-account-chip ' + (isSel ? 'active' : '') + '" onclick="selectQuestAccount(\'' + escapeHtml(acc.email) + '\')">'
-                        + '<span class="chip-email">' + escapeHtml(masked) + '</span>'
-                        + '<span class="chip-badge">' + pts + ' PP • ' + escapeHtml(tier) + '</span>'
-                        + '</button>';
-                });
-                accountChipsEl.innerHTML = chipsHtml;
-            }
-
-            var maskedEmail = maskEmail(currentAcc.email);
-            var quests = [
-                {
-                    id: 'box_450',
-                    type: 'box',
-                    badge: '🎁 SUPER MYSTERY BOX',
-                    badgeClass: 'badge-box-gold',
-                    title: '450 Play Points Mystery Box',
-                    subtitle: 'Special Mystery Reward Box Event',
-                    points: '+450 PP Box',
-                    gameName: 'Google Play Points Mystery Event',
-                    gameIcon: '🎁',
-                    pkg: 'com.android.vending',
-                    progress: '1/1 Ready',
-                    status: 'Ready to Claim',
-                    desc: 'Unlock the special 450 Play Points mystery box! Play featured Play Store titles to claim.',
-                    instructions: [
-                        'Ensure you are signed in with account ' + maskedEmail + ' in Google Play Store.',
-                        'Open Google Play Store Points Perks section or launch the partner promotion.',
-                        'Claim the 450 Play Points Mystery Box directly into your account balance.'
-                    ]
-                },
-                {
-                    id: 'box_600',
-                    type: 'box',
-                    badge: '🔥 TITAN GRAND BOX',
-                    badgeClass: 'badge-box-purple',
-                    title: '600 Play Points Titan Box',
-                    subtitle: 'Epic Weekly Points Drop',
-                    points: '+600 PP Box',
-                    gameName: 'Titan Mystery Box Vault',
-                    gameIcon: '💎',
-                    pkg: 'com.android.vending',
-                    progress: 'Tier Milestone',
-                    status: 'Active Event',
-                    desc: 'Exclusive 600 Play Points titan drop for active Google Play members.',
-                    instructions: [
-                        'Verify your account tier is active in Google Play Store.',
-                        'Tap the Play Store button below to navigate to the Play Points Quest tab.',
-                        'Complete the featured weekly spotlight challenge to open the 600 PP Titan Box.'
-                    ]
-                },
-                {
-                    id: 'game_10',
-                    type: 'game',
-                    badge: '⚡ QUICK INSTALL',
-                    badgeClass: 'badge-game-blue',
-                    title: 'Subway Surfers: City Quest',
-                    subtitle: 'Install & play for 2 minutes',
-                    points: '+10 PP',
-                    gameName: 'Subway Surfers',
-                    gameIcon: '🏄‍♂️',
-                    pkg: 'com.kiloo.subwaysurf',
-                    progress: '0/2 mins',
-                    status: 'Available',
-                    desc: 'Quick 10 Play Points install task. Open and run the game to receive points.',
-                    instructions: [
-                        'Install Subway Surfers from Google Play Store.',
-                        'Open the game and play for at least 2 minutes.',
-                        'Google Play will automatically verify and credit 10 Play Points to your account.'
-                    ]
-                },
-                {
-                    id: 'game_50',
-                    type: 'game',
-                    badge: '🏰 LEVEL 5 CHALLENGE',
-                    badgeClass: 'badge-game-green',
-                    title: 'Clash of Clans: Village Chief',
-                    subtitle: 'Upgrade Town Hall to Level 5',
-                    points: '+50 PP',
-                    gameName: 'Clash of Clans',
-                    gameIcon: '⚔️',
-                    pkg: 'com.supercell.clashofclans',
-                    progress: 'Milestone Quest',
-                    status: 'Active Challenge',
-                    desc: 'Milestone quest rewarding 50 Play Points upon reaching Town Hall level 5.',
-                    instructions: [
-                        'Download Clash of Clans using ' + maskedEmail + '.',
-                        'Build and upgrade your Town Hall to Level 5.',
-                        'Upon reaching Level 5, Google Play Games Services reports completion for 50 PP.'
-                    ]
-                },
-                {
-                    id: 'game_75',
-                    type: 'game',
-                    badge: '⭐ 3-DAY STREAK',
-                    badgeClass: 'badge-game-amber',
-                    title: 'Royal Match: Royal Streak',
-                    subtitle: 'Log in and play for 3 consecutive days',
-                    points: '+75 PP',
-                    gameName: 'Royal Match',
-                    gameIcon: '👑',
-                    pkg: 'com.dreamgames.royalmatch',
-                    progress: 'Day 1 of 3',
-                    status: 'Streak Active',
-                    desc: 'Complete daily puzzle round 3 days in a row to earn 75 Play Points.',
-                    instructions: [
-                        'Open Royal Match once daily for 3 consecutive days.',
-                        'Clear at least 1 stage per day.',
-                        'Claim 75 Play Points on Day 3 completion.'
-                    ]
-                },
-                {
-                    id: 'game_150',
-                    type: 'game',
-                    badge: '🏆 BATTLE PASS QUEST',
-                    badgeClass: 'badge-game-red',
-                    title: 'PUBG Mobile: Survival Challenge',
-                    subtitle: 'Play 3 Classic Matches',
-                    points: '+150 PP',
-                    gameName: 'PUBG Mobile',
-                    gameIcon: '🎯',
-                    pkg: 'com.tencent.ig',
-                    progress: '0/3 Matches',
-                    status: 'Major Quest',
-                    desc: 'Earn 150 Google Play Points by participating in 3 Classic mode battle royale matches.',
-                    instructions: [
-                        'Log in with your Google Play Games account in PUBG Mobile.',
-                        'Complete 3 matches in Classic Mode.',
-                        'Points credited automatically upon match conclusion.'
-                    ]
+            // Update top dropdown active label
+            if (activeLabel) {
+                if (selectedQuestAccountEmail === 'ALL' || !selectedQuestAccountEmail) {
+                    activeLabel.textContent = '🌟 All Accounts (' + validAccounts.length + ') ▾';
+                } else {
+                    var cur = validAccounts.find(function(a) { return a.email === selectedQuestAccountEmail; });
+                    if (cur) {
+                        var pts = (cur.points !== undefined && cur.points !== null) ? cur.points : 0;
+                        activeLabel.textContent = maskEmail(cur.email) + ' (' + pts + ' PP) ▾';
+                    } else {
+                        activeLabel.textContent = '🌟 All Accounts ▾';
+                    }
                 }
-            ];
+            }
 
-            window._currentQuestsList = quests;
+            // Determine accounts to show
+            var targetAccounts = [];
+            if (selectedQuestAccountEmail === 'ALL' || !selectedQuestAccountEmail) {
+                targetAccounts = validAccounts;
+            } else {
+                var found = validAccounts.find(function(a) { return a.email === selectedQuestAccountEmail; });
+                if (found) targetAccounts = [found];
+                else targetAccounts = validAccounts;
+            }
 
-            var html = '';
+            // Generate boxes for target accounts
+            var allBoxes = [];
+            targetAccounts.forEach(function(acc) {
+                var rawEm = acc.email;
+                var maskedEm = maskEmail(rawEm);
+                var tier = acc.tier || 'None';
+                var points = (acc.points !== undefined && acc.points !== null) ? acc.points : 0;
+                var hasPP = (acc.has_play_points === true && tier.toLowerCase() !== 'none');
 
-            // Section 1: Mystery Boxes
-            html += '<div class="quest-section-header">'
-                 + '<span class="quest-sec-badge">SPECIAL DROPS</span>'
-                 + '<h3 class="quest-sec-title">🎁 Play Points Mystery Boxes</h3>'
-                 + '</div>';
+                if (!hasPP) {
+                    // Show inactive warning box
+                    allBoxes.push({
+                        id: 'warn_' + acc.code,
+                        type: 'warning',
+                        badge: '⚠️ INACTIVE',
+                        badgeClass: 'tag-super-box',
+                        points: '0 PP',
+                        title: 'No Play Points Account',
+                        accountEmail: rawEm,
+                        accountMasked: maskedEm,
+                        subtitle: 'Not enrolled or country not supported',
+                        gameIcon: '⚠️',
+                        gameName: 'Play Points Enrollment',
+                        desc: 'This Google Account does not currently have Play Points activated.',
+                        missions: [
+                            'Check Google Play Store region settings for ' + maskedEm,
+                            'Enroll into Google Play Points if available in this region',
+                            'Refresh account status in PP Server to unlock quest boxes'
+                        ]
+                    });
+                    return;
+                }
 
-            html += '<div class="quest-grid-boxes">';
-            quests.filter(function(q) { return q.type === 'box'; }).forEach(function(q) {
-                html += '<div class="quest-box-card" onclick="openQuestDetailModal(\'' + q.id + '\')">'
-                     + '<div class="quest-box-top">'
-                     + '<span class="quest-pill-badge ' + q.badgeClass + '">' + q.badge + '</span>'
-                     + '<span class="quest-points-glow">' + q.points + '</span>'
-                     + '</div>'
-                     + '<div class="quest-box-content">'
-                     + '<div class="quest-box-icon-wrap">' + q.gameIcon + '</div>'
-                     + '<div class="quest-box-text">'
-                     + '<h4 class="quest-card-title">' + escapeHtml(q.title) + '</h4>'
-                     + '<p class="quest-card-sub">' + escapeHtml(q.subtitle) + '</p>'
-                     + '</div>'
-                     + '</div>'
-                     + '<div class="quest-box-bottom">'
-                     + '<span class="quest-status-txt">● ' + q.status + '</span>'
-                     + '<span class="quest-action-hint">View Steps ➔</span>'
-                     + '</div>'
-                     + '</div>';
+                // Active Play Points Account Boxes
+                allBoxes.push({
+                    id: 'box_450_' + acc.code,
+                    type: 'box',
+                    badge: '🎁 SUPER BOX',
+                    badgeClass: 'tag-super-box',
+                    points: '+450 PP Box',
+                    title: '450 Play Points Mystery Box',
+                    accountEmail: rawEm,
+                    accountMasked: maskedEm,
+                    subtitle: 'Mystery Reward Box Drop',
+                    gameIcon: '🎁',
+                    gameName: 'Special Play Store Mystery Drop',
+                    desc: 'Mystery gift box event for ' + maskedEm + '. Complete featured gameplay to reveal Play Points bonus.',
+                    missions: [
+                        'Log into Google Play Store with ' + maskedEm,
+                        'Open Play Points Perks or launch featured event',
+                        'Open 450 Play Points Mystery Box to reveal points'
+                    ]
+                });
+
+                allBoxes.push({
+                    id: 'box_600_' + acc.code,
+                    type: 'box',
+                    badge: '🔥 TITAN BOX',
+                    badgeClass: 'tag-titan-box',
+                    points: '+600 PP Box',
+                    title: '600 Play Points Titan Box',
+                    accountEmail: rawEm,
+                    accountMasked: maskedEm,
+                    subtitle: 'Titan Tier Mystery Drop',
+                    gameIcon: '💎',
+                    gameName: 'Play Points Titan Vault',
+                    desc: 'High-value 600 Play Points Titan box for ' + maskedEm + '.',
+                    missions: [
+                        'Verify account tier is active in Google Play Store',
+                        'Play designated seasonal challenge match',
+                        'Collect 600 Play Points Titan drop reward'
+                    ]
+                });
+
+                allBoxes.push({
+                    id: 'box_150_' + acc.code,
+                    type: 'game',
+                    badge: '🎯 BATTLE BOX',
+                    badgeClass: 'tag-game-box',
+                    points: '+150 PP Box',
+                    title: '150 PP Battle Pass Box',
+                    accountEmail: rawEm,
+                    accountMasked: maskedEm,
+                    subtitle: 'PUBG Mobile: Survival',
+                    gameIcon: '🎯',
+                    gameName: 'PUBG Mobile',
+                    desc: 'Battle Pass challenge quest rewarding a 150 Play Points mystery box.',
+                    missions: [
+                        'Launch PUBG Mobile with ' + maskedEm,
+                        'Play 3 classic matches',
+                        'Google Play Games logs achievement and awards 150 PP Box'
+                    ]
+                });
+
+                allBoxes.push({
+                    id: 'box_75_' + acc.code,
+                    type: 'game',
+                    badge: '⭐ STREAK BOX',
+                    badgeClass: 'tag-game-box',
+                    points: '+75 PP Box',
+                    title: '75 PP 3-Day Streak Box',
+                    accountEmail: rawEm,
+                    accountMasked: maskedEm,
+                    subtitle: 'Royal Match: Royal Streak',
+                    gameIcon: '👑',
+                    gameName: 'Royal Match',
+                    desc: 'Log in and play for 3 consecutive days to receive a 75 Play Points box.',
+                    missions: [
+                        'Open Royal Match once daily for 3 days',
+                        'Complete at least 1 puzzle stage per day',
+                        'Claim 75 Play Points Streak Box upon Day 3 completion'
+                    ]
+                });
+
+                allBoxes.push({
+                    id: 'box_50_' + acc.code,
+                    type: 'game',
+                    badge: '⚔️ MILESTONE BOX',
+                    badgeClass: 'tag-game-box',
+                    points: '+50 PP Box',
+                    title: '50 PP Town Hall Box',
+                    accountEmail: rawEm,
+                    accountMasked: maskedEm,
+                    subtitle: 'Clash of Clans: Village Chief',
+                    gameIcon: '⚔️',
+                    gameName: 'Clash of Clans',
+                    desc: 'Milestone quest rewarding 50 Play Points upon upgrading Town Hall.',
+                    missions: [
+                        'Open Clash of Clans connected to ' + maskedEm,
+                        'Upgrade Town Hall to Level 5',
+                        'Receive 50 Play Points box milestone'
+                    ]
+                });
+
+                allBoxes.push({
+                    id: 'box_10_' + acc.code,
+                    type: 'game',
+                    badge: '⚡ QUICK BOX',
+                    badgeClass: 'tag-game-box',
+                    points: '+10 PP Box',
+                    title: '10 PP Quick Install Box',
+                    accountEmail: rawEm,
+                    accountMasked: maskedEm,
+                    subtitle: 'Subway Surfers: City Quest',
+                    gameIcon: '🏄‍♂️',
+                    gameName: 'Subway Surfers',
+                    desc: 'Quick install and run task rewarding 10 Play Points.',
+                    missions: [
+                        'Install Subway Surfers from Google Play Store',
+                        'Open and play for at least 2 minutes',
+                        'Google Play detects play time and awards 10 PP Box'
+                    ]
+                });
             });
-            html += '</div>';
 
-            // Section 2: Featured Games
-            html += '<div class="quest-section-header" style="margin-top:20px;">'
-                 + '<span class="quest-sec-badge" style="background:#e0f2fe;color:#0284c7;">FEATURED GAMES</span>'
-                 + '<h3 class="quest-sec-title">🎮 Google Play Game Quests</h3>'
-                 + '</div>';
+            window._currentQuestsList = allBoxes;
 
-            html += '<div class="quest-grid-games">';
-            quests.filter(function(q) { return q.type === 'game'; }).forEach(function(q) {
-                html += '<div class="quest-game-card" onclick="openQuestDetailModal(\'' + q.id + '\')">'
-                     + '<div class="quest-game-icon">' + q.gameIcon + '</div>'
-                     + '<div class="quest-game-info">'
-                     + '<div class="quest-game-top-row">'
-                     + '<h4 class="quest-game-title">' + escapeHtml(q.title) + '</h4>'
-                     + '<span class="quest-points-pill">' + q.points + '</span>'
+            var html = '<div class="quest-boxes-grid">';
+            allBoxes.forEach(function(b) {
+                html += '<div class="quest-mystery-box-card" onclick="openQuestDetailModal(\'' + b.id + '\')">'
+                     + '<div class="quest-card-top-bar">'
+                     + '<span class="quest-badge-tag ' + b.badgeClass + '">' + b.badge + '</span>'
+                     + '<span class="quest-points-glow-tag">' + b.points + '</span>'
                      + '</div>'
-                     + '<p class="quest-game-sub">' + escapeHtml(q.subtitle) + '</p>'
-                     + '<div class="quest-game-progress-row">'
-                     + '<div class="quest-progress-track"><div class="quest-progress-bar" style="width:60%;"></div></div>'
-                     + '<span class="quest-progress-num">' + q.progress + '</span>'
+                     + '<div class="quest-box-main-content">'
+                     + '<div class="quest-box-3d-icon">' + b.gameIcon + '</div>'
+                     + '<div class="quest-box-text-block">'
+                     + '<h4 class="quest-box-name">' + escapeHtml(b.title) + '</h4>'
+                     + '<p class="quest-box-target-email">📧 ' + escapeHtml(b.accountMasked) + '</p>'
+                     + '<p class="quest-box-sub">' + escapeHtml(b.subtitle) + '</p>'
                      + '</div>'
+                     + '</div>'
+                     + '<div class="quest-box-bottom-row">'
+                     + '<span class="quest-status-info">🎁 Tap for missions</span>'
+                     + '<span class="quest-open-missions-hint">Open Box ➔</span>'
                      + '</div>'
                      + '</div>';
             });
@@ -4023,17 +3585,10 @@
             questListEl.innerHTML = html;
         }
 
-        function selectQuestAccount(email) {
-            selectedQuestAccountEmail = email;
-            renderQuests();
-        }
-
-        function openQuestDetailModal(questId) {
-            var quests = window._currentQuestsList || [];
-            var q = quests.find(function(item) { return item.id === questId; });
-            if (!q) return;
-
-            var curEmail = selectedQuestAccountEmail || (accounts[0] ? accounts[0].email : '');
+        function openQuestDetailModal(boxId) {
+            var boxes = window._currentQuestsList || [];
+            var b = boxes.find(function(item) { return item.id === boxId; });
+            if (!b) return;
 
             var iconEl = document.getElementById('questModalIcon');
             var titleEl = document.getElementById('questModalTitle');
@@ -4043,29 +3598,22 @@
             var descEl = document.getElementById('questModalDesc');
             var stepsEl = document.getElementById('questModalSteps');
 
-            if (iconEl) iconEl.textContent = q.gameIcon;
-            if (titleEl) titleEl.textContent = q.title;
-            if (gameEl) gameEl.textContent = q.gameName;
-            if (ptsEl) ptsEl.textContent = q.points;
-            if (accEl) accEl.textContent = maskEmail(curEmail);
-            if (descEl) descEl.textContent = q.desc;
+            if (iconEl) iconEl.textContent = b.gameIcon;
+            if (titleEl) titleEl.textContent = b.title;
+            if (gameEl) gameEl.textContent = b.gameName;
+            if (ptsEl) ptsEl.textContent = b.points;
+            if (accEl) accEl.textContent = b.accountMasked;
+            if (descEl) descEl.textContent = b.desc;
 
             if (stepsEl) {
                 var instHtml = '';
-                q.instructions.forEach(function(step, idx) {
+                b.missions.forEach(function(m, idx) {
                     instHtml += '<div class="quest-step-item">'
                              + '<div class="quest-step-num">' + (idx + 1) + '</div>'
-                             + '<div class="quest-step-txt">' + escapeHtml(step) + '</div>'
+                             + '<div class="quest-step-txt">' + escapeHtml(m) + '</div>'
                              + '</div>';
                 });
                 stepsEl.innerHTML = instHtml;
-            }
-
-            var playBtn = document.getElementById('questModalPlayBtn');
-            if (playBtn) {
-                playBtn.onclick = function() {
-                    openPlayStoreApp(q.pkg);
-                };
             }
 
             var modal = document.getElementById('modalQuestDetail');
@@ -4638,6 +4186,7 @@
             }
 
             listEl.innerHTML = html;
+            try { renderQuests(); } catch(e) {}
         }
 
         var currentConfigCode = null;

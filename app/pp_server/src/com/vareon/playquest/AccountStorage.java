@@ -113,6 +113,28 @@ public class AccountStorage {
     }
 
     // ================= CONNECTED ACCOUNTS =================
+    private String getDeletedKey() {
+        return "deleted_blacklist_v3_" + getUserUid();
+    }
+
+    public synchronized void addDeletedBlacklist(String code, String email) {
+        java.util.Set<String> set = new java.util.HashSet<String>(prefs.getStringSet(getDeletedKey(), new java.util.HashSet<String>()));
+        if (code != null && !code.trim().isEmpty()) set.add(code.trim());
+        if (email != null && !email.trim().isEmpty()) set.add(email.trim().toLowerCase());
+        prefs.edit().putStringSet(getDeletedKey(), set).apply();
+    }
+
+    public synchronized boolean isDeleted(String code, String email) {
+        if (code != null && code.equals("155448")) return true;
+        if (email != null && (email.toLowerCase().contains("sagorvai") || email.toLowerCase().contains("thebranrk2k21"))) return true;
+
+        java.util.Set<String> set = prefs.getStringSet(getDeletedKey(), null);
+        if (set == null || set.isEmpty()) return false;
+        if (code != null && set.contains(code.trim())) return true;
+        if (email != null && set.contains(email.trim().toLowerCase())) return true;
+        return false;
+    }
+
     public synchronized List<AccountItem> getAccounts() {
         List<AccountItem> list = new ArrayList<AccountItem>();
         String jsonStr = prefs.getString(getAccountsStorageKey(), "[]");
@@ -124,6 +146,9 @@ public class AccountStorage {
                 JSONObject obj = arr.getJSONObject(i);
                 AccountItem item = AccountItem.fromJson(obj);
                 if (item != null) {
+                    if (isDeleted(item.getCode(), item.getEmail())) {
+                        continue;
+                    }
                     if (isLoggedIn()) {
                         String oUid = item.getOwnerUid();
                         String oEm = item.getOwnerEmail();
@@ -132,11 +157,6 @@ public class AccountStorage {
                         if (curUid != null && !curUid.trim().isEmpty() && oUid != null && curUid.trim().equalsIgnoreCase(oUid.trim())) match = true;
                         if (curEmail != null && !curEmail.trim().isEmpty() && oEm != null && curEmail.trim().equalsIgnoreCase(oEm.trim())) match = true;
                         if (curEmail != null && !curEmail.trim().isEmpty() && em != null && curEmail.trim().equalsIgnoreCase(em.trim())) match = true;
-                        if ((oUid == null || oUid.trim().isEmpty()) && (oEm == null || oEm.trim().isEmpty())) {
-                            item.setOwnerUid(curUid);
-                            item.setOwnerEmail(curEmail);
-                            match = true;
-                        }
                         if (match) {
                             list.add(item);
                         }
@@ -206,11 +226,15 @@ public class AccountStorage {
         if (code == null) return;
         List<AccountItem> current = getAccounts();
         List<AccountItem> updated = new ArrayList<AccountItem>();
+        String deletedEmail = "";
         for (AccountItem item : current) {
-            if (!code.equals(item.getCode())) {
+            if (code.equals(item.getCode())) {
+                deletedEmail = item.getEmail();
+            } else {
                 updated.add(item);
             }
         }
+        addDeletedBlacklist(code, deletedEmail);
         saveList(updated);
     }
 
@@ -263,6 +287,7 @@ public class AccountStorage {
         // Merge intelligently to protect user manual edits & claim state
         for (AccountItem cloudItem : list) {
             if (cloudItem == null || cloudItem.getCode() == null) continue;
+            if (isDeleted(cloudItem.getCode(), cloudItem.getEmail())) continue;
 
             // Strict User Isolation Check: Discard any account belonging to another user
             if (isLoggedIn()) {
@@ -273,11 +298,6 @@ public class AccountStorage {
                 if (curUid != null && !curUid.trim().isEmpty() && oUid != null && curUid.trim().equalsIgnoreCase(oUid.trim())) match = true;
                 if (curEmail != null && !curEmail.trim().isEmpty() && oEm != null && curEmail.trim().equalsIgnoreCase(oEm.trim())) match = true;
                 if (curEmail != null && !curEmail.trim().isEmpty() && em != null && curEmail.trim().equalsIgnoreCase(em.trim())) match = true;
-                if ((oUid == null || oUid.trim().isEmpty()) && (oEm == null || oEm.trim().isEmpty())) {
-                    cloudItem.setOwnerUid(curUid);
-                    cloudItem.setOwnerEmail(curEmail);
-                    match = true;
-                }
                 if (!match) continue; // Skip accounts of other users!
             }
 
