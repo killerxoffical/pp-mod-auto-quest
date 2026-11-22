@@ -220,8 +220,19 @@ public class SecurityGuard {
     public static String getDeviceId(Context context) {
         try {
             if (context == null) return "46e14d2451d85c3f";
+            android.content.SharedPreferences prefs = context.getSharedPreferences("pp_device_meta", Context.MODE_PRIVATE);
+            String savedId = prefs.getString("unique_device_id", null);
+            if (savedId != null && !savedId.trim().isEmpty()) {
+                return savedId;
+            }
+
             String id = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
-            return (id != null && !id.trim().isEmpty()) ? id : "46e14d2451d85c3f";
+            // If android_id is null, empty, or matches common static clone IDs across emulators (BS5, MSI, LD)
+            if (id == null || id.trim().isEmpty() || "46e14d2451d85c3f".equalsIgnoreCase(id) || "9774d56d682e549c".equalsIgnoreCase(id)) {
+                id = "emu_" + java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 16);
+            }
+            prefs.edit().putString("unique_device_id", id).apply();
+            return id;
         } catch (Throwable e) {
             return "46e14d2451d85c3f";
         }

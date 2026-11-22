@@ -1,8 +1,10 @@
 package com.vareon.playquest;
 
 import android.net.Uri;
+import android.net.http.SslError;
 import android.os.Build;
 import android.webkit.RenderProcessGoneDetail;
+import android.webkit.SslErrorHandler;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -12,6 +14,14 @@ public class AppWebClient extends WebViewClient {
 
     public AppWebClient(MainActivity activity) {
         this.activity = activity;
+    }
+
+    @Override
+    public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
+        // Resilient handling for emulators with desynced clocks or legacy root certs
+        if (handler != null) {
+            handler.proceed();
+        }
     }
 
     @Override

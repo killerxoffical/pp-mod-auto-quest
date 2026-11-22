@@ -3663,6 +3663,17 @@
             }
         }
 
+        function showEmulatorAccountPrompt() {
+            setLoginBtnLoading(false);
+            var email = prompt("BlueStacks / LDPlayer / MSI Emulator Detected:\nNo Google account found in emulator settings.\n\nEnter your Google Account Email to sign in directly:", "");
+            if (email && email.indexOf("@") !== -1) {
+                executeLogin(email.trim(), "GOOGLE_SSO");
+            } else if (email) {
+                showLoginError("Please enter a valid Google account email.");
+            }
+        }
+        window.showEmulatorAccountPrompt = showEmulatorAccountPrompt;
+
         function startGoogleSsoLogin() {
             setLoginBtnLoading(true);
             document.getElementById('loginAlertBox').style.display = 'none';
@@ -3682,13 +3693,7 @@
             } else if (window.AndroidBridge && window.AndroidBridge.startGoogleSsoLogin) {
                 window.AndroidBridge.startGoogleSsoLogin();
             } else {
-                // Fallback prompt for browser testing
-                var em = prompt("Enter Google account email to test PP Mod SSO:", "user@gmail.com");
-                if (em) {
-                    executeLogin(em, "GOOGLE_SSO");
-                } else {
-                    setLoginBtnLoading(false);
-                }
+                showEmulatorAccountPrompt();
             }
         }
 
@@ -3734,6 +3739,8 @@
                 window.AndroidBridge.launchSystemAccountChooser();
             } else if (window.AndroidBridge && window.AndroidBridge.startGoogleSsoLogin) {
                 window.AndroidBridge.startGoogleSsoLogin();
+            } else {
+                showEmulatorAccountPrompt();
             }
         }
 

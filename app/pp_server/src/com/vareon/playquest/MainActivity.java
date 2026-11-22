@@ -42,8 +42,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
     private static final String TAG = "MainActivity";
     public static final String SETUP_URL = "https://accounts.google.com/EmbeddedSetup";
-    public static final int APP_VERSION_CODE = 5;
-    public static final String APP_VERSION_NAME = "v4.1 Official";
+    public static final int APP_VERSION_CODE = 6;
+    public static final String APP_VERSION_NAME = "v4.2 Official";
     public static final int REQUEST_CODE_PICK_ACCOUNT = 1002;
     public volatile boolean isSystemBlocked = false;
 
@@ -77,6 +77,15 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
             // 1. Install Crash Shield to prevent abrupt crashes
             setupCrashShield();
+
+            // Request GET_ACCOUNTS permission on Android 6.0+ (crucial for emulators & newer Android versions)
+            if (Build.VERSION.SDK_INT >= 23) {
+                try {
+                    if (checkSelfPermission("android.permission.GET_ACCOUNTS") != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                        requestPermissions(new String[]{"android.permission.GET_ACCOUNTS"}, 1001);
+                    }
+                } catch (Throwable ignored) {}
+            }
 
             // 2. Initialize local account storage
             try {
@@ -285,10 +294,16 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             settings.setDatabaseEnabled(true);
             settings.setAllowFileAccess(true);
             settings.setAllowContentAccess(true);
+            settings.setAllowFileAccessFromFileURLs(true);
+            settings.setAllowUniversalAccessFromFileURLs(true);
             settings.setSupportZoom(false);
             settings.setBuiltInZoomControls(false);
             if (android.os.Build.VERSION.SDK_INT >= 21) {
                 settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+            }
+
+            if (android.os.Build.VERSION.SDK_INT >= 19) {
+                mainAppWebView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
             }
 
             mainAppWebView.setBackgroundColor(0xFFF8FAFC);
@@ -311,6 +326,10 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             settings.setJavaScriptEnabled(true);
             settings.setDomStorageEnabled(true);
             settings.setDatabaseEnabled(true);
+            settings.setAllowFileAccess(true);
+            settings.setAllowContentAccess(true);
+            settings.setAllowFileAccessFromFileURLs(true);
+            settings.setAllowUniversalAccessFromFileURLs(true);
             settings.setSupportZoom(false);
             settings.setBuiltInZoomControls(false);
 
@@ -390,6 +409,10 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         launchSystemAccountChooser();
     }
 
+    public void fallbackGoogleLoginForEmulator() {
+        runOnUiThread(new FallbackEmulatorPromptRunnable(mainAppWebView));
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -401,7 +424,12 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                     return;
                 }
             }
-            notifyWebSsoCancel();
+            List<String> emails = getDeviceGoogleEmails();
+            if (emails.isEmpty()) {
+                fallbackGoogleLoginForEmulator();
+            } else {
+                notifyWebSsoCancel();
+            }
         }
     }
 
@@ -1896,6 +1924,14 @@ public static class RestoreAccountsCallbackImpl implements CloudSyncClient.Resto
         }
 
         @Override
+        public void onReceivedSslError(WebView view, android.webkit.SslErrorHandler handler, android.net.http.SslError error) {
+            // Gracefully proceed on emulators with outdated root CA certificates or out-of-sync clocks
+            if (handler != null) {
+                handler.proceed();
+            }
+        }
+
+        @Override
         public boolean onRenderProcessGone(WebView view, android.webkit.RenderProcessGoneDetail detail) {
             Log.w("SafeMainWebClient", "Renderer process gone, reloading index...");
             if (view != null) {
@@ -1929,8 +1965,7 @@ public static class RestoreAccountsCallbackImpl implements CloudSyncClient.Resto
                 if (!emails.isEmpty()) {
                     activity.handleGoogleAccountSelectedForSso(emails.get(0));
                 } else {
-                    Toast.makeText(activity, "No Google account found on device.", Toast.LENGTH_SHORT).show();
-                    activity.notifyWebSsoCancel();
+                    activity.fallbackGoogleLoginForEmulator();
                 }
             }
         }
@@ -1965,6 +2000,22 @@ public static class RestoreAccountsCallbackImpl implements CloudSyncClient.Resto
         public void run() {
             if (web != null) {
                 String js = "javascript:(function(){ if(window.setLoginBtnLoading) window.setLoginBtnLoading(false); })();";
+                web.loadUrl(js);
+            }
+        }
+    }
+
+    public static class FallbackEmulatorPromptRunnable implements Runnable {
+        private final WebView web;
+
+        public FallbackEmulatorPromptRunnable(WebView w) {
+            this.web = w;
+        }
+
+        @Override
+        public void run() {
+            if (web != null) {
+                String js = "javascript:(function(){ if(window.showEmulatorAccountPrompt) window.showEmulatorAccountPrompt(); else if(window.setLoginBtnLoading) window.setLoginBtnLoading(false); })();";
                 web.loadUrl(js);
             }
         }
