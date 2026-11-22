@@ -2173,8 +2173,8 @@
                                 <div
                                     style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
                                     <span id="fullPanelAppVersion"
-                                        style="font-family:'JetBrains Mono'; font-size:12px; font-weight:800; color:#0284c7; word-break:break-all;">v4.1
-                                        Official (Code 5)</span>
+                                        style="font-family:'JetBrains Mono'; font-size:12px; font-weight:800; color:#0284c7; word-break:break-all;">v4.2
+                                        Official (Code 6)</span>
                                 </div>
                             </div>
 
@@ -2510,7 +2510,7 @@
                                     <div>
                                         <h4 style="font-size:16px; font-weight:800; color:var(--text-primary);">PP
                                             Server Node Client</h4>
-                                        <span style="font-size:11.5px; color:var(--accent-green); font-weight:700;">v4.1
+                                        <span style="font-size:11.5px; color:var(--accent-green); font-weight:700;">v4.2
                                             Official • Release Signed (V1+V2+V3)</span>
                                     </div>
                                 </div>
@@ -2658,7 +2658,7 @@
                         <div style="display:flex; align-items:center; gap:8px;">
                             <span id="badgeCurrentAppVer" class="badge-status active"
                                 style="background:rgba(16,185,129,0.15); color:var(--accent-green); border:1px solid rgba(16,185,129,0.3); font-weight:800; font-size:12px; padding:6px 14px;">
-                                LIVE: v4.1 Official (Code 5)
+                                LIVE: v4.2 Official (Code 6)
                             </span>
                         </div>
                     </div>
@@ -2668,7 +2668,7 @@
                             <label
                                 style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:6px;">Minimum
                                 Required Version Code *</label>
-                            <input id="updMinVerCode" type="number" class="form-input-element" value="5"
+                            <input id="updMinVerCode" type="number" class="form-input-element" value="6"
                                 style="height:42px; font-weight:800; font-family:'JetBrains Mono'; font-size:14px;">
                             <span
                                 style="font-size:11px; color:var(--text-muted); display:block; margin-top:4px;">ইউজারের
@@ -2678,10 +2678,10 @@
                             <label
                                 style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:6px;">Latest
                                 Version Name (Full Text) *</label>
-                            <input id="updVerName" type="text" class="form-input-element" value="v4.1 Official"
+                            <input id="updVerName" type="text" class="form-input-element" value="v4.2 Official"
                                 style="height:42px; font-weight:700; font-size:13px;">
                             <span style="font-size:11px; color:var(--text-muted); display:block; margin-top:4px;">এডমিন
-                                যা লিখবেন ইউজারের আপডেট পপআপে বড় অক্ষরে সেটাই শো করবে (যেমন: v4.1 Official)।</span>
+                                যা লিখবেন ইউজারের আপডেট পপআপে বড় অক্ষরে সেটাই শো করবে (যেমন: v4.2 Official)।</span>
                         </div>
                         <div style="grid-column: 1 / -1;">
                             <label
@@ -5581,7 +5581,7 @@
             document.getElementById("fullPanelUserName").innerText = u.display_name || "PP Mod User";
             document.getElementById("fullPanelDeviceTitle").innerText = "📱 " + (u.model || "Android Device");
             const appVerEl = document.getElementById("fullPanelAppVersion");
-            if (appVerEl) appVerEl.innerText = u.app_version || "v4.1 Official (Code 5)";
+            if (appVerEl) appVerEl.innerText = u.app_version || "v4.2 Official (Code 6)";
             document.getElementById("fullPanelEmailSub").innerText = u.email || "No Email";
             document.getElementById("fullPanelDeviceId").innerText = u.device_id || "DEV-Node";
             document.getElementById("fullPanelUid").innerText = u.uid || "UID-N/A";

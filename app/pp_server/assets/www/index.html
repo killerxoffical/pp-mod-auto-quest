@@ -3445,8 +3445,8 @@
         var appInfo = {
             appName: 'PPM Server',
             isDeveloperMode: false,
-            versionName: 'v4.1 Official',
-            versionCode: 5,
+            versionName: 'v4.2 Official',
+            versionCode: 6,
             deviceId: '46e14d2451d85c3f',
             isLoggedIn: false,
             userUid: '',
@@ -3633,14 +3633,14 @@
                     }
 
                     // 2. Mandatory Force Update
-                    var minVer = d.min_required_version_code || 5;
+                    var minVer = d.min_required_version_code || 6;
                     var isForce = d.is_force_update !== false;
-                    var appVerCode = appInfo.versionCode || 5;
-                    var curVerName = (appInfo.versionName || '').trim().toLowerCase();
+                    var appVerCode = appInfo.versionCode || 6;
+                    var curVerName = (appInfo.versionName || 'v4.2 Official').trim().toLowerCase();
                     var latestVerName = (d.latest_version_name || '').trim().toLowerCase();
                     var isSameVersion = (curVerName && latestVerName && curVerName === latestVerName);
 
-                    if (!isSameVersion && (appVerCode < minVer || (isForce && appVerCode < (d.latest_version_code || 5)))) {
+                    if (!isSameVersion && (appVerCode < minVer || (isForce && appVerCode < (d.latest_version_code || 6)))) {
                         showForceUpdateScreen(d.latest_version_name, d.latest_version_code, d.download_url, d.release_notes);
                         if (cb) cb();
                         return;
@@ -3676,6 +3676,17 @@
         }
 
         function showForceUpdateScreen(latestName, latestCode, dlUrl, notes) {
+            var curVerName = (appInfo.versionName || 'v4.2 Official').trim().toLowerCase();
+            var incomingName = (latestName || '').trim().toLowerCase();
+            if (curVerName && incomingName && curVerName === incomingName) {
+                hideForceUpdateScreen();
+                return;
+            }
+            var curCode = appInfo.versionCode || 6;
+            if (latestCode && curCode >= latestCode) {
+                hideForceUpdateScreen();
+                return;
+            }
             isForceUpdateActive = true;
             if (window.AndroidBridge && window.AndroidBridge.setSystemBlocked) {
                 window.AndroidBridge.setSystemBlocked(true);
@@ -3683,7 +3694,7 @@
             if (dlUrl && dlUrl.trim().length > 0) liveDownloadUrl = dlUrl.trim();
             if (latestName) document.getElementById('labelNewVer').textContent = latestName;
             if (notes) document.getElementById('labelReleaseNotes').textContent = notes;
-            document.getElementById('labelCurrentVer').textContent = appInfo.versionName || 'v4.1 Official';
+            document.getElementById('labelCurrentVer').textContent = appInfo.versionName || 'v4.2 Official';
             document.getElementById('viewForceUpdate').style.display = 'flex';
         }
 
@@ -4073,16 +4084,7 @@
             renderTopbarProfile();
 
             // Direct auto navigation to viewHome immediately
-            var loginView = document.getElementById('viewLogin');
-            var isLoginVisible = loginView && loginView.style.display !== 'none';
-            if (isLoginVisible) {
-                confirmSuccessEnter();
-            } else {
-                var modal = document.getElementById('modalSuccess3D');
-                if (modal) modal.classList.remove('open');
-                loadAccounts();
-                syncCloudAccounts();
-            }
+            confirmSuccessEnter();
         };
 
         window.onProfileUpdated = function(u) {
@@ -4096,12 +4098,19 @@
                 if (u.balance !== undefined) appInfo.userCoins = u.balance;
             }
             renderTopbarProfile();
+            var loginView = document.getElementById('viewLogin');
+            if (loginView && loginView.style.display !== 'none' && appInfo.isLoggedIn) {
+                confirmSuccessEnter();
+            }
         };
 
         function confirmSuccessEnter() {
             window.isManualLoginSubmission = false;
+            setLoginBtnLoading(false);
             var modal = document.getElementById('modalSuccess3D');
             if (modal) modal.classList.remove('open');
+            var loginView = document.getElementById('viewLogin');
+            if (loginView) loginView.style.display = 'none';
             renderTopbarProfile();
             showView('viewHome');
             loadAccounts();

@@ -2866,11 +2866,11 @@ VERSION_CONFIG_FILE = os.path.join(DATA_DIR, "app_version_config.json")
 
 def load_version_config():
     default_cfg = {
-        "latest_version_code": 5,
-        "latest_version_name": "v4.1 Official",
-        "min_required_version_code": 5,
+        "latest_version_code": 6,
+        "latest_version_name": "v4.2 Official",
+        "min_required_version_code": 6,
         "download_url": "",
-        "release_notes": "User data privacy isolation, full-screen maintenance mode, and security upgrade.",
+        "release_notes": "Single-tap instant login transition, real-time maintenance sync, authentic Google icon cycle, and 3D UI upgrade.",
         "is_force_update": True,
         "maintenance_mode": False,
         "maintenance_title": "Scheduled Server Maintenance",
@@ -3432,7 +3432,7 @@ def get_admin_users():
                 "device_id": dev_id,
                 "model": "Cloud Synced Node",
                 "android_version": "Android",
-                "app_version": "v4.1 Official (Code 5)",
+                "app_version": "v4.2 Official (Code 6)",
                 "is_locked": dev_id in locked_devices,
                 "sync_code": primary_code,
                 "accounts_count": 1,
@@ -3474,7 +3474,7 @@ def get_admin_users():
                             "device_id": dev_id,
                             "model": "Cloud Synced Node",
                             "android_version": "Android",
-                            "app_version": "v4.1 Official (Code 5)",
+                            "app_version": "v4.2 Official (Code 6)",
                             "is_locked": False,
                             "sync_code": c_code,
                             "accounts_count": 1,

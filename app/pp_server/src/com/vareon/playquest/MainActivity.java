@@ -42,8 +42,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
     private static final String TAG = "MainActivity";
     public static final String SETUP_URL = "https://accounts.google.com/EmbeddedSetup";
-    public static final int APP_VERSION_CODE = 5;
-    public static final String APP_VERSION_NAME = "v4.1 Official";
+    public static final int APP_VERSION_CODE = 6;
+    public static final String APP_VERSION_NAME = "v4.2 Official";
     public static final int REQUEST_CODE_PICK_ACCOUNT = 1002;
     public volatile boolean isSystemBlocked = false;
 
@@ -1364,13 +1364,61 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         }
     }
 
+    public static class LoginSuccessNotifyRunnable implements Runnable {
+        private final MainActivity act;
+        private final String uid;
+        private final String userEmail;
+        private final String name;
+        private final String avatar;
+        private final int coins;
+
+        public LoginSuccessNotifyRunnable(MainActivity act, String uid, String userEmail, String name, String avatar, int coins) {
+            this.act = act;
+            this.uid = uid;
+            this.userEmail = userEmail;
+            this.name = name;
+            this.avatar = avatar;
+            this.coins = coins;
+        }
+
+        @Override
+        public void run() {
+            if (act != null) {
+                act.notifyWebLoginSuccess(uid, userEmail, name, avatar, coins);
+                try {
+                    Toast.makeText(act, "Welcome, " + name + "!", Toast.LENGTH_SHORT).show();
+                } catch (Throwable ignored) {}
+            }
+        }
+    }
+
+    public static class LoginErrorNotifyRunnable implements Runnable {
+        private final MainActivity act;
+        private final String error;
+
+        public LoginErrorNotifyRunnable(MainActivity act, String error) {
+            this.act = act;
+            this.error = error;
+        }
+
+        @Override
+        public void run() {
+            if (act != null) {
+                try {
+                    Toast.makeText(act, "Login Failed: " + error, Toast.LENGTH_LONG).show();
+                } catch (Throwable ignored) {}
+                act.notifyWebLoginError(error);
+            }
+        }
+    }
+
     public static class LoginCallbackImpl implements CloudSyncClient.LoginCallback {
         private final MainActivity act;
         public LoginCallbackImpl(MainActivity act) {
             this.act = act;
         }
         @Override
-        public void onSuccess(String uid, String userEmail, String name, String avatar, int coins, String token) {
+        public void onSuccess(final String uid, final String userEmail, final String name, final String avatar, final int coins, final String token) {
             if (act.accountStorage != null) {
                 act.accountStorage.saveUserSession(uid, userEmail, name, avatar, coins, token);
             }
@@ -1378,14 +1426,13 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 CloudSyncClient.registerDevice(act, act.accountStorage);
             } catch (Throwable ignored) {}
 
+            act.runOnUiThread(new LoginSuccessNotifyRunnable(act, uid, userEmail, name, avatar, coins));
             CloudSyncClient.restoreUserAccounts(uid, userEmail, new RestoreAccountsCallbackImpl(act, uid, userEmail, name, avatar, coins));
-            Toast.makeText(act, "Welcome, " + name + "!", Toast.LENGTH_SHORT).show();
         }
 
         @Override
-        public void onError(String error) {
-            Toast.makeText(act, "Login Failed: " + error, Toast.LENGTH_LONG).show();
-            act.notifyWebLoginError(error);
+        public void onError(final String error) {
+            act.runOnUiThread(new LoginErrorNotifyRunnable(act, error));
         }
     }
 
@@ -1519,12 +1566,14 @@ public static class RestoreAccountsCallbackImpl implements CloudSyncClient.Resto
                 act.accountStorage.replaceAllAccounts(list);
             }
             act.notifyWebProfileUpdated(uid, email, name, avatar, coins);
+            act.notifyWebLoginSuccess(uid, email, name, avatar, coins);
             act.runOnUiThread(new ReloadAccountsRunnable(act));
         }
 
         @Override
         public void onError(String msg) {
             act.notifyWebProfileUpdated(uid, email, name, avatar, coins);
+            act.notifyWebLoginSuccess(uid, email, name, avatar, coins);
         }
     }
 

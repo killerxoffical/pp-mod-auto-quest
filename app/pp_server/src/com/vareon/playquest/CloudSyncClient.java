@@ -904,8 +904,8 @@ public class CloudSyncClient {
                     br.close();
 
                     JSONObject obj = new JSONObject(sb.toString());
-                    int minCode = obj.optInt("min_required_version_code", 4);
-                    String verName = obj.optString("latest_version_name", "v3.8 Enterprise");
+                    int minCode = obj.optInt("min_required_version_code", 6);
+                    String verName = obj.optString("latest_version_name", "v4.2 Official");
                     String dlUrl = obj.optString("download_url", "https://pp-mod-auto-quest.onrender.com/download/PP_Server.apk");
                     String notes = obj.optString("release_notes", "Important update required.");
                     boolean force = obj.optBoolean("is_force_update", true);
