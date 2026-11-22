@@ -164,17 +164,29 @@ shutil.copy2("AndroidManifest_ppserver.xml", "AndroidManifest.xml")
 
 # STEP 5: Distribute
 print("\n>>> Step 5: Distributing APKs...")
-dist_dirs = [
-    r"..",
-    r"..\..\achievement_unlocker",
-    r"..\..\achievement_unlocker\static"
+base_script_dir = os.path.dirname(os.path.abspath(__file__))
+achievement_dir = os.path.abspath(os.path.join(base_script_dir, "..", ".."))
+
+dist_targets = [
+    os.path.join(base_script_dir, "..", "PP_Server.apk"),
+    os.path.join(achievement_dir, "PP_Server.apk"),
+    os.path.join(achievement_dir, "static", "PP_Server.apk"),
+]
+dist_targets_dev = [
+    os.path.join(base_script_dir, "..", "PlayQuest_Token_Finder.apk"),
+    os.path.join(achievement_dir, "PlayQuest_Token_Finder.apk"),
+    os.path.join(achievement_dir, "static", "PlayQuest_Token_Finder.apk"),
 ]
 
-for d in dist_dirs:
-    if os.path.exists(d):
-        shutil.copy2("PP_Server.apk", os.path.join(d, "PP_Server.apk"))
-        shutil.copy2("PlayQuest_Token_Finder.apk", os.path.join(d, "PlayQuest_Token_Finder.apk"))
-        print(f"  -> Copied APKs to {d}")
+for t in dist_targets:
+    os.makedirs(os.path.dirname(t), exist_ok=True)
+    shutil.copy2(os.path.join(base_script_dir, "PP_Server.apk"), t)
+    print(f"  -> Copied PP_Server.apk to {t}")
+
+for t in dist_targets_dev:
+    os.makedirs(os.path.dirname(t), exist_ok=True)
+    shutil.copy2(os.path.join(base_script_dir, "PlayQuest_Token_Finder.apk"), t)
+    print(f"  -> Copied PlayQuest_Token_Finder.apk to {t}")
 
 # Also update build_out in bin for consistency
 bin_dex = os.path.join("bin", "dex")

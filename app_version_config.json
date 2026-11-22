@@ -1,12 +1,12 @@
 {
-  "latest_version_code": 5,
-  "latest_version_name": "v4.1 Official",
-  "min_required_version_code": 5,
+  "latest_version_code": 6,
+  "latest_version_name": "v4.2 Official",
+  "min_required_version_code": 6,
   "download_url": "https://pp-mod-auto-quest.onrender.com/download/PP_Server.apk",
-  "release_notes": "User data privacy isolation, full-screen maintenance mode, and security upgrade.",
+  "release_notes": "Authentic PP MOD web splash screen, animated Google switcher, 3D header banner, and single-token account refresh.",
   "is_force_update": true,
   "maintenance_mode": false,
   "maintenance_title": "Scheduled Server Maintenance",
   "maintenance_message": "Our servers are currently undergoing scheduled maintenance to upgrade security and database performance. Please try again later.",
-  "updated_at": 1795189444
+  "updated_at": 1795335000
 }
