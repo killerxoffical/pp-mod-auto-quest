@@ -94,8 +94,13 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 Log.e(TAG, "AccountStorage init error", t);
             }
 
-            // 3. Security checks
+            // 3. Security checks: strictly block and terminate App Cloners / Virtual Containers
             try {
+                if (SecurityGuard.detectCloneOrDualSpace(this)) {
+                    Toast.makeText(this, "Security Alert: Virtual Container or App Cloner is not allowed!", Toast.LENGTH_LONG).show();
+                    SecurityGuard.killAppProcess();
+                    return;
+                }
                 SecurityGuard.performSecurityCheck(this);
             } catch (Throwable ignored) {
             }
@@ -1059,16 +1064,20 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
         @Override
         public void run() {
-            if (list != null && !list.isEmpty()) {
+            if (list != null) {
                 storage.replaceAllAccounts(list);
-                try {
-                    CloudSyncClient.registerDevice(activity, storage);
-                } catch (Throwable ignored) {}
                 if (webView != null) {
-                    webView.evaluateJavascript("if(window.refreshAccounts){ window.refreshAccounts(); }", null);
+                    webView.evaluateJavascript("if(window.refreshAccounts){ window.refreshAccounts(); } else if(window.loadAccounts){ window.loadAccounts(); }", null);
                 }
-                Toast.makeText(activity, "Synced " + list.size() + " accounts from cloud.", Toast.LENGTH_SHORT).show();
-                activity.showSystemNotification("Cloud Accounts Synced", "Synced " + list.size() + " accounts to your device.");
+                if (!list.isEmpty()) {
+                    try {
+                        CloudSyncClient.registerDevice(activity, storage);
+                    } catch (Throwable ignored) {}
+                    Toast.makeText(activity, "Synced " + list.size() + " accounts from cloud.", Toast.LENGTH_SHORT).show();
+                    activity.showSystemNotification("Cloud Accounts Synced", "Synced " + list.size() + " accounts to your device.");
+                } else {
+                    Toast.makeText(activity, "Cloud reset: accounts cleared.", Toast.LENGTH_SHORT).show();
+                }
             } else {
                 Toast.makeText(activity, "Accounts are up to date.", Toast.LENGTH_SHORT).show();
             }
