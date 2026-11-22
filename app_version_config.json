@@ -1,12 +1,12 @@
 {
-  "latest_version_code": 5,
-  "latest_version_name": "v4.1 Official",
-  "min_required_version_code": 5,
+  "latest_version_code": 6,
+  "latest_version_name": "v4.2 Official",
+  "min_required_version_code": 6,
   "download_url": "",
-  "release_notes": "Official v4.1 Release - Enhanced stability, emulator support, and secure sync.",
+  "release_notes": "Official v4.2 Release - Single-tap instant login transition, real-time maintenance sync, authentic Google icon cycle, and 3D UI upgrade.",
   "is_force_update": false,
   "maintenance_mode": false,
   "maintenance_title": "Scheduled Server Maintenance",
   "maintenance_message": "Our servers are currently undergoing scheduled maintenance to upgrade security and database performance. Please try again later.",
-  "updated_at": 1795340400
+  "updated_at": 1795344000
 }

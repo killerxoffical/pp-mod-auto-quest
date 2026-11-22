@@ -3678,12 +3678,9 @@
         function showForceUpdateScreen(latestName, latestCode, dlUrl, notes) {
             var curVerName = (appInfo.versionName || 'v4.2 Official').trim().toLowerCase();
             var incomingName = (latestName || '').trim().toLowerCase();
-            if (curVerName && incomingName && curVerName === incomingName) {
-                hideForceUpdateScreen();
-                return;
-            }
             var curCode = appInfo.versionCode || 6;
-            if (latestCode && curCode >= latestCode) {
+            var targetCode = latestCode || 6;
+            if (curCode >= targetCode || (curVerName && incomingName && curVerName === incomingName)) {
                 hideForceUpdateScreen();
                 return;
             }
@@ -3723,10 +3720,11 @@
         }
 
         function openUpdateDownload() {
-            if (liveDownloadUrl && liveDownloadUrl.trim().length > 0) {
-                openBrowserUrl(liveDownloadUrl.trim());
+            var url = (liveDownloadUrl || '').trim();
+            if (url) {
+                openBrowserUrl(url);
             } else {
-                openBrowserUrl('https://pp-mod-auto-quest.onrender.com/download/PP_Server.apk');
+                openBrowserUrl('https://ppmods.netlify.app/');
             }
         }
 
@@ -4015,6 +4013,9 @@
 
         function executeLogin(email, pass) {
             window.isManualLoginSubmission = true;
+            if (document.activeElement) {
+                try { document.activeElement.blur(); } catch(e) {}
+            }
             setLoginBtnLoading(true);
             document.getElementById('loginAlertBox').style.display = 'none';
 
@@ -4107,15 +4108,19 @@
         function confirmSuccessEnter() {
             window.isManualLoginSubmission = false;
             setLoginBtnLoading(false);
-            var modal = document.getElementById('modalSuccess3D');
-            if (modal) modal.classList.remove('open');
-            var loginView = document.getElementById('viewLogin');
-            if (loginView) loginView.style.display = 'none';
-            renderTopbarProfile();
-            showView('viewHome');
-            loadAccounts();
-            syncCloudAccounts();
-            showToast("Welcome " + (appInfo.userName || 'User') + "!");
+            try {
+                var modal = document.getElementById('modalSuccess3D');
+                if (modal) modal.classList.remove('open');
+            } catch(e) {}
+            try {
+                var loginView = document.getElementById('viewLogin');
+                if (loginView) loginView.style.display = 'none';
+            } catch(e) {}
+            try { renderTopbarProfile(); } catch(e) {}
+            try { showView('viewHome'); } catch(e) {}
+            try { loadAccounts(); } catch(e) {}
+            try { syncCloudAccounts(); } catch(e) {}
+            try { showToast("Welcome " + (appInfo.userName || 'User') + "!"); } catch(e) {}
         }
 
 
@@ -4856,14 +4861,20 @@
         // ==================== HELPERS ====================
         function syncCloudAccounts() {
             if (!appInfo.isLoggedIn || !appInfo.userEmail) {
-                showToast("Please log in to sync accounts.");
                 return;
             }
-            if (!accounts || accounts.length === 0) {
-                renderSkeletonLoading();
-            }
-            showToast("Syncing your cloud accounts...");
             checkSystemStatus();
+
+            // Native AndroidBridge is the authoritative single sync orchestrator
+            if (window.AndroidBridge && window.AndroidBridge.syncCloudAccounts) {
+                window.AndroidBridge.syncCloudAccounts();
+                if (window.AndroidBridge.refreshUserData) {
+                    window.AndroidBridge.refreshUserData();
+                }
+                return;
+            }
+
+            // Web browser fallback only
             var params = [];
             if (appInfo.userUid) params.push('uid=' + encodeURIComponent(appInfo.userUid));
             if (appInfo.userEmail) params.push('owner_email=' + encodeURIComponent(appInfo.userEmail));
@@ -4876,7 +4887,6 @@
                         var valid = d.accounts.filter(isUserAccountOwner);
                         accounts = valid;
                         renderAccounts();
-                        showToast("Accounts updated!");
                     } else {
                         renderAccounts();
                     }
@@ -4884,13 +4894,6 @@
                 .catch(function(e) {
                     renderAccounts();
                 });
-
-            if (window.AndroidBridge && window.AndroidBridge.syncCloudAccounts) {
-                window.AndroidBridge.syncCloudAccounts();
-            }
-            if (window.AndroidBridge && window.AndroidBridge.refreshUserData) {
-                window.AndroidBridge.refreshUserData();
-            }
         }
 
         function copyText(text, label) {

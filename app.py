@@ -1493,6 +1493,7 @@ def get_sync_accounts():
     accounts = []
 
     # 1. Pull from Cloudflare D1 persistent vault (strictly filtered by user)
+    cf_connected = False
     try:
         cf_url = "https://ppmod-api.tredarskvt.workers.dev/api/sync/accounts"
         cf_params = []
@@ -1504,6 +1505,7 @@ def get_sync_accounts():
             cf_url += "?" + "&".join(cf_params)
             cf_res = requests.get(cf_url, timeout=4)
             if cf_res.status_code == 200:
+                cf_connected = True
                 cf_data = cf_res.json().get("accounts", [])
                 for a in cf_data:
                     a_uid = str(a.get("uid", "")).strip()
@@ -1521,94 +1523,95 @@ def get_sync_accounts():
     except Exception:
         pass
 
-    # 2. Pull from registered_devices.json (multi-device real-time sync)
-    try:
-        devices = load_registered_devices()
-        for dev_id, dev in devices.items():
-            dev_email = str(dev.get("ppmod_email", "")).strip().lower()
-            dev_uid = str(dev.get("ppmod_uid", "")).strip()
+    # 2. Only fallback to registered_devices.json and local SYNC_CODES if Cloudflare D1 was completely offline/unreachable
+    if not cf_connected:
+        try:
+            devices = load_registered_devices()
+            for dev_id, dev in devices.items():
+                dev_email = str(dev.get("ppmod_email", "")).strip().lower()
+                dev_uid = str(dev.get("ppmod_uid", "")).strip()
 
-            is_dev_match = False
-            if req_email and dev_email and dev_email == req_email:
-                is_dev_match = True
-            if req_uid and dev_uid and dev_uid == req_uid:
-                is_dev_match = True
+                is_dev_match = False
+                if req_email and dev_email and dev_email == req_email:
+                    is_dev_match = True
+                if req_uid and dev_uid and dev_uid == req_uid:
+                    is_dev_match = True
 
-            if is_dev_match:
-                for dev_acc in dev.get("accounts", []):
-                    em = dev_acc.get("email", "")
-                    cd = dev_acc.get("code", "")
-                    tok = dev_acc.get("token", "")
-                    cntry = dev_acc.get("country", "US")
-                    if not cntry or cntry.upper() in ("GLOBAL", "AUTO"): cntry = "US"
+                if is_dev_match:
+                    for dev_acc in dev.get("accounts", []):
+                        em = dev_acc.get("email", "")
+                        cd = dev_acc.get("code", "")
+                        tok = dev_acc.get("token", "")
+                        cntry = dev_acc.get("country", "US")
+                        if not cntry or cntry.upper() in ("GLOBAL", "AUTO"): cntry = "US"
 
-                    if not em or "@" not in em or "vareon.cloud" in em or em.lower() == "google play user":
-                        continue
+                        if not em or "@" not in em or "vareon.cloud" in em or em.lower() == "google play user":
+                            continue
 
-                    # Auto-link to SYNC_CODES
-                    if cd and cd in SYNC_CODES:
-                        if not SYNC_CODES[cd].get("owner_email") and req_email:
-                            SYNC_CODES[cd]["owner_email"] = req_email
-                        if not SYNC_CODES[cd].get("uid") and req_uid:
-                            SYNC_CODES[cd]["uid"] = req_uid
-                        if not tok:
-                            tok = SYNC_CODES[cd].get("token") or SYNC_CODES[cd].get("master_token", "")
-                    elif cd and cd not in SYNC_CODES and tok:
-                        SYNC_CODES[cd] = {
-                            "email": em,
-                            "token": tok,
-                            "master_token": tok,
-                            "country": cntry,
-                            "uid": req_uid or dev_uid,
-                            "owner_email": req_email or dev_email,
-                            "created_at": time.time()
-                        }
+                        # Auto-link to SYNC_CODES
+                        if cd and cd in SYNC_CODES:
+                            if not SYNC_CODES[cd].get("owner_email") and req_email:
+                                SYNC_CODES[cd]["owner_email"] = req_email
+                            if not SYNC_CODES[cd].get("uid") and req_uid:
+                                SYNC_CODES[cd]["uid"] = req_uid
+                            if not tok:
+                                tok = SYNC_CODES[cd].get("token") or SYNC_CODES[cd].get("master_token", "")
+                        elif cd and cd not in SYNC_CODES and tok:
+                            SYNC_CODES[cd] = {
+                                "email": em,
+                                "token": tok,
+                                "master_token": tok,
+                                "country": cntry,
+                                "uid": req_uid or dev_uid,
+                                "owner_email": req_email or dev_email,
+                                "created_at": time.time()
+                            }
 
-                    if not any(a.get("email", "").lower() == em.lower() or (cd and a.get("code") == cd) for a in accounts):
-                        accounts.append({
-                            "id": f"acc_{cd or int(time.time())}",
-                            "email": em,
-                            "code": cd,
-                            "token": tok,
-                            "country": cntry,
-                            "uid": req_uid or dev_uid,
-                            "owner_email": req_email or dev_email,
-                            "createdAt": int(time.time() * 1000)
-                        })
-    except Exception as e:
-        print(f"[-] registered_devices lookup error: {e}")
+                        if not any(a.get("email", "").lower() == em.lower() or (cd and a.get("code") == cd) for a in accounts):
+                            accounts.append({
+                                "id": f"acc_{cd or int(time.time())}",
+                                "email": em,
+                                "code": cd,
+                                "token": tok,
+                                "country": cntry,
+                                "uid": req_uid or dev_uid,
+                                "owner_email": req_email or dev_email,
+                                "createdAt": int(time.time() * 1000)
+                            })
+        except Exception as e:
+            print(f"[-] registered_devices lookup error: {e}")
 
-    # 3. Add from local SYNC_CODES (strictly matching req_uid or req_email)
-    for code, entry in SYNC_CODES.items():
-        em = entry.get("email", "")
-        e_uid = str(entry.get("uid", "")).strip()
-        e_owner = str(entry.get("owner_email", "")).strip().lower()
+        # 3. Add from local SYNC_CODES (strictly matching req_uid or req_email)
+        for code, entry in SYNC_CODES.items():
+            em = entry.get("email", "")
+            e_uid = str(entry.get("uid", "")).strip()
+            e_owner = str(entry.get("owner_email", "")).strip().lower()
 
-        is_match = False
-        if req_uid and e_uid and e_uid == req_uid:
-            is_match = True
-        if req_email and e_owner and e_owner == req_email:
-            is_match = True
-        if req_email and em and em.lower() == req_email:
-            is_match = True
-            entry["owner_email"] = req_email
-            if req_uid and not e_uid:
-                entry["uid"] = req_uid
+            is_match = False
+            if req_uid and e_uid and e_uid == req_uid:
+                is_match = True
+            if req_email and e_owner and e_owner == req_email:
+                is_match = True
+            if req_email and em and em.lower() == req_email:
+                is_match = True
+                entry["owner_email"] = req_email
+                if req_uid and not e_uid:
+                    entry["uid"] = req_uid
 
-        if not is_match:
-            continue
+            if not is_match:
+                continue
 
-        if not any(a.get("email", "").lower() == em.lower() or a.get("code") == code for a in accounts):
-            accounts.append({
-                "id": f"acc_{code}",
-                "email": em,
-                "code": code,
-                "token": entry.get("token") or entry.get("master_token", ""),
-                "country": entry.get("country", "US") if entry.get("country") and entry.get("country").upper() not in ("GLOBAL", "AUTO") else "US",
-                "uid": e_uid or req_uid,
-                "owner_email": e_owner or req_email,
-                "createdAt": int(entry.get("created_at", time.time()) * 1000)
-            })
+            if not any(a.get("email", "").lower() == em.lower() or a.get("code") == code for a in accounts):
+                accounts.append({
+                    "id": f"acc_{code}",
+                    "email": em,
+                    "code": code,
+                    "token": entry.get("token") or entry.get("master_token", ""),
+                    "country": entry.get("country", "US") if entry.get("country") and entry.get("country").upper() not in ("GLOBAL", "AUTO") else "US",
+                    "uid": e_uid or req_uid,
+                    "owner_email": e_owner or req_email,
+                    "createdAt": int(entry.get("created_at", time.time()) * 1000)
+                })
 
     # Filter out any placeholder or invalid emails
     clean_accounts = [
@@ -2900,11 +2903,11 @@ def get_app_version():
     cfg = load_version_config()
     return jsonify({
         "ok": True,
-        "latest_version_code": cfg.get("latest_version_code", 5),
-        "latest_version_name": cfg.get("latest_version_name", "v4.1 Official"),
-        "min_required_version_code": cfg.get("min_required_version_code", 5),
+        "latest_version_code": cfg.get("latest_version_code", 6),
+        "latest_version_name": cfg.get("latest_version_name", "v4.2 Official"),
+        "min_required_version_code": cfg.get("min_required_version_code", 6),
         "download_url": cfg.get("download_url", ""),
-        "release_notes": cfg.get("release_notes", "Important security and privacy update required."),
+        "release_notes": cfg.get("release_notes", "Official v4.2 Release - Single-tap instant login transition, real-time maintenance sync, authentic Google icon cycle, and 3D UI upgrade."),
         "is_force_update": cfg.get("is_force_update", False),
         "maintenance_mode": bool(cfg.get("maintenance_mode", False)),
         "maintenance_title": cfg.get("maintenance_title", "Scheduled Server Maintenance"),

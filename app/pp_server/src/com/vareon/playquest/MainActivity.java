@@ -780,16 +780,16 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             u.put("name", name);
             u.put("avatar", avatar);
             u.put("coins", coins);
-            final String js = "javascript:(function(){ if(window.onLoginSuccess) window.onLoginSuccess(" + u.toString() + "); else if(window.refreshAccounts) window.refreshAccounts(); })();";
-            mainAppWebView.post(new PostWebUrlRunnable(mainAppWebView, js));
+            final String rawJs = "if(window.onLoginSuccess) { window.onLoginSuccess(" + u.toString() + "); } else if(window.refreshAccounts) { window.refreshAccounts(); }";
+            runOnUiThread(new PostWebJsRunnable(this, rawJs));
         } catch (Throwable ignored) {}
     }
 
     public void notifyWebLoginError(final String error) {
         if (mainAppWebView == null) return;
         final String quoted = JSONObject.quote(error != null ? error : "Unknown error");
-        final String js = "javascript:(function(){ if(window.onLoginError) window.onLoginError(" + quoted + "); })();";
-        mainAppWebView.post(new PostWebUrlRunnable(mainAppWebView, js));
+        final String rawJs = "if(window.onLoginError) { window.onLoginError(" + quoted + "); }";
+        runOnUiThread(new PostWebJsRunnable(this, rawJs));
     }
 
     public void doLogout() {
@@ -798,10 +798,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             accountStorage.clearAccounts();
         }
         Toast.makeText(this, "Logged out of PP Mod session.", Toast.LENGTH_SHORT).show();
-        if (mainAppWebView != null) {
-            final String js = "javascript:(function(){ if(window.onLogoutSuccess) window.onLogoutSuccess(); else location.reload(); })();";
-            mainAppWebView.post(new PostWebUrlRunnable(mainAppWebView, js));
-        }
+        final String rawJs = "if(window.onLogoutSuccess) { window.onLogoutSuccess(); } else { location.reload(); }";
+        runOnUiThread(new PostWebJsRunnable(this, rawJs));
     }
 
     public String getAccountsJson() {
@@ -1351,6 +1349,32 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         }
     }
 
+    public static class PostWebJsRunnable implements Runnable {
+        private final MainActivity act;
+        private final String js;
+        public PostWebJsRunnable(MainActivity act, String js) {
+            this.act = act;
+            this.js = js;
+        }
+        @Override
+        public void run() {
+            if (act != null && act.mainAppWebView != null) {
+                try {
+                    android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) act.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    if (imm != null && act.getCurrentFocus() != null) {
+                        imm.hideSoftInputFromWindow(act.getCurrentFocus().getWindowToken(), 0);
+                    }
+                    act.mainAppWebView.clearFocus();
+                } catch (Throwable ignored) {}
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+                    act.mainAppWebView.evaluateJavascript(js, null);
+                } else {
+                    act.mainAppWebView.loadUrl("javascript:(function(){ " + js + " })();");
+                }
+            }
+        }
+    }
+
     public static class PostWebUrlRunnable implements Runnable {
         private final WebView wv;
         private final String url;
@@ -1525,7 +1549,12 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         @Override
         public void run() {
             if (act != null && act.mainAppWebView != null) {
-                act.mainAppWebView.loadUrl("javascript:if(window.onProfileUpdated){window.onProfileUpdated(" + json + ");}");
+                final String rawJs = "if(window.onProfileUpdated){window.onProfileUpdated(" + json + ");}";
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+                    act.mainAppWebView.evaluateJavascript(rawJs, null);
+                } else {
+                    act.mainAppWebView.loadUrl("javascript:(function(){ " + rawJs + " })();");
+                }
             }
         }
     }
@@ -1538,7 +1567,12 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         @Override
         public void run() {
             if (act != null && act.mainAppWebView != null) {
-                act.mainAppWebView.loadUrl("javascript:(function(){ if(window.syncCloudAccounts) window.syncCloudAccounts(); else if(window.loadAccounts) window.loadAccounts(); })();");
+                final String rawJs = "if(window.loadAccounts) window.loadAccounts(); else if(window.refreshAccounts) window.refreshAccounts();";
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+                    act.mainAppWebView.evaluateJavascript(rawJs, null);
+                } else {
+                    act.mainAppWebView.loadUrl("javascript:(function(){ " + rawJs + " })();");
+                }
             }
         }
     }

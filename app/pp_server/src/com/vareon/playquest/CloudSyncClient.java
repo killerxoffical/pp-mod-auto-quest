@@ -227,6 +227,19 @@ public class CloudSyncClient {
         }
     }
 
+    private static class RestoreErrorRunnable implements Runnable {
+        private final RestoreCallback cb;
+        private final String error;
+        RestoreErrorRunnable(RestoreCallback cb, String error) {
+            this.cb = cb;
+            this.error = error;
+        }
+        @Override
+        public void run() {
+            if (cb != null) cb.onError(error);
+        }
+    }
+
     public static volatile String lastExchangedMasterToken = null;
     public static volatile String lastExchangedEmail = null;
     public static volatile String lastDetectedCountry = "";
@@ -571,6 +584,7 @@ public class CloudSyncClient {
         public void run() {
             List<AccountItem> list = new ArrayList<AccountItem>();
             java.util.Set<String> seenEmails = new java.util.HashSet<String>();
+            boolean hasServerResponse = false;
 
             // STRICT DATA PRIVACY: If user is not logged in with UID or email, never fetch accounts from cloud!
             if ((uid == null || uid.trim().isEmpty()) && (ownerEmail == null || ownerEmail.trim().isEmpty())) {
@@ -598,6 +612,7 @@ public class CloudSyncClient {
                     conn.setReadTimeout(7000);
 
                     if (conn.getResponseCode() == 200) {
+                        hasServerResponse = true;
                         BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
                         StringBuilder sb = new StringBuilder();
                         String line;
@@ -683,6 +698,7 @@ public class CloudSyncClient {
                         cfConn.setReadTimeout(6000);
 
                     if (cfConn.getResponseCode() == 200) {
+                        hasServerResponse = true;
                         BufferedReader br = new BufferedReader(new InputStreamReader(cfConn.getInputStream(), "UTF-8"));
                         StringBuilder sb = new StringBuilder();
                         String line;
@@ -747,6 +763,11 @@ public class CloudSyncClient {
                     }
                     }
                 } catch (Exception ignored) {}
+            }
+
+            if (!hasServerResponse) {
+                new Handler(Looper.getMainLooper()).post(new RestoreErrorRunnable(callback, "Connection failed or server waking up"));
+                return;
             }
 
             new Handler(Looper.getMainLooper()).post(new RestoreLoadedRunnable(callback, list));

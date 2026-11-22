@@ -309,7 +309,7 @@ public class AccountStorage {
     }
 
     public synchronized void replaceAllAccounts(List<AccountItem> list) {
-        if (list == null) list = new ArrayList<AccountItem>();
+        if (list == null) return;
         List<AccountItem> current = getAccounts();
         java.util.Map<String, AccountItem> localMap = new java.util.HashMap<String, AccountItem>();
         for (AccountItem item : current) {
@@ -319,6 +319,7 @@ public class AccountStorage {
         }
 
         List<AccountItem> secureList = new ArrayList<AccountItem>();
+        java.util.Set<String> processedCodes = new java.util.HashSet<String>();
         String curUid = getUserUid();
         String curEmail = getUserEmail();
 
@@ -355,7 +356,22 @@ public class AccountStorage {
                 }
             }
             secureList.add(cloudItem);
+            processedCodes.add(cloudItem.getCode());
         }
+
+        // Protect freshly added local accounts (< 3 minutes old) that haven't synced to cloud yet
+        long now = System.currentTimeMillis();
+        for (AccountItem local : current) {
+            if (local != null && local.getCode() != null && !processedCodes.contains(local.getCode())) {
+                if (!isDeleted(local.getCode(), local.getEmail())) {
+                    if (now - local.getTimestamp() < 180000) { // 3 minutes grace period
+                        secureList.add(local);
+                        processedCodes.add(local.getCode());
+                    }
+                }
+            }
+        }
+
         saveList(secureList);
     }
 
