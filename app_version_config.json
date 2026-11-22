@@ -2,7 +2,7 @@
   "latest_version_code": 5,
   "latest_version_name": "v4.1 Official",
   "min_required_version_code": 5,
-  "download_url": "https://pp-mod-auto-quest.onrender.com/download/PP_Server.apk",
+  "download_url": "",
   "release_notes": "Official v4.1 Release - Enhanced stability, emulator support, and secure sync.",
   "is_force_update": false,
   "maintenance_mode": false,

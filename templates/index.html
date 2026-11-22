@@ -5208,7 +5208,7 @@
                 if (data.ok) {
                     if (document.getElementById("updMinVerCode")) document.getElementById("updMinVerCode").value = data.min_required_version_code || 5;
                     if (document.getElementById("updVerName")) document.getElementById("updVerName").value = data.latest_version_name || "v4.1 Official";
-                    if (document.getElementById("updDownloadUrl")) document.getElementById("updDownloadUrl").value = data.download_url || "https://pp-mod-auto-quest.onrender.com/download/PP_Server.apk";
+                    if (document.getElementById("updDownloadUrl")) document.getElementById("updDownloadUrl").value = data.download_url || "";
                     if (document.getElementById("updReleaseNotes")) document.getElementById("updReleaseNotes").value = data.release_notes || "";
                     if (document.getElementById("chkForceUpdate")) document.getElementById("chkForceUpdate").checked = !!data.is_force_update;
                     if (document.getElementById("chkMaintenanceMode")) document.getElementById("chkMaintenanceMode").checked = !!data.maintenance_mode;

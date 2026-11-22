@@ -2869,7 +2869,7 @@ def load_version_config():
         "latest_version_code": 5,
         "latest_version_name": "v4.1 Official",
         "min_required_version_code": 5,
-        "download_url": "https://pp-mod-auto-quest.onrender.com/download/PP_Server.apk",
+        "download_url": "",
         "release_notes": "User data privacy isolation, full-screen maintenance mode, and security upgrade.",
         "is_force_update": True,
         "maintenance_mode": False,
@@ -2903,9 +2903,9 @@ def get_app_version():
         "latest_version_code": cfg.get("latest_version_code", 5),
         "latest_version_name": cfg.get("latest_version_name", "v4.1 Official"),
         "min_required_version_code": cfg.get("min_required_version_code", 5),
-        "download_url": cfg.get("download_url", "https://pp-mod-auto-quest.onrender.com/download/PP_Server.apk"),
+        "download_url": cfg.get("download_url", ""),
         "release_notes": cfg.get("release_notes", "Important security and privacy update required."),
-        "is_force_update": cfg.get("is_force_update", True),
+        "is_force_update": cfg.get("is_force_update", False),
         "maintenance_mode": bool(cfg.get("maintenance_mode", False)),
         "maintenance_title": cfg.get("maintenance_title", "Scheduled Server Maintenance"),
         "maintenance_message": cfg.get("maintenance_message", "Our servers are currently undergoing scheduled maintenance to upgrade security and database performance. Please try again later."),
@@ -2918,17 +2918,24 @@ def update_app_version():
     data = request.get_json() or {}
     cfg = load_version_config()
 
+    if "latest_version_code" in data:
+        try:
+            cfg["latest_version_code"] = int(data["latest_version_code"])
+        except ValueError:
+            pass
+
     if "min_required_version_code" in data:
         try:
             cfg["min_required_version_code"] = int(data["min_required_version_code"])
-            cfg["latest_version_code"] = max(cfg.get("latest_version_code", 5), cfg["min_required_version_code"])
+            if "latest_version_code" not in data:
+                cfg["latest_version_code"] = cfg["min_required_version_code"]
         except ValueError:
             pass
 
     if "latest_version_name" in data and str(data["latest_version_name"]).strip():
         cfg["latest_version_name"] = str(data["latest_version_name"]).strip()
 
-    if "download_url" in data and str(data["download_url"]).strip():
+    if "download_url" in data:
         cfg["download_url"] = str(data["download_url"]).strip()
 
     if "release_notes" in data:
