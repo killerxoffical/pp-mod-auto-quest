@@ -620,6 +620,21 @@ public class CloudSyncClient {
 
                                 long ts = obj.optLong("createdAt", System.currentTimeMillis());
                                 if (!email.isEmpty() && !code.isEmpty() && email.contains("@") && !email.contains("vareon.cloud") && !email.equalsIgnoreCase("Google Play User") && !seenEmails.contains(email.toLowerCase())) {
+                                    // STRICT OWNERSHIP FILTER: Never allow accounts belonging to another user!
+                                    boolean isOwnerMatch = false;
+                                    if (uid != null && !uid.trim().isEmpty() && accUid != null && !accUid.trim().isEmpty() && uid.trim().equalsIgnoreCase(accUid.trim())) {
+                                        isOwnerMatch = true;
+                                    }
+                                    if (ownerEmail != null && !ownerEmail.trim().isEmpty() && accOwner != null && !accOwner.trim().isEmpty() && ownerEmail.trim().equalsIgnoreCase(accOwner.trim())) {
+                                        isOwnerMatch = true;
+                                    }
+                                    if (ownerEmail != null && !ownerEmail.trim().isEmpty() && email.trim().equalsIgnoreCase(ownerEmail.trim())) {
+                                        isOwnerMatch = true;
+                                    }
+                                    if (!isOwnerMatch) {
+                                        continue;
+                                    }
+
                                     AccountItem item = new AccountItem(id, email, code, token, country, accUid, accOwner, ts);
                                     boolean hasPP = obj.optBoolean("has_play_points", false);
                                     String t = obj.optString("tier", hasPP ? "Gold" : "None");
@@ -690,6 +705,21 @@ public class CloudSyncClient {
 
                                 long ts = obj.optLong("createdAt", System.currentTimeMillis());
                                 if (!email.isEmpty() && !code.isEmpty() && email.contains("@") && !email.contains("vareon.cloud") && !email.equalsIgnoreCase("Google Play User") && !seenEmails.contains(email.toLowerCase())) {
+                                    // STRICT OWNERSHIP FILTER: Never allow accounts belonging to another user!
+                                    boolean isOwnerMatch = false;
+                                    if (uid != null && !uid.trim().isEmpty() && accUid != null && !accUid.trim().isEmpty() && uid.trim().equalsIgnoreCase(accUid.trim())) {
+                                        isOwnerMatch = true;
+                                    }
+                                    if (ownerEmail != null && !ownerEmail.trim().isEmpty() && accOwner != null && !accOwner.trim().isEmpty() && ownerEmail.trim().equalsIgnoreCase(accOwner.trim())) {
+                                        isOwnerMatch = true;
+                                    }
+                                    if (ownerEmail != null && !ownerEmail.trim().isEmpty() && email.trim().equalsIgnoreCase(ownerEmail.trim())) {
+                                        isOwnerMatch = true;
+                                    }
+                                    if (!isOwnerMatch) {
+                                        continue;
+                                    }
+
                                     AccountItem item = new AccountItem(id, email, code, token, country, accUid, accOwner, ts);
                                     boolean hasPP = obj.optBoolean("has_play_points", false);
                                     String t = obj.optString("tier", hasPP ? "Gold" : "None");

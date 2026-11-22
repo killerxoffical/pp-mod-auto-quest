@@ -1490,21 +1490,29 @@ def get_sync_accounts():
     # 1. Pull from Cloudflare D1 persistent vault (strictly filtered by user)
     try:
         cf_url = "https://ppmod-api.tredarskvt.workers.dev/api/sync/accounts"
+        cf_params = []
         if req_uid:
-            cf_url += f"?uid={requests.utils.quote(req_uid)}"
-        cf_res = requests.get(cf_url, timeout=4)
-        if cf_res.status_code == 200:
-            cf_data = cf_res.json().get("accounts", [])
-            for a in cf_data:
-                a_uid = str(a.get("uid", "")).strip()
-                a_owner = str(a.get("owner_email", "")).strip().lower()
-                is_match = False
-                if req_uid and a_uid and a_uid == req_uid:
-                    is_match = True
-                if req_email and a_owner and a_owner == req_email:
-                    is_match = True
-                if is_match:
-                    accounts.append(a)
+            cf_params.append(f"uid={requests.utils.quote(req_uid)}")
+        if req_email:
+            cf_params.append(f"owner_email={requests.utils.quote(req_email)}")
+        if cf_params:
+            cf_url += "?" + "&".join(cf_params)
+            cf_res = requests.get(cf_url, timeout=4)
+            if cf_res.status_code == 200:
+                cf_data = cf_res.json().get("accounts", [])
+                for a in cf_data:
+                    a_uid = str(a.get("uid", "")).strip()
+                    a_owner = str(a.get("owner_email", "")).strip().lower()
+                    a_em = str(a.get("email", "")).strip().lower()
+                    is_match = False
+                    if req_uid and a_uid and a_uid == req_uid:
+                        is_match = True
+                    if req_email and a_owner and a_owner == req_email:
+                        is_match = True
+                    if req_email and a_em and a_em == req_email:
+                        is_match = True
+                    if is_match:
+                        accounts.append(a)
     except Exception:
         pass
 
