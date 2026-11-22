@@ -707,13 +707,14 @@
         }
 
         .topbar-brand-banner {
-            height: 25px;
+            height: 38px;
             width: auto;
-            max-width: 175px;
+            max-width: 215px;
             object-fit: contain;
             object-position: left center;
             display: block;
-            filter: drop-shadow(0 1px 4px rgba(0, 168, 255, 0.16));
+            filter: drop-shadow(0 2px 8px rgba(0, 168, 255, 0.28));
+            transition: transform 0.2s ease;
         }
 
         .topbar-email-row {
@@ -2391,17 +2392,177 @@
             font-weight: 800;
         }
 
-</style>
+
+        /* Floating Add Button Icon Switcher */
+        .btn-nav-floating-add {
+            position: relative !important;
+            overflow: hidden !important;
+        }
+        .floating-icon-state {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1), transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+        .floating-icon-state.state-plus {
+            opacity: 1;
+            transform: scale(1) rotate(0deg);
+        }
+        .floating-icon-state.state-plus.fade-out {
+            opacity: 0;
+            transform: scale(0.5) rotate(90deg);
+        }
+        .floating-icon-state.state-google {
+            opacity: 0;
+            transform: scale(0.5) rotate(-60deg);
+        }
+        .floating-icon-state.state-google.active {
+            opacity: 1;
+            transform: scale(1) rotate(0deg);
+        }
+        .google-disc {
+            background: #ffffff;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+        }
+        @keyframes googlePulse {
+            0% { transform: scale(0.85); }
+            50% { transform: scale(1.08); }
+            100% { transform: scale(1); }
+        }
+        .floating-icon-state.state-google.active .google-disc {
+            animation: googlePulse 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        /* Refresh rotating animation */
+        @keyframes spinRefresh {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .acc-refresh-pill.rotating svg {
+            animation: spinRefresh 0.8s linear infinite;
+        }
+
+        /* Astronaut Maintenance Animation */
+        @keyframes floatAstronaut {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-14px) rotate(3deg); }
+        }
+        @keyframes pulseAstroGlow {
+            0%, 100% { opacity: 0.35; transform: scale(0.95); }
+            50% { opacity: 0.75; transform: scale(1.05); }
+        }
+        @keyframes starTwinkle {
+            0%, 100% { opacity: 0.25; }
+            50% { opacity: 1; }
+        }
+        .maint-astronaut-wrapper {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+        }
+        .maint-glow-backdrop {
+            position: absolute;
+            width: 175px;
+            height: 175px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.28) 0%, rgba(99, 102, 241, 0.15) 60%, transparent 80%);
+            animation: pulseAstroGlow 3s infinite ease-in-out;
+            pointer-events: none;
+        }
+        .astro-character {
+            animation: floatAstronaut 3.5s infinite ease-in-out;
+            transform-origin: center center;
+        }
+        .star-1 { animation: starTwinkle 2s infinite ease-in-out; }
+        .star-2 { animation: starTwinkle 2.8s infinite ease-in-out 0.8s; }
+        .star-3 { animation: starTwinkle 3.2s infinite ease-in-out 1.5s; }
+
+    </style>
 </head>
 <body>
 
     <!-- ==================== 0A. FULL-SCREEN MAINTENANCE OVERLAY ==================== -->
     <div id="viewMaintenance" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:9999999; background:linear-gradient(180deg, #f8fafc 0%, #eef2f6 100%); flex-direction:column; align-items:center; justify-content:center; padding:32px 24px; box-sizing:border-box; text-align:center;">
-        <div style="width:96px; height:96px; border-radius:30px; background:linear-gradient(135deg, #fef2f2, #fee2e2); border:2px solid rgba(239,68,68,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:20px; box-shadow:0 12px 30px rgba(239,68,68,0.15); position:relative;">
-            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#ef4444" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+        <div class="maint-astronaut-wrapper">
+            <div class="maint-glow-backdrop"></div>
+            <svg class="maint-astronaut-svg" viewBox="0 0 240 240" width="180" height="180" fill="none" xmlns="http://www.w3.org/2000/svg" id="Astronot">
+                <defs>
+                    <linearGradient id="astroHelmetGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#38bdf8"/>
+                        <stop offset="50%" stop-color="#0284c7"/>
+                        <stop offset="100%" stop-color="#0369a1"/>
+                    </linearGradient>
+                    <linearGradient id="astroSuitGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#ffffff"/>
+                        <stop offset="100%" stop-color="#e2e8f0"/>
+                    </linearGradient>
+                    <linearGradient id="astroBackpackGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#94a3b8"/>
+                        <stop offset="100%" stop-color="#64748b"/>
+                    </linearGradient>
+                    <filter id="astroShadow" x="-20%" y="-20%" width="140%" height="140%">
+                        <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#0284c7" flood-opacity="0.25"/>
+                    </filter>
+                </defs>
+
+                <!-- Stars -->
+                <circle cx="30" cy="40" r="2" fill="#38bdf8" class="astro-star star-1"/>
+                <circle cx="210" cy="50" r="2.5" fill="#818cf8" class="astro-star star-2"/>
+                <circle cx="190" cy="180" r="1.5" fill="#38bdf8" class="astro-star star-3"/>
+                <circle cx="45" cy="190" r="2" fill="#c084fc" class="astro-star star-1"/>
+                <polygon points="120,15 122,20 127,22 122,24 120,29 118,24 113,22 118,20" fill="#facc15" opacity="0.8"/>
+
+                <!-- Character -->
+                <g class="astro-character" filter="url(#astroShadow)">
+                    <!-- Backpack -->
+                    <rect x="74" y="85" width="92" height="85" rx="18" fill="url(#astroBackpackGrad)" stroke="#475569" stroke-width="3"/>
+                    <rect x="85" y="95" width="70" height="20" rx="6" fill="#334155"/>
+                    <path d="M74 120 C 50 130, 48 165, 76 170" fill="none" stroke="#cbd5e1" stroke-width="6" stroke-linecap="round"/>
+
+                    <!-- Legs & Boots -->
+                    <path d="M92 165 L88 200 A 10 10 0 0 0 108 200 L110 165 Z" fill="url(#astroSuitGrad)" stroke="#94a3b8" stroke-width="3"/>
+                    <path d="M130 165 L132 200 A 10 10 0 0 0 152 200 L148 165 Z" fill="url(#astroSuitGrad)" stroke="#94a3b8" stroke-width="3"/>
+                    <rect x="84" y="196" width="28" height="12" rx="6" fill="#0284c7"/>
+                    <rect x="128" y="196" width="28" height="12" rx="6" fill="#0284c7"/>
+
+                    <!-- Torso -->
+                    <rect x="82" y="100" width="76" height="72" rx="24" fill="url(#astroSuitGrad)" stroke="#cbd5e1" stroke-width="3"/>
+                    <rect x="98" y="115" width="44" height="24" rx="6" fill="#0f172a"/>
+                    <circle cx="107" cy="127" r="4" fill="#ef4444"/>
+                    <circle cx="120" cy="127" r="4" fill="#22c55e"/>
+                    <circle cx="133" cy="127" r="4" fill="#38bdf8"/>
+
+                    <!-- Arms -->
+                    <path d="M84 110 C 60 120, 56 142, 68 152 C 73 156, 80 150, 78 144 C 72 136, 75 125, 86 120 Z" fill="url(#astroSuitGrad)" stroke="#94a3b8" stroke-width="2"/>
+                    <path d="M156 110 C 180 120, 184 142, 172 152 C 167 156, 160 150, 162 144 C 168 136, 165 125, 154 120 Z" fill="url(#astroSuitGrad)" stroke="#94a3b8" stroke-width="2"/>
+
+                    <!-- Helmet Base & Sphere -->
+                    <rect x="100" y="86" width="40" height="18" rx="6" fill="#64748b"/>
+                    <circle cx="120" cy="62" r="42" fill="url(#astroSuitGrad)" stroke="#cbd5e1" stroke-width="3"/>
+                    <!-- Visor Glass -->
+                    <ellipse cx="120" cy="62" rx="30" ry="24" fill="url(#astroHelmetGrad)"/>
+                    <!-- Visor Highlight -->
+                    <path d="M102 52 C 108 44, 126 42, 134 46 C 130 50, 115 50, 106 58 Z" fill="#ffffff" opacity="0.65"/>
+                    <line x1="120" y1="20" x2="120" y2="12" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
+                    <circle cx="120" cy="10" r="4" fill="#38bdf8"/>
+                </g>
             </svg>
-            <span style="position:absolute; bottom:-6px; right:-6px; width:22px; height:22px; border-radius:50%; background:#ef4444; border:3px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,0.2);"></span>
         </div>
 
         <div style="display:inline-flex; align-items:center; gap:6px; padding:5px 14px; border-radius:999px; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); margin-bottom:12px;">
@@ -2905,11 +3066,25 @@
         </button>
 
         <div class="bottom-nav-plus-wrap">
-            <button class="btn-nav-floating-add" title="Connect Google Account" onclick="startConnectAccount()">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
+            <button class="btn-nav-floating-add" id="btnNavFloatingAdd" title="Connect Google Account" onclick="startConnectAccount()">
+                <div class="floating-icon-state state-plus" id="floatingAddIconPlus">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </div>
+                <div class="floating-icon-state state-google" id="floatingAddIconGoogle">
+                    <div class="google-disc">
+                        <svg viewBox="0 0 196 196" width="20" height="20" id="Google">
+                            <path fill="#fbbd00" transform="translate(0, 38.207)" d="M45.75,59.39 C45.75,49.72 48.41,40.66 53.04,32.9 L53.04,0 L20.14,0 C7.08,16.96 0,37.63 0,59.39 C0,81.15 7.08,101.82 20.14,118.78 L53.04,118.78 L53.04,85.88 C48.41,78.12 45.75,69.06 45.75,59.39z"/>
+                            <path fill="#0f9d58" transform="translate(74.724, 142.19)" d="M22.88,7.26 L0,30.13 L22.88,53.01 C44.64,53.01 65.31,45.93 82.27,32.87 L82.27,0 L49.4,0 C41.57,4.65 32.47,7.26 22.88,7.26z"/>
+                            <path fill="#31aa52" transform="translate(20.139, 124.087)" d="M32.9,0 L0,32.9 C2.59,36.26 5.4,39.48 8.45,42.52 C26.88,60.96 51.39,71.11 77.46,71.11 L77.46,25.36 C58.54,25.36 41.96,15.18 32.9,0z"/>
+                            <path fill="#3c79e6" transform="translate(97.599, 75.23)" d="M97.6,22.37 C97.6,16.43 97.06,10.48 96,4.69 L95.14,0 L0,0 L0,45.75 L46.3,45.75 C41.81,54.69 34.89,61.99 26.52,66.96 L59.39,99.83 C62.75,97.25 65.97,94.43 69.01,91.38 C87.45,72.95 97.6,48.44 97.6,22.37z"/>
+                            <path fill="#cf2d48" transform="translate(74.724, 0)" d="M59.54,60.94 L63.58,64.98 L95.93,32.63 L91.89,28.59 C73.45,10.15 48.94,0 22.88,0 L0,22.88 L22.88,45.75 C36.72,45.75 49.74,51.14 59.54,60.94z"/>
+                            <path fill="#eb4132" transform="translate(20.139, 0)" d="M77.46,45.75 L77.46,0 C51.39,0 26.88,10.15 8.45,28.59 C5.4,31.63 2.59,34.85 0,38.21 L32.9,71.11 C41.96,55.94 58.54,45.75 77.46,45.75z"/>
+                        </svg>
+                    </div>
+                </div>
             </button>
         </div>
 
@@ -3738,7 +3913,7 @@
                                     '<span class="stat-tier-badge">⚠️ No Play Points Account</span>' +
                                 '</div>'
                             )) +
-                            '<div class="acc-stat-pill acc-refresh-pill" onclick="checkAccountBalance(\'' + a.code + '\')" title="Tap to refresh Play Points">' +
+                            '<div class="acc-stat-pill acc-refresh-pill" id="btn_refresh_' + a.code + '" onclick="checkAccountBalance(\'' + a.code + '\')" title="Tap to refresh Play Points">' +
                                 '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2">' +
                                     '<path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>' +
                                 '</svg>' +
@@ -3877,13 +4052,89 @@
             showToast("⚠️ This Google account has not joined Play Points yet. Join for free in Google Play Store!");
         }
 
-        function refreshAccountPoints(code) {
-            showToast("Refreshing Play Points live data...");
-            if (window.AndroidBridge && window.AndroidBridge.refreshAccount) {
-                window.AndroidBridge.refreshAccount(code);
-            } else if (window.AndroidBridge && window.AndroidBridge.syncCloudAccounts) {
-                window.AndroidBridge.syncCloudAccounts();
+        window.onAccountRefreshed = function(code, data) {
+            var btn = document.getElementById('btn_refresh_' + code);
+            if (btn) btn.classList.remove('rotating');
+            if (data && accounts) {
+                var found = false;
+                for (var i = 0; i < accounts.length; i++) {
+                    if (accounts[i] && accounts[i].code === code) {
+                        accounts[i].balance = data.balance || accounts[i].balance;
+                        accounts[i].tier = data.tier || accounts[i].tier;
+                        accounts[i].points = data.points !== undefined ? data.points : accounts[i].points;
+                        accounts[i].has_play_points = data.has_play_points !== undefined ? data.has_play_points : accounts[i].has_play_points;
+                        accounts[i].has_perk = data.has_perk !== undefined ? data.has_perk : accounts[i].has_perk;
+                        accounts[i].play_points_status = data.play_points_status || accounts[i].play_points_status;
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) {
+                    renderAccounts();
+                    showToast("✅ Updated: " + (data.has_play_points ? (data.tier + " • " + data.points + " PP") : "No Play Points"));
+                }
             }
+        };
+
+        function refreshAccountPoints(code) {
+            var btn = document.getElementById('btn_refresh_' + code);
+            if (btn) btn.classList.add('rotating');
+
+            var acc = accounts.find(function(item) { return item && item.code === code; });
+            var email = acc ? acc.email : '';
+            var token = acc ? (acc.token || acc.master_token || '') : '';
+            var country = acc ? (acc.country || 'US') : 'US';
+
+            showToast("Refreshing " + (email ? maskEmail(email) : "account") + " live data...");
+
+            if (window.AndroidBridge && window.AndroidBridge.refreshAccountWithToken) {
+                window.AndroidBridge.refreshAccountWithToken(code, email, token, country);
+            } else if (window.AndroidBridge && window.AndroidBridge.refreshAccount) {
+                window.AndroidBridge.refreshAccount(code);
+            } else {
+                fetch((window.APP_CONFIG && window.APP_CONFIG.API_URL ? window.APP_CONFIG.API_URL : "https://ppm-bot-auto.onrender.com") + "/api/account/live_data", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ code: code, email: email, token: token, country: country })
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(res) {
+                    if (btn) btn.classList.remove('rotating');
+                    if (res && res.ok) {
+                        window.onAccountRefreshed(code, res);
+                    } else {
+                        showToast("⚠️ Could not refresh data: " + (res && res.error ? res.error : "Unknown error"));
+                    }
+                })
+                .catch(function(e) {
+                    if (btn) btn.classList.remove('rotating');
+                    showToast("Network error while refreshing account data.");
+                });
+            }
+        }
+
+        // Initialize 3s alternating loop between Plus and Google SVG icon
+        var _floatingIconIsGoogle = false;
+        function initFloatingAddAnimation() {
+            setInterval(function() {
+                var plus = document.getElementById('floatingAddIconPlus');
+                var google = document.getElementById('floatingAddIconGoogle');
+                if (!plus || !google) return;
+                if (!_floatingIconIsGoogle) {
+                    plus.classList.add('fade-out');
+                    google.classList.add('active');
+                    _floatingIconIsGoogle = true;
+                } else {
+                    plus.classList.remove('fade-out');
+                    google.classList.remove('active');
+                    _floatingIconIsGoogle = false;
+                }
+            }, 3000);
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initFloatingAddAnimation);
+        } else {
+            initFloatingAddAnimation();
         }
 
         function checkAccountBalance(code) {

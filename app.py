@@ -1297,13 +1297,18 @@ def get_account_live_data():
                 entry = v
                 break
 
-    token = ""
-    android_id = ""
-    country = "US"
+    token = str(data.get("token", "")).strip()
+    country_in = str(data.get("country", "")).strip().upper()
+    country = country_in if country_in else "US"
+    android_id = str(data.get("android_id", "")).strip()
+
     if entry:
-        token = entry.get("token") or entry.get("master_token", "")
-        android_id = entry.get("android_id", "")
-        country = entry.get("country", "US")
+        if not token:
+            token = entry.get("token") or entry.get("master_token", "")
+        if not android_id:
+            android_id = entry.get("android_id", "")
+        if country == "US" and entry.get("country"):
+            country = entry.get("country")
 
     if not token and email:
         known = load_known_tokens()

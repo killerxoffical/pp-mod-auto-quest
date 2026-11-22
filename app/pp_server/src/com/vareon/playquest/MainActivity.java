@@ -700,6 +700,10 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         new Thread(new AccountRefreshWorker(this, code)).start();
     }
 
+    public void refreshAccountDataWithToken(String code, String email, String token, String country) {
+        new Thread(new AccountRefreshWorker(this, code, email, token, country)).start();
+    }
+
     public void doLogin(final String email, final String password) {
         if (email == null || email.trim().isEmpty()) {
             Toast.makeText(this, "Please enter your PP Mod email.", Toast.LENGTH_SHORT).show();
@@ -1265,6 +1269,11 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         public void refreshAccount(final String code) {
             activity.refreshAccountData(code);
         }
+
+        @JavascriptInterface
+        public void refreshAccountWithToken(final String code, final String email, final String token, final String country) {
+            activity.refreshAccountDataWithToken(code, email, token, country);
+        }
     }
 
     public static class UpdateAccountCountryRunnable implements Runnable {
@@ -1540,25 +1549,49 @@ public static class RestoreAccountsCallbackImpl implements CloudSyncClient.Resto
     public static class AccountRefreshWorker implements Runnable {
         private final MainActivity act;
         private final String code;
+        private String email;
+        private String token;
+        private String country;
 
         public AccountRefreshWorker(MainActivity a, String c) {
+            this(a, c, null, null, null);
+        }
+
+        public AccountRefreshWorker(MainActivity a, String c, String em, String tok, String cntry) {
             this.act = a;
             this.code = c;
+            this.email = em;
+            this.token = tok;
+            this.country = cntry;
         }
 
         @Override
         public void run() {
             try {
+                if (act.accountStorage != null && (token == null || token.isEmpty() || email == null || email.isEmpty())) {
+                    for (AccountItem item : act.accountStorage.getAccounts()) {
+                        if (code != null && (code.equals(item.getCode()) || code.equals(item.getEmail()))) {
+                            if (email == null || email.isEmpty()) email = item.getEmail();
+                            if (token == null || token.isEmpty()) token = item.getToken();
+                            if (country == null || country.isEmpty()) country = item.getCountry();
+                            break;
+                        }
+                    }
+                }
+
                 java.net.URL url = new java.net.URL(SecurityGuard.getRenderApi() + "/api/account/live_data");
                 java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/json");
                 conn.setDoOutput(true);
-                conn.setConnectTimeout(8000);
-                conn.setReadTimeout(8000);
+                conn.setConnectTimeout(10000);
+                conn.setReadTimeout(10000);
 
                 org.json.JSONObject body = new org.json.JSONObject();
-                body.put("code", code);
+                body.put("code", code != null ? code : "");
+                if (email != null && !email.isEmpty()) body.put("email", email);
+                if (token != null && !token.isEmpty()) body.put("token", token);
+                if (country != null && !country.isEmpty()) body.put("country", country);
 
                 java.io.OutputStream os = conn.getOutputStream();
                 os.write(body.toString().getBytes("UTF-8"));
@@ -1627,7 +1660,20 @@ public static class RestoreAccountsCallbackImpl implements CloudSyncClient.Resto
                 act.accountStorage.saveAccounts(list);
             }
             if (act.mainAppWebView != null) {
-                act.mainAppWebView.evaluateJavascript("if(window.refreshAccounts){ window.refreshAccounts(); }", null);
+                try {
+                    org.json.JSONObject obj = new org.json.JSONObject();
+                    obj.put("code", code);
+                    obj.put("balance", balance);
+                    obj.put("tier", tier);
+                    obj.put("points", points);
+                    obj.put("has_play_points", hasPlayPoints);
+                    obj.put("has_perk", hasPerk);
+                    obj.put("play_points_status", status);
+                    final String js = "if(window.onAccountRefreshed){ window.onAccountRefreshed('" + code + "', " + obj.toString() + "); } else if(window.refreshAccounts){ window.refreshAccounts(); }";
+                    act.mainAppWebView.evaluateJavascript(js, null);
+                } catch (Throwable ignored) {
+                    act.mainAppWebView.evaluateJavascript("if(window.refreshAccounts){ window.refreshAccounts(); }", null);
+                }
             }
             String msg = (hasPlayPoints ? (tier + " • " + points + " PP") : "⚠️ No Play Points Account");
             android.widget.Toast.makeText(act, msg, android.widget.Toast.LENGTH_SHORT).show();
