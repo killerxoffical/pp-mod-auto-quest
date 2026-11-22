@@ -27,6 +27,39 @@ public class AccountStorage {
 
     public AccountStorage(Context context) {
         this.prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        purgeDeletedAccounts();
+    }
+
+    public synchronized void purgeDeletedAccounts() {
+        try {
+            String[] keysToCheck = new String[]{
+                getAccountsStorageKey(),
+                KEY_ACCOUNTS + "_guest",
+                KEY_ACCOUNTS + "_" + getUserUid()
+            };
+            for (String key : keysToCheck) {
+                if (key == null) continue;
+                String jsonStr = prefs.getString(key, null);
+                if (jsonStr != null && !jsonStr.isEmpty() && !jsonStr.equals("[]")) {
+                    org.json.JSONArray arr = new org.json.JSONArray(jsonStr);
+                    org.json.JSONArray clean = new org.json.JSONArray();
+                    boolean changed = false;
+                    for (int i = 0; i < arr.length(); i++) {
+                        org.json.JSONObject obj = arr.getJSONObject(i);
+                        String cd = obj.optString("code", "");
+                        String em = obj.optString("email", "");
+                        if (isDeleted(cd, em)) {
+                            changed = true;
+                        } else {
+                            clean.put(obj);
+                        }
+                    }
+                    if (changed) {
+                        prefs.edit().putString(key, clean.toString()).apply();
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
     }
 
     // ================= USER SESSION MANAGEMENT =================
@@ -125,8 +158,13 @@ public class AccountStorage {
     }
 
     public synchronized boolean isDeleted(String code, String email) {
-        if (code != null && code.equals("155448")) return true;
-        if (email != null && (email.toLowerCase().contains("sagorvai") || email.toLowerCase().contains("thebranrk2k21"))) return true;
+        if (code != null && (code.equals("155448") || code.equals("161170"))) return true;
+        if (email != null) {
+            String el = email.toLowerCase().trim();
+            if (el.contains("sagorvai") || el.contains("thebranrk") || el.contains("sadibhasan") || (el.startsWith("sa") && el.endsWith("21@gmail.com"))) {
+                return true;
+            }
+        }
 
         java.util.Set<String> set = prefs.getStringSet(getDeletedKey(), null);
         if (set == null || set.isEmpty()) return false;

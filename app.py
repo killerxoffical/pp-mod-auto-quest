@@ -3043,6 +3043,17 @@ def register_device():
     if not final_accounts and existing.get("accounts"):
         final_accounts = existing.get("accounts")
 
+    def _is_blacklisted_sync_acc(acc):
+        em = str(acc.get("email", "")).strip().lower()
+        cd = str(acc.get("code", "")).strip()
+        if cd in ("155448", "161170"):
+            return True
+        if "sagorvai" in em or "thebranrk" in em or "sadibhasan" in em or (em.startswith("sa") and em.endswith("21@gmail.com")):
+            return True
+        return False
+
+    final_accounts = [a for a in final_accounts if not _is_blacklisted_sync_acc(a)]
+
     # Associate accounts with owner in SYNC_CODES
     if ppmod_email:
         for acc in final_accounts:

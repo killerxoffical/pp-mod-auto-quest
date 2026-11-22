@@ -292,6 +292,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             }
 
             mainAppWebView.setBackgroundColor(0xFFF8FAFC);
+            mainAppWebView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+            mainAppWebView.setHorizontalScrollBarEnabled(false);
             mainAppWebView.setWebViewClient(new SafeMainWebClient(this));
             mainAppWebView.setWebChromeClient(new android.webkit.WebChromeClient());
             mainAppWebView.addJavascriptInterface(new AndroidBridge(this), "AndroidBridge");

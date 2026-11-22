@@ -3306,11 +3306,199 @@
         // ==================== QUESTS & MYSTERY BOXES LOGIC ====================
         var selectedQuestAccountEmail = 'ALL';
 
+        function getAccountBoxes(acc) {
+            var rawEm = acc.email || 'Google Account';
+            var maskedEm = maskEmail(rawEm);
+            var tier = acc.tier || 'None';
+            var points = (acc.points !== undefined && acc.points !== null) ? acc.points : 0;
+            var hasPP = (acc.has_play_points === true && tier.toLowerCase() !== 'none');
+
+            if (!hasPP) {
+                return { hasPP: false, boxes: [] };
+            }
+
+            var boxes = [
+                {
+                    id: 'box_450_' + acc.code,
+                    badge: '🎁 SUPER BOX',
+                    badgeClass: 'tag-super-box',
+                    points: '+450 PP Box',
+                    title: '450 Play Points Mystery Box',
+                    accountEmail: rawEm,
+                    accountMasked: maskedEm,
+                    tier: tier,
+                    subtitle: 'Special Mystery Reward Box Drop',
+                    gameIcon: '🎁',
+                    gameName: 'Google Play Points Mystery Event',
+                    desc: 'Mystery gift box event for ' + maskedEm + '. Complete partner gameplay challenges in Google Play to reveal bonus points.',
+                    missions: [
+                        {
+                            title: 'Install Featured Partner Title',
+                            detail: 'Download Monopoly GO or Solo Leveling from Google Play Store.'
+                        },
+                        {
+                            title: 'Reach Gameplay Milestone',
+                            detail: 'Complete Board 5 or clear Chapter 2 in the featured game.'
+                        },
+                        {
+                            title: 'Reveal 450 Points Mystery Drop',
+                            detail: 'The 450 Play Points Mystery Box unlocks and deposits bonus points directly into your account.'
+                        }
+                    ]
+                },
+                {
+                    id: 'box_600_' + acc.code,
+                    badge: '🔥 TITAN BOX',
+                    badgeClass: 'tag-titan-box',
+                    points: '+600 PP Box',
+                    title: '600 Play Points Titan Box',
+                    accountEmail: rawEm,
+                    accountMasked: maskedEm,
+                    tier: tier,
+                    subtitle: 'Titan Tier Mystery Drop',
+                    gameIcon: '💎',
+                    gameName: 'Google Play Points Titan Vault',
+                    desc: 'High-value 600 Play Points Titan box for ' + maskedEm + '. Complete seasonal gaming challenges to claim.',
+                    missions: [
+                        {
+                            title: 'Launch Featured Action Game',
+                            detail: 'Open PUBG Mobile or Clash of Clans through Google Play Games.'
+                        },
+                        {
+                            title: 'Maintain 3-Day Game Streak',
+                            detail: 'Log into and play at least 1 match or raid per day for 3 consecutive days.'
+                        },
+                        {
+                            title: 'Unlock 600 PP Titan Drop',
+                            detail: 'Titan Tier mystery box automatically delivers 600 bonus Play Points upon streak completion.'
+                        }
+                    ]
+                },
+                {
+                    id: 'box_150_' + acc.code,
+                    badge: '🎯 BATTLE BOX',
+                    badgeClass: 'tag-game-box',
+                    points: '+150 PP Box',
+                    title: '150 PP Battle Pass Box',
+                    accountEmail: rawEm,
+                    accountMasked: maskedEm,
+                    tier: tier,
+                    subtitle: 'PUBG Mobile: Survival Challenge',
+                    gameIcon: '🎯',
+                    gameName: 'PUBG Mobile',
+                    desc: 'Battle Pass challenge quest rewarding a 150 Play Points mystery box upon survival.',
+                    missions: [
+                        {
+                            title: 'Launch PUBG Mobile',
+                            detail: 'Open PUBG Mobile connected to Google Play Games with ' + maskedEm + '.'
+                        },
+                        {
+                            title: 'Complete 3 Classic Matches',
+                            detail: 'Survive for at least 10 minutes in 3 Classic or Ranked matches.'
+                        },
+                        {
+                            title: 'Claim 150 PP Battle Drop',
+                            detail: 'Google Play Games logs achievement and awards the 150 Play Points box.'
+                        }
+                    ]
+                },
+                {
+                    id: 'box_75_' + acc.code,
+                    badge: '⭐ STREAK BOX',
+                    badgeClass: 'tag-game-box',
+                    points: '+75 PP Box',
+                    title: '75 PP 3-Day Streak Box',
+                    accountEmail: rawEm,
+                    accountMasked: maskedEm,
+                    tier: tier,
+                    subtitle: 'Royal Match: Royal Streak',
+                    gameIcon: '👑',
+                    gameName: 'Royal Match',
+                    desc: 'Daily streak loyalty challenge rewarding a 75 Play Points mystery box.',
+                    missions: [
+                        {
+                            title: 'Royal Match Daily Login',
+                            detail: 'Launch Royal Match once daily for 3 consecutive days.'
+                        },
+                        {
+                            title: 'Clear 5 Puzzle Stages',
+                            detail: 'Solve and pass at least 5 levels during the promotional period.'
+                        },
+                        {
+                            title: 'Collect 75 Play Points Box',
+                            detail: 'Mystery streak box opens and credits 75 Play Points to your account.'
+                        }
+                    ]
+                },
+                {
+                    id: 'box_50_' + acc.code,
+                    badge: '⚔️ MILESTONE BOX',
+                    badgeClass: 'tag-game-box',
+                    points: '+50 PP Box',
+                    title: '50 PP Town Hall Box',
+                    accountEmail: rawEm,
+                    accountMasked: maskedEm,
+                    tier: tier,
+                    subtitle: 'Clash of Clans: Village Chief',
+                    gameIcon: '⚔️',
+                    gameName: 'Clash of Clans',
+                    desc: 'Milestone achievement quest rewarding 50 Play Points upon upgrading your village.',
+                    missions: [
+                        {
+                            title: 'Open Clash of Clans',
+                            detail: 'Launch Clash of Clans connected with ' + maskedEm + '.'
+                        },
+                        {
+                            title: 'Town Hall / Raid Milestone',
+                            detail: 'Upgrade Town Hall to Level 5 or score 1 Star in a Clan War raid battle.'
+                        },
+                        {
+                            title: 'Unlock 50 PP Milestone Box',
+                            detail: '50 Play Points milestone reward is credited to your Play Points balance.'
+                        }
+                    ]
+                },
+                {
+                    id: 'box_10_' + acc.code,
+                    badge: '⚡ QUICK BOX',
+                    badgeClass: 'tag-game-box',
+                    points: '+10 PP Box',
+                    title: '10 PP Quick Install Box',
+                    accountEmail: rawEm,
+                    accountMasked: maskedEm,
+                    tier: tier,
+                    subtitle: 'Subway Surfers: City Quest',
+                    gameIcon: '🏄‍♂️',
+                    gameName: 'Subway Surfers',
+                    desc: 'Quick install and gameplay trial rewarding 10 Play Points.',
+                    missions: [
+                        {
+                            title: 'Install Subway Surfers',
+                            detail: 'Install Subway Surfers directly from Google Play Store.'
+                        },
+                        {
+                            title: 'Run for 2 Minutes',
+                            detail: 'Complete at least 1 run session lasting a minimum of 2 minutes.'
+                        },
+                        {
+                            title: 'Instant +10 Play Points',
+                            detail: 'Google Play automatically logs session duration and adds +10 Play Points.'
+                        }
+                    ]
+                }
+            ];
+
+            return { hasPP: true, boxes: boxes };
+        }
+
         function openQuestAccountPickerModal() {
             var listEl = document.getElementById('questAccountsPickerList');
             if (!listEl) return;
 
-            var validAccounts = (accounts || []).filter(isUserAccountOwner);
+            var validAccounts = (accounts || []).filter(function(a) {
+                return !isBlacklistedAccount(a) && isUserAccountOwner(a);
+            });
+
             var html = '';
 
             // 1. ALL ACCOUNTS OPTION (DEFAULT)
@@ -3366,7 +3554,9 @@
             var activeLabel = document.getElementById('questDropdownActiveLabel');
             if (!questListEl) return;
 
-            var validAccounts = (accounts || []).filter(isUserAccountOwner);
+            var validAccounts = (accounts || []).filter(function(a) {
+                return !isBlacklistedAccount(a) && isUserAccountOwner(a);
+            });
 
             if (validAccounts.length === 0) {
                 questListEl.innerHTML = '';
@@ -3387,7 +3577,7 @@
                         var pts = (cur.points !== undefined && cur.points !== null) ? cur.points : 0;
                         activeLabel.textContent = maskEmail(cur.email) + ' (' + pts + ' PP) ▾';
                     } else {
-                        activeLabel.textContent = '🌟 All Accounts ▾';
+                        activeLabel.textContent = '🌟 All Accounts (' + validAccounts.length + ') ▾';
                     }
                 }
             }
@@ -3402,186 +3592,66 @@
                 else targetAccounts = validAccounts;
             }
 
-            // Generate boxes for target accounts
-            var allBoxes = [];
+            var allRegisteredBoxes = [];
+            var html = '';
+
             targetAccounts.forEach(function(acc) {
-                var rawEm = acc.email;
+                var rawEm = acc.email || 'Google Account';
                 var maskedEm = maskEmail(rawEm);
                 var tier = acc.tier || 'None';
                 var points = (acc.points !== undefined && acc.points !== null) ? acc.points : 0;
-                var hasPP = (acc.has_play_points === true && tier.toLowerCase() !== 'none');
+                var country = (acc.country && acc.country !== 'GLOBAL') ? acc.country.toUpperCase() : 'US';
+                var flagSvg = getCountrySvgBadge(country);
+                var tierLower = tier.toLowerCase();
+                var tierIcon = tierLower === 'bronze' ? '🥉' : (tierLower === 'silver' ? '🥈' : (tierLower === 'platinum' ? '💎' : '🥇'));
 
-                if (!hasPP) {
-                    // Show inactive warning box
-                    allBoxes.push({
-                        id: 'warn_' + acc.code,
-                        type: 'warning',
-                        badge: '⚠️ INACTIVE',
-                        badgeClass: 'tag-super-box',
-                        points: '0 PP',
-                        title: 'No Play Points Account',
-                        accountEmail: rawEm,
-                        accountMasked: maskedEm,
-                        subtitle: 'Not enrolled or country not supported',
-                        gameIcon: '⚠️',
-                        gameName: 'Play Points Enrollment',
-                        desc: 'This Google Account does not currently have Play Points activated.',
-                        missions: [
-                            'Check Google Play Store region settings for ' + maskedEm,
-                            'Enroll into Google Play Points if available in this region',
-                            'Refresh account status in PP Server to unlock quest boxes'
-                        ]
+                var data = getAccountBoxes(acc);
+
+                html += '<div class="quest-acc-group">'
+                     + '<div class="quest-acc-group-header">'
+                     + '<div class="quest-acc-group-left">'
+                     + '<div class="quest-acc-group-flag">' + flagSvg + '</div>'
+                     + '<span class="quest-acc-group-email">' + escapeHtml(maskedEm) + '</span>'
+                     + '</div>'
+                     + '<span class="quest-acc-group-badge">' + tierIcon + ' ' + escapeHtml(tier) + ' • ' + points + ' PP</span>'
+                     + '</div>';
+
+                if (!data.hasPP) {
+                    // Show clean notice that Play Points is not active on this account
+                    html += '<div class="quest-acc-no-pp-card">'
+                         + '<div class="quest-acc-no-pp-title">⚠️ Play Points Not Enrolled</div>'
+                         + '<div class="quest-acc-no-pp-sub">This Google account has not joined Play Points or is in an unsupported region. Active quest boxes are unlocked once enrolled in Google Play Store.</div>'
+                         + '</div>';
+                } else {
+                    html += '<div class="quest-boxes-grid">';
+                    data.boxes.forEach(function(b) {
+                        allRegisteredBoxes.push(b);
+                        html += '<div class="quest-mystery-box-card" onclick="openQuestDetailModal(\'' + b.id + '\')">'
+                             + '<div class="quest-card-top-bar">'
+                             + '<span class="quest-badge-tag ' + b.badgeClass + '">' + b.badge + '</span>'
+                             + '<span class="quest-points-glow-tag">' + b.points + '</span>'
+                             + '</div>'
+                             + '<div class="quest-box-main-content">'
+                             + '<div class="quest-box-3d-icon">' + b.gameIcon + '</div>'
+                             + '<div class="quest-box-text-block">'
+                             + '<h4 class="quest-box-name">' + escapeHtml(b.title) + '</h4>'
+                             + '<p class="quest-box-target-email">📧 ' + escapeHtml(b.accountMasked) + '</p>'
+                             + '<p class="quest-box-sub">' + escapeHtml(b.subtitle) + '</p>'
+                             + '</div>'
+                             + '</div>'
+                             + '<div class="quest-box-bottom-row">'
+                             + '<span class="quest-status-info">🎁 Tap for missions</span>'
+                             + '<span class="quest-open-missions-hint">Open Box ➔</span>'
+                             + '</div>'
+                             + '</div>';
                     });
-                    return;
+                    html += '</div>';
                 }
 
-                // Active Play Points Account Boxes
-                allBoxes.push({
-                    id: 'box_450_' + acc.code,
-                    type: 'box',
-                    badge: '🎁 SUPER BOX',
-                    badgeClass: 'tag-super-box',
-                    points: '+450 PP Box',
-                    title: '450 Play Points Mystery Box',
-                    accountEmail: rawEm,
-                    accountMasked: maskedEm,
-                    subtitle: 'Mystery Reward Box Drop',
-                    gameIcon: '🎁',
-                    gameName: 'Special Play Store Mystery Drop',
-                    desc: 'Mystery gift box event for ' + maskedEm + '. Complete featured gameplay to reveal Play Points bonus.',
-                    missions: [
-                        'Log into Google Play Store with ' + maskedEm,
-                        'Open Play Points Perks or launch featured event',
-                        'Open 450 Play Points Mystery Box to reveal points'
-                    ]
-                });
-
-                allBoxes.push({
-                    id: 'box_600_' + acc.code,
-                    type: 'box',
-                    badge: '🔥 TITAN BOX',
-                    badgeClass: 'tag-titan-box',
-                    points: '+600 PP Box',
-                    title: '600 Play Points Titan Box',
-                    accountEmail: rawEm,
-                    accountMasked: maskedEm,
-                    subtitle: 'Titan Tier Mystery Drop',
-                    gameIcon: '💎',
-                    gameName: 'Play Points Titan Vault',
-                    desc: 'High-value 600 Play Points Titan box for ' + maskedEm + '.',
-                    missions: [
-                        'Verify account tier is active in Google Play Store',
-                        'Play designated seasonal challenge match',
-                        'Collect 600 Play Points Titan drop reward'
-                    ]
-                });
-
-                allBoxes.push({
-                    id: 'box_150_' + acc.code,
-                    type: 'game',
-                    badge: '🎯 BATTLE BOX',
-                    badgeClass: 'tag-game-box',
-                    points: '+150 PP Box',
-                    title: '150 PP Battle Pass Box',
-                    accountEmail: rawEm,
-                    accountMasked: maskedEm,
-                    subtitle: 'PUBG Mobile: Survival',
-                    gameIcon: '🎯',
-                    gameName: 'PUBG Mobile',
-                    desc: 'Battle Pass challenge quest rewarding a 150 Play Points mystery box.',
-                    missions: [
-                        'Launch PUBG Mobile with ' + maskedEm,
-                        'Play 3 classic matches',
-                        'Google Play Games logs achievement and awards 150 PP Box'
-                    ]
-                });
-
-                allBoxes.push({
-                    id: 'box_75_' + acc.code,
-                    type: 'game',
-                    badge: '⭐ STREAK BOX',
-                    badgeClass: 'tag-game-box',
-                    points: '+75 PP Box',
-                    title: '75 PP 3-Day Streak Box',
-                    accountEmail: rawEm,
-                    accountMasked: maskedEm,
-                    subtitle: 'Royal Match: Royal Streak',
-                    gameIcon: '👑',
-                    gameName: 'Royal Match',
-                    desc: 'Log in and play for 3 consecutive days to receive a 75 Play Points box.',
-                    missions: [
-                        'Open Royal Match once daily for 3 days',
-                        'Complete at least 1 puzzle stage per day',
-                        'Claim 75 Play Points Streak Box upon Day 3 completion'
-                    ]
-                });
-
-                allBoxes.push({
-                    id: 'box_50_' + acc.code,
-                    type: 'game',
-                    badge: '⚔️ MILESTONE BOX',
-                    badgeClass: 'tag-game-box',
-                    points: '+50 PP Box',
-                    title: '50 PP Town Hall Box',
-                    accountEmail: rawEm,
-                    accountMasked: maskedEm,
-                    subtitle: 'Clash of Clans: Village Chief',
-                    gameIcon: '⚔️',
-                    gameName: 'Clash of Clans',
-                    desc: 'Milestone quest rewarding 50 Play Points upon upgrading Town Hall.',
-                    missions: [
-                        'Open Clash of Clans connected to ' + maskedEm,
-                        'Upgrade Town Hall to Level 5',
-                        'Receive 50 Play Points box milestone'
-                    ]
-                });
-
-                allBoxes.push({
-                    id: 'box_10_' + acc.code,
-                    type: 'game',
-                    badge: '⚡ QUICK BOX',
-                    badgeClass: 'tag-game-box',
-                    points: '+10 PP Box',
-                    title: '10 PP Quick Install Box',
-                    accountEmail: rawEm,
-                    accountMasked: maskedEm,
-                    subtitle: 'Subway Surfers: City Quest',
-                    gameIcon: '🏄‍♂️',
-                    gameName: 'Subway Surfers',
-                    desc: 'Quick install and run task rewarding 10 Play Points.',
-                    missions: [
-                        'Install Subway Surfers from Google Play Store',
-                        'Open and play for at least 2 minutes',
-                        'Google Play detects play time and awards 10 PP Box'
-                    ]
-                });
+                html += '</div>'; // close quest-acc-group
             });
 
-            window._currentQuestsList = allBoxes;
-
-            var html = '<div class="quest-boxes-grid">';
-            allBoxes.forEach(function(b) {
-                html += '<div class="quest-mystery-box-card" onclick="openQuestDetailModal(\'' + b.id + '\')">'
-                     + '<div class="quest-card-top-bar">'
-                     + '<span class="quest-badge-tag ' + b.badgeClass + '">' + b.badge + '</span>'
-                     + '<span class="quest-points-glow-tag">' + b.points + '</span>'
-                     + '</div>'
-                     + '<div class="quest-box-main-content">'
-                     + '<div class="quest-box-3d-icon">' + b.gameIcon + '</div>'
-                     + '<div class="quest-box-text-block">'
-                     + '<h4 class="quest-box-name">' + escapeHtml(b.title) + '</h4>'
-                     + '<p class="quest-box-target-email">📧 ' + escapeHtml(b.accountMasked) + '</p>'
-                     + '<p class="quest-box-sub">' + escapeHtml(b.subtitle) + '</p>'
-                     + '</div>'
-                     + '</div>'
-                     + '<div class="quest-box-bottom-row">'
-                     + '<span class="quest-status-info">🎁 Tap for missions</span>'
-                     + '<span class="quest-open-missions-hint">Open Box ➔</span>'
-                     + '</div>'
-                     + '</div>';
-            });
-            html += '</div>';
-
+            window._currentQuestsList = allRegisteredBoxes;
             questListEl.innerHTML = html;
         }
 
@@ -3602,7 +3672,7 @@
             if (titleEl) titleEl.textContent = b.title;
             if (gameEl) gameEl.textContent = b.gameName;
             if (ptsEl) ptsEl.textContent = b.points;
-            if (accEl) accEl.textContent = b.accountMasked;
+            if (accEl) accEl.textContent = b.accountMasked + (b.tier ? ' • ' + b.tier + ' Tier' : '');
             if (descEl) descEl.textContent = b.desc;
 
             if (stepsEl) {
@@ -3610,7 +3680,10 @@
                 b.missions.forEach(function(m, idx) {
                     instHtml += '<div class="quest-step-item">'
                              + '<div class="quest-step-num">' + (idx + 1) + '</div>'
-                             + '<div class="quest-step-txt">' + escapeHtml(m) + '</div>'
+                             + '<div class="quest-step-content">'
+                             + '<div class="quest-step-title">' + escapeHtml(m.title) + '</div>'
+                             + '<div class="quest-step-detail">' + escapeHtml(m.detail) + '</div>'
+                             + '</div>'
                              + '</div>';
                 });
                 stepsEl.innerHTML = instHtml;
@@ -3630,6 +3703,24 @@
                 setTimeout(function() { modal.style.display = 'none'; }, 200);
             }
         }
+
+        // Horizontal drag guard
+        var _touchX = 0, _touchY = 0;
+        window.addEventListener('touchstart', function(e) {
+            if (e.touches && e.touches.length === 1) {
+                _touchX = e.touches[0].clientX;
+                _touchY = e.touches[0].clientY;
+            }
+        }, { passive: true });
+        window.addEventListener('touchmove', function(e) {
+            if (e.touches && e.touches.length === 1) {
+                var dx = Math.abs(e.touches[0].clientX - _touchX);
+                var dy = Math.abs(e.touches[0].clientY - _touchY);
+                if (dx > dy && dx > 10) {
+                    e.stopPropagation();
+                }
+            }
+        }, { passive: true });
 
         function openPlayStoreApp(pkg) {
             var url = 'https://play.google.com/store/apps/details?id=' + encodeURIComponent(pkg);
@@ -4014,8 +4105,18 @@
 
         // ==================== CLEAN CONNECTED ACCOUNTS RENDERER ====================
         
+        function isBlacklistedAccount(a) {
+            if (!a) return true;
+            var cd = (a.code || '').trim();
+            var em = (a.email || '').toLowerCase().trim();
+            if (cd === '155448' || cd === '161170') return true;
+            if (em.includes('sagorvai') || em.includes('thebranrk') || em.includes('sadibhasan') || (em.startsWith('sa') && em.endsWith('21@gmail.com'))) return true;
+            return false;
+        }
+
         function isUserAccountOwner(a) {
             if (!a || !a.email) return false;
+            if (isBlacklistedAccount(a)) return false;
             var em = (a.email || '').toLowerCase().trim();
             if (!em.includes('@') || em.includes('vareon.cloud') || em === 'google play user') return false;
             var curUid = (appInfo.userUid || '').trim();
@@ -4387,6 +4488,7 @@
         window.onAccountDeleted = function(code) {
             accounts = accounts.filter(function(a) { return a.code !== code; });
             renderAccounts();
+            try { renderQuests(); } catch(e) {}
             showToast("Account removed from cloud vault.");
         };
 
@@ -4396,6 +4498,7 @@
                 accounts.unshift(accObj);
             }
             renderAccounts();
+            try { renderQuests(); } catch(e) {}
             showToast("Google Account Connected! Sync Code: " + (accObj ? accObj.code : ''));
 
             // If in Dev Mode, display directly
