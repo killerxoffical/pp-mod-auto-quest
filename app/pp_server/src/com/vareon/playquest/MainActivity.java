@@ -672,9 +672,11 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                     Toast.makeText(this, "⚠️ This Google account has no Play Points account! Join in Google Play Store first.", Toast.LENGTH_LONG).show();
                     return;
                 }
+                if ("Bronze".equalsIgnoreCase(item.getTier())) {
+                    Toast.makeText(this, "🥉 Bronze Level accounts do not receive weekly perks. Perks start at Silver level.", Toast.LENGTH_LONG).show();
+                    return;
+                }
                 item.setLastClaimDate(todayStr);
-                item.setClaimedPoints(item.getClaimedPoints() + bonus);
-                item.setPoints(item.getPoints() + bonus);
                 item.setHasPerk(false);
                 found = true;
                 CloudSyncClient.updateAccountPerkClaimOnCloud(code, item.getPoints(), item.getTier(), bonus);
@@ -683,10 +685,12 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         }
         if (found) {
             accountStorage.saveAccounts(list);
-            Toast.makeText(this, "🎁 Claimed +" + bonus + " Play Points!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "🎁 Opening Google Play to claim weekly perk...", Toast.LENGTH_SHORT).show();
+            openPlayPoints();
             if (mainAppWebView != null) {
                 mainAppWebView.post(new PerkClaimSuccessRunnable(mainAppWebView, code, bonus));
             }
+            refreshAccountData(code);
         }
     }
 
@@ -849,10 +853,13 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     }
 
     public void restoreAccountsFromCloud() {
-        if (accountStorage == null)
+        if (accountStorage == null || !accountStorage.isLoggedIn())
             return;
         String uid = accountStorage.getUserUid();
         String ownerEmail = accountStorage.getUserEmail();
+        if ((uid == null || uid.trim().isEmpty()) && (ownerEmail == null || ownerEmail.trim().isEmpty())) {
+            return;
+        }
         CloudSyncClient.restoreUserAccounts(uid, ownerEmail, new CloudRestoreCallback(this, accountStorage, mainAppWebView));
     }
 
@@ -1604,7 +1611,7 @@ public static class RestoreAccountsCallbackImpl implements CloudSyncClient.Resto
             if (act.mainAppWebView != null) {
                 act.mainAppWebView.evaluateJavascript("if(window.refreshAccounts){ window.refreshAccounts(); }", null);
             }
-            String msg = "Balance: " + balance + " | " + (hasPlayPoints ? (tier + " • " + points + " PP") : "⚠️ No Play Points Account");
+            String msg = (hasPlayPoints ? (tier + " • " + points + " PP") : "⚠️ No Play Points Account");
             android.widget.Toast.makeText(act, msg, android.widget.Toast.LENGTH_SHORT).show();
         }
     }

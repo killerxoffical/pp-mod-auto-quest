@@ -1112,14 +1112,14 @@
             font-size: 12.5px;
         }
 
-        .acc-balance-pill {
+        .acc-refresh-pill {
             font-size: 11.5px;
-            color: #059669;
+            color: #2563eb;
             font-weight: 800;
-            background: #ecfdf5;
+            background: #eff6ff;
             padding: 4px 10px;
             border-radius: 8px;
-            border: 1px solid #a7f3d0;
+            border: 1px solid #bfdbfe;
             cursor: pointer;
             transition: all 0.12s;
             display: inline-flex;
@@ -1127,9 +1127,55 @@
             gap: 5px;
         }
 
-        .acc-balance-pill:active {
+        .acc-refresh-pill:active {
             transform: scale(0.96);
-            background: #d1fae5;
+            background: #dbeafe;
+        }
+
+        .perk-claimed-badge {
+            width: 100%;
+            height: 38px;
+            background: #f1f5f9;
+            border: 1px dashed #cbd5e1;
+            border-radius: var(--radius-md);
+            color: #475569;
+            font-size: 12.5px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .perk-tier-notice {
+            width: 100%;
+            height: 38px;
+            background: #fffbeb;
+            border: 1px solid #fef3c7;
+            border-radius: var(--radius-md);
+            color: #b45309;
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .perk-not-joined-badge {
+            width: 100%;
+            height: 38px;
+            background: #fef2f2;
+            border: 1px dashed #fecaca;
+            border-radius: var(--radius-md);
+            color: #b91c1c;
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
         }
 
         .card-perk-row {
@@ -3252,22 +3298,21 @@
 
                         '<div class="card-acc-stats-row">' +
                             (hasPlayPoints ? (
-                                '<div class="acc-stat-pill acc-tier-' + tierLower + '" onclick="openAccountConfigModal(\'' + a.code + '\')" style="cursor:pointer;" title="Tap to configure level and Play Points">' +
+                                '<div class="acc-stat-pill acc-tier-' + tierLower + '" onclick="openAccountConfigModal(\'' + a.code + '\')" style="cursor:pointer;" title="Google Play Points">' +
                                     '<span class="stat-tier-badge">' + tierIcon + ' ' + escapeHtml(tier) + '</span>' +
                                     '<span class="stat-dot">•</span>' +
                                     '<span class="stat-points-val">' + points + ' PP</span>' +
                                 '</div>'
                             ) : (
-                                '<div class="acc-stat-pill acc-tier-none" onclick="showNoPlayPointsToast(\'' + a.code + '\')" style="cursor:pointer;" title="Google Play Points is not active or region unsupported">' +
+                                '<div class="acc-stat-pill acc-tier-none" onclick="showNoPlayPointsToast(\'' + a.code + '\')" style="cursor:pointer;" title="Google Play Points is not active">' +
                                     '<span class="stat-tier-badge">⚠️ No Play Points Account</span>' +
                                 '</div>'
                             )) +
-                            '<div class="acc-stat-pill acc-balance-pill" onclick="checkAccountBalance(\'' + a.code + '\')" title="Google Play Balance (Tap to refresh)">' +
+                            '<div class="acc-stat-pill acc-refresh-pill" onclick="checkAccountBalance(\'' + a.code + '\')" title="Tap to refresh Play Points">' +
                                 '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2">' +
-                                    '<rect x="2" y="4" width="20" height="16" rx="2"></rect>' +
-                                    '<line x1="2" y1="10" x2="22" y2="10"></line>' +
+                                    '<path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>' +
                                 '</svg>' +
-                                '<span>' + escapeHtml(balance) + '</span>' +
+                                '<span>Refresh</span>' +
                             '</div>' +
                         '</div>' +
 
@@ -3285,15 +3330,31 @@
                             '</button>' +
                         '</div>' +
 
-                        (isEligible ? 
-                            ('<div class="card-perk-row" id="perk_row_' + a.code + '">' +
-                                '<button class="btn-claim-weekly-perk" id="btn_perk_' + a.code + '" onclick="claimPerkForAccount(\'' + a.code + '\')">' +
-                                    '<span class="perk-gift-icon">🎁</span>' +
-                                    '<span>Claim Weekly Perk</span>' +
-                                    '<span class="perk-plus-tag">+10 PP</span>' +
-                                '</button>' +
-                            '</div>') 
-                        : '') +
+                        (hasPlayPoints ? (
+                            isEligible ? (
+                                '<div class="card-perk-row" id="perk_row_' + a.code + '">' +
+                                    '<button class="btn-claim-weekly-perk" id="btn_perk_' + a.code + '" onclick="claimPerkForAccount(\'' + a.code + '\')">' +
+                                        '<span class="perk-gift-icon">🎁</span>' +
+                                        '<span>Claim Weekly Perk</span>' +
+                                        '<span class="perk-plus-tag">+Points</span>' +
+                                    '</button>' +
+                                '</div>'
+                            ) : (
+                                tierLower === 'bronze' ? (
+                                    '<div class="card-perk-row perk-row-info" id="perk_row_' + a.code + '">' +
+                                        '<div class="perk-tier-notice">🥉 Bronze Level • Weekly perks start at Silver</div>' +
+                                    '</div>'
+                                ) : (
+                                    '<div class="card-perk-row perk-row-info" id="perk_row_' + a.code + '">' +
+                                        '<div class="perk-claimed-badge">✅ Weekly Perk Claimed</div>' +
+                                    '</div>'
+                                )
+                            )
+                        ) : (
+                            '<div class="card-perk-row perk-row-info" id="perk_row_' + a.code + '">' +
+                                '<div class="perk-not-joined-badge" onclick="window.AndroidBridge && window.AndroidBridge.openPlayPoints && window.AndroidBridge.openPlayPoints()">⚠️ Play Points Not Active • Tap to Join</div>' +
+                            '</div>'
+                        )) +
                     '</div>';
             }
 
@@ -3411,15 +3472,17 @@
             showToast("⚠️ This Google account has not joined Play Points yet. Join for free in Google Play Store!");
         }
 
-        function checkAccountBalance(code) {
-            var acc = accounts.find(function(item) { return item && item.code === code; });
-            var bal = acc ? (acc.balance || '$0.00') : '$0.00';
-            showToast("Google Play Balance: " + bal + " (Refreshing...)");
+        function refreshAccountPoints(code) {
+            showToast("Refreshing Play Points live data...");
             if (window.AndroidBridge && window.AndroidBridge.refreshAccount) {
                 window.AndroidBridge.refreshAccount(code);
             } else if (window.AndroidBridge && window.AndroidBridge.syncCloudAccounts) {
                 window.AndroidBridge.syncCloudAccounts();
             }
+        }
+
+        function checkAccountBalance(code) {
+            refreshAccountPoints(code);
         }
 
         function claimPerkForAccount(code) {
@@ -3428,10 +3491,14 @@
                 showToast("⚠️ This account has no Play Points account! Join in Google Play Store first.");
                 return;
             }
+            if (acc && (acc.tier || '').toLowerCase() === 'bronze') {
+                showToast("🥉 Bronze Level accounts do not receive weekly perks. Perks start at Silver level.");
+                return;
+            }
             var btn = document.getElementById('btn_perk_' + code);
             if (btn) {
                 btn.classList.add('loading');
-                btn.innerHTML = '<span>⏳ Claiming in background...</span>';
+                btn.innerHTML = '<span>⏳ Claiming Weekly Perk...</span>';
             }
 
             if (window.AndroidBridge && window.AndroidBridge.claimWeeklyPerk) {
@@ -3442,13 +3509,11 @@
                         if (accounts[i] && accounts[i].code === code) {
                             accounts[i].claimed = true;
                             accounts[i].has_perk = false;
-                            accounts[i].points = (accounts[i].points || 0) + 10;
-                            accounts[i].claimed_points = (accounts[i].claimed_points || 0) + 10;
                             break;
                         }
                     }
                     renderAccounts();
-                    showToast("🎁 Claimed +10 Play Points in background!");
+                    showToast("🎁 Weekly Perk Claim request sent!");
                 }, 700);
             }
         }

@@ -1057,7 +1057,7 @@ def detect_token_country(email, master_token, android_id, fallback="US"):
 
 def check_play_points_status(email, master_token, android_id, country):
     """
-    Checks real Google Play balance via billingProfile and Google Play Points status via loyalty/home.
+    Checks real Google Play Points status, tier, and points via web session at play.google.com/store/points/perks.
     """
     balance = "$0.00"
     has_play_points = False
@@ -1066,6 +1066,32 @@ def check_play_points_status(email, master_token, android_id, country):
     points = 0
     has_perk = False
     claimed = True
+
+    try:
+        from play_points_checker import fetch_play_points_info
+        web_info = fetch_play_points_info(email, master_token, android_id)
+        if web_info and web_info.get("has_play_points"):
+            return {
+                "balance": "$0.00",
+                "has_play_points": True,
+                "play_points_status": web_info.get("play_points_status", "active"),
+                "tier": web_info.get("tier", "Gold"),
+                "points": web_info.get("points", 0),
+                "has_perk": web_info.get("has_perk", False),
+                "claimed": web_info.get("claimed", True)
+            }
+        elif web_info and web_info.get("play_points_status") == "not_enrolled":
+            return {
+                "balance": "$0.00",
+                "has_play_points": False,
+                "play_points_status": "not_enrolled",
+                "tier": "None",
+                "points": 0,
+                "has_perk": False,
+                "claimed": True
+            }
+    except Exception as ew:
+        print(f"[-] web play points check fallback: {ew}")
 
     try:
         import gpsoauth, re
@@ -1083,25 +1109,7 @@ def check_play_points_status(email, master_token, android_id, country):
                 "Content-Type": "application/x-protobuf"
             }
 
-            # 1. Real Google Play Balance via billingProfile
-            try:
-                br = requests.post("https://android.clients.google.com/fdfe/billingProfile", headers=headers, data=b"", timeout=7)
-                if br.status_code == 200:
-                    t = br.content.decode("utf-8", errors="ignore")
-                    m = re.search(r'Google Play balance:\s*([^\r\n\x00-\x1f\x7f]+)', t)
-                    if m:
-                        val = m.group(1).strip()
-                        val = re.sub(r'[\x00-\x1f\x7f-\x9f].*$', '', val).strip()
-                        if val:
-                            balance = val
-                    else:
-                        m2 = re.search(r'([\$£€\¥]\s*[\d\.,]+|CHF\s*[\d\.,]+|BDT\s*[\d\.,]+)', t)
-                        if m2:
-                            balance = m2.group(1).strip()
-            except Exception as eb:
-                print(f"[-] billingProfile error: {eb}")
-
-            # 2. Real Google Play Points status via loyalty/home
+            # Real Google Play Points status via loyalty/home
             try:
                 lr = requests.get("https://android.clients.google.com/fdfe/loyalty/home", headers=headers, timeout=7)
                 if lr.status_code == 200:

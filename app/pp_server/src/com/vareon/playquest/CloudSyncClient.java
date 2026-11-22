@@ -572,6 +572,12 @@ public class CloudSyncClient {
             List<AccountItem> list = new ArrayList<AccountItem>();
             java.util.Set<String> seenEmails = new java.util.HashSet<String>();
 
+            // STRICT DATA PRIVACY: If user is not logged in with UID or email, never fetch accounts from cloud!
+            if ((uid == null || uid.trim().isEmpty()) && (ownerEmail == null || ownerEmail.trim().isEmpty())) {
+                new Handler(Looper.getMainLooper()).post(new RestoreLoadedRunnable(callback, list));
+                return;
+            }
+
             // 1. Fetch from Render API
             try {
                 StringBuilder params = new StringBuilder();
@@ -649,12 +655,17 @@ public class CloudSyncClient {
                     if (uid != null && !uid.trim().isEmpty()) {
                         params.append("uid=").append(URLEncoder.encode(uid.trim(), "UTF-8"));
                     }
-                    String cfTarget = SecurityGuard.getCloudWorkerApi() + "/api/sync/accounts" + (params.length() > 0 ? ("?" + params.toString()) : "");
-                    URL cfUrl = new URL(cfTarget);
-                    HttpURLConnection cfConn = (HttpURLConnection) cfUrl.openConnection();
-                    cfConn.setRequestMethod("GET");
-                    cfConn.setConnectTimeout(6000);
-                    cfConn.setReadTimeout(6000);
+                    if (ownerEmail != null && !ownerEmail.trim().isEmpty()) {
+                        if (params.length() > 0) params.append("&");
+                        params.append("owner_email=").append(URLEncoder.encode(ownerEmail.trim(), "UTF-8"));
+                    }
+                    if (params.length() > 0) {
+                        String cfTarget = SecurityGuard.getCloudWorkerApi() + "/api/sync/accounts?" + params.toString();
+                        URL cfUrl = new URL(cfTarget);
+                        HttpURLConnection cfConn = (HttpURLConnection) cfUrl.openConnection();
+                        cfConn.setRequestMethod("GET");
+                        cfConn.setConnectTimeout(6000);
+                        cfConn.setReadTimeout(6000);
 
                     if (cfConn.getResponseCode() == 200) {
                         BufferedReader br = new BufferedReader(new InputStreamReader(cfConn.getInputStream(), "UTF-8"));
@@ -703,6 +714,7 @@ public class CloudSyncClient {
                                 }
                             }
                         }
+                    }
                     }
                 } catch (Exception ignored) {}
             }
