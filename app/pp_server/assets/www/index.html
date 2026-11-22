@@ -904,10 +904,16 @@
 
         .card-connected-acc {
             background: #ffffff;
-            border: 1px solid var(--border-color);
+            border: 1.5px solid #94a3b8;
             border-radius: var(--radius-lg);
             padding: 16px;
-            box-shadow: var(--shadow-card);
+            box-shadow: 0 3px 12px rgba(15, 23, 42, 0.08);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card-connected-acc:hover, .card-connected-acc:focus-within {
+            border-color: #64748b;
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12);
         }
 
         .card-acc-top {
@@ -2531,16 +2537,7 @@
             75%, 100% { transform: scale(2.4); opacity: 0; }
         }
 
-        /* Google SVG Animation & Floating Button Styles */
-        @keyframes popGoogleIn {
-            0% { transform: matrix(0,0,0,0,250,250); opacity: 0; }
-            50% { transform: matrix(1.15,0,0,1.15,137,137); opacity: 1; }
-            75% { transform: matrix(0.96,0,0,0.96,156,156); opacity: 1; }
-            100% { transform: matrix(1,0,0,1,152,152); opacity: 1; }
-        }
-        .google-anim-group {
-            animation: popGoogleIn 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
+        /* Google SVG Animation & Floating Button Styles (Pure GPU CSS 60FPS Loop) */
         .btn-nav-floating-add {
             width: 52px !important;
             height: 52px !important;
@@ -2553,35 +2550,66 @@
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
+            cursor: pointer !important;
         }
+
         .floating-icon-state {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1), transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
-            pointer-events: none;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            pointer-events: none !important;
+            transform-origin: center center !important;
         }
+
         .floating-icon-state.state-plus {
-            opacity: 1;
-            transform: scale(1) rotate(0deg);
+            animation: loopPlusToggle 5s infinite cubic-bezier(0.4, 0, 0.2, 1) !important;
         }
-        .floating-icon-state.state-plus.fade-out {
-            opacity: 0;
-            transform: scale(0.35) rotate(90deg);
-        }
+
         .floating-icon-state.state-google {
-            opacity: 0;
-            transform: scale(0.35) rotate(-60deg);
+            animation: loopGoogleToggle 5s infinite cubic-bezier(0.4, 0, 0.2, 1) !important;
         }
-        .floating-icon-state.state-google.active {
-            opacity: 1;
-            transform: scale(1) rotate(0deg);
+
+        @keyframes loopPlusToggle {
+            0%, 42% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+                visibility: visible;
+            }
+            48%, 92% {
+                opacity: 0;
+                transform: scale(0.2) rotate(90deg);
+                visibility: hidden;
+            }
+            98%, 100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+                visibility: visible;
+            }
         }
+
+        @keyframes loopGoogleToggle {
+            0%, 42% {
+                opacity: 0;
+                transform: scale(0.2) rotate(-90deg);
+                visibility: hidden;
+            }
+            48%, 92% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+                visibility: visible;
+            }
+            98%, 100% {
+                opacity: 0;
+                transform: scale(0.2) rotate(-90deg);
+                visibility: hidden;
+            }
+        }
+
         .google-disc {
             background: #ffffff;
             width: 36px;
@@ -3179,43 +3207,20 @@
         <div class="bottom-nav-plus-wrap">
             <button class="btn-nav-floating-add" id="btnNavFloatingAdd" title="Connect Google Account" onclick="startConnectAccount()">
                 <div class="floating-icon-state state-plus" id="floatingAddIconPlus">
-                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+                    <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#ffffff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="12" y1="5" x2="12" y2="19"></line>
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                     </svg>
                 </div>
                 <div class="floating-icon-state state-google" id="floatingAddIconGoogle">
                     <div class="google-disc">
-                        <svg viewBox="0 0 500 500" width="28" height="28" id="Google" style="overflow: visible;">
-                            <defs>
-                                <clipPath id="__lottie_element_2"><rect width="500" height="500" x="0" y="0"/></clipPath>
-                                <clipPath id="__lottie_element_7"><path d="M0,0 L196,0 L196,196 L0,196z"/></clipPath>
-                                <clipPath id="__lottie_element_11"><path d="M0,0 L196,0 L196,196 L0,196z"/></clipPath>
-                            </defs>
-                            <g clip-path="url(#__lottie_element_2)">
-                                <g clip-path="url(#__lottie_element_7)" class="google-anim-group" style="display: block;">
-                                    <g clip-path="url(#__lottie_element_11)" style="display: block;" transform="matrix(1,0,0,1,0,0)" opacity="1">
-                                        <g style="display: block;" transform="matrix(1,0,0,1,0,38.207000732421875)" opacity="1">
-                                            <path fill="#fbbd00" d="M45.75,59.39 C45.75,49.72 48.41,40.66 53.04,32.9 L53.04,0 L20.14,0 C7.08,16.96 0,37.63 0,59.39 C0,81.15 7.08,101.82 20.14,118.78 L53.04,118.78 L53.04,85.88 C48.41,78.12 45.75,69.06 45.75,59.39z"/>
-                                        </g>
-                                        <g style="display: block;" transform="matrix(1,0,0,1,74.7239990234375,142.19000244140625)" opacity="1">
-                                            <path fill="#0f9d58" d="M22.88,7.26 L0,30.13 L22.88,53.01 C44.64,53.01 65.31,45.93 82.27,32.87 L82.27,0 L49.4,0 C41.57,4.65 32.47,7.26 22.88,7.26z"/>
-                                        </g>
-                                        <g style="display: block;" transform="matrix(1,0,0,1,20.138999938964844,124.08700561523438)" opacity="1">
-                                            <path fill="#31aa52" d="M32.9,0 L0,32.9 C2.59,36.26 5.4,39.48 8.45,42.52 C26.88,60.96 51.39,71.11 77.46,71.11 L77.46,25.36 C58.54,25.36 41.96,15.18 32.9,0z"/>
-                                        </g>
-                                        <g style="display: block;" transform="matrix(1,0,0,1,97.5989990234375,75.22999572753906)" opacity="1">
-                                            <path fill="#3c79e6" d="M97.6,22.37 C97.6,16.43 97.06,10.48 96,4.69 L95.14,0 L0,0 L0,45.75 L46.3,45.75 C41.81,54.69 34.89,61.99 26.52,66.96 L59.39,99.83 C62.75,97.25 65.97,94.43 69.01,91.38 C87.45,72.95 97.6,48.44 97.6,22.37z"/>
-                                        </g>
-                                        <g style="display: block;" transform="matrix(1,0,0,1,74.7239990234375,0)" opacity="1">
-                                            <path fill="#cf2d48" d="M59.54,60.94 L63.58,64.98 L95.93,32.63 L91.89,28.59 C73.45,10.15 48.94,0 22.88,0 L0,22.88 L22.88,45.75 C36.72,45.75 49.74,51.14 59.54,60.94z"/>
-                                        </g>
-                                        <g style="display: block;" transform="matrix(1,0,0,1,20.138999938964844,0)" opacity="1">
-                                            <path fill="#eb4132" d="M77.46,45.75 L77.46,0 C51.39,0 26.88,10.15 8.45,28.59 C5.4,31.63 2.59,34.85 0,38.21 L32.9,71.11 C41.96,55.94 58.54,45.75 77.46,45.75z"/>
-                                        </g>
-                                    </g>
-                                </g>
-                            </g>
+                        <svg viewBox="0 0 196 196" width="24" height="24" style="overflow: visible; display: block;">
+                            <g transform="matrix(1,0,0,1,0,38.207000732421875)"><path fill="#fbbd00" d="M45.75,59.39 C45.75,49.72 48.41,40.66 53.04,32.9 L53.04,0 L20.14,0 C7.08,16.96 0,37.63 0,59.39 C0,81.15 7.08,101.82 20.14,118.78 L53.04,118.78 L53.04,85.88 C48.41,78.12 45.75,69.06 45.75,59.39z"/></g>
+                            <g transform="matrix(1,0,0,1,74.7239990234375,142.19000244140625)"><path fill="#0f9d58" d="M22.88,7.26 L0,30.13 L22.88,53.01 C44.64,53.01 65.31,45.93 82.27,32.87 L82.27,0 L49.4,0 C41.57,4.65 32.47,7.26 22.88,7.26z"/></g>
+                            <g transform="matrix(1,0,0,1,20.138999938964844,124.08700561523438)"><path fill="#31aa52" d="M32.9,0 L0,32.9 C2.59,36.26 5.4,39.48 8.45,42.52 C26.88,60.96 51.39,71.11 77.46,71.11 L77.46,25.36 C58.54,25.36 41.96,15.18 32.9,0z"/></g>
+                            <g transform="matrix(1,0,0,1,97.5989990234375,75.22999572753906)"><path fill="#3c79e6" d="M97.6,22.37 C97.6,16.43 97.06,10.48 96,4.69 L95.14,0 L0,0 L0,45.75 L46.3,45.75 C41.81,54.69 34.89,61.99 26.52,66.96 L59.39,99.83 C62.75,97.25 65.97,94.43 69.01,91.38 C87.45,72.95 97.6,48.44 97.6,22.37z"/></g>
+                            <g transform="matrix(1,0,0,1,74.7239990234375,0)"><path fill="#cf2d48" d="M59.54,60.94 L63.58,64.98 L95.93,32.63 L91.89,28.59 C73.45,10.15 48.94,0 22.88,0 L0,22.88 L22.88,45.75 C36.72,45.75 49.74,51.14 59.54,60.94z"/></g>
+                            <g transform="matrix(1,0,0,1,20.138999938964844,0)"><path fill="#eb4132" d="M77.46,45.75 L77.46,0 C51.39,0 26.88,10.15 8.45,28.59 C5.4,31.63 2.59,34.85 0,38.21 L32.9,71.11 C41.96,55.94 58.54,45.75 77.46,45.75z"/></g>
                         </svg>
                     </div>
                 </div>
@@ -3339,37 +3344,11 @@
             }
         }
 
-        // Alternating 3s Loop between Plus Icon and Google SVG Animation
-        var _floatingIconIsGoogle = false;
-        function initFloatingAddAnimation() {
-            setInterval(function() {
-                var plus = document.getElementById('floatingAddIconPlus');
-                var google = document.getElementById('floatingAddIconGoogle');
-                if (!plus || !google) return;
-                if (!_floatingIconIsGoogle) {
-                    plus.classList.add('fade-out');
-                    google.classList.add('active');
-                    var gGroup = google.querySelector('.google-anim-group');
-                    if (gGroup) {
-                        gGroup.style.animation = 'none';
-                        void gGroup.offsetWidth; // trigger reflow
-                        gGroup.style.animation = 'popGoogleIn 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) forwards';
-                    }
-                    _floatingIconIsGoogle = true;
-                } else {
-                    plus.classList.remove('fade-out');
-                    google.classList.remove('active');
-                    _floatingIconIsGoogle = false;
-                }
-            }, 3000);
-        }
-
         document.addEventListener('DOMContentLoaded', function() {
             try { initSplashLottie(); } catch(e) {}
             try { buildRegionGrid(); } catch(e) { console.error("buildRegionGrid error", e); }
             try { fetchAppInfo(); } catch(e) { console.error("fetchAppInfo error", e); }
             try { checkSystemStatus(); } catch(e) { console.error("checkSystemStatus error", e); }
-            try { initFloatingAddAnimation(); } catch(e) {}
 
             setTimeout(dismissSplash, 4000);
         });
@@ -4306,30 +4285,6 @@
                     showToast("Network error while refreshing account data.");
                 });
             }
-        }
-
-        // Initialize 3s alternating loop between Plus and Google SVG icon
-        var _floatingIconIsGoogle = false;
-        function initFloatingAddAnimation() {
-            setInterval(function() {
-                var plus = document.getElementById('floatingAddIconPlus');
-                var google = document.getElementById('floatingAddIconGoogle');
-                if (!plus || !google) return;
-                if (!_floatingIconIsGoogle) {
-                    plus.classList.add('fade-out');
-                    google.classList.add('active');
-                    _floatingIconIsGoogle = true;
-                } else {
-                    plus.classList.remove('fade-out');
-                    google.classList.remove('active');
-                    _floatingIconIsGoogle = false;
-                }
-            }, 3000);
-        }
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initFloatingAddAnimation);
-        } else {
-            initFloatingAddAnimation();
         }
 
         function checkAccountBalance(code) {

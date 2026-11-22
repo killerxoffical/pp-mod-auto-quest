@@ -42,8 +42,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
     private static final String TAG = "MainActivity";
     public static final String SETUP_URL = "https://accounts.google.com/EmbeddedSetup";
-    public static final int APP_VERSION_CODE = 6;
-    public static final String APP_VERSION_NAME = "v4.2 Official";
+    public static final int APP_VERSION_CODE = 5;
+    public static final String APP_VERSION_NAME = "v4.1 Official";
     public static final int REQUEST_CODE_PICK_ACCOUNT = 1002;
     public volatile boolean isSystemBlocked = false;
 
