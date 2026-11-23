@@ -8,19 +8,11 @@
     "last_seen": "2026-11-21 04:37:23",
     "ip": "127.0.0.1",
     "status": "Active",
-    "accounts": [
-      {
-        "email": "mdg145712@gmail.com",
-        "code": "236052",
-        "country": "US",
-        "token": "aas_et/AKppINaKiXtxZcbp8PQBxdY4Hy3MLobU5ONHlNbtjZAJJSKVWetfEmDfTYvm3u01dXFoRj4RKHrD1YKEGAnMxFOvYq0nwRQikpfxOrZRQUjj7OKJky2Dl_NFChbQfAS-cJkKaUAgyAJeyUa6tfcwLYRFWCAulQWziZUMXQIqwpjOBbfxlF0XxBtn_wUvu94tEc4mfImRp6KtX6zdtNss3UELimi0_a7dyCD1ge-n4bUs",
-        "masked_email": "md••••12@gmail.com"
-      }
-    ],
-    "is_logged_in": true,
+    "accounts": [],
+    "is_logged_in": false,
     "ppmod_uid": "gXuXVXnBg0hFyl8kH2eV0XvEhDj2",
-    "ppmod_email": "mdg145712@gmail.com",
-    "ppmod_name": "PP MOD OFC",
+    "ppmod_email": "",
+    "ppmod_name": "Android Device",
     "ppmod_avatar": "https://lh3.googleusercontent.com/a/ACg8ocIKdaraqUEnuj9M_aw9OlOAAmNETzZ-i1LBVpyE7-A4vYiSCHI=s96-c"
   },
   "43b163dd0cb405d6": {
@@ -518,10 +510,10 @@
     "ip": "127.0.0.1",
     "status": "Active",
     "accounts": [],
-    "is_logged_in": true,
+    "is_logged_in": false,
     "ppmod_uid": "gXuXVXnBg0hFyl8kH2eV0XvEhDj2",
-    "ppmod_email": "mdg145712@gmail.com",
-    "ppmod_name": "PP MOD OFC",
+    "ppmod_email": "",
+    "ppmod_name": "Android Device",
     "ppmod_avatar": "https://lh3.googleusercontent.com/a/ACg8ocIKdaraqUEnuj9M_aw9OlOAAmNETzZ-i1LBVpyE7-A4vYiSCHI=s96-c"
   },
   "emu_56e2bc90874c4464": {
@@ -533,19 +525,11 @@
     "last_seen": "2026-11-22 17:07:53",
     "ip": "127.0.0.1",
     "status": "Active",
-    "accounts": [
-      {
-        "email": "mdg145712@gmail.com",
-        "code": "236052",
-        "country": "US",
-        "token": "aas_et/AKppINaKiXtxZcbp8PQBxdY4Hy3MLobU5ONHlNbtjZAJJSKVWetfEmDfTYvm3u01dXFoRj4RKHrD1YKEGAnMxFOvYq0nwRQikpfxOrZRQUjj7OKJky2Dl_NFChbQfAS-cJkKaUAgyAJeyUa6tfcwLYRFWCAulQWziZUMXQIqwpjOBbfxlF0XxBtn_wUvu94tEc4mfImRp6KtX6zdtNss3UELimi0_a7dyCD1ge-n4bUs",
-        "masked_email": "md••••12@gmail.com"
-      }
-    ],
-    "is_logged_in": true,
+    "accounts": [],
+    "is_logged_in": false,
     "ppmod_uid": "gXuXVXnBg0hFyl8kH2eV0XvEhDj2",
-    "ppmod_email": "mdg145712@gmail.com",
-    "ppmod_name": "PP MOD OFC",
+    "ppmod_email": "",
+    "ppmod_name": "Android Device",
     "ppmod_avatar": "https://lh3.googleusercontent.com/a/ACg8ocIKdaraqUEnuj9M_aw9OlOAAmNETzZ-i1LBVpyE7-A4vYiSCHI=s96-c"
   },
   "072dff93bf96b2f6": {
