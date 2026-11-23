@@ -967,38 +967,32 @@ def resolve_credentials_from_input(data):
     sync_code = str(data.get("sync_code") or data.get("code") or data.get("qid") or "").strip().replace(" ", "").replace("-", "")
 
     if sync_code and sync_code.isdigit() and len(sync_code) == 6:
-        if sync_code in SYNC_CODES:
+        cf_deleted = False
+        try:
+            cf_url = f"https://ppmod-api.tredarskvt.workers.dev/api/sync/get?code={sync_code}"
+            cf_res = requests.get(cf_url, timeout=4)
+            if cf_res.status_code == 200:
+                d = cf_res.json()
+                acc = d.get("account") or d
+                if acc and (acc.get("master_token") or acc.get("token")):
+                    master_token = acc.get("master_token") or acc.get("token")
+                    if acc.get("email") and acc.get("email") != "Google Play User":
+                        email = acc.get("email")
+                    if acc.get("android_id"):
+                        android_id = acc.get("android_id")
+            elif cf_res.status_code == 404:
+                cf_deleted = True
+                SYNC_CODES.pop(sync_code, None)
+                save_sync_codes(SYNC_CODES)
+                PORTAL_PROFILE_CACHE.pop(sync_code, None)
+        except Exception:
+            pass
+
+        if not cf_deleted and not master_token and sync_code in SYNC_CODES:
             entry = SYNC_CODES[sync_code]
             email = entry.get("email") or email
             master_token = entry.get("master_token") or entry.get("token") or master_token
             android_id = entry.get("android_id") or android_id
-        else:
-            try:
-                cf_url = f"https://ppmod-api.tredarskvt.workers.dev/api/sync/get?code={sync_code}"
-                cf_res = requests.get(cf_url, timeout=4)
-                if cf_res.status_code == 200:
-                    d = cf_res.json()
-                    acc = d.get("account") or d
-                    if acc and (acc.get("master_token") or acc.get("token")):
-                        master_token = acc.get("master_token") or acc.get("token")
-                        if acc.get("email") and acc.get("email") != "Google Play User":
-                            email = acc.get("email")
-                        if acc.get("android_id"):
-                            android_id = acc.get("android_id")
-            except Exception:
-                pass
-            if not master_token:
-                devs = load_registered_devices()
-                for d in devs.values():
-                    for acc in d.get("accounts", []):
-                        if str(acc.get("code")) == sync_code:
-                            email = acc.get("email") or email
-                            master_token = acc.get("token") or master_token
-                            if d.get("android_id"):
-                                android_id = d.get("android_id")
-                            break
-                    if master_token:
-                        break
 
     if not master_token and email:
         known = load_known_tokens()
@@ -1481,14 +1475,32 @@ def delete_sync_account():
     email = data.get("email", "").strip().lower()
 
     removed = False
-    if code and code in SYNC_CODES:
-        del SYNC_CODES[code]
-        removed = True
+    if code:
+        if code in SYNC_CODES:
+            del SYNC_CODES[code]
+            removed = True
+        PORTAL_PROFILE_CACHE.pop(code, None)
+
     if email:
         for c in list(SYNC_CODES.keys()):
             if SYNC_CODES[c].get("email", "").lower() == email:
                 del SYNC_CODES[c]
+                PORTAL_PROFILE_CACHE.pop(c, None)
                 removed = True
+        try:
+            known = load_known_tokens()
+            if email in known:
+                del known[email]
+                with open(KNOWN_TOKENS_FILE, "w", encoding="utf-8") as kf:
+                    json.dump(known, kf, indent=2)
+        except Exception:
+            pass
+
+    # Purge warmed game tokens
+    try:
+        WARMED_GAME_TOKENS.clear()
+    except Exception:
+        pass
 
     if removed:
         save_sync_codes(SYNC_CODES)
@@ -2126,67 +2138,57 @@ def portal_connect_account():
 
     # 1. Resolve 6-digit sync code if provided
     if code and code.isdigit() and len(code) == 6:
-        all_codes = dict(SYNC_CODES)
-        all_codes.update(load_sync_codes())
-        if code in all_codes:
-            entry = all_codes[code]
-            email = entry.get("email") or email
-            token_str = entry.get("master_token") or entry.get("token") or token_str
-            android_id = entry.get("android_id") or android_id
+        cf_deleted = False
+        try:
+            cf_url = f"https://ppmod-api.tredarskvt.workers.dev/api/sync/get?code={code}"
+            cf_res = requests.get(cf_url, timeout=4)
+            if cf_res.status_code == 200:
+                cf_data = cf_res.json()
+                acc = cf_data.get("account") or cf_data
+                if acc and (acc.get("master_token") or acc.get("token")):
+                    token_str = acc.get("master_token") or acc.get("token")
+                    if acc.get("email") and acc.get("email") != "Google Play User":
+                        email = acc.get("email")
+                    if acc.get("android_id"):
+                        android_id = str(acc.get("android_id")).strip()
+                    else:
+                        android_id = "46e14d2451d85c3f"
+                    # Cache resolved code locally
+                    SYNC_CODES[code] = {
+                        "email": email,
+                        "master_token": token_str,
+                        "android_id": android_id
+                    }
+                    save_sync_codes(SYNC_CODES)
+            elif cf_res.status_code == 404:
+                cf_deleted = True
+        except Exception as e:
+            print(f"[-] Cloudflare D1 query portal connect: {e}")
 
-        # Check registered devices if token not found
-        if not token_str:
+        if cf_deleted:
+            # Permanently purged from Cloud Vault! Purge all local traces!
+            SYNC_CODES.pop(code, None)
+            save_sync_codes(SYNC_CODES)
+            PORTAL_PROFILE_CACHE.pop(code, None)
             try:
-                devices = load_registered_devices()
-                for dev in devices.values():
-                    for acc in dev.get("accounts", []):
-                        if str(acc.get("code") or "").strip() == code:
-                            email = acc.get("email") or email
-                            if acc.get("token"):
-                                token_str = acc.get("token")
-                            if dev.get("device_id"):
-                                android_id = dev.get("device_id")
-                            break
-                    if token_str:
-                        break
-            except Exception as e:
-                print(f"[-] Check registered devices for sync code error: {e}")
+                WARMED_GAME_TOKENS.clear()
+            except Exception:
+                pass
+            return jsonify({
+                "ok": False,
+                "deleted": True,
+                "error": "এই QID টি সার্ভার বা ক্লাউড থেকে মুছে ফেলা হয়েছে। অনুগ্রহ করে অ্যাপ থেকে নতুন QID কানেক্ট করুন।"
+            }), 404
 
-        # Check Cloudflare D1 if still not resolved
+        # Fallback to local sync codes if network was unavailable
         if not token_str:
-            try:
-                cf_url = f"https://ppmod-api.tredarskvt.workers.dev/api/sync/get?code={code}"
-                cf_res = requests.get(cf_url, timeout=5)
-                if cf_res.status_code == 200:
-                    cf_data = cf_res.json()
-                    acc = cf_data.get("account") or cf_data
-                    if acc and (acc.get("master_token") or acc.get("token")):
-                        token_str = acc.get("master_token") or acc.get("token")
-                        if acc.get("email") and acc.get("email") != "Google Play User":
-                            email = acc.get("email")
-                        if acc.get("android_id"):
-                            android_id = str(acc.get("android_id")).strip()
-                        else:
-                            android_id = "46e14d2451d85c3f"
-                        # Cache resolved code locally for instant future lookups
-                        SYNC_CODES[code] = {
-                            "email": email,
-                            "master_token": token_str,
-                            "android_id": android_id
-                        }
-                        save_sync_codes(SYNC_CODES)
-            except Exception as e:
-                print(f"[-] Cloudflare D1 query portal connect: {e}")
-
-        if not token_str:
-            import hashlib
-            known = load_known_tokens()
-            for em, tok in known.items():
-                c_hash = f"{int(hashlib.sha256(em.lower().strip().encode()).hexdigest(), 16) % 900000 + 100000}"
-                if code == c_hash:
-                    email = em
-                    token_str = tok
-                    break
+            all_codes = dict(SYNC_CODES)
+            all_codes.update(load_sync_codes())
+            if code in all_codes:
+                entry = all_codes[code]
+                email = entry.get("email") or email
+                token_str = entry.get("master_token") or entry.get("token") or token_str
+                android_id = entry.get("android_id") or android_id
 
     if not android_id:
         android_id = "46e14d2451d85c3f"
