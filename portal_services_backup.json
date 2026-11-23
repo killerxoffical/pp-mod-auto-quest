@@ -311,11 +311,28 @@
     "section": "quest_unlocker",
     "enabled": true,
     "total_quests_count": 20,
-    "selected_quests_count": 3,
+    "selected_quests_count": 20,
     "selected_quest_ids": [
       "CgkI5eaLrqsZEAIQJw",
       "CgkI5eaLrqsZEAIQKQ",
-      "CgkI5eaLrqsZEAIQKw"
+      "CgkI5eaLrqsZEAIQKg",
+      "CgkI5eaLrqsZEAIQKA",
+      "CgkI5eaLrqsZEAIQKw",
+      "CgkI5eaLrqsZEAIQAw",
+      "CgkI5eaLrqsZEAIQBA",
+      "CgkI5eaLrqsZEAIQBQ",
+      "CgkI5eaLrqsZEAIQBg",
+      "CgkI5eaLrqsZEAIQBw",
+      "CgkI5eaLrqsZEAIQCA",
+      "CgkI5eaLrqsZEAIQCQ",
+      "CgkI5eaLrqsZEAIQCg",
+      "CgkI5eaLrqsZEAIQCw",
+      "CgkI5eaLrqsZEAIQDA",
+      "CgkI5eaLrqsZEAIQDQ",
+      "CgkI5eaLrqsZEAIQDg",
+      "CgkI5eaLrqsZEAIQDw",
+      "CgkI5eaLrqsZEAIQEA",
+      "CgkI5eaLrqsZEAIQEQ"
     ],
     "selected_quests": [
       {
@@ -337,6 +354,24 @@
         "unlockedIconUrl": "https://lh3.googleusercontent.com/rDvkQS4B_tWgMSjsbezLcV0zG16CQfIGFU_BTedXB9EwUVRV4kxrMSx9H9uRJPeG7dY"
       },
       {
+        "id": "CgkI5eaLrqsZEAIQKg",
+        "name": "Ant Army",
+        "description": "Release 100 ants.",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/legGqFX-jlaUhlKMBcxvRPeNM50_jx7RK4Wd9eY6Z5_PBfevhko6IZ1Ke311D6LNEpTW"
+      },
+      {
+        "id": "CgkI5eaLrqsZEAIQKA",
+        "name": "First Steps",
+        "description": "Complete 1 levels.",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/tP5aWUmlA4_OyoR9Y7MoSNAkElkRZJeMd4Cux6hXbSL5v03eD6RybBGbTY6oQx42kX8Y"
+      },
+      {
         "id": "CgkI5eaLrqsZEAIQKw",
         "name": "Ready to Boost",
         "description": "Unlock first Booster",
@@ -344,6 +379,141 @@
         "achievementType": "STANDARD",
         "totalSteps": null,
         "unlockedIconUrl": "https://lh3.googleusercontent.com/YZcM21smRUcVp-Dek9ibKse9aDT4PCW_03q3lj1BfiXbCZFGrDxW94EwJg0lKfzljjDP"
+      },
+      {
+        "id": "CgkI5eaLrqsZEAIQAw",
+        "name": "Getting Hungry",
+        "description": "Complete 10 levels.",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/kWr2-lGycc8uka22dNk-Bks0LMCS6JJjeMaimnjXlDtZOt__6OOpzvLP975odmgldcY"
+      },
+      {
+        "id": "CgkI5eaLrqsZEAIQBA",
+        "name": "Food Explorer",
+        "description": "Complete 50 levels.",
+        "experiencePoints": 1000,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/TM_GhxkQS2GRefMvSROyfVktfiXH09noVpf9-3Oo0q7bASMn9dSGnzkToXqgBZUpX6s"
+      },
+      {
+        "id": "CgkI5eaLrqsZEAIQBQ",
+        "name": "Food Master",
+        "description": "Complete 100 levels.",
+        "experiencePoints": 2000,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/OjU9bo0cjsp1iS_Y0AHeidUe_w1nczZCCB-dY2wokqwtSe8ZhCWSHBdXseTheeWwjg"
+      },
+      {
+        "id": "CgkI5eaLrqsZEAIQBg",
+        "name": "Ultimate Hunter",
+        "description": "Complete 250 levels.",
+        "experiencePoints": 4000,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/SmxSWG-2wpa-xRqDiFE6wWfjqvpGyHm2uIptBSG_AtD7T9B7SfknOyFZsNTqA4asD4M"
+      },
+      {
+        "id": "CgkI5eaLrqsZEAIQBw",
+        "name": "Legendary Feast",
+        "description": "Complete 500 levels.",
+        "experiencePoints": 7500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/YqWQqEz5cZTN-AVC84aNtmKzkukSHZuSJG8C7bBdgoHM2MZd1M_9IMW3cI3g9jUmfTA"
+      },
+      {
+        "id": "CgkI5eaLrqsZEAIQCA",
+        "name": "First Boost",
+        "description": "Use 10 boosters.",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/x3fwO_pIP-i-4G5Xhup9Trn14SDGQlqjz6pjVwrm3vp_bP07uAuinjVWY69TGsOwtmHF"
+      },
+      {
+        "id": "CgkI5eaLrqsZEAIQCQ",
+        "name": "Booster Fan",
+        "description": "Use 50 boosters",
+        "experiencePoints": 1500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/6zyZnp9OH9MlLkDbDI2WhElFT-BO3vdNUNDFp2lduHvpklAKjGAG7tYL4WIjeU7MrUg"
+      },
+      {
+        "id": "CgkI5eaLrqsZEAIQCg",
+        "name": "Power Player",
+        "description": "Use 200 boosters",
+        "experiencePoints": 4000,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/jMne3MNhbC0n-V8Ooya7ovjojE9ieFuGA9ITBC6-NAvG6nQ7ASG9zhz1x_TsFx_Slg"
+      },
+      {
+        "id": "CgkI5eaLrqsZEAIQCw",
+        "name": "Perfect Solver I",
+        "description": "Complete 10 levels without using boosters",
+        "experiencePoints": 1500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/IqzhZilUDSztOMJotmZaiVCy4AxrhAyVAj1g802J6tQ-zFqREH-rtupmtWV0zZX9jfo"
+      },
+      {
+        "id": "CgkI5eaLrqsZEAIQDA",
+        "name": "Perfect Solver II",
+        "description": "Complete 30 levels without using boosters",
+        "experiencePoints": 3000,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/jrqZZHaANua7QaxqsVZ4qxCyvUNU7KBpYSQTaIDtflOP5V7NfQrTwBRcgrsdyjwqew"
+      },
+      {
+        "id": "CgkI5eaLrqsZEAIQDQ",
+        "name": "Perfect Solver III",
+        "description": "Complete 50 levels without using boosters",
+        "experiencePoints": 5000,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/8Im7jRUO8e-VLvWBpdxZXyOX41Ezv4ScC5QTuc-vQtyXUYOq0ITRCLnUttBSdyxpPsI"
+      },
+      {
+        "id": "CgkI5eaLrqsZEAIQDg",
+        "name": "Sharp Eyes",
+        "description": "Complete 25 levels on the first attempt",
+        "experiencePoints": 3000,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/NOrjlBzSW8LuFXfmfI0P48THsK-wskkawc8iUIErxaD7kBt1Z5I50V7l2Q0Ww8ateUw"
+      },
+      {
+        "id": "CgkI5eaLrqsZEAIQDw",
+        "name": "Keen Observer",
+        "description": "Complete 50 levels on the first attempt",
+        "experiencePoints": 6000,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/Moi6JiVZkcEcJiWnBFQPuBDrlubWs4kIW_qfK4vmBlgFFrbsfir-R_r_0q-oimW8Cg"
+      },
+      {
+        "id": "CgkI5eaLrqsZEAIQEA",
+        "name": "Daily Diner",
+        "description": "Play the game for 7 consecutive days",
+        "experiencePoints": 2500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/Mkbt-lNXVlxogRIBd76ZCWtl6eR87Z_8g8FuwT81Qp2HTLBVcU8ZgSl2spkxnSdQ8iiM"
+      },
+      {
+        "id": "CgkI5eaLrqsZEAIQEQ",
+        "name": "Food Hunt Champion",
+        "description": "Reach level 1000",
+        "experiencePoints": 15000,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/RRpZXxo12hDzckMa8UQv0nNCxw47Jcpbn7ffH95BwtTpytSbJ5Hg0HRtr0U9FM1__U4"
       }
     ],
     "all_quests": [

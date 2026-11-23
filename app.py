@@ -1,3 +1,4 @@
+CF_USER_FIND_CACHE = {}
 """
 Flask Web Application for Google Play Games Achievement Unlocker & Profile Engine
 Optimized for Render.com (ppmod-quest-unlock.onrender.com)
@@ -330,8 +331,14 @@ def deep_merge_device_dicts(base_dict: dict, incoming_dict: dict) -> dict:
                 cur["ip"] = inc["ip"]
     return merged
 
-def load_registered_devices():
-    global REGISTERED_DEVICES_CACHE
+REGISTERED_DEVICES_CACHE = None
+REGISTERED_DEVICES_CACHE_TIME = 0
+
+def load_registered_devices(force_refresh=False):
+    global REGISTERED_DEVICES_CACHE, REGISTERED_DEVICES_CACHE_TIME
+    now = time.time()
+    if not force_refresh and REGISTERED_DEVICES_CACHE is not None and (now - REGISTERED_DEVICES_CACHE_TIME < 15):
+        return REGISTERED_DEVICES_CACHE
     data = {}
     # 1. Load local file first
     if os.path.exists(REGISTERED_DEVICES_FILE):
@@ -371,6 +378,7 @@ def load_registered_devices():
         data = {}
 
     REGISTERED_DEVICES_CACHE = data
+    REGISTERED_DEVICES_CACHE_TIME = time.time()
     return data
 
 def save_registered_devices(data):
@@ -988,11 +996,41 @@ def resolve_credentials_from_input(data):
         except Exception:
             pass
 
-        if not cf_deleted and not master_token and sync_code in SYNC_CODES:
+        if cf_deleted:
+            # Code was deleted from Cloudflare D1 store — wipe completely from local memory/disk and DO NOT revive
+            SYNC_CODES.pop(sync_code, None)
+            save_sync_codes(SYNC_CODES)
+            PORTAL_PROFILE_CACHE.pop(sync_code, None)
+            if email:
+                known = load_known_tokens()
+                if email in known:
+                    known.pop(email, None)
+                    save_known_tokens(known)
+            try:
+                devs = load_registered_devices()
+                d_changed = False
+                for d_id, d_val in devs.items():
+                    acc_list = d_val.get("accounts", [])
+                    filtered_acc = [a for a in acc_list if str(a.get("code") or a.get("sync_code") or "") != sync_code]
+                    if len(filtered_acc) != len(acc_list):
+                        d_val["accounts"] = filtered_acc
+                        d_changed = True
+                if d_changed:
+                    with open(REGISTERED_DEVICES_FILE, "w", encoding="utf-8") as rf:
+                        json.dump(devs, rf, indent=2, ensure_ascii=False)
+            except Exception:
+                pass
+            return None, None, None, None
+
+        if not master_token and sync_code in SYNC_CODES:
             entry = SYNC_CODES[sync_code]
             email = entry.get("email") or email
             master_token = entry.get("master_token") or entry.get("token") or master_token
             android_id = entry.get("android_id") or android_id
+
+    # If explicit sync_code was passed but could not be resolved from cloud/local, reject immediately
+    if sync_code and not (master_token or access_token):
+        return None, None, None, None
 
     if not master_token and email:
         known = load_known_tokens()
@@ -3415,20 +3453,16 @@ def get_admin_users():
         display_name = dev_data.get("ppmod_name", "").strip()
         avatar = dev_data.get("ppmod_avatar", "").strip()
 
-        # If logged in and has real email, attempt to enrich profile from Cloudflare if uid missing
+        # Fast non-blocking profile resolution (uses memory cache to avoid blocking admin console)
         if is_logged_in and ppmod_email and ("@" in ppmod_email):
             if not ppmod_uid or ppmod_uid.startswith("UID-") or not display_name:
-                try:
-                    cf_url = f"https://ppmod-api.tredarskvt.workers.dev/api/user/find?q={requests.utils.quote(ppmod_email)}"
-                    cf_res = requests.get(cf_url, timeout=3)
-                    if cf_res.status_code == 200:
-                        cf_user = cf_res.json().get("user", {})
-                        if cf_user:
-                            ppmod_uid = cf_user.get("uid") or ppmod_uid
-                            display_name = cf_user.get("name") or display_name
-                            avatar = cf_user.get("avatar") or avatar
-                except Exception:
-                    pass
+                if ppmod_email in CF_USER_FIND_CACHE:
+                    cf_cached = CF_USER_FIND_CACHE[ppmod_email]
+                    ppmod_uid = cf_cached.get("uid") or ppmod_uid
+                    display_name = cf_cached.get("name") or display_name
+                    avatar = cf_cached.get("avatar") or avatar
+                elif not display_name:
+                    display_name = ppmod_email.split("@")[0].capitalize()
 
         if not ppmod_uid:
             ppmod_uid = "—"
@@ -5932,7 +5966,7 @@ def get_portal_single_game_progress():
 
     email, master_token, access_token, android_id = resolve_credentials_from_input(data)
     if not (master_token or access_token):
-        return jsonify({"ok": False, "error": "এই QID টি ভ্যালিড নয়। আপনার ডিভাইস বা জিমেইল থেকে প্লে গেমস রিমুভ করে পুনরায় লগইন করে নতুন আইডি দিন।"}), 401
+        return jsonify({"ok": False, "deleted": True, "error": "এই QID টি ভ্যালিড নয় বা সার্ভার থেকে মুছে ফেলা হয়েছে। আপনার ডিভাইস বা জিমেইল থেকে প্লে গেমস রিমুভ করে পুনরায় লগইন করে নতুন আইডি দিন।"}), 404
 
     if not android_id:
         android_id = "46e14d2451d85c3f"
