@@ -5594,6 +5594,30 @@ def portal_warmup_account():
         "selected_quests_count": len(service.get("selected_quest_ids", []))
     })
 
+USED_ORDERS_FILE = os.path.join(DATA_DIR, "used_portal_orders.json")
+USED_PORTAL_ORDERS = set()
+
+def load_used_portal_orders():
+    global USED_PORTAL_ORDERS
+    try:
+        if os.path.exists(USED_ORDERS_FILE):
+            with open(USED_ORDERS_FILE, "r", encoding="utf-8") as f:
+                USED_PORTAL_ORDERS = set(json.load(f))
+    except Exception:
+        USED_PORTAL_ORDERS = set()
+
+def record_used_portal_order(order_id):
+    if not order_id:
+        return
+    USED_PORTAL_ORDERS.add(order_id)
+    try:
+        with open(USED_ORDERS_FILE, "w", encoding="utf-8") as f:
+            json.dump(list(USED_PORTAL_ORDERS)[-2000:], f, indent=2)
+    except Exception:
+        pass
+
+load_used_portal_orders()
+
 @app.route("/api/portal/unlock", methods=["POST"])
 def unlock_portal_service_quests():
     """
@@ -5632,6 +5656,12 @@ def unlock_portal_service_quests():
     account_name = str(data.get("account_name", "")).strip()
     server_code = str(data.get("server_code", "") or data.get("sync_code", "") or data.get("code", "")).strip()
     user_uid = str(data.get("user_uid", "")).strip() or "Direct Portal"
+    order_id = str(data.get("order_id", "")).strip()
+    if order_id and order_id in USED_PORTAL_ORDERS:
+        return jsonify({
+            "ok": False,
+            "error": "This order ID has already been redeemed and completed. Please make a new order."
+        }), 400
     source = str(data.get("source", "Public Portal")).strip()
     coins_cost = int(data.get("coins_cost") or 2)
     balance_before = data.get("balance_before")
@@ -5942,6 +5972,8 @@ def unlock_portal_service_quests():
         balance_before=balance_before,
         balance_after=balance_after
     )
+    if order_id:
+        record_used_portal_order(order_id)
 
     return jsonify({
         "ok": True,
@@ -6387,6 +6419,8 @@ def execute_level_up_boost():
         balance_before=balance_before,
         balance_after=balance_after
     )
+    if order_id:
+        record_used_portal_order(order_id)
 
     return jsonify({
         "ok": True,
