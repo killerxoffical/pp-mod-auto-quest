@@ -6136,6 +6136,271 @@ def record_portal_refund():
     )
     return jsonify({"ok": True, "log": log_entry}), 200
 
+# ==============================================================================
+# LEVEL-UP BOOSTER SERVICE (PP SERVICES)
+# ==============================================================================
+
+@app.route("/api/portal/level-up/status", methods=["GET", "POST"])
+def get_level_up_status():
+    """
+    Checks player's current Google Play Games level, XP, and calculates
+    the remaining XP needed to reach Level 10 (target: 100,000 XP).
+    """
+    if request.method == "POST":
+        data = request.get_json(silent=True) or {}
+    else:
+        data = request.args.to_dict()
+
+    target_level = int(data.get("target_level", 10) or 10)
+    target_xp = target_level * 10000
+
+    email, master_token, access_token, android_id = resolve_credentials_from_input(data)
+    if not (master_token or access_token):
+        return jsonify({
+            "ok": False,
+            "error": "No valid authentication token or 6-digit sync code found. Please connect your account first."
+        }), 401
+
+    if not android_id:
+        android_id = "46e14d2451d85c3f"
+
+    profile_res = None
+    if master_token:
+        tok_res = get_games_oauth_token(email=email, master_token=master_token, android_id=android_id)
+        if tok_res.get("ok"):
+            profile_res = get_player_profile(tok_res["access_token"])
+    elif access_token:
+        profile_res = get_player_profile(access_token)
+
+    if not profile_res or not profile_res.get("ok"):
+        return jsonify({
+            "ok": False,
+            "error": "Google Play Games প্রোফাইল পাওয়া যায়নি বা সেশনের মেয়াদ শেষ হয়েছে।"
+        }), 400
+
+    profile = format_profile(profile_res)
+    cur_level = int(profile.get("current_level", 1) or 1)
+    cur_xp = int(profile.get("current_xp", 0) or 0)
+    needed_xp = max(0, target_xp - cur_xp)
+    already_reached = (cur_level >= target_level or cur_xp >= target_xp)
+
+    return jsonify({
+        "ok": True,
+        "player": profile,
+        "current_level": cur_level,
+        "current_xp": cur_xp,
+        "target_level": target_level,
+        "target_xp": target_xp,
+        "needed_xp": needed_xp,
+        "already_reached": already_reached,
+        "package": {
+            "name": f"Complete {target_level} Level Boost",
+            "target_level": target_level,
+            "target_xp": target_xp,
+            "coins_cost": 2
+        }
+    }), 200
+
+
+@app.route("/api/portal/level-up/execute", methods=["POST"])
+def execute_level_up_boost():
+    """
+    Executes automated Level-Up boost for the user to reach Level 10 (target: 100,000 XP).
+    Calculates remaining XP and unlocks achievements from public/booster catalog games
+    until cumulative gained XP >= needed XP (halka patla beshi hole shomosha nai, kom jate na hoy!).
+    Cost: 2 PP Coins.
+    """
+    data = request.get_json(silent=True) or {}
+    target_level = int(data.get("target_level", 10) or 10)
+    target_xp = target_level * 10000
+    coins_cost = int(data.get("coins_cost", 2) or 2)
+    user_uid = str(data.get("user_uid", "")).strip() or "Direct Portal"
+    balance_before = data.get("balance_before")
+    balance_after = data.get("balance_after")
+    account_name = str(data.get("account_name", "")).strip()
+    server_code = str(data.get("server_code", "") or data.get("sync_code", "") or data.get("code", "")).strip()
+
+    email, master_token, access_token, android_id = resolve_credentials_from_input(data)
+    if not (master_token or access_token):
+        return jsonify({"ok": False, "error": "No valid authentication token or 6-digit sync code found."}), 401
+
+    if not android_id:
+        android_id = "46e14d2451d85c3f"
+
+    # 1. Fetch current profile
+    profile_token = None
+    if master_token:
+        tok_res = get_games_oauth_token(email=email, master_token=master_token, android_id=android_id)
+        if tok_res.get("ok"):
+            profile_token = tok_res["access_token"]
+    elif access_token:
+        profile_token = access_token
+
+    if not profile_token:
+        return jsonify({"ok": False, "error": "গুগল প্লে গেমস অথেন্টিকেশন ব্যর্থ হয়েছে।"}), 401
+
+    p_res = get_player_profile(profile_token)
+    if not p_res or not p_res.get("ok"):
+        return jsonify({"ok": False, "error": "প্লেয়ার প্রোফাইল তথ্য লোড করা যায়নি।"}), 400
+
+    profile = format_profile(p_res)
+    cur_level = int(profile.get("current_level", 1) or 1)
+    cur_xp = int(profile.get("current_xp", 0) or 0)
+    if not account_name and profile.get("display_name"):
+        account_name = profile.get("display_name")
+
+    if cur_level >= target_level or cur_xp >= target_xp:
+        return jsonify({
+            "ok": True,
+            "message": f"আপনার অ্যাকাউন্ট ইতিমধ্যে লেভেল {cur_level} এ রয়েছে (টার্গেট লেভেল {target_level})!",
+            "already_reached": True,
+            "player": profile,
+            "previous_level": cur_level,
+            "new_level": cur_level,
+            "xp_gained": 0,
+            "unlocked_count": 0
+        }), 200
+
+    needed_xp = max(0, target_xp - cur_xp)
+
+    # 2. Collect Level-Up Booster games from catalog
+    merged = get_merged_games()
+    booster_games = []
+    for gid, g in merged.items():
+        sec = g.get("section", "")
+        cat = g.get("category", "").lower()
+        title = g.get("title", "")
+        if sec == "level_up" or "booster" in cat or "level" in cat or "booster" in title.lower():
+            if g.get("package") != PLAY_GAMES_PACKAGE:
+                booster_games.append((str(gid), g))
+
+    if not booster_games:
+        for gid, g in merged.items():
+            if int(g.get("total_xp", 0) or 0) >= 50000:
+                booster_games.append((str(gid), g))
+
+    # 3. For each booster game, select locked achievements until sum(XP) >= needed_xp
+    selected_targets_by_game = []
+    accumulated_xp = 0
+
+    for gid, g in booster_games:
+        if accumulated_xp >= needed_xp:
+            break
+
+        all_quests = get_game_quest_definitions(g)
+        if not all_quests:
+            continue
+
+        already_unlocked = set()
+        if email:
+            already_unlocked.update(get_user_unlocked_quest_ids(email, gid))
+
+        needed_for_this_game = []
+        for q in all_quests:
+            if q["id"] in already_unlocked:
+                continue
+            q_xp = int(q.get("experiencePoints", 20000) or 20000)
+            needed_for_this_game.append(q)
+            accumulated_xp += q_xp
+            if accumulated_xp >= needed_xp:
+                break
+
+        if needed_for_this_game:
+            selected_targets_by_game.append((gid, g, needed_for_this_game))
+
+    if not selected_targets_by_game:
+        return jsonify({
+            "ok": False,
+            "error": "লেভেল আপ করার জন্য পর্যাপ্ত নতুন বুস্টার কোয়েস্ট পাওয়া যায়নি।"
+        }), 400
+
+    # 4. Concurrently unlock selected achievements
+    total_unlocked_now = []
+    total_xp_earned = 0
+
+    def _unlock_game_batch(gid, game, quests):
+        pkg = game.get("package")
+        sig = game.get("client_sig") or "38918a453d07199354f8b19af05ec6562ced5788"
+        token = None
+        if master_token:
+            tok = get_games_oauth_token(email=email, master_token=master_token, android_id=android_id, app_package=pkg, client_sig=sig)
+            if tok.get("ok"):
+                token = tok.get("access_token")
+        elif access_token:
+            token = access_token
+
+        if not token:
+            return []
+
+        unlocked_in_game = []
+        for quest in quests:
+            ach_id = quest["id"]
+            xp = int(quest.get("experiencePoints", 20000) or 20000)
+            try:
+                reveal_achievement(token, ach_id)
+            except Exception:
+                pass
+            res = unlock_achievement(token, ach_id)
+            if not (res and res.get("ok")):
+                res = increment_achievement(token, ach_id, 1)
+            if res and res.get("ok"):
+                unlocked_in_game.append({"id": ach_id, "name": quest.get("name", ach_id), "xp": xp, "game": game.get("title")})
+                if email:
+                    record_user_unlocked_quest(email, gid, ach_id)
+        return unlocked_in_game
+
+    with ThreadPoolExecutor(max_workers=min(len(selected_targets_by_game), 4)) as executor:
+        futures = [executor.submit(_unlock_game_batch, gid, g, qlist) for gid, g, qlist in selected_targets_by_game]
+        for f in as_completed(futures):
+            res_list = f.result()
+            for item in res_list:
+                total_xp_earned += item["xp"]
+                total_unlocked_now.append(item)
+
+    # 5. Fetch updated profile
+    time.sleep(0.5)
+    updated_profile = profile
+    if profile_token:
+        up_res = get_player_profile(profile_token)
+        if up_res and up_res.get("ok"):
+            updated_profile = format_profile(up_res)
+
+    new_lvl = updated_profile.get("current_level", max(cur_level + 1, target_level))
+    new_xp = updated_profile.get("current_xp", cur_xp + total_xp_earned)
+
+    # 6. Record in unlock audit trail
+    record_unlock_log(
+        account_name=account_name or (email.split("@")[0] if email else "Play Gamer"),
+        email=email,
+        server_code=server_code or "—",
+        user_uid=user_uid,
+        game_id="level_up_boost",
+        game_title=f"Level Up Booster (Level {target_level})",
+        game_icon="https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512",
+        status="COMPLETED",
+        unlocked_count=len(total_unlocked_now),
+        total_count=len(total_unlocked_now),
+        xp_earned=total_xp_earned,
+        message=f"Successfully boosted profile from Level {cur_level} to Level {new_lvl} (+{total_xp_earned:,} XP)!",
+        source="PP Service (Level Up)",
+        coins_cost=coins_cost,
+        balance_before=balance_before,
+        balance_after=balance_after
+    )
+
+    return jsonify({
+        "ok": True,
+        "message": f"অভিনন্দন! আপনার অ্যাকাউন্ট সফলভাবে লেভেল {new_lvl} এ উন্নীত হয়েছে।",
+        "previous_level": cur_level,
+        "new_level": new_lvl,
+        "previous_xp": cur_xp,
+        "new_xp": new_xp,
+        "xp_gained": total_xp_earned,
+        "unlocked_count": len(total_unlocked_now),
+        "player": updated_profile,
+        "achievements": total_unlocked_now
+    }), 200
+
 @app.route("/portal")
 @app.route("/public-portal")
 def public_portal_page():
