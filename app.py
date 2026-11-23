@@ -30,11 +30,13 @@ PORTAL_SERVICES_FILE = os.path.join(DATA_DIR, "portal_services.json")
 PORTAL_SERVICES_BACKUP_FILE = os.path.join(DATA_DIR, "portal_services_backup.json")
 
 PORTAL_SERVICES_CACHE = None
+PORTAL_SERVICES_CACHE_TIME = 0
 WARMED_GAME_TOKENS = {}
 
-def load_portal_services():
-    global PORTAL_SERVICES_CACHE
-    if PORTAL_SERVICES_CACHE is not None:
+def load_portal_services(force_refresh=False):
+    global PORTAL_SERVICES_CACHE, PORTAL_SERVICES_CACHE_TIME
+    now = time.time()
+    if not force_refresh and PORTAL_SERVICES_CACHE is not None and (now - PORTAL_SERVICES_CACHE_TIME < 8):
         return PORTAL_SERVICES_CACHE
 
     local_data = {}
@@ -119,11 +121,18 @@ def load_portal_services():
         pass
 
     PORTAL_SERVICES_CACHE = merged
+    PORTAL_SERVICES_CACHE_TIME = time.time()
     return merged
 
 def save_portal_services(data):
-    global PORTAL_SERVICES_CACHE
+    global PORTAL_SERVICES_CACHE, PORTAL_SERVICES_CACHE_TIME
     PORTAL_SERVICES_CACHE = dict(data)
+    PORTAL_SERVICES_CACHE_TIME = time.time()
+    try:
+        USER_PROGRESS_CACHE.clear()
+        PORTAL_PROGRESS_CACHE.clear()
+    except Exception:
+        pass
     try:
         with open(PORTAL_SERVICES_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
@@ -235,6 +244,35 @@ def find_portal_service(services, query_id):
                     best_match = (k, s)
         if best_match:
             return best_match
+
+    # If not found in current services cache, force-refresh from Cloudflare D1 / disk and retry!
+    # This guarantees that newly added admin games are matched INSTANTLY with 0 delay without needing web refresh!
+    try:
+        fresh_services = load_portal_services(force_refresh=True)
+        if fresh_services and (len(fresh_services) != len(services) or any(k not in services for k in fresh_services)):
+            for k, s in fresh_services.items():
+                if (str(k).strip().lower() == q or
+                    str(s.get("id", "")).strip().lower() == q or
+                    str(s.get("game_id", "")).strip().lower() == q or
+                    str(s.get("service_id", "")).strip().lower() == q or
+                    str(s.get("package", "")).strip().lower() == q or
+                    str(s.get("title", "")).strip().lower() == q):
+                    return k, s
+            if qn['clean_all']:
+                for k, s in fresh_services.items():
+                    tn = _normalize(s.get("title") or "")
+                    if (qn['clean_all'] == tn['clean_all'] or
+                        qn['clean_main'] == tn['clean_main'] or
+                        qn['clean_all'] == tn['clean_main'] or
+                        tn['clean_all'] == qn['clean_main']):
+                        return k, s
+                for k, s in fresh_services.items():
+                    tn = _normalize(s.get("title") or "")
+                    if qn['clean_main'] and len(qn['clean_main']) >= 4:
+                        if qn['clean_main'] in tn['clean_all'] or tn['clean_main'] in qn['clean_all']:
+                            return k, s
+    except Exception:
+        pass
 
     return None, None
 
@@ -4836,8 +4874,10 @@ def get_portal_services():
     """
     Returns list of all active/configured quest services for the Public Portal with section tagging.
     Only returns services explicitly configured by the Admin.
+    Always supports fresh query without stale caching!
     """
-    services = load_portal_services()
+    force = bool(request.args.get("_t") or request.args.get("refresh") or request.args.get("nocache"))
+    services = load_portal_services(force_refresh=force)
     merged = get_merged_games()
     out = []
 
@@ -4856,7 +4896,11 @@ def get_portal_services():
         out.append(s)
 
     out.sort(key=lambda x: (not x.get("enabled", True), x.get("title", "")))
-    return jsonify({"ok": True, "services": out, "total_services": len(out)})
+    resp = jsonify({"ok": True, "services": out, "total_services": len(out)})
+    resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
+    resp.headers["Pragma"] = "no-cache"
+    resp.headers["Expires"] = "0"
+    return resp
 
 @app.route("/api/portal/games", methods=["GET"])
 def get_portal_available_games():
