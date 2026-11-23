@@ -670,8 +670,10 @@ def load_custom_games():
             time.sleep(0.5)
 
     merged = dict(local_data)
-    if cf_data:
-        merged.update(cf_data)
+    if cf_data and isinstance(cf_data, dict):
+        for k, v in cf_data.items():
+            if isinstance(v, dict) and v.get("title"):
+                merged[str(k)] = v
 
     if merged != local_data:
         try:
@@ -708,8 +710,12 @@ def save_custom_game(game_id, game_data):
 
 def get_merged_games():
     games = dict(SUPPORTED_GAMES)
-    games.update(load_custom_games())
-    return games
+    custom = load_custom_games()
+    if isinstance(custom, dict):
+        for k, v in custom.items():
+            if isinstance(v, dict) and v.get("title"):
+                games[str(k)] = v
+    return {k: v for k, v in games.items() if isinstance(v, dict) and v.get("title")}
 
 USER_QUEST_PROGRESS_FILE = os.path.join(DATA_DIR, "user_quest_progress.json")
 
@@ -2664,6 +2670,10 @@ def get_games_list():
     games = []
     merged = get_merged_games()
     for k, v in merged.items():
+        if not isinstance(v, dict) or not v.get("title"):
+            continue
+        ach_count = v.get("achievements_count") or len(v.get("achievements", []))
+        total_xp = v.get("total_xp") or sum(a.get("experiencePoints", 0) for a in v.get("achievements", []))
         games.append({
             "id": k,
             "title": v.get("title"),
@@ -2672,8 +2682,8 @@ def get_games_list():
             "category": v.get("category", "Games"),
             "section": v.get("section", "quest_unlocker"),
             "icon": v.get("icon"),
-            "achievements_count": v.get("achievements_count", 0),
-            "total_xp": v.get("total_xp", 0),
+            "achievements_count": ach_count,
+            "total_xp": total_xp,
             "desc": v.get("desc"),
             "tags": v.get("tags", [])
         })

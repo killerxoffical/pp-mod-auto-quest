@@ -3861,6 +3861,7 @@
                 }
             } catch (e) { }
 
+            loadGames();
             await initSession();
 
             // URL query sync auto-connect (?code=XXXXXX)
@@ -3876,8 +3877,7 @@
                 }
             } catch (e) { }
 
-            await loadGames();
-            await loadUserRemoteProgress();
+            loadUserRemoteProgress();
 
             // Global Single-Click (5s) and Double-Click (30s) Listener for Stealth Blur & Package elements
             document.addEventListener("click", (e) => {
@@ -4047,14 +4047,35 @@
         // Load Games Catalog
         async function loadGames() {
             try {
-                const res = await fetch(`${API_BASE}/api/games`);
+                const res = await fetch(`${API_BASE}/api/games?_t=${Date.now()}`);
                 const data = await res.json();
-                if (data.ok) {
+                if (data.ok && Array.isArray(data.games)) {
                     gamesList = data.games;
                     applyCatalogFilters();
                     updateTopMetrics(gamesList);
+                } else {
+                    const grid = document.getElementById("gamesFlowGrid");
+                    if (grid) {
+                        grid.innerHTML = `
+                        <div style="grid-column: 1 / -1; padding: 40px; text-align: center; color: #ef4444;">
+                            <div style="font-size: 32px; margin-bottom: 8px;">⚠️</div>
+                            <div style="font-weight: 800; font-size: 15px;">Failed to load catalog</div>
+                            <div style="font-size: 12px; margin-top: 4px; color: var(--text-muted);">${data.error || 'Server error'}</div>
+                            <button type="button" onclick="loadGames()" style="margin-top: 12px; padding: 7px 16px; background: var(--accent-cyan); color: #fff; font-weight: 700; border-radius: 8px; border: none; cursor: pointer;">Retry</button>
+                        </div>`;
+                    }
                 }
             } catch (e) {
+                const grid = document.getElementById("gamesFlowGrid");
+                if (grid) {
+                    grid.innerHTML = `
+                    <div style="grid-column: 1 / -1; padding: 40px; text-align: center; color: #ef4444;">
+                        <div style="font-size: 32px; margin-bottom: 8px;">📡</div>
+                        <div style="font-weight: 800; font-size: 15px;">Connection failed</div>
+                        <div style="font-size: 12px; margin-top: 4px; color: var(--text-muted);">Could not reach /api/games backend.</div>
+                        <button type="button" onclick="loadGames()" style="margin-top: 12px; padding: 7px 16px; background: var(--accent-cyan); color: #fff; font-weight: 700; border-radius: 8px; border: none; cursor: pointer;">Retry</button>
+                    </div>`;
+                }
                 showToast("Failed to connect to backend games API.", "error");
             }
         }
