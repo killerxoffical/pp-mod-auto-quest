@@ -5930,7 +5930,7 @@ def get_portal_single_game_progress():
 
     email, master_token, access_token, android_id = resolve_credentials_from_input(data)
     if not (master_token or access_token):
-        return jsonify({"ok": False, "error": "No valid QID or credentials found. Please reconnect account."}), 401
+        return jsonify({"ok": False, "error": "এই QID টি ভ্যালিড নয়। আপনার ডিভাইস বা জিমেইল থেকে প্লে গেমস রিমুভ করে পুনরায় লগইন করে নতুন আইডি দিন।"}), 401
 
     if not android_id:
         android_id = "46e14d2451d85c3f"
@@ -6016,8 +6016,28 @@ def get_portal_single_game_progress():
     total_count = len(selected_quest_ids)
     all_done = (total_count > 0 and completed_count >= total_count)
 
+    player_info = {
+        "displayName": (email.split('@')[0] if email else "Play Games User"),
+        "avatarImageUrl": "",
+        "playerId": ""
+    }
+    if game_token:
+        try:
+            p_profile_res = requests.get(f"{GAMES_API_BASE}/players/me", headers=get_headers(game_token), timeout=4)
+            if p_profile_res.status_code == 200:
+                p_prof = p_profile_res.json()
+                if p_prof.get("displayName"):
+                    player_info["displayName"] = p_prof["displayName"]
+                if p_prof.get("avatarImageUrl"):
+                    player_info["avatarImageUrl"] = p_prof["avatarImageUrl"]
+                if p_prof.get("playerId"):
+                    player_info["playerId"] = p_prof["playerId"]
+        except Exception:
+            pass
+
     return jsonify({
         "ok": True,
+        "player": player_info,
         "service": {
             "game_id": service.get("game_id", found_key),
             "title": service.get("title"),
