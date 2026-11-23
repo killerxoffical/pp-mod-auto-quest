@@ -1717,7 +1717,7 @@
                         </div>
                         <div class="tile-text">
                             <h3 id="statTotalGames">52 Games Installed</h3>
-                            <p id="statTotalStorage">Storage: 78.6 GB / 128 GB NVMe</p>
+                            <p id="statTotalStorage">Cloudflare D1 Synced • Live Engine</p>
                         </div>
                     </div>
 
@@ -2769,7 +2769,7 @@
                         <div class="form-field">
                             <label>Allocated Games Storage Metric</label>
                             <input type="text" id="vpsStorageInput" class="form-input-element"
-                                value="Storage: 48.6 GB / 128 GB NVMe">
+                                value="Cloudflare D1 Synced • Live Engine">
                         </div>
 
                         <div class="form-field">
@@ -2781,7 +2781,7 @@
                         <div class="form-field">
                             <label>Simulated RAM Allocation</label>
                             <input type="text" id="vpsRamInput" class="form-input-element"
-                                value="4.8 GB / 16 GB ECC DDR5">
+                                value="Operational • 99.9% Uptime">
                         </div>
 
                         <div class="form-field">
@@ -6040,14 +6040,14 @@
         function resetVpsSettingsDefault() {
             localStorage.removeItem("pp_vps_profile");
             document.getElementById("vpsStatusInput").value = "SERVER VPS LIVE";
-            document.getElementById("vpsStorageInput").value = "Storage: 48.6 GB / 128 GB NVMe";
+            document.getElementById("vpsStorageInput").value = "Cloudflare D1 Synced • Live Engine";
             document.getElementById("vpsSubInput").value = "Dedicated Node • 99.99% Uptime";
-            document.getElementById("vpsRamInput").value = "4.8 GB / 16 GB ECC DDR5";
+            document.getElementById("vpsRamInput").value = "Operational • 99.9% Uptime";
             document.getElementById("vpsDecoyLabelInput").value = "Cloud VPS: Active";
             document.getElementById("vpsHostInput").value = "vps-sgp-core01.cluster.internal";
 
             document.getElementById("statServerStatus").innerText = "SERVER VPS LIVE";
-            document.getElementById("statTotalStorage").innerText = "Storage: 48.6 GB / 128 GB NVMe";
+            document.getElementById("statTotalStorage").innerText = "Cloudflare D1 Synced • Live Engine";
             document.getElementById("statServerSub").innerText = "Dedicated Node • 99.99% Uptime";
             if (document.getElementById("txtDecoyLabel")) document.getElementById("txtDecoyLabel").innerText = "Cloud VPS: Active";
 

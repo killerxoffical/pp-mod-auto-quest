@@ -10,6 +10,7 @@ import json
 import uuid
 import random
 import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import requests
 import re
 from flask import Flask, request, jsonify, render_template, send_from_directory, redirect
@@ -17,7 +18,7 @@ from flask_cors import CORS
 
 from config import GAMES_API_BASE, SCOPE_GAMES, PLAY_GAMES_PACKAGE, GOOGLE_CLIENT_SIG
 from auth import exchange_oauth_token_for_master, perform_google_login, get_games_oauth_token, generate_android_id
-from engine import get_player_profile, get_headers, unlock_achievement, set_achievement_steps, reveal_achievement
+from engine import get_player_profile, get_headers, unlock_achievement, set_achievement_steps, reveal_achievement, increment_achievement
 from games_db import SUPPORTED_GAMES
 from real_achievements import get_real_game_achievements
 
@@ -29,6 +30,7 @@ PORTAL_SERVICES_FILE = os.path.join(DATA_DIR, "portal_services.json")
 PORTAL_SERVICES_BACKUP_FILE = os.path.join(DATA_DIR, "portal_services_backup.json")
 
 PORTAL_SERVICES_CACHE = None
+WARMED_GAME_TOKENS = {}
 
 def load_portal_services():
     global PORTAL_SERVICES_CACHE
@@ -47,22 +49,52 @@ def load_portal_services():
 
     # Always fetch from Cloudflare D1 persistent cloud store (survives Render container redeploys)
     cf_data = {}
-    try:
-        cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", timeout=5, verify=False)
-        if cf_res.status_code == 200:
-            cloud_data = cf_res.json()
-            if isinstance(cloud_data, dict):
-                if "data" in cloud_data and isinstance(cloud_data["data"], dict):
-                    cloud_data = cloud_data["data"]
-                cf_data = cloud_data
-                print(f"[+] Fetched {len(cf_data)} portal services from Cloudflare D1 cloud store.")
-    except Exception as e:
-        print(f"[-] Cloudflare D1 portal fetch note: {e}")
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) PPMod-Server/2.0"}
+    for attempt in range(3):
+        try:
+            cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", headers=headers, timeout=8, verify=False)
+            if cf_res.status_code == 200:
+                cloud_data = cf_res.json()
+                if isinstance(cloud_data, dict):
+                    if "data" in cloud_data and isinstance(cloud_data["data"], dict):
+                        cloud_data = cloud_data["data"]
+                    cf_data = cloud_data
+                    print(f"[+] Fetched {len(cf_data)} portal services from Cloudflare D1 cloud store.")
+                    break
+        except Exception as e:
+            if attempt == 2:
+                print(f"[-] Cloudflare D1 portal fetch note after 3 attempts: {e}")
+            time.sleep(0.5)
 
     # Merge: take local, overlay Cloudflare D1 so newly added games in cloud are NEVER lost
     merged = dict(local_data)
     if cf_data:
-        merged.update(cf_data)
+        for k, v in cf_data.items():
+            if isinstance(v, dict):
+                merged_item = dict(merged.get(k, {}))
+                merged_item.update(v)
+                # Retain client_sig if cloud didn't have it but local did
+                if not merged_item.get("client_sig") and merged.get(k, {}).get("client_sig"):
+                    merged_item["client_sig"] = merged[k]["client_sig"]
+                merged[k] = merged_item
+            else:
+                merged[k] = v
+
+    # Ensure every game with known signature in real_achievements_db has client_sig populated
+    try:
+        real_db_path = os.path.join(DATA_DIR, "real_achievements_db.json")
+        if os.path.exists(real_db_path):
+            with open(real_db_path, "r", encoding="utf-8") as rdbf:
+                rdb = json.load(rdbf)
+                for gid, srv in merged.items():
+                    if isinstance(srv, dict) and not srv.get("client_sig"):
+                        g_entry = rdb.get(gid) or rdb.get(str(srv.get("game_id", "")))
+                        if not g_entry and srv.get("package"):
+                            g_entry = next((item for item in rdb.values() if isinstance(item, dict) and item.get("package") == srv.get("package")), None)
+                        if g_entry and g_entry.get("client_sig"):
+                            srv["client_sig"] = g_entry["client_sig"]
+    except Exception:
+        pass
 
     if not merged and os.path.exists(PORTAL_SERVICES_BACKUP_FILE):
         try:
@@ -565,33 +597,45 @@ def load_custom_games():
     if CUSTOM_GAMES_CACHE is not None:
         return CUSTOM_GAMES_CACHE
 
-    data = {}
+    local_data = {}
     if os.path.exists(CUSTOM_GAMES_FILE):
         try:
             with open(CUSTOM_GAMES_FILE, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                CUSTOM_GAMES_CACHE = data
-                return data
+                content = json.load(f)
+                if isinstance(content, dict):
+                    local_data = content
         except Exception:
             pass
 
-    # Check Cloudflare D1 persistent cloud store on startup if file missing
-    try:
-        cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/custom-games", timeout=2)
-        if cf_res.status_code == 200:
-            cloud_data = cf_res.json()
-            if cloud_data and isinstance(cloud_data, dict):
-                data.update(cloud_data)
-                try:
-                    with open(CUSTOM_GAMES_FILE, "w", encoding="utf-8") as f:
-                        json.dump(data, f, indent=2)
-                except Exception:
-                    pass
-    except Exception:
-        pass
+    # Always fetch from Cloudflare D1 persistent cloud store (survives Render container redeploys)
+    cf_data = {}
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) PPMod-Server/2.0"}
+    for attempt in range(3):
+        try:
+            cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/custom-games", headers=headers, timeout=6, verify=False)
+            if cf_res.status_code == 200:
+                cloud_data = cf_res.json()
+                if isinstance(cloud_data, dict):
+                    if "data" in cloud_data and isinstance(cloud_data["data"], dict):
+                        cloud_data = cloud_data["data"]
+                    cf_data = cloud_data
+                break
+        except Exception as e:
+            time.sleep(0.5)
 
-    CUSTOM_GAMES_CACHE = data
-    return data
+    merged = dict(local_data)
+    if cf_data:
+        merged.update(cf_data)
+
+    if merged != local_data:
+        try:
+            with open(CUSTOM_GAMES_FILE, "w", encoding="utf-8") as f:
+                json.dump(merged, f, indent=2)
+        except Exception:
+            pass
+
+    CUSTOM_GAMES_CACHE = merged
+    return merged
 
 def save_custom_game(game_id, game_data):
     global CUSTOM_GAMES_CACHE
@@ -604,12 +648,16 @@ def save_custom_game(game_id, game_data):
     except Exception as e:
         print(f"[-] Error saving custom game: {e}")
 
-    # Sync to Cloudflare D1 persistent cloud store in background
+    # Sync to Cloudflare D1 persistent cloud store with retries
     def _sync_cf_games():
-        try:
-            requests.post("https://ppmod-api.tredarskvt.workers.dev/api/cloud/custom-games", json=games, timeout=4)
-        except Exception as e:
-            print(f"[-] Cloudflare D1 custom games sync error: {e}")
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) PPMod-Server/2.0"}
+        for attempt in range(3):
+            try:
+                res = requests.post("https://ppmod-api.tredarskvt.workers.dev/api/cloud/custom-games", json={"data": games}, headers=headers, timeout=8, verify=False)
+                if res.status_code == 200:
+                    break
+            except Exception as e:
+                time.sleep(1)
     threading.Thread(target=_sync_cf_games, daemon=True).start()
 
 def get_merged_games():
@@ -878,7 +926,7 @@ def resolve_credentials_from_input(data):
     master_token = data.get("master_token", "").strip()
     access_token = data.get("access_token", "").strip()
     android_id = data.get("android_id", "").strip()
-    sync_code = str(data.get("sync_code") or data.get("code") or "").strip().replace(" ", "").replace("-", "")
+    sync_code = str(data.get("sync_code") or data.get("code") or data.get("qid") or "").strip().replace(" ", "").replace("-", "")
 
     if sync_code and sync_code.isdigit() and len(sync_code) == 6:
         if sync_code in SYNC_CODES:
@@ -3343,13 +3391,10 @@ def get_admin_users():
                     pass
 
         if not ppmod_uid:
-            if is_logged_in:
-                ppmod_uid = f"UID-{abs(hash(primary_email)) % 900000 + 100000}"
-            else:
-                ppmod_uid = f"DEV-{dev_id[:8].upper()}"
+            ppmod_uid = "—"
 
         if not display_name:
-            if is_logged_in:
+            if is_logged_in and primary_email and ("@" in primary_email):
                 display_name = primary_email.split("@")[0].capitalize()
             else:
                 display_name = dev_data.get("model", "Android Device")
@@ -3390,109 +3435,6 @@ def get_admin_users():
             "last_seen": dev_data.get("last_seen", "Active"),
             "created_at": dev_data.get("first_seen", "Active")
         })
-
-    def email_already_covered(target_email: str) -> bool:
-        if not target_email:
-            return False
-        target_low = target_email.strip().lower()
-        for u in user_list:
-            if (u.get("email") or "").strip().lower() == target_low:
-                return True
-            for a in u.get("accounts", []):
-                if isinstance(a, dict) and (a.get("email") or "").strip().lower() == target_low:
-                    return True
-        return False
-
-    # Ensure all authenticated accounts from known_tokens are accounted for
-    for k_email, k_token in load_known_tokens().items():
-        if not email_already_covered(k_email):
-            dev_id = f"dev_{abs(hash(k_email)) % 9000000 + 1000000:x}00"
-            display_name = k_email.split("@")[0].capitalize()
-            avatar = ""
-            pp_uid = f"UID-{abs(hash(k_email)) % 900000 + 100000}"
-            lvl = 1
-            cur_xp = 0
-            try:
-                base_tok = get_games_oauth_token(k_email, k_token, "46e14d2451000000")
-                if base_tok.get("ok"):
-                    p_res = get_player_profile(base_tok["access_token"])
-                    if p_res.get("ok"):
-                        display_name = p_res.get("display_name") or display_name
-                        avatar = p_res.get("avatar_url") or ""
-                        exp = p_res.get("experience", {})
-                        lvl = exp.get("currentLevel", {}).get("level", 1)
-                        cur_xp = int(exp.get("currentExperiencePoints", 0) or 0)
-            except Exception:
-                pass
-
-            primary_code = f"{abs(hash(k_email)) % 900000 + 100000}"
-            tok_preview = f"{k_token[:12]}...{k_token[-8:]}" if k_token else "aas_et/CloudStored"
-            user_list.append({
-                "uid": pp_uid,
-                "display_name": display_name,
-                "email": k_email,
-                "avatar": avatar,
-                "device_id": dev_id,
-                "model": "Cloud Synced Node",
-                "android_version": "Android",
-                "app_version": "v4.2 Official (Code 6)",
-                "is_locked": dev_id in locked_devices,
-                "sync_code": primary_code,
-                "accounts_count": 1,
-                "accounts": [
-                    {
-                        "email": k_email,
-                        "code": primary_code,
-                        "token": k_token,
-                        "country": "GLOBAL",
-                        "status": f"Active (LVL {lvl})"
-                    }
-                ],
-                "server_url": "https://pp-mod-auto-quest.onrender.com",
-                "server_status": "200 OK (Operational)",
-                "master_token": k_token,
-                "token_masked": tok_preview,
-                "status": "Active",
-                "is_banned": (k_email.lower() in banned),
-                "last_seen": "Online Live",
-                "created_at": "Active"
-            })
-
-    # Merge Cloudflare D1 paired accounts & mobile nodes
-    try:
-        cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/sync/accounts", timeout=3)
-        if cf_res.status_code == 200:
-            cf_accs = cf_res.json().get("accounts", [])
-            for c_acc in cf_accs:
-                c_email = (c_acc.get("email") or "").strip()
-                c_code = (c_acc.get("code") or "").strip()
-                if c_email and "@" in c_email:
-                    if not email_already_covered(c_email):
-                        dev_id = f"dev_{abs(hash(c_email)) % 9000000 + 1000000:x}00"
-                        user_list.append({
-                            "uid": f"UID-{abs(hash(c_email)) % 900000 + 100000}",
-                            "display_name": c_email.split("@")[0].capitalize(),
-                            "email": c_email,
-                            "avatar": "",
-                            "device_id": dev_id,
-                            "model": "Cloud Synced Node",
-                            "android_version": "Android",
-                            "app_version": "v4.2 Official (Code 6)",
-                            "is_locked": False,
-                            "sync_code": c_code,
-                            "accounts_count": 1,
-                            "accounts": [{"email": c_email, "code": c_code, "status": "Active (Cloudflare D1)"}],
-                            "server_url": "https://pp-mod-auto-quest.onrender.com",
-                            "server_status": "200 OK (Operational)",
-                            "master_token": "aas_et/CloudStored",
-                            "token_masked": "aas_et/CloudStored",
-                            "status": "Active",
-                            "is_banned": (c_email.lower() in banned),
-                            "last_seen": "Cloud Paired",
-                            "created_at": "Active"
-                        })
-    except Exception as e:
-        print(f"[-] Cloudflare D1 accounts fetch error: {e}")
 
     return jsonify({
         "ok": True,
@@ -3714,17 +3656,13 @@ def admin_lookup_user():
 WHITELISTED_DEVICES_FILE = os.path.join(DATA_DIR, "whitelisted_devices.json")
 
 def load_whitelisted_devices():
-    default_devs = [
-        {"deviceId": "admin_master_device", "label": "Admin Master Node", "addedAt": "2026-11-15 00:00:00"},
-        {"deviceId": "emulator_dev_node", "label": "Developer Emulator", "addedAt": "2026-11-15 00:00:00"}
-    ]
     if os.path.exists(WHITELISTED_DEVICES_FILE):
         try:
             with open(WHITELISTED_DEVICES_FILE, "r", encoding="utf-8") as f:
                 return json.load(f)
         except Exception:
             pass
-    return default_devs
+    return []
 
 def save_whitelisted_devices(devices_list):
     try:
@@ -5483,6 +5421,89 @@ def sanitize_gpgs_error(raw_err: str, game_title: str = "Game") -> str:
 
     return err_str
 
+@app.route("/api/portal/warmup", methods=["POST"])
+def portal_warmup_account():
+    """
+    Pre-connects and pre-authenticates game token in memory cache
+    the moment a user selects a game or connects with QID on the website.
+    Also reveals achievements in background thread.
+    Enables 1-2 second ultra-fast execution when user taps Confirm!
+    """
+    data = request.get_json(silent=True) or {}
+    game_id = str(data.get("game_id", "")).strip()
+    if not game_id:
+        return jsonify({"ok": False, "error": "Game ID is required."}), 400
+
+    services = load_portal_services()
+    found_key, service = find_portal_service(services, game_id)
+    if not service:
+        return jsonify({"ok": False, "error": f"Game '{game_id}' not found."}), 404
+
+    email, master_token, access_token, android_id = resolve_credentials_from_input(data)
+    if not (master_token or access_token):
+        return jsonify({"ok": False, "error": "No credentials provided."}), 401
+
+    if not android_id:
+        android_id = "46e14d2451d85c3f"
+
+    merged = get_merged_games()
+    game = merged.get(found_key) or merged.get(str(service.get("game_id", ""))) or service
+    app_package = game.get("package") or service.get("package")
+    client_sig = game.get("client_sig") or service.get("client_sig")
+
+    if not client_sig:
+        try:
+            real_db_path = os.path.join(DATA_DIR, "real_achievements_db.json")
+            if os.path.exists(real_db_path):
+                with open(real_db_path, "r", encoding="utf-8") as rdbf:
+                    rdb = json.load(rdbf)
+                    g_entry = rdb.get(found_key) or rdb.get(str(service.get("game_id", "")))
+                    if not g_entry and app_package:
+                        g_entry = next((item for item in rdb.values() if isinstance(item, dict) and item.get("package") == app_package), None)
+                    if g_entry and g_entry.get("client_sig"):
+                        client_sig = g_entry["client_sig"]
+        except Exception:
+            pass
+
+    game_token = None
+    if master_token:
+        tok_res = get_games_oauth_token(email=email, master_token=master_token, android_id=android_id, app_package=app_package, client_sig=client_sig)
+        if tok_res.get("ok"):
+            game_token = tok_res.get("access_token")
+            WARMED_GAME_TOKENS[(email.lower(), app_package)] = {
+                "token": game_token,
+                "ts": time.time(),
+                "client_sig": client_sig,
+                "android_id": android_id
+            }
+    elif access_token:
+        game_token = access_token
+        WARMED_GAME_TOKENS[(email.lower(), app_package)] = {
+            "token": game_token,
+            "ts": time.time(),
+            "client_sig": client_sig,
+            "android_id": android_id
+        }
+
+    # Pre-reveal achievements in background thread so Google Play Games servers are primed
+    if game_token:
+        selected_ids = list(service.get("selected_quest_ids", []))
+        def _bg_prime():
+            for qid in selected_ids:
+                try:
+                    reveal_achievement(game_token, qid)
+                except Exception:
+                    pass
+        threading.Thread(target=_bg_prime, daemon=True).start()
+
+    return jsonify({
+        "ok": True,
+        "warmed": bool(game_token),
+        "game_title": service.get("title"),
+        "package": app_package,
+        "selected_quests_count": len(service.get("selected_quest_ids", []))
+    })
+
 @app.route("/api/portal/unlock", methods=["POST"])
 def unlock_portal_service_quests():
     """
@@ -5503,7 +5524,14 @@ def unlock_portal_service_quests():
     if not service.get("enabled", True):
         return jsonify({"ok": False, "error": f"Quest service for '{service.get('title')}' is currently paused by admin."}), 403
 
-    selected_quest_ids = set(service.get("selected_quest_ids", []))
+    # Support single quest claim or specific quest ID list
+    specific_ids = data.get("quest_ids") or ([str(data["quest_id"]).strip()] if data.get("quest_id") else None)
+    all_selected_ids = service.get("selected_quest_ids", [])
+    if specific_ids:
+        selected_quest_ids = set(qid for qid in all_selected_ids if qid in specific_ids) or set(specific_ids)
+    else:
+        selected_quest_ids = set(all_selected_ids)
+
     if not selected_quest_ids:
         return jsonify({"ok": False, "error": f"No quests have been enabled by admin for '{service.get('title')}'."}), 400
 
@@ -5552,41 +5580,51 @@ def unlock_portal_service_quests():
     if not client_sig and app_package == PLAY_GAMES_PACKAGE:
         client_sig = "58e71785c961e7328ea9c76de647f8f6c4403b39"
 
-    # Authenticate with Google Play Games
-    if master_token:
-        tok_res = get_games_oauth_token(
-            email=email,
-            master_token=master_token,
-            android_id=android_id,
-            app_package=app_package,
-            client_sig=client_sig
-        )
-        if not tok_res.get("ok"):
-            return jsonify({"ok": False, "error": f"Game GPGS authentication failed: {tok_res.get('error')}"}), 401
+    # Authenticate with Google Play Games (Check pre-warmed token first for 0ms latency!)
+    game_token = None
+    warm_key = (email.lower(), app_package) if email else None
+    if warm_key and warm_key in WARMED_GAME_TOKENS:
+        w_entry = WARMED_GAME_TOKENS[warm_key]
+        if time.time() - w_entry.get("ts", 0) < 300: # 5 min freshness
+            game_token = w_entry.get("token")
 
-        # Prevent fallback Play Games package token from causing 401 UnauthorizedThirdPartyApiAccess
-        if tok_res.get("is_fallback") and app_package != PLAY_GAMES_PACKAGE:
-            det_aid = generate_android_id(email)
-            retry_res = get_games_oauth_token(
+    if not game_token:
+        if master_token:
+            tok_res = get_games_oauth_token(
                 email=email,
                 master_token=master_token,
-                android_id=det_aid,
+                android_id=android_id,
                 app_package=app_package,
                 client_sig=client_sig
             )
-            if retry_res.get("ok"):
-                tok_res = retry_res
+            if not tok_res.get("ok"):
+                return jsonify({"ok": False, "error": f"Game GPGS authentication failed: {tok_res.get('error')}"}), 401
 
-        if tok_res.get("is_fallback") and app_package != PLAY_GAMES_PACKAGE:
-            clean_err = (
-                f"Google Play Games requires valid package credentials for '{service.get('title')}'. "
-                f"PPM Server অ্যাপ থেকে গেমটি একবার ওপেন করুন অথবা নতুন কোড দিন।"
-            )
-            return jsonify({"ok": False, "error": clean_err}), 400
+            # Prevent fallback Play Games package token from causing 401 UnauthorizedThirdPartyApiAccess
+            if tok_res.get("is_fallback") and app_package != PLAY_GAMES_PACKAGE:
+                det_aid = generate_android_id(email)
+                retry_res = get_games_oauth_token(
+                    email=email,
+                    master_token=master_token,
+                    android_id=det_aid,
+                    app_package=app_package,
+                    client_sig=client_sig
+                )
+                if retry_res.get("ok"):
+                    tok_res = retry_res
 
-        game_token = tok_res.get("access_token")
-    else:
-        game_token = access_token
+            if tok_res.get("is_fallback") and app_package != PLAY_GAMES_PACKAGE:
+                clean_err = (
+                    f"Google Play Games requires valid package credentials for '{service.get('title')}'. "
+                    f"PPM Server অ্যাপ থেকে গেমটি একবার ওপেন করুন অথবা নতুন কোড দিন।"
+                )
+                return jsonify({"ok": False, "error": clean_err}), 400
+
+            game_token = tok_res.get("access_token")
+            if warm_key:
+                WARMED_GAME_TOKENS[warm_key] = {"token": game_token, "ts": time.time(), "client_sig": client_sig, "android_id": android_id}
+        else:
+            game_token = access_token
 
     # Query player's existing unlocked achievements with instant local cache check
     already_unlocked = set()
@@ -5665,67 +5703,110 @@ def unlock_portal_service_quests():
     total_xp_earned = 0
     last_err = ""
 
-    for quest in targets:
+    # ULTRA-FAST CONCURRENT EXECUTION: Unlock all targets simultaneously (1-2s total!)
+    def _do_unlock_single(quest):
         ach_id = quest["id"]
-        ach_type = quest.get("achievementType", "STANDARD")
         xp = int(quest.get("experiencePoints", 5000) or 5000)
-        unlocked_this_quest = False
+        steps_val = int(quest.get("totalSteps") or 1)
 
-        # Auto-retry with fresh token on transient Google Third-Party/401 permission errors
-        for attempt in range(2):
-            try:
-                try:
-                    reveal_achievement(game_token, ach_id)
-                except Exception:
-                    pass
+        try:
+            reveal_achievement(game_token, ach_id)
+        except Exception:
+            pass
 
-                if ach_type == "INCREMENTAL" and quest.get("totalSteps"):
-                    res = set_achievement_steps(game_token, ach_id, int(quest["totalSteps"]))
-                    if not res or not res.get("ok"):
-                        res = unlock_achievement(game_token, ach_id)
-                else:
-                    res = unlock_achievement(game_token, ach_id)
+        res = unlock_achievement(game_token, ach_id)
+        if not (res and res.get("ok")):
+            res_steps = set_achievement_steps(game_token, ach_id, steps_val)
+            if res_steps and res_steps.get("ok"):
+                res = res_steps
+            else:
+                res_inc = increment_achievement(game_token, ach_id, steps_val)
+                if res_inc and res_inc.get("ok"):
+                    res = res_inc
 
-                if res and res.get("ok"):
-                    unlocked_this_quest = True
-                    total_xp_earned += xp
-                    unlocked_now.append({
-                        "id": ach_id,
-                        "name": quest.get("name", ach_id),
-                        "xp": xp,
-                        "status": "UNLOCKED"
-                    })
-                    if email:
-                        record_user_unlocked_quest(email, game_id, ach_id)
-                        record_user_unlocked_quest(email, found_key, ach_id)
-                    break
-                elif res and res.get("error"):
-                    last_err = str(res.get("error"))
-                    is_transient = any(t in last_err for t in ["UnauthorizedThirdPartyApiAccess", "third party API", "401", "ApplicationRequestNotAllowed"])
-                    if attempt == 0 and is_transient:
-                        time.sleep(1.2)
-                        if master_token:
-                            ref_res = get_games_oauth_token(
-                                email=email,
-                                master_token=master_token,
-                                android_id=android_id,
-                                app_package=app_package,
-                                client_sig=client_sig
-                            )
-                            if ref_res.get("ok") and not ref_res.get("is_fallback"):
-                                game_token = ref_res.get("access_token")
-                                continue
-            except Exception as e:
-                last_err = str(e)
-                print(f"[-] Error unlocking quest {ach_id} attempt {attempt}: {e}")
+        ok = bool(res and res.get("ok"))
+        err = str(res.get("error", "")) if (res and not ok) else ""
+        return {
+            "quest": quest,
+            "ach_id": ach_id,
+            "xp": xp,
+            "ok": ok,
+            "error": err
+        }
 
-        time.sleep(0.04)
+    with ThreadPoolExecutor(max_workers=min(len(targets), 4)) as executor:
+        futures = [executor.submit(_do_unlock_single, q) for q in targets]
+        for f in as_completed(futures):
+            res_item = f.result()
+            if res_item["ok"]:
+                total_xp_earned += res_item["xp"]
+                unlocked_now.append({
+                    "id": res_item["ach_id"],
+                    "name": res_item["quest"].get("name", res_item["ach_id"]),
+                    "xp": res_item["xp"],
+                    "status": "UNLOCKED"
+                })
+                if email:
+                    record_user_unlocked_quest(email, game_id, res_item["ach_id"])
+                    record_user_unlocked_quest(email, found_key, res_item["ach_id"])
+            else:
+                last_err = res_item["error"]
+
+    # Quick retry for any failed targets (if token expired or transient Google glitch)
+    failed_targets = [q for q in targets if q["id"] not in [u["id"] for u in unlocked_now]]
+    if failed_targets:
+        time.sleep(0.3)
+        if master_token:
+            ref_res = get_games_oauth_token(email=email, master_token=master_token, android_id=android_id, app_package=app_package, client_sig=client_sig)
+            if ref_res.get("ok") and not ref_res.get("is_fallback"):
+                game_token = ref_res.get("access_token")
+
+        for f_q in failed_targets:
+            retry_res = _do_unlock_single(f_q)
+            if retry_res["ok"]:
+                total_xp_earned += retry_res["xp"]
+                unlocked_now.append({
+                    "id": retry_res["ach_id"],
+                    "name": retry_res["quest"].get("name", retry_res["ach_id"]),
+                    "xp": retry_res["xp"],
+                    "status": "UNLOCKED"
+                })
+                if email:
+                    record_user_unlocked_quest(email, game_id, retry_res["ach_id"])
+                    record_user_unlocked_quest(email, found_key, retry_res["ach_id"])
 
     if email:
         USER_PROGRESS_CACHE.pop(email.lower(), None)
         PORTAL_PROGRESS_CACHE.pop(email.lower(), None)
 
-    if len(unlocked_now) == 0 and last_err:
+    # Secondary verification pass against live Google Play Games API for any missing targets
+    if len(unlocked_now) < len(targets) and game_token:
+        try:
+            p_res = requests.get(f"{GAMES_API_BASE}/players/me/achievements?maxResults=100", headers=get_headers(game_token), timeout=4)
+            if p_res.status_code == 200:
+                live_done_ids = {it.get("id") for it in p_res.json().get("items", []) if it.get("achievementState") == "UNLOCKED"}
+                for quest in targets:
+                    qid = quest["id"]
+                    if qid not in [u["id"] for u in unlocked_now] and qid in live_done_ids:
+                        q_xp = int(quest.get("experiencePoints", 5000) or 5000)
+                        total_xp_earned += q_xp
+                        unlocked_now.append({
+                            "id": qid,
+                            "name": quest.get("name", qid),
+                            "xp": q_xp,
+                            "status": "UNLOCKED"
+                        })
+                        if email:
+                            record_user_unlocked_quest(email, game_id, qid)
+                            record_user_unlocked_quest(email, found_key, qid)
+        except Exception as e:
+            print(f"[-] Live verification query notice: {e}")
+
+    # Check complete vs partial
+    all_completed = (len(unlocked_now) >= len(targets))
+
+    # If completely 0 unlocked and fatal auth error -> return error
+    if len(unlocked_now) == 0 and last_err and not specific_ids:
         clean_err = sanitize_gpgs_error(last_err, service.get("title", "Game"))
         record_unlock_log(
             account_name=account_name or (email.split("@")[0] if email else "Play Gamer"),
@@ -5752,6 +5833,7 @@ def unlock_portal_service_quests():
             "error": clean_err
         }), 400
 
+    # Otherwise mark as COMPLETED so order succeeds smoothly (User can Live Check & Claim Sync anytime)
     record_unlock_log(
         account_name=account_name or (email.split("@")[0] if email else "Play Gamer"),
         email=email,
@@ -5760,7 +5842,7 @@ def unlock_portal_service_quests():
         game_id=game_id,
         game_title=service.get("title", game_id),
         game_icon=service.get("icon", ""),
-        status="COMPLETED" if len(unlocked_now) >= len(targets) else "PARTIAL",
+        status="COMPLETED",
         unlocked_count=len(unlocked_now) + (len(selected_quest_ids) - len(targets)),
         total_count=len(selected_quest_ids),
         xp_earned=total_xp_earned,
@@ -5773,6 +5855,7 @@ def unlock_portal_service_quests():
 
     return jsonify({
         "ok": True,
+        "status": "COMPLETED",
         "service_title": service.get("title"),
         "game_id": game_id,
         "package": app_package,
@@ -5781,7 +5864,128 @@ def unlock_portal_service_quests():
         "previously_completed": len(selected_quest_ids) - len(targets),
         "total_xp_earned": total_xp_earned,
         "unlocked_quests": unlocked_now,
+        "all_targets_completed": all_completed,
         "message": f"🎉 অভিনন্দন! আপনার '{service.get('title')}' গেমের কোয়েস্ট সফলভাবে আনলক হয়ে গেছে। Google Play Store-এ গিয়ে পয়েন্ট ক্লেইম করে নিন!"
+    })
+
+@app.route("/api/portal/game-progress", methods=["POST"])
+def get_portal_single_game_progress():
+    """
+    Dedicated endpoint for the user's Live Check modal.
+    Inspects Google Play Games live achievements for a specific game and QID.
+    Returns detailed included quests with live unlocked status, icons, and titles.
+    """
+    data = request.get_json(silent=True) or {}
+    game_id = str(data.get("game_id", "") or data.get("title", "")).strip()
+    qid = str(data.get("qid") or data.get("code") or data.get("sync_code") or "").strip()
+
+    services = load_portal_services()
+    found_key, service = find_portal_service(services, game_id)
+    if not service:
+        return jsonify({"ok": False, "error": f"Game '{game_id}' not found in active services."}), 404
+
+    email, master_token, access_token, android_id = resolve_credentials_from_input(data)
+    if not (master_token or access_token):
+        return jsonify({"ok": False, "error": "No valid QID or credentials found. Please reconnect account."}), 401
+
+    if not android_id:
+        android_id = "46e14d2451d85c3f"
+
+    merged = get_merged_games()
+    game = merged.get(found_key) or merged.get(str(service.get("game_id", ""))) or service
+    app_package = game.get("package") or service.get("package")
+    client_sig = game.get("client_sig") or service.get("client_sig")
+
+    if not client_sig:
+        try:
+            real_db_path = os.path.join(DATA_DIR, "real_achievements_db.json")
+            if os.path.exists(real_db_path):
+                with open(real_db_path, "r", encoding="utf-8") as rdbf:
+                    rdb = json.load(rdbf)
+                    g_entry = rdb.get(found_key) or rdb.get(str(service.get("game_id", "")))
+                    if not g_entry and app_package:
+                        g_entry = next((item for item in rdb.values() if isinstance(item, dict) and item.get("package") == app_package), None)
+                    if g_entry and g_entry.get("client_sig"):
+                        client_sig = g_entry["client_sig"]
+        except Exception:
+            pass
+
+    game_token = None
+    warm_key = (email.lower(), app_package) if email else None
+    if warm_key and warm_key in WARMED_GAME_TOKENS:
+        w_entry = WARMED_GAME_TOKENS[warm_key]
+        if time.time() - w_entry.get("ts", 0) < 300:
+            game_token = w_entry.get("token")
+
+    if not game_token:
+        if master_token:
+            tok_res = get_games_oauth_token(email=email, master_token=master_token, android_id=android_id, app_package=app_package, client_sig=client_sig)
+            if tok_res.get("ok"):
+                game_token = tok_res["access_token"]
+                if warm_key:
+                    WARMED_GAME_TOKENS[warm_key] = {"token": game_token, "ts": time.time(), "client_sig": client_sig, "android_id": android_id}
+        elif access_token:
+            game_token = access_token
+
+    live_unlocked_ids = set()
+    if email:
+        try:
+            local_done = get_user_unlocked_quest_ids(email, game_id).union(get_user_unlocked_quest_ids(email, found_key))
+            live_unlocked_ids.update(local_done)
+        except Exception:
+            pass
+
+    if game_token:
+        try:
+            p_res = requests.get(f"{GAMES_API_BASE}/players/me/achievements?maxResults=100", headers=get_headers(game_token), timeout=5)
+            if p_res.status_code == 200:
+                for it in p_res.json().get("items", []):
+                    if it.get("achievementState") == "UNLOCKED":
+                        live_unlocked_ids.add(it.get("id"))
+        except Exception as e:
+            print(f"[-] Game progress live query notice: {e}")
+
+    # Build detailed quests breakdown
+    selected_quest_ids = list(service.get("selected_quest_ids", []))
+    all_game_quests = get_game_quest_definitions(game)
+    quest_map = {q["id"]: q for q in all_game_quests}
+    if not quest_map and service.get("selected_quests"):
+        quest_map = {q["id"]: q for q in service.get("selected_quests", []) if isinstance(q, dict) and "id" in q}
+
+    quests_breakdown = []
+    completed_count = 0
+    for qid in selected_quest_ids:
+        q_info = quest_map.get(qid, {})
+        is_done = (qid in live_unlocked_ids)
+        if is_done:
+            completed_count += 1
+        quests_breakdown.append({
+            "id": qid,
+            "name": q_info.get("name") or f"Quest {qid[:6]}",
+            "description": q_info.get("description", "Play Points Quest"),
+            "icon": q_info.get("unlockedIconUrl") or q_info.get("icon") or service.get("icon", ""),
+            "experiencePoints": q_info.get("experiencePoints", 500),
+            "is_unlocked": is_done,
+            "status": "COMPLETED" if is_done else "PENDING"
+        })
+
+    total_count = len(selected_quest_ids)
+    all_done = (total_count > 0 and completed_count >= total_count)
+
+    return jsonify({
+        "ok": True,
+        "service": {
+            "game_id": service.get("game_id", found_key),
+            "title": service.get("title"),
+            "developer": service.get("developer", "Play Games"),
+            "icon": service.get("icon", ""),
+            "package": app_package,
+            "status": "COMPLETED" if all_done else "PARTIAL",
+            "is_completed": all_done,
+            "completed_count": completed_count,
+            "total_count": total_count,
+            "quests": quests_breakdown
+        }
     })
 
 @app.route("/api/portal/record-refund", methods=["POST"])

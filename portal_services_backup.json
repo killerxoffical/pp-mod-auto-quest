@@ -164,7 +164,8 @@
     ],
     "created_at": "2026-11-20 13:43:01",
     "updated_at": "2026-11-20 13:43:01",
-    "id": "53"
+    "id": "53",
+    "client_sig": "978a77bfed2e9ed5d0ead626a1bf8ab1cd7a28e7"
   },
   "24": {
     "service_id": "srv_24",
@@ -296,7 +297,8 @@
     ],
     "created_at": "2026-11-20 13:44:44",
     "updated_at": "2026-11-20 13:44:44",
-    "id": "24"
+    "id": "24",
+    "client_sig": "1f166dcc0fac8a6c8c5d11679e33f7596de8e0f4"
   },
   "54": {
     "service_id": "srv_54",
@@ -528,7 +530,8 @@
     ],
     "created_at": "2026-11-20 13:45:04",
     "updated_at": "2026-11-20 13:45:04",
-    "id": "54"
+    "id": "54",
+    "client_sig": "56db718b6b1a1430fbd0a46d58e6ea4f1a6e0f8b"
   },
   "47": {
     "service_id": "srv_47",
@@ -795,7 +798,8 @@
     ],
     "created_at": "2026-11-20 13:45:19",
     "updated_at": "2026-11-20 13:55:13",
-    "id": "47"
+    "id": "47",
+    "client_sig": "4013e37cec52744bb3dc4af2406e222053c0de1a"
   },
   "48": {
     "service_id": "srv_48",
@@ -1404,7 +1408,8 @@
     ],
     "created_at": "2026-11-20 13:53:25",
     "updated_at": "2026-11-20 13:53:25",
-    "id": "48"
+    "id": "48",
+    "client_sig": "6875004da4d1373a5a1c72662bdb492353b06716"
   },
   "4": {
     "service_id": "srv_4",
@@ -2878,7 +2883,8 @@
     ],
     "created_at": "2026-11-20 13:54:43",
     "updated_at": "2026-11-20 13:54:43",
-    "id": "4"
+    "id": "4",
+    "client_sig": "87615343657c0a98155d71ec5a3158218b9a9f62"
   },
   "34": {
     "service_id": "srv_34",
@@ -3046,7 +3052,8 @@
     ],
     "created_at": "2026-11-20 13:54:57",
     "updated_at": "2026-11-20 13:54:57",
-    "id": "34"
+    "id": "34",
+    "client_sig": "324fe0f6c2a2517e1fea9115831df068d8415597"
   },
   "27": {
     "service_id": "srv_27",
@@ -3422,7 +3429,8 @@
     ],
     "created_at": "2026-11-20 13:55:28",
     "updated_at": "2026-11-20 13:55:28",
-    "id": "27"
+    "id": "27",
+    "client_sig": "bdff84511d367e926ed15cf6609bf0c815c8e846"
   },
   "40": {
     "service_id": "srv_40",
@@ -3608,13 +3616,15 @@
     ],
     "created_at": "2026-11-20 13:56:37",
     "updated_at": "2026-11-20 13:56:37",
-    "id": "40"
+    "id": "40",
+    "client_sig": "a2affbd64ef6b3658c32e592acc23ac1e507643d"
   },
   "8": {
     "service_id": "srv_8",
     "game_id": "8",
     "title": "Gossip Harbor®: Merge & Story",
     "package": "com.mergegames.gossipharbor",
+    "client_sig": "58e71785c961e7328ea9c76de647f8f6c4403b39",
     "developer": "Microfun Limited",
     "category": "Puzzle & Merge",
     "icon": "https://play-lh.googleusercontent.com/VIv1J5fPLy-r9KrlA4WhLvzTboMphqs_jo_U9OqLyOmkr1AGAZ-nzIPo74_VISY7Ul28ZkObCkvlyyWPd_50=s0-br30",
@@ -3803,7 +3813,7 @@
       }
     ],
     "created_at": "2026-11-20 13:58:11",
-    "updated_at": "2026-11-20 13:58:11",
+    "updated_at": "2026-11-21 09:58:11",
     "id": "8"
   },
   "37": {
@@ -4010,7 +4020,8 @@
     ],
     "created_at": "2026-11-20 13:58:38",
     "updated_at": "2026-11-20 13:58:38",
-    "id": "37"
+    "id": "37",
+    "client_sig": "8411caa8d4e81dcbc141178586b55181c8370603"
   },
   "10": {
     "service_id": "srv_10",
@@ -4493,7 +4504,8 @@
     ],
     "created_at": "2026-11-20 13:58:58",
     "updated_at": "2026-11-20 13:58:58",
-    "id": "10"
+    "id": "10",
+    "client_sig": "66da9177253113474f6b3043b89e0667902cf115"
   },
   "11": {
     "service_id": "srv_11",
@@ -4679,7 +4691,8 @@
     ],
     "created_at": "2026-11-20 13:59:10",
     "updated_at": "2026-11-20 13:59:10",
-    "id": "11"
+    "id": "11",
+    "client_sig": "5b320be50be7e5d01e5608b666432be0a9449794"
   },
   "36": {
     "service_id": "srv_36",
@@ -5306,7 +5319,8 @@
     ],
     "created_at": "2026-11-20 13:59:30",
     "updated_at": "2026-11-20 13:59:30",
-    "id": "36"
+    "id": "36",
+    "client_sig": "75adf545f77fee9de110d4ddfae60bb3b9b17dad"
   },
   "41": {
     "service_id": "srv_41",
@@ -5862,7 +5876,8 @@
     ],
     "created_at": "2026-11-20 13:59:42",
     "updated_at": "2026-11-20 13:59:42",
-    "id": "41"
+    "id": "41",
+    "client_sig": "f4fae8bc569bff15bfff3c726faba2cabbc24479"
   },
   "26": {
     "service_id": "srv_26",
@@ -6093,7 +6108,8 @@
     ],
     "created_at": "2026-11-20 13:59:53",
     "updated_at": "2026-11-20 13:59:53",
-    "id": "26"
+    "id": "26",
+    "client_sig": "e1be3c523dc73eddea9460c71e25cc0a4065e6d8"
   },
   "39": {
     "service_id": "srv_39",
@@ -6495,7 +6511,8 @@
     ],
     "created_at": "2026-11-20 14:00:07",
     "updated_at": "2026-11-20 14:00:07",
-    "id": "39"
+    "id": "39",
+    "client_sig": "a1c592da9733a4898b89321b98be2fd6a3d543ab"
   },
   "5": {
     "service_id": "srv_5",
@@ -7509,7 +7526,8 @@
     ],
     "created_at": "2026-11-20 14:00:26",
     "updated_at": "2026-11-20 14:00:26",
-    "id": "5"
+    "id": "5",
+    "client_sig": "1e7c404b0ee0749cf936606c3ec34cf9d3283be3"
   },
   "25": {
     "service_id": "srv_25",
@@ -7787,7 +7805,8 @@
     ],
     "created_at": "2026-11-20 14:01:55",
     "updated_at": "2026-11-20 14:01:55",
-    "id": "25"
+    "id": "25",
+    "client_sig": "c50b2f056cc84fcf8752e6c23bd3819128b923a2"
   },
   "38": {
     "service_id": "srv_38",
@@ -8063,6 +8082,462 @@
       }
     ],
     "created_at": "2026-11-20 14:02:14",
-    "updated_at": "2026-11-20 14:02:14"
+    "updated_at": "2026-11-20 14:02:14",
+    "id": "38",
+    "client_sig": "eaddcde759b1a71993e90720e9ed3956cb1e1a1d"
+  },
+  "50": {
+    "service_id": "srv_50",
+    "game_id": "50",
+    "title": "Rise of Castles: Ice and Fire",
+    "package": "com.im30.ROE.gp",
+    "client_sig": "1f3603691327f50b184baea092c6c3e608d99a0d",
+    "developer": "Long Tech Network Limited",
+    "category": "Popular Games",
+    "icon": "https://play-lh.googleusercontent.com/VnuNntrmS7rBVEP2DrwSQAO9BFlaYZf9MwJ72p2jX5la8esW7IHoVuoVH9Qg5kzwLOCsKkg71GIzh7iQgG7hXQ=s0-br30",
+    "section": "quest_unlocker",
+    "enabled": true,
+    "total_quests_count": 26,
+    "selected_quests_count": 2,
+    "selected_quest_ids": [
+      "CgkI_c_FyZ8bEAIQFw",
+      "CgkI_c_FyZ8bEAIQGQ"
+    ],
+    "selected_quests": [
+      {
+        "id": "CgkI_c_FyZ8bEAIQFw",
+        "name": "Join the Group",
+        "description": "Join an Alliance for the first time",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/UgDJ2av2l6L5oAcZSSO1ZWw0trCb4nGRNCUGoXllz_dh8jmERtrJ-0pklBw3RYBHK5M"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQGQ",
+        "name": "Enlist Begins",
+        "description": "Recruit any soldier for the first time",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/7hr7jd5ugDyE844rCFsN3FoF-R2rNCRblBgrzgKpUrWwlh7ByUHwaisndEmnlkXfNoSl"
+      }
+    ],
+    "all_quests": [
+      {
+        "id": "CgkI_c_FyZ8bEAIQFg",
+        "name": "First Steps",
+        "description": "Log in for 3 days in total",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/bvKdhckYZJl8jja7dfYJEyM9cNdwWxfNEn9w1tPckaMLQwKgzCINmf_t1YPUJ-jLjbjj"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQAw",
+        "name": "Progressing Daily",
+        "description": "Log in for 7 days in total",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/nQH-kYnDgaRtV_KvZmbv-3exOPOm3_S646q8nyfus4KxlWda95oSnuzgWTqPgryvdNo"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQBA",
+        "name": "Perseverance",
+        "description": "Log in for 14 days in total",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/up0sVBzy9prdoazsXHIAVyJEC-5sKitplsBEKFDWQSRDNt4kKblvOuUbcw2mEd4SzA"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQBQ",
+        "name": "Loyal Companion",
+        "description": "Log in for 30 days in total",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/CMzrPtHRznOst_Y70Y9wbyEzyqWGjYundafbd14-Yb3mFqADY8SVnb-yIL42pbrIKQo"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQBg",
+        "name": "Legendary Login",
+        "description": "Log in for 90 days in total",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/nM_28AwBDOMZ0l_B1Ln7IT0nVebIrSBKSUIGtDSr-a7NjBzhnygitx6FcBlMdnYbp7Y"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQBw",
+        "name": "Steady Growth",
+        "description": "Upgrade the main base to level 8",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/D-OdkvboBHXva3lj-LPXRT6enbnenSRYYt_u6oc3xQdWO2Lwb8zOohHr7G_2PQSPb6M"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQCA",
+        "name": "Sturdy Fortress",
+        "description": "Upgrade the main base to level 13",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/h7LTU9oCOH92B3xPGK_7T76StIBATileXRNrANmW2S1B_xb24VW7mz-RZ4M_010ojkA"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQCQ",
+        "name": "Advanced Castle",
+        "description": "Upgrade the main base to level 16",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/KOP8Frpiv78i5wTR5z96y2eCHra5f-YtqvPPOLFnfbECi4ADXlfraJ_CPY_yp4Bu5w"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQCg",
+        "name": "Prosperous City",
+        "description": "Upgrade the main base to level 19",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/-z7vcP8Nvtds4gtAXUdjS3ssJU84L4cZjNf97GQ_g4INlgWAhhaXuIifqVawmwcIBw"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQCw",
+        "name": "King's Territory",
+        "description": "Upgrade the main base to level 25",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/qiinE_T-nmO35oS6Rq6WEB7q0DTYK4H1vKpSa7RDb95S4PvhKdDv0gXw81aFA2Zflg"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQDA",
+        "name": "Squad Formation",
+        "description": "Obtain 3 heroes",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/eqvo2tQAOImOS8jkr1KPIz5Q6prF2SBn20Is7T3EAxusJ_fvUiDh6Huo_gPgLVkFhzE"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQDQ",
+        "name": "Elite Gathering",
+        "description": "Obtain 6 heroes",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/mYJfalUaoWYsa0cQuIL3a9MAq-8T2JjySP6DCPErF2y-_3bKG_7gajp9uEidzPF3Kw"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQDg",
+        "name": "Powerful Lineup",
+        "description": "Obtain 9 heroes",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/UhedBnIH_auEK5sTO-2BaR5xxMouS7CWVUjTDdylswhqTDf7kn0Ng3Sv4EPBC0-_-yU"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQDw",
+        "name": "Legendary Team",
+        "description": "Obtain 12 heroes",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/tGulBke9ckMyzAdjiTCYzsceImFHBD4CJoKHnmvOKrvrQMW_E2TiWw5I46WLcVqeprY"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQEA",
+        "name": "Perfect Legion",
+        "description": "Obtain 15 heroes",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/tPfOUurDsf_UQswOlLKheD9TfRE6f1m4-ViE5DwXfxg0fsCVMViAPomn9YBL3-28lZGH"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQEQ",
+        "name": "Emerging Strength",
+        "description": "Reach a maximum Power of 1,000,000",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/9Zpy5TPgyvoT_yaznoLf-HUIImOBjm1p5HbgGX9Ib8yc45fQxyRw-5_eMTo5nu-aPxw"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQEg",
+        "name": "Rapid Power Surge",
+        "description": "Reach a maximum Power of 2,000,000",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/wc1JMNSCL6t0x0t2XzULTTfVXK5GTvPmYZSL_wzfIgz5523ts3-7VyDyBo-U9eStqwIs"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQEw",
+        "name": "Astonishing Might",
+        "description": "Reach a maximum Power of 5,000,000",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/Zl_-mO82vfxGs9w-FvqBJuYZeug2IFdB_JzALwfpOK4BJIsKCd3GPX39VxL1eN2mCz4"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQFA",
+        "name": "Peak Power",
+        "description": "Reach a maximum Power of 10,000,000",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/yEltmsmM8NeAngnYCwTEjpfVdDyfxMAvV0XQ_Gd4CyMs6rFAbNsVjqUqMuM6_eCj0c8"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQFQ",
+        "name": "Battle Master Descends",
+        "description": "Reach a maximum Power of 30,000,000",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/DdofFWWn25sA7nRlJvyuE_fWsV6uD82g7lum6uefFnNDT45Hn98GjXs3PNaSQDIJFq0"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQFw",
+        "name": "Join the Group",
+        "description": "Join an Alliance for the first time",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/UgDJ2av2l6L5oAcZSSO1ZWw0trCb4nGRNCUGoXllz_dh8jmERtrJ-0pklBw3RYBHK5M"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQGA",
+        "name": "Channel Newcomer",
+        "description": "Speak in the Province or Alliance Channel for the first time",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/v0w72nvGkDfQGIKbp4ggTJhBExjXkXBGa1tYi7EGLzvuPf25DeK4Vu-fFe7jgyjmUno"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQGQ",
+        "name": "Enlist Begins",
+        "description": "Recruit any soldier for the first time",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/7hr7jd5ugDyE844rCFsN3FoF-R2rNCRblBgrzgKpUrWwlh7ByUHwaisndEmnlkXfNoSl"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQGg",
+        "name": "Planting Seeds",
+        "description": "Own 10 buildings with different functions",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/7GJWkahG8RMZYCC63D0R4Q-ISCfh0zTM48sRJG5zYu0FFV-8CUmnkp1L8VzKVyVyrA"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQGw",
+        "name": "Scout Vanguard",
+        "description": "Use the scouting function for the first time",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/qMDi_BttKrPg5D70SG7AJ9DITtYuTizJjcBV3C5Ge-5Cbf7UxiUouQy2Nn9qxVhdypk"
+      },
+      {
+        "id": "CgkI_c_FyZ8bEAIQAg",
+        "name": "First Victory",
+        "description": "Complete the first combat, defeat marauders",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/2XzkgOgiDgi4j6XnFugs6F0eF6e2RInWKvw-HqOFWQ6bls8zcQNoXjpjzMlukcX19Oxe"
+      }
+    ],
+    "created_at": "2026-11-21 09:15:22",
+    "updated_at": "2026-11-21 09:15:22",
+    "id": "50"
+  },
+  "49": {
+    "service_id": "srv_49",
+    "game_id": "49",
+    "title": "Whiteout Survival",
+    "package": "com.gof.global",
+    "client_sig": "972e399936f3a8da300da162aa70709a467c0e0e",
+    "developer": "Century Games PTE. LTD.",
+    "category": "Popular Games",
+    "icon": "https://play-lh.googleusercontent.com/tNMaMiJ4wTQy_TeZSWHdSlP5qH0PGig9g9sDJu2QFvCHdnrbo2u17pX55W4i6KITo56v_ZyICkqLgA2svH9ycQ=s0-br30",
+    "section": "quest_unlocker",
+    "enabled": true,
+    "total_quests_count": 15,
+    "selected_quests_count": 2,
+    "selected_quest_ids": [
+      "CgkIsP-nyJkEEAIQDQ",
+      "CgkIsP-nyJkEEAIQDg"
+    ],
+    "selected_quests": [
+      {
+        "id": "CgkIsP-nyJkEEAIQDQ",
+        "name": "Cleared Exploration",
+        "description": "Complete 1 Exploration Stages",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/M5aNwWFIS8_ooLWghsfXE9XMsA0GgAqxac40Gdk4v7aSwtooEP9Wh6uyZgfmYZ7wQF5B"
+      },
+      {
+        "id": "CgkIsP-nyJkEEAIQDg",
+        "name": "Issue Chief Order",
+        "description": "Issue any Chief Order 1 times",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/A5ySQUAnd7RhEri4RBq4g6mpm_Ef0LtjadvCLWSs5lxd4r_ebsTvL3LI0uusIQIUzBQ"
+      }
+    ],
+    "all_quests": [
+      {
+        "id": "CgkIsP-nyJkEEAIQAw",
+        "name": "Furnace Upgrade",
+        "description": "Furnace Level reaches Lv. 30",
+        "experiencePoints": 2500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/KsS0HLVyOpMYriiCHt_QjuxA4oVF7UCk5_MiwINYTD_1KtcSE7mNL3UG21srMI0zhA"
+      },
+      {
+        "id": "CgkIsP-nyJkEEAIQBA",
+        "name": "Consecutive Login",
+        "description": "Log in for 30 days",
+        "experiencePoints": 2500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/FARteI3A3D6lIA5VfOev4mPkZ7EEhnw39G8Bq4LWeE6ytgcLJB57MDF9zQB8ZQqUivg"
+      },
+      {
+        "id": "CgkIsP-nyJkEEAIQBQ",
+        "name": "Rally Polar Terror",
+        "description": "Initiate a rally to kill 200 Polar Terrors.",
+        "experiencePoints": 2500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/RW0PB1zKMUB7gd_LiDgFyMpR1nrywgZnH4i-9JC4fvsasRUbT9nCkKRqUusYw1-I3w"
+      },
+      {
+        "id": "CgkIsP-nyJkEEAIQBg",
+        "name": "Gather Resources",
+        "description": "Gather any resources to reach a total of 50,000,000",
+        "experiencePoints": 2500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/fbmwTnv2d2b3aVCmAEwz9UReVQOZglwKGK6mde37is0jY5aibstnHhxGyLr9QuvsG4Q"
+      },
+      {
+        "id": "CgkIsP-nyJkEEAIQBw",
+        "name": "Recruit Heroes",
+        "description": "Recruit 20 Heroes",
+        "experiencePoints": 2000,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/vf8GzQjF6Hn41mo3guv1pI3yfNwHOJFWelujJ7RiNcAHqIRvWaWWevrDDlSnvvP09Bs"
+      },
+      {
+        "id": "CgkIsP-nyJkEEAIQCA",
+        "name": "Use Construction Speedup",
+        "description": "Use 15,000m of Construction Speedup",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/P9YMGvqKKw1z423TCOBbwY58wLOjBm0QwnDQAZNX9LfTbiaZ5iQ6JVJUye7GmuILctc"
+      },
+      {
+        "id": "CgkIsP-nyJkEEAIQEA",
+        "name": "Use Research Speedup",
+        "description": "Use 15,000m of Research Speedup",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/_gq2Io-rOtcqPaT_kLH55sZ5Nx0DTO8PfFKKUdn0fY7WvlFXV0PV26yEItoYDwk_XQ"
+      },
+      {
+        "id": "CgkIsP-nyJkEEAIQEQ",
+        "name": "Use Training Speedup",
+        "description": "Use 15,000m of Training Speedup",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/_Y4iNMQu8JftduqvgZ4dg5cy9EjP3rR0wPTJp6fRiEOoXAJ9tw5oREUeKiLed_3NEuVV"
+      },
+      {
+        "id": "CgkIsP-nyJkEEAIQCQ",
+        "name": "Recruit Mythic Heroes",
+        "description": "Recruit 3 Mythic Heroes",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/iWvULbfcfLSYACbLMjCTmTqGc-Yr-Bi3IGD7V1UT_-ladDHjeBkh7_5ZadKr0zA4dhg"
+      },
+      {
+        "id": "CgkIsP-nyJkEEAIQCg",
+        "name": "Train Troops",
+        "description": "Train 30,000 Troops",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/m2XXQ-52s7kooRoIOeqPLF5hwLZi-99UKkI5XSSujB7DM-B0E4vJ8qz-oLsaupGUNg"
+      },
+      {
+        "id": "CgkIsP-nyJkEEAIQCw",
+        "name": "Defeat Beasts",
+        "description": "Defeat 100 Beasts",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/l0P_Rq570d8EqgSuLfsCyuE1SqIAGuSbLZTKZDr-Cp3Vb1N5rBJabnpedbsnIkGPDI4"
+      },
+      {
+        "id": "CgkIsP-nyJkEEAIQDA",
+        "name": "Arena Challenge",
+        "description": "Challenge in Arena 1 times",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/JsA5GK6R-pA9iWfBC03gqYU9GrpHWvIQ4ns2CvzKNxRaHOBmzFPy23OKXZd49588B1z4"
+      },
+      {
+        "id": "CgkIsP-nyJkEEAIQDQ",
+        "name": "Cleared Exploration",
+        "description": "Complete 1 Exploration Stages",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/M5aNwWFIS8_ooLWghsfXE9XMsA0GgAqxac40Gdk4v7aSwtooEP9Wh6uyZgfmYZ7wQF5B"
+      },
+      {
+        "id": "CgkIsP-nyJkEEAIQDg",
+        "name": "Issue Chief Order",
+        "description": "Issue any Chief Order 1 times",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/A5ySQUAnd7RhEri4RBq4g6mpm_Ef0LtjadvCLWSs5lxd4r_ebsTvL3LI0uusIQIUzBQ"
+      },
+      {
+        "id": "CgkIsP-nyJkEEAIQDw",
+        "name": "Join an Alliance",
+        "description": "Join an Alliance",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/9Y45rE9hrOug1SO1rfpXfnFMVugPgvtFj86-rJ9-7Kw6DSEwO3VgB9RpJOgaDeIBPvs"
+      }
+    ],
+    "created_at": "2026-11-22 15:54:39",
+    "updated_at": "2026-11-22 15:54:39"
   }
 }

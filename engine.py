@@ -177,3 +177,34 @@ def set_achievement_steps(access_token: str, achievement_id: str, steps: int) ->
             }
     except Exception as e:
         return {"ok": False, "achievement_id": clean_id, "error": str(e)}
+
+def increment_achievement(access_token: str, achievement_id: str, steps: int = 1) -> dict:
+    """
+    Increment steps for an incremental achievement in Google Play Games.
+    POST https://games.googleapis.com/games/v1/achievements/{achievementId}/increment?stepsToIncrement={steps}
+    """
+    clean_id = achievement_id.strip()
+    url = f"{GAMES_API_BASE}/achievements/{clean_id}/increment"
+    params = {"stepsToIncrement": int(steps)}
+
+    try:
+        res = requests.post(url, headers=get_headers(access_token), params=params, json={}, timeout=10)
+        if res.status_code == 200:
+            data = res.json()
+            return {
+                "ok": True,
+                "achievement_id": clean_id,
+                "current_steps": data.get("currentSteps"),
+                "newly_unlocked": data.get("newlyUnlocked", False),
+                "raw": data
+            }
+        else:
+            return {
+                "ok": False,
+                "achievement_id": clean_id,
+                "status_code": res.status_code,
+                "error": res.text
+            }
+    except Exception as e:
+        return {"ok": False, "achievement_id": clean_id, "error": str(e)}
+
