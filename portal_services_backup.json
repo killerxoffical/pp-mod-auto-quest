@@ -8709,5 +8709,264 @@
     ],
     "created_at": "2026-11-22 15:54:39",
     "updated_at": "2026-11-22 15:54:39"
+  },
+  "55": {
+    "service_id": "srv_55",
+    "game_id": "55",
+    "title": "EA SPORTS FC Soccer Mobile 27",
+    "package": "com.ea.gp.fifamobile",
+    "developer": "Electronic Arts",
+    "category": "Sports",
+    "icon": "https://play-lh.googleusercontent.com/uT1JkXWK9pv1DWWOuVebnsbATHMZmhG4LUDkvoXne9H2MDF1im00_-U4taZPifIBpJ47sA0i8IoCh5aEVuUG5JI=s0-br30",
+    "section": "quest_unlocker",
+    "enabled": true,
+    "total_quests_count": 24,
+    "selected_quests_count": 2,
+    "selected_quest_ids": [
+      "CgkI3sqzqYMOEAIQAQ",
+      "CgkI3sqzqYMOEAIQAg"
+    ],
+    "selected_quests": [
+      {
+        "id": "CgkI3sqzqYMOEAIQAQ",
+        "name": "FC Rookie",
+        "description": "Complete 1 match",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://play-lh.googleusercontent.com/uT1JkXWK9pv1DWWOuVebnsbATHMZmhG4LUDkvoXne9H2MDF1im00_-U4taZPifIBpJ47sA0i8IoCh5aEVuUG5JI=s0-br30"
+      },
+      {
+        "id": "CgkI3sqzqYMOEAIQAg",
+        "name": "Emerging Talent",
+        "description": "Complete 2 Division Rivals matches",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 2,
+        "unlockedIconUrl": "https://play-lh.googleusercontent.com/uT1JkXWK9pv1DWWOuVebnsbATHMZmhG4LUDkvoXne9H2MDF1im00_-U4taZPifIBpJ47sA0i8IoCh5aEVuUG5JI=s0-br30"
+      }
+    ],
+    "all_quests": [
+      {
+        "id": "CgkI3sqzqYMOEAIQAQ",
+        "name": "FC Rookie",
+        "description": "Complete 1 match",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://play-lh.googleusercontent.com/uT1JkXWK9pv1DWWOuVebnsbATHMZmhG4LUDkvoXne9H2MDF1im00_-U4taZPifIBpJ47sA0i8IoCh5aEVuUG5JI=s0-br30"
+      },
+      {
+        "id": "CgkI3sqzqYMOEAIQAg",
+        "name": "Emerging Talent",
+        "description": "Complete 2 Division Rivals matches",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 2,
+        "unlockedIconUrl": "https://play-lh.googleusercontent.com/uT1JkXWK9pv1DWWOuVebnsbATHMZmhG4LUDkvoXne9H2MDF1im00_-U4taZPifIBpJ47sA0i8IoCh5aEVuUG5JI=s0-br30"
+      },
+      {
+        "id": "CgkI3sqzqYMOEAIQAw",
+        "name": "Elite Contender",
+        "description": "Complete 50 Division Rivals matches",
+        "experiencePoints": 2000,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 50,
+        "unlockedIconUrl": "https://play-lh.googleusercontent.com/uT1JkXWK9pv1DWWOuVebnsbATHMZmhG4LUDkvoXne9H2MDF1im00_-U4taZPifIBpJ47sA0i8IoCh5aEVuUG5JI=s0-br30"
+      },
+      {
+        "id": "CgkI3sqzqYMOEAIQBA",
+        "name": "Matchday Warrior",
+        "description": "Complete 100 Division Rivals matches",
+        "experiencePoints": 4000,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 100,
+        "unlockedIconUrl": "https://play-lh.googleusercontent.com/uT1JkXWK9pv1DWWOuVebnsbATHMZmhG4LUDkvoXne9H2MDF1im00_-U4taZPifIBpJ47sA0i8IoCh5aEVuUG5JI=s0-br30"
+      },
+      {
+        "id": "CgkI3sqzqYMOEAIQBQ",
+        "name": "Budding Star",
+        "description": "Score 10 goals",
+        "experiencePoints": 1000,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 10,
+        "unlockedIconUrl": "https://play-lh.googleusercontent.com/uT1JkXWK9pv1DWWOuVebnsbATHMZmhG4LUDkvoXne9H2MDF1im00_-U4taZPifIBpJ47sA0i8IoCh5aEVuUG5JI=s0-br30"
+      },
+      {
+        "id": "CgkI3sqzqYMOEAIQBg",
+        "name": "Seasoned Striker",
+        "description": "Score 50 goals",
+        "experiencePoints": 2000,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 50,
+        "unlockedIconUrl": "https://play-lh.googleusercontent.com/uT1JkXWK9pv1DWWOuVebnsbATHMZmhG4LUDkvoXne9H2MDF1im00_-U4taZPifIBpJ47sA0i8IoCh5aEVuUG5JI=s0-br30"
+      },
+      {
+        "id": "CgkI3sqzqYMOEAIQBw",
+        "name": "GOAT",
+        "description": "Score 100 goals",
+        "experiencePoints": 4000,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 100,
+        "unlockedIconUrl": "https://play-lh.googleusercontent.com/uT1JkXWK9pv1DWWOuVebnsbATHMZmhG4LUDkvoXne9H2MDF1im00_-U4taZPifIBpJ47sA0i8IoCh5aEVuUG5JI=s0-br30"
+      },
+      {
+        "id": "CgkI3sqzqYMOEAIQCA",
+        "name": "Getting Stronger",
+        "description": "Level up a Player Item to Training Level 10",
+        "experiencePoints": 2000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://play-lh.googleusercontent.com/uT1JkXWK9pv1DWWOuVebnsbATHMZmhG4LUDkvoXne9H2MDF1im00_-U4taZPifIBpJ47sA0i8IoCh5aEVuUG5JI=s0-br30"
+      },
+      {
+        "id": "CgkI3sqzqYMOEAIQCQ",
+        "name": "Peak Performance",
+        "description": "Level up a Player Item to Training Level 30",
+        "experiencePoints": 4000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://play-lh.googleusercontent.com/uT1JkXWK9pv1DWWOuVebnsbATHMZmhG4LUDkvoXne9H2MDF1im00_-U4taZPifIBpJ47sA0i8IoCh5aEVuUG5JI=s0-br30"
+      },
+      {
+        "id": "CgkI3sqzqYMOEAIQCg",
+        "name": "Shaping Potential",
+        "description": "Complete 5 Player Rank Ups",
+        "experiencePoints": 1000,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 5,
+        "unlockedIconUrl": "https://play-lh.googleusercontent.com/uT1JkXWK9pv1DWWOuVebnsbATHMZmhG4LUDkvoXne9H2MDF1im00_-U4taZPifIBpJ47sA0i8IoCh5aEVuUG5JI=s0-br30"
+      },
+      {
+        "id": "CgkI3sqzqYMOEAIQCw",
+        "name": "Forging Champions",
+        "description": "Complete 30 Player Rank Ups",
+        "experiencePoints": 2500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 30,
+        "unlockedIconUrl": "https://play-lh.googleusercontent.com/uT1JkXWK9pv1DWWOuVebnsbATHMZmhG4LUDkvoXne9H2MDF1im00_-U4taZPifIBpJ47sA0i8IoCh5aEVuUG5JI=s0-br30"
+      },
+      {
+        "id": "CgkI3sqzqYMOEAIQDA",
+        "name": "World Class",
+        "description": "Reach World Class in Division Rivals",
+        "experiencePoints": 1000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://play-lh.googleusercontent.com/uT1JkXWK9pv1DWWOuVebnsbATHMZmhG4LUDkvoXne9H2MDF1im00_-U4taZPifIBpJ47sA0i8IoCh5aEVuUG5JI=s0-br30"
+      },
+      {
+        "id": "CgkI3sqzqYMOEAIQDQ",
+        "name": "Legendary Player",
+        "description": "Reach Legendary in Division Rivals",
+        "experiencePoints": 2000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://play-lh.googleusercontent.com/uT1JkXWK9pv1DWWOuVebnsbATHMZmhG4LUDkvoXne9H2MDF1im00_-U4taZPifIBpJ47sA0i8IoCh5aEVuUG5JI=s0-br30"
+      },
+      {
+        "id": "CgkI3sqzqYMOEAIQDg",
+        "name": "FC Champion",
+        "description": "Reach FC Champion",
+        "experiencePoints": 4000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://play-lh.googleusercontent.com/uT1JkXWK9pv1DWWOuVebnsbATHMZmhG4LUDkvoXne9H2MDF1im00_-U4taZPifIBpJ47sA0i8IoCh5aEVuUG5JI=s0-br30"
+      },
+      {
+        "id": "CgkI3sqzqYMOEAIQDw",
+        "name": "Friendlies",
+        "description": "Play 5 Friendly Matches against members of your League",
+        "experiencePoints": 1000,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 5,
+        "unlockedIconUrl": "https://play-lh.googleusercontent.com/uT1JkXWK9pv1DWWOuVebnsbATHMZmhG4LUDkvoXne9H2MDF1im00_-U4taZPifIBpJ47sA0i8IoCh5aEVuUG5JI=s0-br30"
+      },
+      {
+        "id": "CgkI3sqzqYMOEAIQEA",
+        "name": "First Step",
+        "description": "Complete your first Skill Game or Drill",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://play-lh.googleusercontent.com/uT1JkXWK9pv1DWWOuVebnsbATHMZmhG4LUDkvoXne9H2MDF1im00_-U4taZPifIBpJ47sA0i8IoCh5aEVuUG5JI=s0-br30"
+      },
+      {
+        "id": "CgkI3sqzqYMOEAIQEQ",
+        "name": "Skill Master",
+        "description": "Earn 3 stars in 10 Skill Games",
+        "experiencePoints": 1000,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 10,
+        "unlockedIconUrl": "https://play-lh.googleusercontent.com/uT1JkXWK9pv1DWWOuVebnsbATHMZmhG4LUDkvoXne9H2MDF1im00_-U4taZPifIBpJ47sA0i8IoCh5aEVuUG5JI=s0-br30"
+      },
+      {
+        "id": "CgkI3sqzqYMOEAIQEg",
+        "name": "League Player",
+        "description": "Join or create an active League",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://play-lh.googleusercontent.com/uT1JkXWK9pv1DWWOuVebnsbATHMZmhG4LUDkvoXne9H2MDF1im00_-U4taZPifIBpJ47sA0i8IoCh5aEVuUG5JI=s0-br30"
+      },
+      {
+        "id": "CgkI3sqzqYMOEAIQEw",
+        "name": "Team Captain",
+        "description": "Reach Team OVR 85",
+        "experiencePoints": 1000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://play-lh.googleusercontent.com/uT1JkXWK9pv1DWWOuVebnsbATHMZmhG4LUDkvoXne9H2MDF1im00_-U4taZPifIBpJ47sA0i8IoCh5aEVuUG5JI=s0-br30"
+      },
+      {
+        "id": "CgkI3sqzqYMOEAIQFA",
+        "name": "Squad Elite",
+        "description": "Reach Team OVR 95",
+        "experiencePoints": 2000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://play-lh.googleusercontent.com/uT1JkXWK9pv1DWWOuVebnsbATHMZmhG4LUDkvoXne9H2MDF1im00_-U4taZPifIBpJ47sA0i8IoCh5aEVuUG5JI=s0-br30"
+      },
+      {
+        "id": "CgkI3sqzqYMOEAIQFQ",
+        "name": "Galáctico",
+        "description": "Reach Team OVR 100",
+        "experiencePoints": 4000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://play-lh.googleusercontent.com/uT1JkXWK9pv1DWWOuVebnsbATHMZmhG4LUDkvoXne9H2MDF1im00_-U4taZPifIBpJ47sA0i8IoCh5aEVuUG5JI=s0-br30"
+      },
+      {
+        "id": "CgkI3sqzqYMOEAIQFg",
+        "name": "Daily Dedicated",
+        "description": "Log in 7 consecutive days",
+        "experiencePoints": 1000,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 7,
+        "unlockedIconUrl": "https://play-lh.googleusercontent.com/uT1JkXWK9pv1DWWOuVebnsbATHMZmhG4LUDkvoXne9H2MDF1im00_-U4taZPifIBpJ47sA0i8IoCh5aEVuUG5JI=s0-br30"
+      },
+      {
+        "id": "CgkI3sqzqYMOEAIQFw",
+        "name": "Market Trader",
+        "description": "Complete 5 Market purchases or sales",
+        "experiencePoints": 1000,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 5,
+        "unlockedIconUrl": "https://play-lh.googleusercontent.com/uT1JkXWK9pv1DWWOuVebnsbATHMZmhG4LUDkvoXne9H2MDF1im00_-U4taZPifIBpJ47sA0i8IoCh5aEVuUG5JI=s0-br30"
+      },
+      {
+        "id": "CgkI3sqzqYMOEAIQGA",
+        "name": "Tactical Mastermind",
+        "description": "Win a match using dynamic tactics",
+        "experiencePoints": 1000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://play-lh.googleusercontent.com/uT1JkXWK9pv1DWWOuVebnsbATHMZmhG4LUDkvoXne9H2MDF1im00_-U4taZPifIBpJ47sA0i8IoCh5aEVuUG5JI=s0-br30"
+      }
+    ],
+    "created_at": "2026-11-23 17:46:43",
+    "updated_at": "2026-11-23 17:46:43",
+    "id": "55",
+    "client_sig": "be1a4d32734d28639e47119565724c4dce8ce2d8"
   }
 }
