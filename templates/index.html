@@ -2662,7 +2662,7 @@
                         <div style="display:flex; align-items:center; gap:8px;">
                             <span id="badgeCurrentAppVer" class="badge-status active"
                                 style="background:rgba(16,185,129,0.15); color:var(--accent-green); border:1px solid rgba(16,185,129,0.3); font-weight:800; font-size:12px; padding:6px 14px;">
-                                LIVE: v4.5 Build 7
+                                LIVE: 4.5
                             </span>
                         </div>
                     </div>
@@ -2670,13 +2670,13 @@
                     <div style="display:grid; grid-template-columns: 1fr; gap:16px;">
                         <div>
                             <label
-                                style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:6px;">Latest
-                                Version Name (যেমন: v4.5 Build 7 বা v4.6) *</label>
-                            <input id="updVerName" type="text" class="form-input-element" value="v4.5 Build 7"
+                                style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:6px;">Target
+                                Version (যেমন: 4.5 বা 5.0) *</label>
+                            <input id="updVerName" type="text" class="form-input-element" value="4.5"
                                 style="height:42px; font-weight:800; font-size:13.5px;"
-                                placeholder="e.g. v4.5 Build 7">
+                                placeholder="4.5">
                             <span style="font-size:11px; color:var(--text-muted); display:block; margin-top:4px;">
-                                💡 শুধু নতুন ভার্সন নাম লিখবেন (যেমন: v4.5 Build 7)। কোনো কোড হিসেব করতে হবে না—ভার্সন নেম বদলালেই ইউজারদের অ্যাপে সাথে সাথে রকেট আপডেট স্ক্রিন চলে আসবে।
+                                💡 কোনো Build বা কোডের ঝামেলা নেই—শুধু ভার্সন সংখ্যা লিখবেন (যেমন: 4.5 বা 5.0)। এখন ৪.৫ চলছে, যখনই ৫.০ লিখে সেভ করবেন সকল ইউজারের অ্যাপে সাথে সাথে রকেট ফোর্স-আপডেট চলে আসবে।
                             </span>
                         </div>
                         <div>
@@ -5154,7 +5154,7 @@
                 const data = await res.json();
                 if (data.ok) {
                     const dl = data.download_url || "https://pp-mod-auto-quest.onrender.com/download/PPM_Cloud.apk";
-                    if (document.getElementById("updVerName")) document.getElementById("updVerName").value = data.latest_version_name || "v4.5 Build 7";
+                    if (document.getElementById("updVerName")) document.getElementById("updVerName").value = data.latest_version_name || "4.5";
                     if (document.getElementById("updDownloadUrl")) document.getElementById("updDownloadUrl").value = dl;
                     if (document.getElementById("portalApkDownloadUrl")) document.getElementById("portalApkDownloadUrl").value = dl;
                     if (document.getElementById("updReleaseNotes")) document.getElementById("updReleaseNotes").value = data.release_notes || "";
@@ -5163,7 +5163,7 @@
                     if (document.getElementById("updMaintMsg")) document.getElementById("updMaintMsg").value = data.maintenance_message || "Our servers are currently undergoing scheduled maintenance to upgrade security and performance. Please try again later.";
                     if (document.getElementById("badgeCurrentAppVer")) {
                         const maintBadge = data.maintenance_mode ? ' <span style="background:#ef4444; color:#fff; padding:2px 8px; border-radius:4px; font-size:10px; margin-left:6px;">MAINTENANCE ON</span>' : '';
-                        document.getElementById("badgeCurrentAppVer").innerHTML = `LIVE: ${data.latest_version_name || 'v4.5 Build 7'}${maintBadge}`;
+                        document.getElementById("badgeCurrentAppVer").innerHTML = `LIVE: ${data.latest_version_name || '4.5'}${maintBadge}`;
                     }
                 }
             } catch (e) { }

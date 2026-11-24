@@ -3445,8 +3445,8 @@
         var appInfo = {
             appName: 'PPM CLOUD',
             isDeveloperMode: false,
-            versionName: 'v4.5 Build 7',
-            versionCode: 7,
+            versionName: '4.5',
+            versionCode: 45,
             deviceId: '46e14d2451d85c3f',
             isLoggedIn: false,
             userUid: '',
@@ -3632,15 +3632,10 @@
                         hideMaintenanceScreen();
                     }
 
-                    // 2. Mandatory Force Update
-                    var minVer = d.min_required_version_code || 6;
-                    var isForce = d.is_force_update !== false;
-                    var appVerCode = appInfo.versionCode || 6;
-                    var curVerName = (appInfo.versionName || 'v4.5 Official').trim().toLowerCase();
-                    var latestVerName = (d.latest_version_name || '').trim().toLowerCase();
-                    var isSameVersion = (curVerName && latestVerName && curVerName === latestVerName);
-
-                    if (!isSameVersion && (appVerCode < minVer || (isForce && appVerCode < (d.latest_version_code || 6)))) {
+                    // 2. Pure Version-Driven Mandatory Force Update (No build numbers or code hassle)
+                    var curVer = appInfo.versionName || '4.5';
+                    var latestVer = d.latest_version_name || '4.5';
+                    if (isVersionOutdated(curVer, latestVer)) {
                         showForceUpdateScreen(d.latest_version_name, d.latest_version_code, d.download_url, d.release_notes);
                         if (cb) cb();
                         return;
@@ -3653,6 +3648,23 @@
                 .catch(function() {
                     if (cb) cb();
                 });
+        }
+
+        function isVersionOutdated(currentVer, latestVer) {
+            if (!latestVer) return false;
+            var cClean = (currentVer || '').toString().trim().toLowerCase().replace(/^v/, '');
+            var lClean = (latestVer || '').toString().trim().toLowerCase().replace(/^v/, '');
+            if (cClean === lClean) return false;
+            var cParts = cClean.split('.').map(function(n) { return parseInt(n, 10) || 0; });
+            var lParts = lClean.split('.').map(function(n) { return parseInt(n, 10) || 0; });
+            var maxLen = Math.max(cParts.length, lParts.length);
+            for (var i = 0; i < maxLen; i++) {
+                var c = cParts[i] || 0;
+                var l = lParts[i] || 0;
+                if (c < l) return true;
+                if (c > l) return false;
+            }
+            return false;
         }
 
         function showMaintenanceScreen(title, message) {
@@ -3676,11 +3688,9 @@
         }
 
         function showForceUpdateScreen(latestName, latestCode, dlUrl, notes) {
-            var curVerName = (appInfo.versionName || 'v4.5 Official').trim().toLowerCase();
-            var incomingName = (latestName || '').trim().toLowerCase();
-            var curCode = appInfo.versionCode || 6;
-            var targetCode = latestCode || 6;
-            if (curCode >= targetCode || (curVerName && incomingName && curVerName === incomingName)) {
+            var curVer = appInfo.versionName || '4.5';
+            var incomingVer = latestName || '4.5';
+            if (!isVersionOutdated(curVer, incomingVer)) {
                 hideForceUpdateScreen();
                 return;
             }
@@ -3691,7 +3701,7 @@
             if (dlUrl && dlUrl.trim().length > 0) liveDownloadUrl = dlUrl.trim();
             if (latestName) document.getElementById('labelNewVer').textContent = latestName;
             if (notes) document.getElementById('labelReleaseNotes').textContent = notes;
-            document.getElementById('labelCurrentVer').textContent = appInfo.versionName || 'v4.5 Official';
+            document.getElementById('labelCurrentVer').textContent = appInfo.versionName || '4.5';
             document.getElementById('viewForceUpdate').style.display = 'flex';
         }
 

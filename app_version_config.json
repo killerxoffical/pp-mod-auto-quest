@@ -1,12 +1,12 @@
 {
   "latest_version_code": 7,
-  "latest_version_name": "v4.5 Build 7",
+  "latest_version_name": "4.5",
   "min_required_version_code": 7,
   "download_url": "https://pp-mod-auto-quest.onrender.com/download/PPM_Cloud.apk",
-  "release_notes": "PPM CLOUD v4.5 Build 7 Official Release - Permanent G-Token Cloud Sync, 5-Card Staggered Shimmer Loader, Zero Point Bloat.",
+  "release_notes": "PPM CLOUD 4.5 Official Release - Permanent G-Tokens, 5-Card Shimmer Loader, Zero Point Bloat.",
   "is_force_update": true,
   "maintenance_mode": false,
   "maintenance_title": "Scheduled Server Maintenance",
-  "maintenance_message": "Our servers are currently undergoing scheduled maintenance to upgrade security and performance. Please try again later.",
+  "maintenance_message": "Our servers are currently undergoing scheduled maintenance to upgrade security and database performance. Please try again later.",
   "updated_at": 1795536000
 }

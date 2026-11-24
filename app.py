@@ -3003,11 +3003,11 @@ VERSION_CONFIG_FILE = os.path.join(DATA_DIR, "app_version_config.json")
 
 def load_version_config():
     default_cfg = {
-        "latest_version_code": 7,
-        "latest_version_name": "v4.5 Build 7",
-        "min_required_version_code": 7,
+        "latest_version_code": 45,
+        "latest_version_name": "4.5",
+        "min_required_version_code": 45,
         "download_url": "https://pp-mod-auto-quest.onrender.com/download/PPM_Cloud.apk",
-        "release_notes": "PPM CLOUD v4.5 Build 7 Official Release - Permanent G-Token Cloud Sync, 5-Card Staggered Shimmer Loader, Zero Point Bloat.",
+        "release_notes": "PPM CLOUD 4.5 Official Release - Permanent G-Token Cloud Sync, 5-Card Staggered Shimmer Loader, Zero Point Bloat.",
         "is_force_update": True,
         "maintenance_mode": False,
         "maintenance_title": "Scheduled Server Maintenance",
@@ -3041,11 +3041,11 @@ def get_app_version():
     dl_url = cfg.get("download_url") or "https://pp-mod-auto-quest.onrender.com/download/PPM_Cloud.apk"
     return jsonify({
         "ok": True,
-        "latest_version_code": cfg.get("latest_version_code", 7),
-        "latest_version_name": cfg.get("latest_version_name", "v4.5 Build 7"),
-        "min_required_version_code": cfg.get("min_required_version_code", 7),
+        "latest_version_code": cfg.get("latest_version_code", 45),
+        "latest_version_name": cfg.get("latest_version_name", "4.5"),
+        "min_required_version_code": cfg.get("min_required_version_code", 45),
         "download_url": dl_url,
-        "release_notes": cfg.get("release_notes", "PPM CLOUD v4.5 Build 7 Official Release - Permanent G-Token Cloud Sync, 5-Card Staggered Shimmer Loader, Zero Point Bloat."),
+        "release_notes": cfg.get("release_notes", "PPM CLOUD 4.5 Official Release - Permanent G-Token Cloud Sync, 5-Card Staggered Shimmer Loader, Zero Point Bloat."),
         "is_force_update": True,
         "maintenance_mode": bool(cfg.get("maintenance_mode", False)),
         "maintenance_title": cfg.get("maintenance_title", "Scheduled Server Maintenance"),
@@ -3062,17 +3062,16 @@ def update_app_version():
     if "latest_version_name" in data and str(data["latest_version_name"]).strip():
         ver_name = str(data["latest_version_name"]).strip()
         cfg["latest_version_name"] = ver_name
-        # Auto-extract build or version number from name so admin never needs to touch version codes
+        # Auto-compute version code purely from version numbers (e.g. "4.5" -> 45, "5.0" -> 50)
         import re
-        b_match = re.search(r'build\s*(\d+)', ver_name, re.IGNORECASE)
-        if b_match:
-            code = int(b_match.group(1))
-        else:
-            nums = re.findall(r'\d+', ver_name)
-            if nums:
-                code = int("".join(nums[:2]))
+        nums = re.findall(r'\d+', ver_name)
+        if nums:
+            if len(nums) == 1:
+                code = int(nums[0]) * 10
             else:
-                code = cfg.get("latest_version_code", 6) + 1
+                code = int(nums[0]) * 10 + int(nums[1])
+        else:
+            code = cfg.get("latest_version_code", 45) + 5
         cfg["latest_version_code"] = code
         cfg["min_required_version_code"] = code
 
@@ -3091,7 +3090,7 @@ def update_app_version():
     save_version_config(cfg)
     return jsonify({
         "ok": True,
-        "message": f"🚀 APK Update successfully pushed for {cfg['latest_version_name']}! All users are required to update.",
+        "message": f"🚀 APK Update successfully pushed for version {cfg['latest_version_name']}! All users are required to update.",
         "config": cfg
     })
 
