@@ -797,12 +797,18 @@
 
             const filtered = allPortalServices.filter(s => {
                 const matchSection = (activePortalSection === "all") || ((s.section || "quest_unlocker") === activePortalSection);
+                const questsMatch = Array.isArray(s.selected_quests) && s.selected_quests.some(q => 
+                    (q.name && q.name.toLowerCase().includes(query)) || 
+                    (q.description && q.description.toLowerCase().includes(query))
+                );
                 const matchQuery = !query ||
                     (s.title && s.title.toLowerCase().includes(query)) ||
+                    (s.package && s.package.toLowerCase().includes(query)) ||
                     (s.developer && s.developer.toLowerCase().includes(query)) ||
                     (s.category && s.category.toLowerCase().includes(query)) ||
                     (s.game_id && String(s.game_id).includes(query)) ||
-                    (s.id && String(s.id).includes(query));
+                    (s.id && String(s.id).includes(query)) ||
+                    questsMatch;
                 return matchSection && matchQuery;
             });
 
