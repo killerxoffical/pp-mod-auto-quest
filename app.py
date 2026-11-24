@@ -350,24 +350,29 @@ def load_registered_devices(force_refresh=False):
     REGISTERED_DEVICES_CACHE_TIME = time.time()
     return data
 
-def save_registered_devices(data):
-    global REGISTERED_DEVICES_CACHE
+def save_registered_devices(data, overwrite_cloud=False):
+    global REGISTERED_DEVICES_CACHE, REGISTERED_DEVICES_CACHE_TIME
     if not isinstance(data, dict):
         data = {}
     REGISTERED_DEVICES_CACHE = dict(data)
+    REGISTERED_DEVICES_CACHE_TIME = time.time()
     try:
         with open(REGISTERED_DEVICES_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
     except Exception as e:
         print(f"[-] Error saving registered devices: {e}")
 
-    # Asynchronously deep merge with Cloudflare D1 and persist (no devices dropped)
+    # Asynchronously persist with Cloudflare D1
     def _sync_devs():
         try:
-            cf_get = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/registered-devices", timeout=5)
-            cloud_cur = cf_get.json() if (cf_get.status_code == 200 and isinstance(cf_get.json(), dict)) else {}
-            all_merged = deep_merge_device_dicts(cloud_cur, data)
-            requests.post("https://ppmod-api.tredarskvt.workers.dev/api/cloud/registered-devices", json=all_merged, timeout=8)
+            if overwrite_cloud:
+                # Direct overwrite so deletions are permanently saved in Cloudflare D1
+                requests.post("https://ppmod-api.tredarskvt.workers.dev/api/cloud/registered-devices", json=data, timeout=8)
+            else:
+                cf_get = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/registered-devices", timeout=5)
+                cloud_cur = cf_get.json() if (cf_get.status_code == 200 and isinstance(cf_get.json(), dict)) else {}
+                all_merged = deep_merge_device_dicts(cloud_cur, data)
+                requests.post("https://ppmod-api.tredarskvt.workers.dev/api/cloud/registered-devices", json=all_merged, timeout=8)
         except Exception as e:
             print(f"[-] Cloudflare D1 device sync error: {e}")
     threading.Thread(target=_sync_devs, daemon=True).start()
@@ -3539,21 +3544,30 @@ def admin_delete_user():
     if not uid and not email:
         return jsonify({"ok": False, "error": "User UID or Email is required."}), 400
 
-    devices = load_registered_devices()
+    devices = load_registered_devices(force_refresh=True)
     removed_devs = []
     removed_emails = set()
 
     for d_id, d_data in list(devices.items()):
         dev_uid = str(d_data.get("ppmod_uid") or "").strip()
         dev_email = str(d_data.get("ppmod_email") or "").strip().lower()
-        if (uid and (dev_uid == uid or dev_uid.lower() == uid.lower())) or (email and dev_email == email):
+        acc_emails = [str(a.get("email") or "").strip().lower() for a in d_data.get("accounts", [])]
+
+        is_match = False
+        if uid and (dev_uid == uid or dev_uid.lower() == uid.lower() or dev_uid == f"dev_{d_id[:8]}" or uid == f"dev_{d_id[:8]}"):
+            is_match = True
+        if email and (dev_email == email or email in acc_emails):
+            is_match = True
+
+        if is_match:
             for acc in d_data.get("accounts", []):
                 if acc.get("email"):
                     removed_emails.add(acc["email"].lower())
             devices.pop(d_id, None)
             removed_devs.append(d_id)
 
-    save_registered_devices(devices)
+    # Overwrite cloud with deleted state so deletions are permanent
+    save_registered_devices(devices, overwrite_cloud=True)
 
     # Delete from known tokens
     tokens = load_known_tokens()
@@ -3566,8 +3580,8 @@ def admin_delete_user():
     # Cascade delete on Cloudflare D1
     def _cf_cascade():
         try:
-            if uid:
-                requests.post("https://ppmod-api.tredarskvt.workers.dev/api/admin/user/delete", json={"uid": uid}, timeout=5)
+            if uid or email:
+                requests.post("https://ppmod-api.tredarskvt.workers.dev/api/admin/user/delete", json={"uid": uid, "email": email}, timeout=5)
             for em in removed_emails:
                 requests.post("https://ppmod-api.tredarskvt.workers.dev/api/sync/delete", json={"email": em}, timeout=5)
         except Exception as e:
@@ -3578,6 +3592,15 @@ def admin_delete_user():
         "ok": True,
         "message": f"User '{uid or email}' and all associated accounts were successfully deleted!"
     })
+
+@app.route("/api/admin/users/wipe_all", methods=["POST"])
+def admin_wipe_all_users():
+    """
+    Completely wipe all registered devices and accounts from local and Cloudflare D1.
+    """
+    save_registered_devices({}, overwrite_cloud=True)
+    save_known_tokens({})
+    return jsonify({"ok": True, "message": "All registered users, devices, and synced accounts have been completely wiped!"})
 
 @app.route("/api/admin/users/add", methods=["POST"])
 def admin_add_user_account():
