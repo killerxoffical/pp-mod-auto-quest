@@ -5580,6 +5580,15 @@ def sanitize_gpgs_error(raw_err: str, game_title: str = "Game") -> str:
     if "BadAuthentication" in err_str:
         return "গুগল সেশনের মেয়াদ শেষ হয়েছে। দয়া করে PPM Server অ্যাপ খুলে নতুন QID রিফ্রেশ করুন।"
 
+    # কড়া প্রাইভেসি ও সিকিউরিটি শিল্ড: টোকেন, সার্ভার URL, ইন্টারনাল ফাইল পাথ বা ব্যাকএন্ড তথ্য ইউজারকে দেখানো সম্পূর্ণ নিষিদ্ধ
+    sensitive_markers = ["aas_et", "oauth2rt", "ya29.", "token", "http://", "https://", "Traceback", "Exception", "File \"", "NoneType", "KeyError", "401", "403", "500"]
+    for sm in sensitive_markers:
+        if sm.lower() in err_str.lower():
+            return "গুগল প্লে গেমসে কোয়েস্ট আনলক করতে সমস্যা হয়েছে। দয়া করে PPM Server অ্যাপ থেকে নতুন QID দিন অথবা অন্য গেম ট্রাই করুন।"
+
+    if "{" in err_str or "}" in err_str or len(err_str) > 100:
+        return "গুগল প্লে গেমসে কোয়েস্ট আনলক করতে সমস্যা হয়েছে। দয়া করে PPM Server অ্যাপ থেকে নতুন QID দিন অথবা অন্য গেম ট্রাই করুন।"
+
     return err_str
 
 @app.route("/api/portal/warmup", methods=["POST"])
