@@ -6026,9 +6026,10 @@ def unlock_portal_service_quests():
     # Check complete vs partial
     all_completed = (len(unlocked_now) >= len(targets))
 
-    # If completely 0 unlocked and fatal auth error -> return error
-    if len(unlocked_now) == 0 and last_err and not specific_ids:
-        clean_err = sanitize_gpgs_error(last_err, service.get("title", "Game"))
+    # If completely 0 unlocked -> return error (Fail Fast so user and bot know it failed)
+    if len(unlocked_now) == 0:
+        err_raw = last_err or "কোয়েস্ট আনলক করা যায়নি। গুগল প্লে গেমস টোকেন বা কানেকশন চেক করুন।"
+        clean_err = sanitize_gpgs_error(err_raw, service.get("title", "Game"))
         record_unlock_log(
             account_name=account_name or (email.split("@")[0] if email else "Play Gamer"),
             email=email,
@@ -6045,16 +6046,34 @@ def unlock_portal_service_quests():
             source="Web App" if user_uid != "Direct Portal" else "Direct Portal",
             coins_cost=coins_cost,
             balance_before=balance_before,
-            balance_after=balance_after,
+            balance_after=balance_before,
             refund_status="REFUNDED",
             coins_refunded=coins_cost
         )
         return jsonify({
             "ok": False,
+            "status": "FAILED",
             "error": clean_err
         }), 400
 
-    # Otherwise mark as COMPLETED so order succeeds smoothly (User can Live Check & Claim Sync anytime)
+    # Deduct balance from user wallet on Cloudflare D1 (Only on actual successful unlocks)
+    final_balance = cur_wallet_bal
+    if user_uid and user_uid != "Direct Portal" and coins_cost > 0:
+        try:
+            pay_res = requests.post(
+                "https://ppmod-api.tredarskvt.workers.dev/api/wallet/pay-task",
+                json={"uid": user_uid, "feeCoins": coins_cost, "isFree": False},
+                timeout=6
+            )
+            if pay_res.status_code == 200:
+                pay_data = pay_res.json()
+                if pay_data.get("ok"):
+                    final_balance = pay_data.get("balance")
+                    print(f"[+] Successfully deducted {coins_cost} coins from UID {user_uid}. New balance: {final_balance}")
+        except Exception as pe:
+            print(f"[-] Wallet deduction error: {pe}")
+
+    # Mark as COMPLETED when quests were unlocked
     record_unlock_log(
         account_name=account_name or (email.split("@")[0] if email else "Play Gamer"),
         email=email,
@@ -6071,24 +6090,8 @@ def unlock_portal_service_quests():
         source="Web App" if user_uid != "Direct Portal" else "Direct Portal",
         coins_cost=coins_cost,
         balance_before=balance_before,
-        balance_after=balance_after
+        balance_after=final_balance
     )
-    # Deduct balance from user wallet on Cloudflare D1
-    final_balance = cur_wallet_bal
-    if user_uid and user_uid != "Direct Portal" and coins_cost > 0 and len(unlocked_now) > 0:
-        try:
-            pay_res = requests.post(
-                "https://ppmod-api.tredarskvt.workers.dev/api/wallet/pay-task",
-                json={"uid": user_uid, "feeCoins": coins_cost, "isFree": False},
-                timeout=6
-            )
-            if pay_res.status_code == 200:
-                pay_data = pay_res.json()
-                if pay_data.get("ok"):
-                    final_balance = pay_data.get("balance")
-                    print(f"[+] Successfully deducted {coins_cost} coins from UID {user_uid}. New balance: {final_balance}")
-        except Exception as pe:
-            print(f"[-] Wallet deduction error: {pe}")
 
     if order_id:
         record_used_portal_order(order_id)
