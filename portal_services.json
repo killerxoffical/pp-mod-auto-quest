@@ -2694,5 +2694,366 @@
     "updated_at": "2026-11-24 17:19:13",
     "id": "56",
     "client_sig": "b0cb218c78f839529f5721e1b0757a91d1bc1e2e"
+  },
+  "57": {
+    "service_id": "srv_57",
+    "game_id": "57",
+    "title": "Asphalt Legends",
+    "package": "com.gameloft.android.ANMP.GloftA9HM",
+    "developer": "Gameloft SE",
+    "category": "Racing & Action",
+    "icon": "https://play-lh.googleusercontent.com/53ngsanoIl6vcppIwZD2LGMcjT9j5beVN_GakLncwrIr7WjTXYs6lnaSef-zlKmWr2NaaoSmMs1qQjtyXgLnSiw=s0-br30",
+    "section": "quest_unlocker",
+    "enabled": true,
+    "no_data": false,
+    "total_quests_count": 33,
+    "selected_quests_count": 4,
+    "selected_quest_ids": [
+      "CgkIuJS5gpAdEAIQBA",
+      "CgkIuJS5gpAdEAIQCQ",
+      "CgkIuJS5gpAdEAIQCg",
+      "CgkIuJS5gpAdEAIQCw"
+    ],
+    "selected_quests": [
+      {
+        "id": "CgkIuJS5gpAdEAIQBA",
+        "name": "Moving Forward (Basic)",
+        "description": "Win the 1st race",
+        "experiencePoints": 1500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/k4lznrZ3EWZeI_p0QpxuSE2_pUUEDeNT7tZe5AEV15laGLuyXQKGhr8T6IBdY-kc0T0"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQCQ",
+        "name": "Moving Forward (Bronze)",
+        "description": "Win 10 races",
+        "experiencePoints": 1500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 10,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/KndDZRCfj-h-tiCKSmS84PuPpAwmlfdVc8hHOSSqPn8rBd0DOU4CFldBuEUZltQTDn0"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQCg",
+        "name": "Moving Forward (Silver)",
+        "description": "Win 50 races",
+        "experiencePoints": 1500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 50,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/94aUsLl1SFlC2N0sGcE4tESsU1aUyzH0oXRALbNKS2R4o4H6lYxoJcUyiPzBb1uB2A"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQCw",
+        "name": "Moving Forward (Gold)",
+        "description": "Win 100 races",
+        "experiencePoints": 1500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 100,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/Pvg8IFR8XaNmwWBy2Hi8D_7jvJnjNk4f9mAf5mjZjKSawXSGnRUqcKChUyhVCeqDP28"
+      }
+    ],
+    "all_quests": [
+      {
+        "id": "CgkIuJS5gpAdEAIQBA",
+        "name": "Moving Forward (Basic)",
+        "description": "Win the 1st race",
+        "experiencePoints": 1500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/k4lznrZ3EWZeI_p0QpxuSE2_pUUEDeNT7tZe5AEV15laGLuyXQKGhr8T6IBdY-kc0T0"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQCQ",
+        "name": "Moving Forward (Bronze)",
+        "description": "Win 10 races",
+        "experiencePoints": 1500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 10,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/KndDZRCfj-h-tiCKSmS84PuPpAwmlfdVc8hHOSSqPn8rBd0DOU4CFldBuEUZltQTDn0"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQCg",
+        "name": "Moving Forward (Silver)",
+        "description": "Win 50 races",
+        "experiencePoints": 1500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 50,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/94aUsLl1SFlC2N0sGcE4tESsU1aUyzH0oXRALbNKS2R4o4H6lYxoJcUyiPzBb1uB2A"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQCw",
+        "name": "Moving Forward (Gold)",
+        "description": "Win 100 races",
+        "experiencePoints": 1500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 100,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/Pvg8IFR8XaNmwWBy2Hi8D_7jvJnjNk4f9mAf5mjZjKSawXSGnRUqcKChUyhVCeqDP28"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQBQ",
+        "name": "Make It Different (Basic)",
+        "description": "Perform 10 Barrel Rolls",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 10,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/t1dmb3RZEAcxFGdbNIX6g_4kcQ2ydrWUJNXelcB5-54koHJfl-C7uUod-u6kmZy4blQ"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQBg",
+        "name": "Make It Different (Bronze)",
+        "description": "Perform 50 Barrel Rolls",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 50,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/T9RzMT3P2soHY9-QbsGHeuSo3KRHjpXogJO23VPQGYz-Qa4mcXDM2ddsjOeUbbC9J8E"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQBw",
+        "name": "Make It Different (Silver)",
+        "description": "Perform 100 Barrel Rolls",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 100,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/lDw2flcSCwCPBEe2BF-tzEvS7Zcv8OspuXZnVe7yGlF4n46MJiTxyY69x3e-F0rNqQKw"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQCA",
+        "name": "Make It Different (Gold)",
+        "description": "Perform 200 Barrel Rolls",
+        "experiencePoints": 500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 200,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/Zwkf5q_qL6t7gQ03WTtrtaPvp5dmPi5XQ9AJXuBBvDQBjAoVBasjymemMGhgr6IIhA"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQDA",
+        "name": "Wreck-It (Basic)",
+        "description": "Knock down 10 cars",
+        "experiencePoints": 1500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 10,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/Q9_2vVUUQU5irij9mekc9ewCRI8xahO9uzCGNQC9bROxxvSVhs2-GM5f7U2OfhS1Bg0"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQDQ",
+        "name": "Wreck-It (Bronze)",
+        "description": "Knock down 25 cars",
+        "experiencePoints": 1500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 25,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/XVa0ZkKCT1rh_M5pke5YQtvIu2V1F1z8ZQsG_HA8XMVxbqtRmwBylUO45KVB0Okbr0ds"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQDg",
+        "name": "Wreck-It (Silver)",
+        "description": "Knock down 50 cars",
+        "experiencePoints": 1500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 50,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/sKeTBRiXDwz3MfmqiBvjIm1KQJ7HOBKXer4K8uvglKbXAi8k7YP4fOpzE7XIqUf5qg"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQDw",
+        "name": "Wreck-It (Gold)",
+        "description": "Knock down 100 cars",
+        "experiencePoints": 1500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 100,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/uhDof14AUTs10W7AM8vzdIbEiHDS9yQ8M8N9xHgW-Jby5l3uIZTGC6XTjK2jiqo58w"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQEA",
+        "name": "Owned! (Basic)",
+        "description": "Unlock 5 cars",
+        "experiencePoints": 2500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 5,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/6NdVi5Z9zNRxfuZ6G-qCh38q4i6AwGFjkkvLSLuDDknX3Yz9knTDZj62VvLXh-m2Y3g"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQEQ",
+        "name": "Owned! (Bronze)",
+        "description": "Unlock 10 cars",
+        "experiencePoints": 2500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 10,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/-M7Z07dxVS61pHIQenVB1pyjrtP02QGOA0vkvKu44tOJdhthKuGnQ4hKIAkwKFDTCQ"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQEg",
+        "name": "Owned! (Silver)",
+        "description": "Unlock 25 cars",
+        "experiencePoints": 2500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 25,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/TiPORmduTNPflmmtm7Z-Q1Ka20qSKjFauyttgEI8jU5QbyFOxVRAsAnnRNVWcOQe3P3M"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQEw",
+        "name": "Owned! (Gold)",
+        "description": "Unlock 48 cars",
+        "experiencePoints": 2500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 50,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/GR7mZexUOoNCWY-6jePKDdwV0EbBMzxvh6jqwRlDAorM363bv3WhkzHCkFRA9yWqsQ"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQFA",
+        "name": "Wonderful (Basic)",
+        "description": "Complete the 1st Season in Career Mode",
+        "experiencePoints": 2500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/qugZwcpSR-K1Rj6uSau8V0vlxZXw9s-izTIq_wN4zkrqqIMAb2nYPU3_4HUc9xyz0RY"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQFQ",
+        "name": "Wonderful (Bronze)",
+        "description": "Complete 10 Seasons in Career Mode",
+        "experiencePoints": 2500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 10,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/k6B0yyglxXTFocNBBJjFCkLCuwxRzdQNwK2_wqgRiaGGyubUCdqLrV4b2EsDrGnZzMA_"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQFg",
+        "name": "Wonderful (Silver)",
+        "description": "Complete 40 Seasons in Career Mode",
+        "experiencePoints": 2500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 40,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/Q_XaqN3HOY34I27PfxAOe4krY0ALrvO242aVEOS0Pn5-6NvirZUaB5xkUk2K76XuEQ"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQFw",
+        "name": "Booster",
+        "description": "Perform 15 Nitro Shockwaves",
+        "experiencePoints": 1500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 15,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/L4S51wuzmp0TSmZFYgQVH5NGmgkGsh6gw8JwFi6FmhKQ4DfRV_0fL8zKJ5pvG96XWMI"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQGA",
+        "name": "So Easy",
+        "description": "Perform 15 Perfect Nitros",
+        "experiencePoints": 1500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 15,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/E6HkxUe2MdbDFZsvqWHwSquhw97TUK1rCN6upy1rzL93mdpDwUK7T7-973weCWd8VTg"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQGQ",
+        "name": "Sway Me Now",
+        "description": "Perform 25 360s",
+        "experiencePoints": 1500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 25,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/cgW_YgjixkRa7j-gd4n33aPFDgpjbeHFEf5SvoichAvXcXvTOw7Cwtu1Pa3k1eVNI-DI"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQGg",
+        "name": "On the Road",
+        "description": "Perform 5 Perfect Runs",
+        "experiencePoints": 1500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 5,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/QfB2bQXOGbiBs-nhJu8wkYskLyxwTwZJG1TY0Qr39gYHUrDJwDTc_gOa6ENU5L142R4"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQGw",
+        "name": "Keep Trying",
+        "description": "Win 25 races in Career Mode",
+        "experiencePoints": 3500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 25,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/Ucvzf9M_E-mdNj5aYNsojLj4A3Jph3d4EWvunywinP3EWOMUPrUEMJqLAS391af04Mk"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQHA",
+        "name": "Destructible",
+        "description": "Destroy 600 race objects",
+        "experiencePoints": 1500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 600,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/ITq9AY07hEF34osCbkVrrVxAy9St2un7vJe7n-oUglsb2FQmxDW7uivLPylbKxfOCmAC"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQHQ",
+        "name": "Fly Away",
+        "description": "Spend 240 seconds in the air",
+        "experiencePoints": 3500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 240,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/tvAizyjoTnpvMHuR6MIri9PvmwQzkjDhWPlLN1Zz9PAZeT4ELawHL5E2UHDYPU14BLE"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQHg",
+        "name": "Crushed",
+        "description": "Knock down 50 traffic cars",
+        "experiencePoints": 1500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/iL8HGUxEfm8zt8mhw-fgYrQUUvHb8tHhlQVgf6I94Z_jTsi51Njuuq237_QqQFX6ew"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQHw",
+        "name": "Burnt Rubber",
+        "description": "Drift 75,000 meters",
+        "experiencePoints": 3500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/IVGN1vdaFkVWIn7VRXBMfZ04ifl8eFMlPNdGMuk5hK60xcuY41caLcreG8mMMFncYaY"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQIA",
+        "name": "Level Up",
+        "description": "Reach Reputation Level 10",
+        "experiencePoints": 3500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/4mbqnVfHI5Y8_2UmaEhHCpGqtZJTN-Sk0FrFqA9zasx-S2nmmyXq5C3Dos85gYZxqw"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQIQ",
+        "name": "Coming Through",
+        "description": "Obtain 800 Career Flags",
+        "experiencePoints": 7500,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 800,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/OigJqo1XkXjG_ehfGwF99R_ylaCn9kamd-t1udfAky21-WT4IQxRAmd78ZsN7hMX24c"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQIg",
+        "name": "Up and Up",
+        "description": "Upgrade Garage to Level 5",
+        "experiencePoints": 3500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/DgjIKq2bCxnvB3v_3hDDUBZtsAeTw87oRldBTOfAaHT7nlGYWA3TD_vC1SNqeyOfyEY"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQIw",
+        "name": "Show Off",
+        "description": "Star up 30 cars",
+        "experiencePoints": 8000,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 30,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/WyaHCfXrQIrw78i3j81-5dMxemGPxBYbEPZ9plXVQ25j-jBj9zB3MrRrd_c3c5JhRCI"
+      },
+      {
+        "id": "CgkIuJS5gpAdEAIQJA",
+        "name": "Levels Upgraded",
+        "description": "Upgrade 100 stages",
+        "experiencePoints": 10000,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 100,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/MlOcxFEXTrbbZ4UKImJpdLEy6JlmDTWhn6xi6z-2TL6LzagbgYrQDsdMlsJ7P8ws_Rlf"
+      }
+    ],
+    "created_at": "2026-11-24 22:55:51",
+    "updated_at": "2026-11-24 22:55:51",
+    "id": "57",
+    "client_sig": "ebb8a6588f7289488f8d30d11dc020bc8d4cfb0c"
   }
 }

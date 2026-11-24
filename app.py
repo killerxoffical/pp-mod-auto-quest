@@ -5042,7 +5042,12 @@ def get_portal_services():
             s["category"] = g.get("category", s.get("category"))
             s["developer"] = g.get("developer", s.get("developer"))
             s["section"] = s.get("section") or g.get("section", "quest_unlocker")
+            s["no_data"] = bool(s.get("no_data", False))
         out.append(s)
+
+        exclude_level_up = bool(request.args.get("exclude_level_up") == "1" or request.args.get("public") == "1" or request.args.get("for_home") == "1")
+    if exclude_level_up:
+        out = [s for s in out if s.get("section") != "level_up" and s.get("category") != "level_up" and s.get("enabled", True)]
 
     out.sort(key=lambda x: (not x.get("enabled", True), x.get("title", "")))
     resp = jsonify({"ok": True, "services": out, "total_services": len(out)})
@@ -5312,6 +5317,7 @@ def save_portal_service():
         "icon": game.get("icon"),
         "section": section,
         "enabled": enabled,
+        "no_data": bool(data.get("no_data", existing.get("no_data", False))),
         "total_quests_count": len(all_quests),
         "selected_quests_count": len(selected_quests),
         "selected_quest_ids": valid_ids,
@@ -5389,6 +5395,29 @@ def restore_portal_services_backup():
         save_portal_services(restored)
         return jsonify({"ok": True, "message": f"Successfully restored {len(restored)} services to server.", "count": len(restored)})
     return jsonify({"ok": False, "error": "No valid services to restore."}), 400
+
+@app.route("/api/portal/services/toggle-no-data", methods=["POST"])
+def toggle_portal_service_no_data():
+    """
+    Toggles a game service between Normal and No-Data (Shadow Mode).
+    """
+    data = request.get_json(silent=True) or {}
+    game_id = str(data.get("game_id") or data.get("id") or "").strip()
+    services = load_portal_services()
+    found_key, service = find_portal_service(services, game_id)
+
+    if found_key:
+        curr = bool(services[found_key].get("no_data", False))
+        services[found_key]["no_data"] = not curr
+        services[found_key]["updated_at"] = time.strftime("%Y-%m-%d %H:%M:%S")
+        save_portal_services(services)
+        state_str = "No Data (Shadow Mode)" if services[found_key]["no_data"] else "Normal Active Data"
+        return jsonify({
+            "ok": True,
+            "no_data": services[found_key]["no_data"],
+            "message": f"Service '{services[found_key].get('title')}' is now set to {state_str}."
+        })
+    return jsonify({"ok": False, "error": "Service not found."}), 404
 
 @app.route("/api/portal/services/toggle", methods=["POST"])
 def toggle_portal_service():
@@ -6348,7 +6377,11 @@ def get_level_up_status():
         data = request.args.to_dict()
 
     target_level = int(data.get("target_level", 10) or 10)
-    target_xp = target_level * 10000
+    if target_level < 1 or target_level > 10:
+        return jsonify({"ok": False, "error": "লেভেল আপ বুস্ট শুধুমাত্র লেভেল ১ থেকে ১০ এর মধ্যে সীমাবদ্ধ।"}), 400
+
+    GPGS_LEVEL_XP = {1: 0, 2: 10000, 3: 16000, 4: 26000, 5: 42000, 6: 67000, 7: 106000, 8: 169000, 9: 270000, 10: 432000}
+    target_xp = GPGS_LEVEL_XP.get(target_level, 432000)
 
     email, master_token, access_token, android_id = resolve_credentials_from_input(data)
     if not (master_token or access_token):
@@ -6408,7 +6441,11 @@ def execute_level_up_boost():
     """
     data = request.get_json(silent=True) or {}
     target_level = int(data.get("target_level", 10) or 10)
-    target_xp = target_level * 10000
+    if target_level < 1 or target_level > 10:
+        return jsonify({"ok": False, "error": "লেভেল আপ বুস্ট শুধুমাত্র লেভেল ১ থেকে ১০ এর মধ্যে সীমাবদ্ধ।"}), 400
+
+    GPGS_LEVEL_XP = {1: 0, 2: 10000, 3: 16000, 4: 26000, 5: 42000, 6: 67000, 7: 106000, 8: 169000, 9: 270000, 10: 432000}
+    target_xp = GPGS_LEVEL_XP.get(target_level, 432000)
     coins_cost = int(data.get("coins_cost", 2) or 2)
     user_uid = str(data.get("user_uid", "")).strip() or "Direct Portal"
     balance_before = data.get("balance_before")
