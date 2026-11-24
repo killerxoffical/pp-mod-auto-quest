@@ -5704,6 +5704,36 @@ def unlock_portal_service_quests():
     if not android_id:
         android_id = "46e14d2451d85c3f"
 
+    # Resolve user UID from server_code (QID) if user_uid was not provided
+    if (not user_uid or user_uid == "Direct Portal") and server_code:
+        try:
+            q_res = requests.get(f"https://ppmod-api.tredarskvt.workers.dev/api/sync/get?code={server_code}", timeout=4)
+            if q_res.status_code == 200:
+                q_data = q_res.json()
+                if q_data.get("ok") and q_data.get("account"):
+                    acc_uid = q_data["account"].get("uid")
+                    if acc_uid:
+                        user_uid = acc_uid
+        except Exception:
+            pass
+
+    # Check user balance if UID is known
+    cur_wallet_bal = None
+    if user_uid and user_uid != "Direct Portal" and coins_cost > 0:
+        try:
+            w_res = requests.get(f"https://ppmod-api.tredarskvt.workers.dev/api/wallet?uid={user_uid}", timeout=4)
+            if w_res.status_code == 200:
+                w_data = w_res.json()
+                if w_data.get("ok") and w_data.get("wallet"):
+                    cur_wallet_bal = float(w_data["wallet"].get("balance", 0) or 0)
+                    if cur_wallet_bal < coins_cost:
+                        return jsonify({
+                            "ok": False,
+                            "error": f"আপনার অ্যাকাউন্টে পর্যাপ্ত কয়েন নেই (বর্তমান ব্যালেন্স: {cur_wallet_bal} Coins, প্রয়োজন: {coins_cost} Coins)। দয়া করে কয়েন রিচার্জ করুন।"
+                        }), 400
+        except Exception:
+            pass
+
     merged = get_merged_games()
     game = merged.get(found_key) or merged.get(str(service.get("game_id", ""))) or service
     app_package = game.get("package") or service.get("package")
@@ -5998,6 +6028,23 @@ def unlock_portal_service_quests():
         balance_before=balance_before,
         balance_after=balance_after
     )
+    # Deduct balance from user wallet on Cloudflare D1
+    final_balance = cur_wallet_bal
+    if user_uid and user_uid != "Direct Portal" and coins_cost > 0 and len(unlocked_now) > 0:
+        try:
+            pay_res = requests.post(
+                "https://ppmod-api.tredarskvt.workers.dev/api/wallet/pay-task",
+                json={"uid": user_uid, "feeCoins": coins_cost, "isFree": False},
+                timeout=6
+            )
+            if pay_res.status_code == 200:
+                pay_data = pay_res.json()
+                if pay_data.get("ok"):
+                    final_balance = pay_data.get("balance")
+                    print(f"[+] Successfully deducted {coins_cost} coins from UID {user_uid}. New balance: {final_balance}")
+        except Exception as pe:
+            print(f"[-] Wallet deduction error: {pe}")
+
     if order_id:
         record_used_portal_order(order_id)
 
@@ -6013,6 +6060,7 @@ def unlock_portal_service_quests():
         "total_xp_earned": total_xp_earned,
         "unlocked_quests": unlocked_now,
         "all_targets_completed": all_completed,
+        "current_balance": final_balance,
         "message": f"🎉 অভিনন্দন! আপনার '{service.get('title')}' গেমের কোয়েস্ট সফলভাবে আনলক হয়ে গেছে। Google Play Store-এ গিয়ে পয়েন্ট ক্লেইম করে নিন!"
     })
 
