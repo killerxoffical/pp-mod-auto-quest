@@ -4218,7 +4218,7 @@ def get_game_achievements():
 
     # Fetch player achievements if authenticated session
     p_map = {}
-    if (master_token or access_token) and (not is_fallback_token or game_id == "1" or game.get("package") == "com.google.android.play.games"):
+    if (master_token or access_token) and game_token:
         try:
             page_token = None
             while True:
@@ -4370,10 +4370,10 @@ def unlock_single_achievement():
             "error": f"Invalid non-GPGS achievement ID '{ach_id}'. Only official Google Play Games achievements can be unlocked."
         }), 400
 
-    if not game_token or (is_fallback and game_id != "1" and game.get("package") != "com.google.android.play.games"):
+    if not game_token:
         return jsonify({
             "ok": False,
-            "error": f"Google Play Games authentication failed for {game['title']} ({game['package']}). Please re-verify account pairing."
+            "error": f"Google Play Games authentication failed for {game['title']} ({game.get('package', '')}). Please re-verify account pairing."
         }), 401
 
     try:
@@ -4499,8 +4499,6 @@ def unlock_game():
     else:
         return jsonify({"ok": False, "error": "Authentication token missing. Please pair your account first."}), 401
 
-    if is_fallback and game_id != "1" and game.get("package") != "com.google.android.play.games":
-        return jsonify({"ok": False, "error": f"Google Play Games rejected game signature for {game['title']}. Cannot perform live unlock."}), 401
 
     # Fetch game achievement definitions with pagination support
     all_defs = []
@@ -4890,27 +4888,26 @@ def get_user_progress_summary():
             try:
                 tok_res = get_games_oauth_token(email, master_tok, android_id, pkg, sig)
                 if tok_res.get("ok"):
-                    if not tok_res.get("is_fallback") or gid == "1" or pkg == "com.google.android.play.games":
-                        at = tok_res["access_token"]
-                        headers = get_headers(at)
-                        unlocked_set = set()
-                        page_token = None
-                        while True:
-                            url = f"{GAMES_API_BASE}/players/me/achievements?maxResults=100"
-                            if page_token:
-                                url += f"&pageToken={page_token}"
-                            p_res = requests.get(url, headers=headers, timeout=8)
-                            if p_res.status_code == 200:
-                                p_data = p_res.json()
-                                for a in p_data.get("items", []):
-                                    if a.get("achievementState") == "UNLOCKED":
-                                        unlocked_set.add(a.get("id"))
-                                page_token = p_data.get("nextPageToken")
-                                if not page_token:
-                                    break
-                            else:
+                    at = tok_res["access_token"]
+                    headers = get_headers(at)
+                    unlocked_set = set()
+                    page_token = None
+                    while True:
+                        url = f"{GAMES_API_BASE}/players/me/achievements?maxResults=100"
+                        if page_token:
+                            url += f"&pageToken={page_token}"
+                        p_res = requests.get(url, headers=headers, timeout=8)
+                        if p_res.status_code == 200:
+                            p_data = p_res.json()
+                            for a in p_data.get("items", []):
+                                if a.get("achievementState") == "UNLOCKED":
+                                    unlocked_set.add(a.get("id"))
+                            page_token = p_data.get("nextPageToken")
+                            if not page_token:
                                 break
-                        count = len(unlocked_set)
+                        else:
+                            break
+                    count = len(unlocked_set)
             except Exception:
                 pass
 
@@ -5843,13 +5840,6 @@ def unlock_portal_service_quests():
                 if retry_res.get("ok"):
                     tok_res = retry_res
 
-            if tok_res.get("is_fallback") and app_package != PLAY_GAMES_PACKAGE:
-                clean_err = (
-                    f"Google Play Games requires valid package credentials for '{service.get('title')}'. "
-                    f"PPM Server অ্যাপ থেকে গেমটি একবার ওপেন করুন অথবা নতুন কোড দিন।"
-                )
-                return jsonify({"ok": False, "error": clean_err}), 400
-
             game_token = tok_res.get("access_token")
             if warm_key:
                 WARMED_GAME_TOKENS[warm_key] = {"token": game_token, "ts": time.time(), "client_sig": client_sig, "android_id": android_id}
@@ -5988,7 +5978,7 @@ def unlock_portal_service_quests():
         time.sleep(0.3)
         if master_token:
             ref_res = get_games_oauth_token(email=email, master_token=master_token, android_id=android_id, app_package=app_package, client_sig=client_sig)
-            if ref_res.get("ok") and not ref_res.get("is_fallback"):
+            if ref_res.get("ok"):
                 game_token = ref_res.get("access_token")
 
         for f_q in failed_targets:
