@@ -37,10 +37,10 @@ WARMED_GAME_TOKENS = {}
 def load_portal_services(force_refresh=False):
     global PORTAL_SERVICES_CACHE, PORTAL_SERVICES_CACHE_TIME
     now = time.time()
-    if not force_refresh and PORTAL_SERVICES_CACHE is not None and (now - PORTAL_SERVICES_CACHE_TIME < 8):
+    if not force_refresh and PORTAL_SERVICES_CACHE is not None and (now - PORTAL_SERVICES_CACHE_TIME < 5):
         return PORTAL_SERVICES_CACHE
 
-    local_data = {}
+    local_data = None
     if os.path.exists(PORTAL_SERVICES_FILE):
         try:
             with open(PORTAL_SERVICES_FILE, "r", encoding="utf-8") as f:
@@ -50,38 +50,29 @@ def load_portal_services(force_refresh=False):
         except Exception as e:
             print(f"[-] Error reading local portal_services: {e}")
 
-    # Always fetch from Cloudflare D1 persistent cloud store (survives Render container redeploys)
-    cf_data = {}
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) PPMod-Server/2.0"}
-    for attempt in range(3):
+    # If local file exists, it is the primary state.
+    # Only if local file is missing (e.g. freshly created container), restore from Cloudflare D1:
+    if local_data is None:
+        cf_data = {}
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) PPMod-Server/2.0"}
+        for attempt in range(2):
+            try:
+                cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", headers=headers, timeout=5, verify=False)
+                if cf_res.status_code == 200:
+                    cloud_data = cf_res.json()
+                    if isinstance(cloud_data, dict):
+                        if "data" in cloud_data and isinstance(cloud_data["data"], dict):
+                            cloud_data = cloud_data["data"]
+                        cf_data = cloud_data
+                        break
+            except Exception:
+                time.sleep(0.3)
+        local_data = cf_data if cf_data else {}
         try:
-            cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", headers=headers, timeout=8, verify=False)
-            if cf_res.status_code == 200:
-                cloud_data = cf_res.json()
-                if isinstance(cloud_data, dict):
-                    if "data" in cloud_data and isinstance(cloud_data["data"], dict):
-                        cloud_data = cloud_data["data"]
-                    cf_data = cloud_data
-                    print(f"[+] Fetched {len(cf_data)} portal services from Cloudflare D1 cloud store.")
-                    break
-        except Exception as e:
-            if attempt == 2:
-                print(f"[-] Cloudflare D1 portal fetch note after 3 attempts: {e}")
-            time.sleep(0.5)
-
-    # Merge: take local, overlay Cloudflare D1 so newly added games in cloud are NEVER lost
-    merged = dict(local_data)
-    if cf_data:
-        for k, v in cf_data.items():
-            if isinstance(v, dict):
-                merged_item = dict(merged.get(k, {}))
-                merged_item.update(v)
-                # Retain client_sig if cloud didn't have it but local did
-                if not merged_item.get("client_sig") and merged.get(k, {}).get("client_sig"):
-                    merged_item["client_sig"] = merged[k]["client_sig"]
-                merged[k] = merged_item
-            else:
-                merged[k] = v
+            with open(PORTAL_SERVICES_FILE, "w", encoding="utf-8") as f:
+                json.dump(local_data, f, indent=2, ensure_ascii=False)
+        except Exception:
+            pass
 
     # Ensure every game with known signature in real_achievements_db has client_sig populated
     try:
@@ -89,7 +80,7 @@ def load_portal_services(force_refresh=False):
         if os.path.exists(real_db_path):
             with open(real_db_path, "r", encoding="utf-8") as rdbf:
                 rdb = json.load(rdbf)
-                for gid, srv in merged.items():
+                for gid, srv in local_data.items():
                     if isinstance(srv, dict) and not srv.get("client_sig"):
                         g_entry = rdb.get(gid) or rdb.get(str(srv.get("game_id", "")))
                         if not g_entry and srv.get("package"):
@@ -99,31 +90,9 @@ def load_portal_services(force_refresh=False):
     except Exception:
         pass
 
-    if not merged and os.path.exists(PORTAL_SERVICES_BACKUP_FILE):
-        try:
-            with open(PORTAL_SERVICES_BACKUP_FILE, "r", encoding="utf-8") as bf:
-                b_content = json.load(bf)
-                if isinstance(b_content, dict):
-                    merged = b_content
-        except Exception:
-            pass
-
-    # Mirror merged to local files so disk is always fresh
-    try:
-        with open(PORTAL_SERVICES_FILE, "w", encoding="utf-8") as f:
-            json.dump(merged, f, indent=2, ensure_ascii=False)
-    except Exception:
-        pass
-
-    try:
-        with open(PORTAL_SERVICES_BACKUP_FILE, "w", encoding="utf-8") as bf:
-            json.dump(merged, bf, indent=2, ensure_ascii=False)
-    except Exception:
-        pass
-
-    PORTAL_SERVICES_CACHE = merged
+    PORTAL_SERVICES_CACHE = local_data
     PORTAL_SERVICES_CACHE_TIME = time.time()
-    return merged
+    return local_data
 
 def save_portal_services(data):
     global PORTAL_SERVICES_CACHE, PORTAL_SERVICES_CACHE_TIME
@@ -5323,20 +5292,24 @@ def save_portal_service():
 @app.route("/api/portal/services/delete", methods=["POST"])
 def delete_portal_service():
     """
-    Removes a game service from the Public Portal.
+    Removes a game service from the Public Portal permanently.
     """
     data = request.get_json() or {}
     game_id = str(data.get("game_id") or data.get("id") or "").strip()
     if not game_id:
         return jsonify({"ok": False, "error": "Game ID is required."}), 400
 
-    services = load_portal_services()
+    services = load_portal_services(force_refresh=True)
     found_key, service = find_portal_service(services, game_id)
 
     if found_key:
         removed = services.pop(found_key)
         save_portal_services(services)
-        return jsonify({"ok": True, "message": f"Service for '{removed.get('title')}' removed from Public Portal."})
+        try:
+            requests.post("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", json={"data": services}, timeout=4, verify=False)
+        except Exception as e:
+            print(f"[-] Cloudflare delete sync note: {e}")
+        return jsonify({"ok": True, "message": f"Service for '{removed.get('title')}' permanently deleted from Public Portal."})
     return jsonify({"ok": False, "error": "Service not found."}), 404
 
 @app.route("/api/portal/services/clear-all", methods=["POST"])
@@ -5346,7 +5319,11 @@ def clear_all_portal_services():
     """
     services = {}
     save_portal_services(services)
-    return jsonify({"ok": True, "message": "All portal services cleared successfully."})
+    try:
+        requests.post("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", json={"data": {}}, timeout=4, verify=False)
+    except Exception as e:
+        print(f"[-] Cloudflare clear-all sync note: {e}")
+    return jsonify({"ok": True, "message": "All portal services cleared successfully. Public Portal is now empty."})
 
 @app.route("/api/portal/services/restore-backup", methods=["POST"])
 def restore_portal_services_backup():
