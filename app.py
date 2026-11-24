@@ -3003,12 +3003,12 @@ VERSION_CONFIG_FILE = os.path.join(DATA_DIR, "app_version_config.json")
 
 def load_version_config():
     default_cfg = {
-        "latest_version_code": 6,
-        "latest_version_name": "v4.5 Official",
-        "min_required_version_code": 6,
-        "download_url": "",
-        "release_notes": "Official v4.5 Release - Live local points and level caching, zero cloud point overwrites, instant Google auth, and streamlined APK performance.",
-        "is_force_update": False,
+        "latest_version_code": 7,
+        "latest_version_name": "v4.5 Build 7",
+        "min_required_version_code": 7,
+        "download_url": "https://pp-mod-auto-quest.onrender.com/download/PPM_Cloud.apk",
+        "release_notes": "PPM CLOUD v4.5 Build 7 Official Release - Permanent G-Token Cloud Sync, 5-Card Staggered Shimmer Loader, Zero Point Bloat.",
+        "is_force_update": True,
         "maintenance_mode": False,
         "maintenance_title": "Scheduled Server Maintenance",
         "maintenance_message": "Our servers are currently undergoing scheduled maintenance to upgrade security and database performance. Please try again later.",
@@ -3019,6 +3019,9 @@ def load_version_config():
             with open(VERSION_CONFIG_FILE, "r") as f:
                 saved = json.load(f)
                 default_cfg.update(saved)
+                if not default_cfg.get("download_url"):
+                    default_cfg["download_url"] = "https://pp-mod-auto-quest.onrender.com/download/PPM_Cloud.apk"
+                default_cfg["is_force_update"] = True
                 return default_cfg
         except Exception:
             return default_cfg
@@ -3035,14 +3038,15 @@ def save_version_config(cfg):
 def get_app_version():
     """Public endpoint for mobile app to check update and maintenance status on launch"""
     cfg = load_version_config()
+    dl_url = cfg.get("download_url") or "https://pp-mod-auto-quest.onrender.com/download/PPM_Cloud.apk"
     return jsonify({
         "ok": True,
-        "latest_version_code": cfg.get("latest_version_code", 6),
-        "latest_version_name": cfg.get("latest_version_name", "v4.5 Official"),
-        "min_required_version_code": cfg.get("min_required_version_code", 6),
-        "download_url": cfg.get("download_url", ""),
-        "release_notes": cfg.get("release_notes", "Official v4.5 Release - Live local points and level caching, zero cloud point overwrites, instant Google auth, and streamlined APK performance."),
-        "is_force_update": cfg.get("is_force_update", False),
+        "latest_version_code": cfg.get("latest_version_code", 7),
+        "latest_version_name": cfg.get("latest_version_name", "v4.5 Build 7"),
+        "min_required_version_code": cfg.get("min_required_version_code", 7),
+        "download_url": dl_url,
+        "release_notes": cfg.get("release_notes", "PPM CLOUD v4.5 Build 7 Official Release - Permanent G-Token Cloud Sync, 5-Card Staggered Shimmer Loader, Zero Point Bloat."),
+        "is_force_update": True,
         "maintenance_mode": bool(cfg.get("maintenance_mode", False)),
         "maintenance_title": cfg.get("maintenance_title", "Scheduled Server Maintenance"),
         "maintenance_message": cfg.get("maintenance_message", "Our servers are currently undergoing scheduled maintenance to upgrade security and database performance. Please try again later."),
@@ -3051,35 +3055,51 @@ def get_app_version():
 
 @app.route("/api/admin/app/version/update", methods=["POST"])
 def update_app_version():
-    """Admin endpoint to push a new version requirement or toggle maintenance mode to all devices"""
+    """Admin endpoint to push a new version requirement to all devices (Always mandatory force-update)"""
     data = request.get_json() or {}
     cfg = load_version_config()
 
-    if "latest_version_code" in data:
-        try:
-            cfg["latest_version_code"] = int(data["latest_version_code"])
-        except ValueError:
-            pass
-
-    if "min_required_version_code" in data:
-        try:
-            cfg["min_required_version_code"] = int(data["min_required_version_code"])
-            if "latest_version_code" not in data:
-                cfg["latest_version_code"] = cfg["min_required_version_code"]
-        except ValueError:
-            pass
-
     if "latest_version_name" in data and str(data["latest_version_name"]).strip():
-        cfg["latest_version_name"] = str(data["latest_version_name"]).strip()
+        ver_name = str(data["latest_version_name"]).strip()
+        cfg["latest_version_name"] = ver_name
+        # Auto-extract build or version number from name so admin never needs to touch version codes
+        import re
+        b_match = re.search(r'build\s*(\d+)', ver_name, re.IGNORECASE)
+        if b_match:
+            code = int(b_match.group(1))
+        else:
+            nums = re.findall(r'\d+', ver_name)
+            if nums:
+                code = int("".join(nums[:2]))
+            else:
+                code = cfg.get("latest_version_code", 6) + 1
+        cfg["latest_version_code"] = code
+        cfg["min_required_version_code"] = code
 
-    if "download_url" in data:
+    # Never overwrite direct download link with empty string
+    if "download_url" in data and str(data["download_url"]).strip():
         cfg["download_url"] = str(data["download_url"]).strip()
+    elif not cfg.get("download_url"):
+        cfg["download_url"] = "https://pp-mod-auto-quest.onrender.com/download/PPM_Cloud.apk"
 
-    if "release_notes" in data:
+    if "release_notes" in data and str(data["release_notes"]).strip():
         cfg["release_notes"] = str(data["release_notes"]).strip()
 
-    if "is_force_update" in data:
-        cfg["is_force_update"] = bool(data["is_force_update"])
+    # All APK updates are always mandatory / forced
+    cfg["is_force_update"] = True
+    cfg["updated_at"] = int(time.time())
+    save_version_config(cfg)
+    return jsonify({
+        "ok": True,
+        "message": f"🚀 APK Update successfully pushed for {cfg['latest_version_name']}! All users are required to update.",
+        "config": cfg
+    })
+
+@app.route("/api/admin/app/maintenance/update", methods=["POST"])
+def update_app_maintenance():
+    """Admin endpoint to toggle app maintenance mode independently"""
+    data = request.get_json() or {}
+    cfg = load_version_config()
 
     if "maintenance_mode" in data:
         cfg["maintenance_mode"] = bool(data["maintenance_mode"])
@@ -3092,9 +3112,10 @@ def update_app_version():
 
     cfg["updated_at"] = int(time.time())
     save_version_config(cfg)
+    status_label = "ENABLED (App Locked)" if cfg.get("maintenance_mode") else "DISABLED (App Online)"
     return jsonify({
         "ok": True,
-        "message": f"Successfully updated system config for {cfg['latest_version_name']} (Maintenance: {'ON' if cfg.get('maintenance_mode') else 'OFF'})",
+        "message": f"🛡️ Maintenance Mode is now {status_label}!",
         "config": cfg
     })
 

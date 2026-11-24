@@ -2638,7 +2638,7 @@
                     </div>
                 </div>
 
-                <!-- PP SERVER IN-APP FORCE UPDATE MANAGER (DEDICATED TO USER APP: PP_Server.apk) -->
+                <!-- ==================== 1. PPM CLOUD IN-APP FORCE UPDATE MANAGER ==================== -->
                 <div class="card"
                     style="margin-top: 24px; background: var(--bg-card); border: 1px solid rgba(139,92,246,0.3); border-radius: var(--radius-xl); padding: 24px; box-shadow: var(--shadow-md);">
                     <div
@@ -2648,100 +2648,106 @@
                                 <span style="font-size:24px;">🚀</span>
                                 <div>
                                     <h4 style="font-size:17px; font-weight:800; color:var(--text-primary); margin:0;">
-                                        PP Server Client (User App) • In-App Force Update Manager
+                                        PPM CLOUD Client • In-App Force Update Manager
                                     </h4>
                                     <span style="font-size:12px; color:var(--accent-purple); font-weight:700;">Target:
-                                        PP_Server.apk (com.vareon.playquest) • ইউজার ক্লায়েন্ট অ্যাপ</span>
+                                        PPM_Cloud.apk (com.ppm.cloud) • ইউজার ক্লায়েন্ট অ্যাপ</span>
                                 </div>
                             </div>
                             <p style="font-size:12.5px; color:var(--text-secondary); margin-top:6px; line-height:1.5;">
-                                এডমিন এখান থেকে নতুন ভার্সন পুশ করলে সকল ইউজারের <strong>PP Server</strong> অ্যাপে
-                                সরাসরি ৩ডি রকেট ফোর্স-আপডেট পপআপ শো করবে এবং আপডেট না করা পর্যন্ত ইউজাররা অ্যাপ ব্যবহার
-                                করতে পারবে না।
+                                এডমিন এখান থেকে নতুন ভার্সন নেম পুশ করলে সকল ইউজারের <strong>PPM CLOUD</strong> অ্যাপে
+                                সরাসরি ৩ডি রকেট ফোর্স-আপডেট পপআপ শো করবে এবং আপডেট না করা পর্যন্ত কোনো ইউজার অ্যাপ ব্যবহার করতে পারবে না।
                             </p>
                         </div>
                         <div style="display:flex; align-items:center; gap:8px;">
                             <span id="badgeCurrentAppVer" class="badge-status active"
                                 style="background:rgba(16,185,129,0.15); color:var(--accent-green); border:1px solid rgba(16,185,129,0.3); font-weight:800; font-size:12px; padding:6px 14px;">
-                                LIVE: v4.2 Official (Code 6)
+                                LIVE: v4.5 Build 7
                             </span>
                         </div>
                     </div>
 
-                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:16px;">
-                        <div>
-                            <label
-                                style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:6px;">Minimum
-                                Required Version Code *</label>
-                            <input id="updMinVerCode" type="number" class="form-input-element" value="6"
-                                style="height:42px; font-weight:800; font-family:'JetBrains Mono'; font-size:14px;">
-                            <span
-                                style="font-size:11px; color:var(--text-muted); display:block; margin-top:4px;">ইউজারের
-                                অ্যাপের ভার্সন কোড এই সংখ্যার চেয়ে কম হলে সাথে সাথে ফোর্স আপডেট পপআপ ব্লক করবে।</span>
-                        </div>
+                    <div style="display:grid; grid-template-columns: 1fr; gap:16px;">
                         <div>
                             <label
                                 style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:6px;">Latest
-                                Version Name (Full Text) *</label>
-                            <input id="updVerName" type="text" class="form-input-element" value="v4.2 Official"
-                                style="height:42px; font-weight:700; font-size:13px;">
-                            <span style="font-size:11px; color:var(--text-muted); display:block; margin-top:4px;">এডমিন
-                                যা লিখবেন ইউজারের আপডেট পপআপে বড় অক্ষরে সেটাই শো করবে (যেমন: v4.2 Official)।</span>
+                                Version Name (যেমন: v4.5 Build 7 বা v4.6) *</label>
+                            <input id="updVerName" type="text" class="form-input-element" value="v4.5 Build 7"
+                                style="height:42px; font-weight:800; font-size:13.5px;"
+                                placeholder="e.g. v4.5 Build 7">
+                            <span style="font-size:11px; color:var(--text-muted); display:block; margin-top:4px;">
+                                💡 শুধু নতুন ভার্সন নাম লিখবেন (যেমন: v4.5 Build 7)। কোনো কোড হিসেব করতে হবে না—ভার্সন নেম বদলালেই ইউজারদের অ্যাপে সাথে সাথে রকেট আপডেট স্ক্রিন চলে আসবে।
+                            </span>
                         </div>
-                        <div style="grid-column: 1 / -1;">
+                        <div>
                             <label
                                 style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:6px;">Direct
                                 APK Download URL *</label>
                             <input id="updDownloadUrl" type="url" class="form-input-element"
-                                value="https://pp-mod-auto-quest.onrender.com/download/PP_Server.apk"
+                                value="https://pp-mod-auto-quest.onrender.com/download/PPM_Cloud.apk"
                                 style="height:42px; font-family:'JetBrains Mono'; font-size:12.5px;">
                             <span style="font-size:11px; color:var(--text-muted); display:block; margin-top:4px;">ইউজার
-                                আপডেট বাটনে ক্লিক করলে সরাসরি এই লিংক থেকে লেটেস্ট APK ডাউনলোড শুরু হবে।</span>
+                                আপডেট বাটনে ক্লিক করলে সরাসরি এই লিংক থেকে লেটেস্ট APK ডাউনলোড শুরু হবে (সেভ করলে লিংক আর কখনোই উধাও হবে না)।</span>
                         </div>
-                        <div style="grid-column: 1 / -1;">
+                        <div>
                             <label
                                 style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:6px;">Release
                                 Notes / What's New</label>
                             <textarea id="updReleaseNotes" class="form-input-element"
                                 style="height:70px; font-size:12.5px; resize:vertical;"
-                                placeholder="New security features, live profile synchronization, and anti-interception enhancements..."></textarea>
-                        </div>
-                        <div style="grid-column: 1 / -1; margin-top:10px; padding:16px; background:linear-gradient(135deg, rgba(239,68,68,0.06), rgba(245,158,11,0.06)); border:1px solid rgba(239,68,68,0.25); border-radius:12px;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
-                                <div style="display:flex; align-items:center; gap:8px;">
-                                    <span style="font-size:20px;">🛡️</span>
-                                    <strong style="font-size:13px; color:var(--text-primary);">App Maintenance Mode (সম্পূর্ণ অ্যাপ লকড স্ক্রিন)</strong>
-                                </div>
-                                <label style="display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:800; color:#ef4444; cursor:pointer;">
-                                    <input id="chkMaintenanceMode" type="checkbox" style="width:18px; height:18px; accent-color:#ef4444;">
-                                    <span>Enable Maintenance Mode Now</span>
-                                </label>
-                            </div>
-                            <div style="display:grid; grid-template-columns:1fr 2fr; gap:12px;">
-                                <div>
-                                    <label style="font-size:11.5px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">Maintenance Title</label>
-                                    <input id="updMaintTitle" type="text" class="form-input-element" value="System Under Maintenance" style="height:38px; font-size:12.5px;">
-                                </div>
-                                <div>
-                                    <label style="font-size:11.5px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">Maintenance Message (Display to Users)</label>
-                                    <input id="updMaintMsg" type="text" class="form-input-element" value="Our servers are currently undergoing scheduled maintenance to upgrade security and performance. Please try again later." style="height:38px; font-size:12px;">
-                                </div>
-                            </div>
-                            <span style="font-size:11px; color:var(--text-muted); display:block; margin-top:8px;">অন থাকলে ইউজারের অ্যাপে সুন্দর ফুলস্ক্রিন মেইনটেনেন্স স্ক্রিন চলে আসবে এবং কোনো অপশন বা পেজে যেতে পারবে না।</span>
+                                placeholder="নতুন ফিচার, বাগ ফিক্স ইত্যাদি..."></textarea>
                         </div>
                     </div>
 
                     <div
                         style="display:flex; justify-content:space-between; align-items:center; margin-top:18px; padding-top:14px; border-top:1px solid var(--border-color); flex-wrap:wrap; gap:12px;">
-                        <label
-                            style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; cursor:pointer;">
-                            <input id="chkForceUpdate" type="checkbox" checked
-                                style="width:16px; height:16px; accent-color:var(--accent-purple);">
-                            <span>Enforce Strict Blocking (আপডেট ছাড়া কোনো ইউজার অ্যাপ ব্যবহার করতে পারবে না)</span>
-                        </label>
+                        <span style="font-size:12.5px; color:var(--accent-purple); font-weight:800; display:flex; align-items:center; gap:6px;">
+                            ⚡ সকল ইউজারের জন্য বাধ্যতামূলক ফোর্স আপডেট (আপডেট না দিলে ইউজার অ্যাপে ঢুকতে পারবে না)
+                        </span>
                         <button type="button" class="btn-primary" onclick="pushAppForceUpdate()"
-                            style="padding:10px 24px; font-weight:800; font-size:13px;">
-                            🚀 Push Live Update to All PP Server Devices
+                            style="padding:10px 26px; font-weight:800; font-size:13px;">
+                            🚀 Save &amp; Push APK Update
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ==================== 2. DEDICATED APP MAINTENANCE MODE CARD ==================== -->
+                <div class="card"
+                    style="margin-top: 20px; background: linear-gradient(135deg, rgba(239,68,68,0.04), rgba(245,158,11,0.04)); border: 1px solid rgba(239,68,68,0.3); border-radius: var(--radius-xl); padding: 24px; box-shadow: var(--shadow-sm);">
+                    <div
+                        style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:12px;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="font-size:24px;">🛡️</span>
+                            <div>
+                                <h4 style="font-size:16px; font-weight:800; color:var(--text-primary); margin:0;">
+                                    PPM CLOUD App Maintenance Mode (ফুলস্ক্রিন অ্যাপ লক)
+                                </h4>
+                                <span style="font-size:11.5px; color:var(--text-secondary); margin-top:2px;">
+                                    অন থাকলে সকল ইউজারের অ্যাপে ফুলস্ক্রিন ৩ডি অ্যাস্ট্রোনাট মেইনটেনেন্স স্ক্রিন চলে আসবে এবং কোনো অপশনে যেতে পারবে না।
+                                </span>
+                            </div>
+                        </div>
+                        <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:800; color:#ef4444; cursor:pointer;">
+                            <input id="chkMaintenanceMode" type="checkbox" style="width:20px; height:20px; accent-color:#ef4444;">
+                            <span>Enable Maintenance Mode Now</span>
+                        </label>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: 1fr 2fr; gap:14px;">
+                        <div>
+                            <label style="font-size:11.5px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">Maintenance Title</label>
+                            <input id="updMaintTitle" type="text" class="form-input-element" value="System Under Maintenance" style="height:38px; font-size:12.5px;">
+                        </div>
+                        <div>
+                            <label style="font-size:11.5px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">Maintenance Message (Display to Users)</label>
+                            <input id="updMaintMsg" type="text" class="form-input-element" value="Our servers are currently undergoing scheduled maintenance to upgrade security and performance. Please try again later." style="height:38px; font-size:12px;">
+                        </div>
+                    </div>
+
+                    <div style="display:flex; justify-content:flex-end; margin-top:16px; padding-top:12px; border-top:1px solid rgba(239,68,68,0.2);">
+                        <button type="button" class="btn-primary" onclick="saveAppMaintenanceMode()"
+                            style="background:#dc2626; border-color:#b91c1c; padding:10px 24px; font-weight:800; font-size:13px;">
+                            🛡️ Save Maintenance Settings
                         </button>
                     </div>
                 </div>
@@ -5147,44 +5153,67 @@
                 const res = await fetch(`${API_BASE}/api/app/version`);
                 const data = await res.json();
                 if (data.ok) {
-                    if (document.getElementById("updMinVerCode")) document.getElementById("updMinVerCode").value = data.min_required_version_code || 6;
-                    if (document.getElementById("updVerName")) document.getElementById("updVerName").value = data.latest_version_name || "v4.5 Official";
-                    if (document.getElementById("updDownloadUrl")) document.getElementById("updDownloadUrl").value = data.download_url || "";
-                    if (document.getElementById("portalApkDownloadUrl")) document.getElementById("portalApkDownloadUrl").value = data.download_url || "";
+                    const dl = data.download_url || "https://pp-mod-auto-quest.onrender.com/download/PPM_Cloud.apk";
+                    if (document.getElementById("updVerName")) document.getElementById("updVerName").value = data.latest_version_name || "v4.5 Build 7";
+                    if (document.getElementById("updDownloadUrl")) document.getElementById("updDownloadUrl").value = dl;
+                    if (document.getElementById("portalApkDownloadUrl")) document.getElementById("portalApkDownloadUrl").value = dl;
                     if (document.getElementById("updReleaseNotes")) document.getElementById("updReleaseNotes").value = data.release_notes || "";
-                    if (document.getElementById("chkForceUpdate")) document.getElementById("chkForceUpdate").checked = !!data.is_force_update;
                     if (document.getElementById("chkMaintenanceMode")) document.getElementById("chkMaintenanceMode").checked = !!data.maintenance_mode;
                     if (document.getElementById("updMaintTitle")) document.getElementById("updMaintTitle").value = data.maintenance_title || "System Under Maintenance";
                     if (document.getElementById("updMaintMsg")) document.getElementById("updMaintMsg").value = data.maintenance_message || "Our servers are currently undergoing scheduled maintenance to upgrade security and performance. Please try again later.";
                     if (document.getElementById("badgeCurrentAppVer")) {
-                        const maintBadge = data.maintenance_mode ? ' <span style="background:#ef4444; color:#fff; padding:2px 6px; border-radius:4px; font-size:10px;">MAINTENANCE ON</span>' : '';
-                        document.getElementById("badgeCurrentAppVer").innerHTML = `LIVE: ${data.latest_version_name} (Code ${data.min_required_version_code})${maintBadge}`;
+                        const maintBadge = data.maintenance_mode ? ' <span style="background:#ef4444; color:#fff; padding:2px 8px; border-radius:4px; font-size:10px; margin-left:6px;">MAINTENANCE ON</span>' : '';
+                        document.getElementById("badgeCurrentAppVer").innerHTML = `LIVE: ${data.latest_version_name || 'v4.5 Build 7'}${maintBadge}`;
                     }
                 }
             } catch (e) { }
         }
 
         async function pushAppForceUpdate() {
-            const minCode = parseInt(document.getElementById("updMinVerCode")?.value || "6");
-            const verName = document.getElementById("updVerName")?.value || "";
-            const dlUrl = document.getElementById("updDownloadUrl")?.value || "";
+            const verName = (document.getElementById("updVerName")?.value || "").trim();
+            const dlUrl = (document.getElementById("updDownloadUrl")?.value || "").trim() || "https://pp-mod-auto-quest.onrender.com/download/PPM_Cloud.apk";
             if (document.getElementById("portalApkDownloadUrl")) document.getElementById("portalApkDownloadUrl").value = dlUrl;
-            const notes = document.getElementById("updReleaseNotes")?.value || "";
-            const force = document.getElementById("chkForceUpdate")?.checked ?? true;
-            const maint = document.getElementById("chkMaintenanceMode")?.checked ?? false;
-            const maintTitle = document.getElementById("updMaintTitle")?.value || "System Under Maintenance";
-            const maintMsg = document.getElementById("updMaintMsg")?.value || "";
+            const notes = (document.getElementById("updReleaseNotes")?.value || "").trim();
+
+            if (!verName) {
+                showToast("দয়া করে Version Name লিখুন (যেমন: v4.5 Build 7)", "error");
+                return;
+            }
 
             try {
                 const res = await fetch(`${API_BASE}/api/admin/app/version/update`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        min_required_version_code: minCode,
                         latest_version_name: verName,
                         download_url: dlUrl,
                         release_notes: notes,
-                        is_force_update: force,
+                        is_force_update: true
+                    })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    showToast("🚀 APK Update সফলভাবে পুশ হয়েছে! সকল ডিভাইসে ফোর্স আপডেট সক্রিয়।", "success");
+                    await loadAppVersionConfig();
+                } else {
+                    showToast(data.error || "Failed to update version.", "error");
+                }
+            } catch (e) {
+                showToast("Connection error pushing update: " + e.message, "error");
+            }
+        }
+        window.pushAppForceUpdate = pushAppForceUpdate;
+
+        async function saveAppMaintenanceMode() {
+            const maint = document.getElementById("chkMaintenanceMode")?.checked ?? false;
+            const maintTitle = (document.getElementById("updMaintTitle")?.value || "System Under Maintenance").trim();
+            const maintMsg = (document.getElementById("updMaintMsg")?.value || "").trim();
+
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/app/maintenance/update`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
                         maintenance_mode: maint,
                         maintenance_title: maintTitle,
                         maintenance_message: maintMsg
@@ -5192,15 +5221,16 @@
                 });
                 const data = await res.json();
                 if (data.ok) {
-                    showToast(data.message, "success");
+                    showToast(maint ? "🛡️ Maintenance Mode সফলভাবে ON করা হয়েছে!" : "✅ Maintenance Mode সফলভাবে OFF করা হয়েছে!", "success");
                     await loadAppVersionConfig();
                 } else {
-                    showToast(data.error || "Failed to update version.", "error");
+                    showToast(data.error || "Failed to update maintenance mode.", "error");
                 }
             } catch (e) {
-                showToast("Connection error pushing update.", "error");
+                showToast("Connection error saving maintenance: " + e.message, "error");
             }
         }
+        window.saveAppMaintenanceMode = saveAppMaintenanceMode;
 
         // Modal Add User
         function openAddUserModal() {
