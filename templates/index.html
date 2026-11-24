@@ -1562,13 +1562,6 @@
                         </svg>
                         <span>Public Portal</span>
                     </a>
-                    <a class="nav-item" id="navHistory" onclick="switchAdminTab('history')">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
-                        </svg>
-                        <span>Serviced Log</span>
-                        <span id="historyLogCountBadge" style="background:var(--accent-green-subtle); color:var(--accent-green); font-size:10px; font-weight:800; padding:2px 6px; border-radius:10px; margin-left:auto;">0</span>
-                    </a>
                     <a class="nav-item" id="navAddGame" onclick="switchAdminTab('add_game')">
                         <svg viewBox="0 0 24 24">
                             <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
@@ -1595,13 +1588,6 @@
                                 d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z" />
                         </svg>
                         <span>APK Node Builds</span>
-                    </a>
-                    <a class="nav-item" id="navGateway" onclick="switchAdminTab('gateway')">
-                        <svg viewBox="0 0 24 24">
-                            <path
-                                d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z" />
-                        </svg>
-                        <span>Gateway &amp; SMS</span>
                     </a>
                     <a class="nav-item" href="https://ppmods.netlify.app/" target="_blank" rel="noopener">
                         <svg viewBox="0 0 24 24">
@@ -2031,10 +2017,10 @@
                     <div class="users-table-card">
                         <div class="table-header-box">
                             <div>
-                                <h3 style="font-size:17px; font-weight:800; color:var(--text-primary);">📱 Registered
-                                    Mobile Devices &amp; Users</h3>
-                                <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Real-time
-                                    connected Android hardware nodes, PP Mod user profiles, and active sync sessions.
+                                <h3 style="font-size:17px; font-weight:800; color:var(--text-primary);">👤 Registered
+                                    PP Mod Users &amp; Accounts</h3>
+                                <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Cloudflare D1
+                                    authenticated user profiles, synced Google Play accounts, and connected devices.
                                 </p>
                             </div>
                             <div style="display:flex; align-items:center; gap:10px;">
@@ -2050,7 +2036,7 @@
                                     style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--text-muted);">🔍</span>
                                 <input type="text" id="userSearchInput" class="form-input-element"
                                     style="width: 100%; padding-left: 34px; font-size: 12px; border-radius: var(--radius-sm);"
-                                    placeholder="Search by Mobile Model, PP Mod UID, or Email..."
+                                    placeholder="Search by PP Mod UID, Name, Email, or Sync Code..."
                                     oninput="handleUserSearch()">
                             </div>
                             <div style="display: flex; gap: 8px;">
@@ -2069,17 +2055,16 @@
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>📱 Mobile Device / Model</th>
-                                        <th>👤 PP Mod Account</th>
-                                        <th>🆔 PP Mod UID</th>
-                                        <th>🔗 Synced Accounts</th>
+                                        <th>👤 User Profile &amp; UID</th>
+                                        <th>📧 Connected Google Play Accounts</th>
+                                        <th>📱 Hardware Device(s)</th>
                                         <th>Status</th>
                                         <th style="text-align:right;">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="usersTableBody">
                                     <tr>
-                                        <td colspan="6"
+                                        <td colspan="5"
                                             style="text-align:center; padding:30px; color:var(--text-muted);">Loading
                                             active users...</td>
                                     </tr>
@@ -2943,171 +2928,6 @@
                 </div>
             </section>
 
-            <!-- VIEW 6: Payment Gateway & Mobile SMS Monitor -->
-            <section id="viewGateway" class="admin-view-panel hidden">
-                <div class="users-table-card">
-                    <div class="table-header-box">
-                        <div style="display:flex; align-items:center; gap:16px;">
-                            <img src="/static/images/gateway_logo.png"
-                                style="width:52px; height:52px; border-radius:var(--radius-md); object-fit:cover; border:1px solid var(--border-color); box-shadow:0 4px 14px rgba(245,158,11,0.25);">
-                            <div>
-                                <h3 style="font-size:18px; font-weight:800; color:var(--text-primary);">📱 Mobile SMS
-                                    Payment Gateway &amp; TrxID Monitor</h3>
-                                <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Real-time
-                                    automated payment alerts captured by PP Gateway Node (bKash • Nagad • Rocket).</p>
-                            </div>
-                        </div>
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <span class="quota-safety-badge">🔒 Anti-Duplicate TrxID Active</span>
-                            <button class="btn-inspect-action" onclick="loadGatewayTransactions()">🔄 Refresh
-                                SMS</button>
-                        </div>
-                    </div>
-
-                    <!-- Info Banner -->
-                    <div
-                        style="padding:12px 24px; background:var(--bg-card-subtle); border-bottom:1px solid var(--border-color); display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-                        <span style="font-size:16px;">💡</span>
-                        <span style="font-size:12px; color:var(--text-secondary);">
-                            ইউজারদের পেমেন্ট স্বয়ংক্রিয়ভাবে কয়েন ব্যালেন্সে যোগ হয়। আন-ক্লেইমড ট্রানজেকশন অ্যাডমিন
-                            <strong>[Claim as Admin]</strong> বাটনে ক্লিক করে স্থায়ীভাবে লক করে রাখতে পারবেন।
-                        </span>
-                    </div>
-
-                    <div style="overflow-x:auto;">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>MFS Channel &amp; Sender</th>
-                                    <th>Received Amount</th>
-                                    <th>Transaction ID (TrxID)</th>
-                                    <th>SIM Balance</th>
-                                    <th>Claim Status &amp; User Audit</th>
-                                    <th>Protection Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="gatewayTableBody">
-                                <tr>
-                                    <td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);">
-                                        Querying Gateway Node SMS messages...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-        
-            <!-- ================= VIEW: SERVICED ACCOUNTS LOG & HISTORY ================= -->
-            <section id="viewHistory" class="admin-view-panel hidden">
-                <!-- Stat Summary Cards Row -->
-                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:16px; margin-bottom:24px;">
-                    <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-lg); padding:20px; box-shadow:var(--shadow-card); display:flex; align-items:center; gap:16px; position:relative; overflow:hidden;">
-                        <div style="width:52px; height:52px; border-radius:var(--radius-md); background:linear-gradient(135deg, #10b981, #059669); display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 6px 16px rgba(16,185,129,0.28);">
-                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                        </div>
-                        <div>
-                            <span style="font-size:11px; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Lifetime Tasks Completed</span>
-                            <div id="statTotalCompletedAllTime" style="font-size:26px; font-weight:800; color:var(--text-primary); font-family:'JetBrains Mono', monospace; line-height:1.2; margin-top:3px;">0</div>
-                            <span style="font-size:11px; color:var(--accent-green); font-weight:600;">✓ Persistent All-Time Total</span>
-                        </div>
-                    </div>
-
-                    <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-lg); padding:20px; box-shadow:var(--shadow-card); display:flex; align-items:center; gap:16px;">
-                        <div style="width:52px; height:52px; border-radius:var(--radius-md); background:linear-gradient(135deg, #0284c7, #2563eb); display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 6px 16px rgba(2,132,199,0.25);">
-                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                        </div>
-                        <div>
-                            <span style="font-size:11px; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Web App Requests</span>
-                            <div id="statWebRequestsCount" style="font-size:26px; font-weight:800; color:var(--text-primary); font-family:'JetBrains Mono', monospace; line-height:1.2; margin-top:3px;">0</div>
-                            <span style="font-size:11px; color:#0284c7; font-weight:600;">Reconciled by Web User UID</span>
-                        </div>
-                    </div>
-
-                    <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-lg); padding:20px; box-shadow:var(--shadow-card); display:flex; align-items:center; gap:16px;">
-                        <div style="width:52px; height:52px; border-radius:var(--radius-md); background:linear-gradient(135deg, #8b5cf6, #6d28d9); display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 6px 16px rgba(139,92,246,0.25);">
-                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 6v6l4 2"/></svg>
-                        </div>
-                        <div>
-                            <span style="font-size:11px; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Direct Portal Unlocks</span>
-                            <div id="statDirectRequestsCount" style="font-size:26px; font-weight:800; color:var(--text-primary); font-family:'JetBrains Mono', monospace; line-height:1.2; margin-top:3px;">0</div>
-                            <span style="font-size:11px; color:#8b5cf6; font-weight:600;">Public Portal Sessions</span>
-                        </div>
-                    </div>
-
-                    <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-lg); padding:20px; box-shadow:var(--shadow-card); display:flex; align-items:center; gap:16px;">
-                        <div style="width:52px; height:52px; border-radius:var(--radius-md); background:linear-gradient(135deg, #f59e0b, #d97706); display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 6px 16px rgba(245,158,11,0.25);">
-                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                        </div>
-                        <div>
-                            <span style="font-size:11px; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Recent Audit Logs</span>
-                            <div id="statRecentLogsCount" style="font-size:26px; font-weight:800; color:var(--text-primary); font-family:'JetBrains Mono', monospace; line-height:1.2; margin-top:3px;">0 / 100</div>
-                            <span style="font-size:11px; color:#d97706; font-weight:600;">Last 100 Serviced Tasks</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Main Table Card -->
-                <div class="users-table-card">
-                    <div class="table-header-box" style="flex-wrap:wrap; gap:14px;">
-                        <div style="display:flex; align-items:center; gap:14px;">
-                            <div style="width:48px; height:48px; border-radius:var(--radius-md); background:linear-gradient(135deg, #10b981 0%, #06b6d4 100%); display:flex; align-items:center; justify-content:center; box-shadow:0 4px 14px var(--accent-green-glow); flex-shrink:0;">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                            </div>
-                            <div>
-                                <h3 style="font-size:18px; font-weight:800; color:var(--text-primary);">📋 Serviced Accounts &amp; Quest Fulfillment History</h3>
-                                <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Real-time persistent audit record of the last 100 Google Play Games accounts serviced, 6-digit sync codes, and user web UIDs.</p>
-                            </div>
-                        </div>
-
-                        <!-- Toolbar / Filters -->
-                        <div style="display:flex; align-items:center; gap:10px; margin-left:auto; flex-wrap:wrap;">
-                            <div style="position:relative;">
-                                <input type="text" id="historySearchInput" placeholder="Search account, code, UID, game..." onkeyup="filterServicedHistory()" style="padding:8px 14px 8px 34px; font-size:12.5px; border-radius:var(--radius-md); border:1px solid var(--border-color); background:var(--bg-body); color:var(--text-primary); width:230px; outline:none;">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position:absolute; left:11px; top:10px; color:var(--text-muted);"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                            </div>
-                            <select id="historyStatusFilter" onchange="filterServicedHistory()" style="padding:8px 12px; font-size:12.5px; border-radius:var(--radius-md); border:1px solid var(--border-color); background:var(--bg-body); color:var(--text-primary); outline:none;">
-                                <option value="ALL">All Statuses</option>
-                                <option value="COMPLETED">Completed</option>
-                                <option value="ALREADY_DONE">Already Done</option>
-                                <option value="FAILED">Failed</option>
-                                <option value="REFUNDED">Refunded</option>
-                            </select>
-                            <button onclick="refreshServicedHistoryWithAnim()" id="btnHistoryRefresh" class="btn-refresh" style="display:flex; align-items:center; gap:6px; padding:8px 15px; font-size:12.5px; font-weight:800; border-radius:var(--radius-md); background:linear-gradient(135deg, #059669 0%, #0d9488 100%); color:#ffffff; border:none; cursor:pointer; box-shadow:0 2px 8px rgba(5,150,105,0.22); transition:all 0.2s ease;">
-                                <svg id="historyRefreshSvg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="transition:transform 0.5s ease;"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-                                <span id="historyRefreshText">Refresh</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Table -->
-                    <div style="overflow-x:auto;">
-                        <table class="users-data-table" style="width:100%; border-collapse:collapse;">
-                            <thead>
-                                <tr>
-                                    <th style="width:40px; text-align:center;">#</th>
-                                    <th style="width:125px;">Date &amp; Time</th>
-                                    <th style="min-width:140px;">Web User UID</th>
-                                    <th style="min-width:190px;">Play Games Account</th>
-                                    <th style="width:95px; text-align:center;">QID</th>
-                                    <th style="min-width:210px;">Game &amp; Service</th>
-                                    <th style="width:120px; text-align:center;">Quests</th>
-                                    <th style="width:120px; text-align:center;">Status</th>
-                                    <th style="min-width:160px; text-align:center;">Balance Audit</th>
-                                </tr>
-                            </thead>
-                            <tbody id="servicedHistoryTableBody">
-                                <tr>
-                                    <td colspan="9" style="text-align:center; padding:35px; color:var(--text-muted);">
-                                        <div class="spinner" style="margin:0 auto 10px; border-top-color:var(--accent-green);"></div>
-                                        Loading serviced accounts history from Render node...
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
         </main>
     </div>
 
@@ -3942,8 +3762,6 @@
             if (document.getElementById("navPortal")) document.getElementById("navPortal").classList.toggle("active", tab === "portal");
             if (document.getElementById("navNotifications")) document.getElementById("navNotifications").classList.toggle("active", tab === "notifications");
             if (document.getElementById("navApk")) document.getElementById("navApk").classList.toggle("active", tab === "apk");
-            if (document.getElementById("navGateway")) document.getElementById("navGateway").classList.toggle("active", tab === "gateway");
-            if (document.getElementById("navHistory")) document.getElementById("navHistory").classList.toggle("active", tab === "history");
 
             document.getElementById("viewGames").classList.toggle("hidden", tab !== "games");
             document.getElementById("viewAddGame").classList.toggle("hidden", tab !== "add_game");
@@ -3951,15 +3769,11 @@
             if (document.getElementById("viewPortal")) document.getElementById("viewPortal").classList.toggle("hidden", tab !== "portal");
             if (document.getElementById("viewNotifications")) document.getElementById("viewNotifications").classList.toggle("hidden", tab !== "notifications");
             if (document.getElementById("viewApk")) document.getElementById("viewApk").classList.toggle("hidden", tab !== "apk");
-            if (document.getElementById("viewGateway")) document.getElementById("viewGateway").classList.toggle("hidden", tab !== "gateway");
-            if (document.getElementById("viewHistory")) document.getElementById("viewHistory").classList.toggle("hidden", tab !== "history");
 
             if (tab === "users") loadUsersList();
             if (tab === "portal") loadPortalServices();
             if (tab === "notifications") loadNotificationAudience();
             if (tab === "apk") loadAppVersionConfig();
-            if (tab === "gateway") loadGatewayTransactions();
-            if (tab === "history") loadServicedHistory();
         }
 
         // Live Real-Time Game Quest Completion Tracking (Zero Local Storage Cache)
@@ -4994,14 +4808,46 @@
         async function loadUsersList() {
             closeUserFullPanel();
             const tbody = document.getElementById("usersTableBody");
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px;"><div class="spinner" style="margin:0 auto 8px; border-top-color:var(--accent-green);"></div>Querying Cloudflare D1 accounts...</td></tr>`;
+            if (tbody) {
+                // Immediate modern skeleton loader (5 rows)
+                tbody.innerHTML = [1, 2, 3, 4, 5].map(() => `
+                    <tr>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div class="skeleton-shimmer" style="width:36px; height:36px; border-radius:50%; flex-shrink:0;"></div>
+                                <div style="flex:1;">
+                                    <div class="skeleton-shimmer" style="width:130px; height:14px; border-radius:4px; margin-bottom:6px;"></div>
+                                    <div class="skeleton-shimmer" style="width:170px; height:11px; border-radius:4px; margin-bottom:6px;"></div>
+                                    <div class="skeleton-shimmer" style="width:90px; height:16px; border-radius:4px;"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="skeleton-shimmer" style="width:140px; height:20px; border-radius:12px; margin-bottom:6px;"></div>
+                            <div class="skeleton-shimmer" style="width:200px; height:12px; border-radius:4px; margin-bottom:4px;"></div>
+                            <div class="skeleton-shimmer" style="width:160px; height:12px; border-radius:4px;"></div>
+                        </td>
+                        <td>
+                            <div class="skeleton-shimmer" style="width:120px; height:14px; border-radius:4px; margin-bottom:6px;"></div>
+                            <div class="skeleton-shimmer" style="width:90px; height:11px; border-radius:4px; margin-bottom:4px;"></div>
+                            <div class="skeleton-shimmer" style="width:65px; height:15px; border-radius:4px;"></div>
+                        </td>
+                        <td>
+                            <div class="skeleton-shimmer" style="width:65px; height:22px; border-radius:12px;"></div>
+                        </td>
+                        <td style="text-align:right;">
+                            <div class="skeleton-shimmer" style="width:130px; height:28px; border-radius:6px; margin-left:auto;"></div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
 
             try {
                 const res = await fetch(`${API_BASE}/api/admin/users`);
                 const data = await res.json();
                 if (data.ok && Array.isArray(data.users)) {
-                    // Filter only accounts with at least 1 valid email
-                    allUsersList = data.users.filter(u => u && u.email && u.email.trim() !== "");
+                    // Show valid users with email or uid
+                    allUsersList = data.users.filter(u => u && (u.email || u.uid));
                     applyUserFilterAndRender();
 
                     // Populate Push Notification Target Dropdown
@@ -5020,10 +4866,10 @@
                         });
                     }
                 } else {
-                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:#ef4444;">${data.error || "Failed to load users."}</td></tr>`;
+                    if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:#ef4444;">${data.error || "Failed to load users."}</td></tr>`;
                 }
             } catch (e) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:#ef4444;">Failed to load accounts from Cloudflare D1.</td></tr>`;
+                if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:#ef4444;">Failed to load accounts from Cloudflare D1.</td></tr>`;
             }
         }
 
@@ -5071,6 +4917,7 @@
 
         function renderUsersTable() {
             const tbody = document.getElementById("usersTableBody");
+            if (!tbody) return;
             tbody.innerHTML = "";
 
             const total = filteredUsersList.length;
@@ -5098,11 +4945,11 @@
             if (btnNext) btnNext.disabled = (currentUserPage >= maxPages);
 
             if (total === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:48px 20px;">
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:48px 20px;">
                 <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
-                    <span style="font-size:36px;">📱</span>
-                    <strong style="color:var(--text-primary); font-size:14.5px;">No Authenticated PP Mod Users Logged In</strong>
-                    <p style="font-size:12px; color:var(--text-muted); max-width:440px; margin:0;">Users who open the PPM Server APK on their phone and log into PP Mod will appear here automatically with their real PP Mod UID and device info.</p>
+                    <span style="font-size:36px;">👤</span>
+                    <strong style="color:var(--text-primary); font-size:14.5px;">No Authenticated PP Mod Users Found</strong>
+                    <p style="font-size:12px; color:var(--text-muted); max-width:440px; margin:0;">Users who open the PPM Server APK on their phone and log into PP Mod will appear here automatically with their real PP Mod UID and connected Google Play accounts.</p>
                 </div>
             </td></tr>`;
                 return;
@@ -5115,10 +4962,10 @@
                 // Format avatar or initial
                 let avatarHtml = '';
                 if (u.avatar) {
-                    avatarHtml = `<img src="${u.avatar}" style="width:34px; height:34px; border-radius:50%; object-fit:cover; border:1px solid var(--border-color);">`;
+                    avatarHtml = `<img src="${u.avatar}" style="width:38px; height:38px; border-radius:50%; object-fit:cover; border:1px solid var(--border-color); flex-shrink:0;">`;
                 } else {
                     const initial = (u.display_name || u.email || 'U').charAt(0).toUpperCase();
-                    avatarHtml = `<div style="width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg, #0284c7, #8b5cf6); color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800;">${initial}</div>`;
+                    avatarHtml = `<div style="width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg, #0284c7, #8b5cf6); color:#fff; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:800; flex-shrink:0;">${initial}</div>`;
                 }
 
                 const accCount = u.accounts_count !== undefined ? u.accounts_count : (u.accounts ? u.accounts.length : 0);
@@ -5131,14 +4978,14 @@
                     const renderedPills = accList.slice(0, 3).map(a => {
                         const em = a.email || 'Account';
                         const cd = a.code ? ` (${a.code})` : '';
-                        return `<div style="font-family:'JetBrains Mono'; font-size:10.5px; color:var(--text-secondary); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:210px;" title="${escapeHtml(em + cd)}">• <strong>${escapeHtml(em)}</strong><span style="color:var(--accent-cyan); font-weight:700;">${escapeHtml(cd)}</span></div>`;
+                        return `<div style="font-family:'JetBrains Mono'; font-size:11px; color:var(--text-secondary); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:230px;" title="${escapeHtml(em + cd)}">• <strong>${escapeHtml(em)}</strong><span style="color:var(--accent-cyan); font-weight:700;">${escapeHtml(cd)}</span></div>`;
                     }).join('');
-                    const moreText = accCount > 3 ? `<div style="font-size:10px; font-weight:700; color:var(--accent-cyan); margin-top:3px; cursor:pointer;" onclick="event.stopPropagation(); openUserFullPanel(${actualIndex})">+${accCount - 3} more account(s) (Inspect ➔)</div>` : '';
+                    const moreText = accCount > 3 ? `<div style="font-size:10.5px; font-weight:700; color:var(--accent-cyan); margin-top:3px; cursor:pointer;" onclick="event.stopPropagation(); openUserFullPanel(${actualIndex})">+${accCount - 3} more account(s) (Inspect ➔)</div>` : '';
 
                     accountsPreviewHtml = `
                         <div style="cursor:pointer;" onclick="openUserFullPanel(${actualIndex})" title="Click to inspect all ${accCount} accounts">
                             <span class="badge-status active" style="font-size:11px; font-weight:800; background:rgba(16,185,129,0.15); border-color:rgba(16,185,129,0.3); color:#10b981;">
-                                📱 ${accCount} Synced Account${accCount === 1 ? '' : 's'}
+                                🔗 ${accCount} Connected Google Account${accCount === 1 ? '' : 's'}
                             </span>
                             <div style="margin-top:4px;">
                                 ${renderedPills}
@@ -5150,49 +4997,46 @@
 
                 tr.innerHTML = `
                 <td>
-                    <div class="user-clickable-cell" onclick="openUserFullPanel(${actualIndex})" title="Click to view full profile">
-                        <strong style="color:var(--text-primary); display:block; font-size:13px;">📱 ${u.model || 'Android Device'}</strong>
-                        <span style="font-size:10.5px; font-family:'JetBrains Mono'; color:var(--text-secondary);">${(u.device_id || '').substring(0, 16)}...</span>
-                        <div style="margin-top:3px;">
-                            <span style="font-size:10px; font-weight:700; color:#0284c7; background:rgba(2,132,199,0.08); border:1px solid rgba(2,132,199,0.25); border-radius:4px; padding:1px 6px;">
-                                🚀 ${u.app_version || 'v4.1 Official (Code 5)'}
-                            </span>
-                        </div>
-                    </div>
-                </td>
-                <td>
-                    <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="display:flex; align-items:center; gap:12px;">
                         ${avatarHtml}
-                        <div>
-                            <strong style="font-size:13px; color:var(--text-primary); display:block;">${u.display_name || 'PP Mod User'}</strong>
+                        <div style="min-width:0;">
+                            <strong style="font-size:13.5px; color:var(--text-primary); display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(u.display_name || 'PP Mod User')}</strong>
                             <div style="display:flex; align-items:center; gap:4px; margin-top:2px;">
-                                <span style="font-family:'JetBrains Mono'; font-size:11px; color:var(--text-secondary);">${u.email}</span>
-                                <button class="btn-copy-mini" title="Copy Email" onclick="event.stopPropagation(); copyTextToClipboard('${u.email}', 'Email')">📋</button>
+                                <span style="font-family:'JetBrains Mono'; font-size:11px; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px;">${escapeHtml(u.email || '—')}</span>
+                                ${u.email ? `<button class="btn-copy-mini" title="Copy Email" onclick="event.stopPropagation(); copyTextToClipboard('${escapeHtml(u.email)}', 'Email')">📋</button>` : ''}
+                            </div>
+                            <div style="display:flex; align-items:center; gap:6px; margin-top:4px; flex-wrap:wrap;">
+                                <span style="font-family:'JetBrains Mono'; font-size:11px; font-weight:800; color:var(--accent-cyan); background:rgba(14,165,233,0.1); padding:2px 7px; border-radius:4px; border:1px solid rgba(14,165,233,0.3); word-break:break-all;">🆔 ${escapeHtml(u.uid || 'UID-N/A')}</span>
+                                <button class="btn-copy-mini" title="Copy UID" onclick="event.stopPropagation(); copyTextToClipboard('${escapeHtml(u.uid || '')}', 'PP Mod UID')">📋</button>
+                                ${u.balance !== undefined ? `<span style="font-family:'JetBrains Mono'; font-size:10.5px; font-weight:800; color:var(--accent-green); background:rgba(16,185,129,0.1); padding:2px 6px; border-radius:4px;">৳${u.balance}</span>` : ''}
                             </div>
                         </div>
-                    </div>
-                </td>
-                <td>
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <span style="font-family:'JetBrains Mono'; font-size:12px; font-weight:800; color:var(--accent-cyan); background:rgba(14,165,233,0.1); padding:3px 8px; border-radius:var(--radius-sm); border:1px solid rgba(14,165,233,0.3); word-break:break-all;">${u.uid}</span>
-                        <button class="btn-copy-mini" title="Copy UID" onclick="event.stopPropagation(); copyTextToClipboard('${u.uid}', 'PP Mod UID')">📋</button>
                     </div>
                 </td>
                 <td>
                     ${accountsPreviewHtml}
                 </td>
                 <td>
-                    <span class="badge-status ${u.is_banned ? 'banned' : (u.is_locked ? 'banned' : 'active')}">${u.status}</span>
+                    <div class="user-clickable-cell" onclick="openUserFullPanel(${actualIndex})" title="Click to view full profile">
+                        <strong style="color:var(--text-primary); display:block; font-size:12.5px;">📱 ${escapeHtml(u.model || 'Android Device')}</strong>
+                        <span style="font-size:10.5px; font-family:'JetBrains Mono'; color:var(--text-secondary);">${escapeHtml((u.device_id || '').substring(0, 16))}...</span>
+                        <div style="margin-top:3px; display:flex; align-items:center; gap:6px;">
+                            <span style="font-size:10px; font-weight:700; color:#0284c7; background:rgba(2,132,199,0.08); border:1px solid rgba(2,132,199,0.25); border-radius:4px; padding:1px 6px;">
+                                🚀 ${escapeHtml(u.app_version || 'v4.5 Official (Code 6)')}
+                            </span>
+                            ${u.devices && u.devices.length > 1 ? `<span style="font-size:10px; font-weight:800; color:var(--accent-cyan); background:rgba(14,165,233,0.12); padding:1px 5px; border-radius:4px;">+${u.devices.length - 1} dev</span>` : ''}
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <span class="badge-status ${u.is_banned ? 'banned' : (u.is_locked ? 'banned' : 'active')}">${escapeHtml(u.status || 'Active')}</span>
                 </td>
                 <td style="text-align:right;">
                     <div style="display:flex; align-items:center; justify-content:flex-end; gap:6px;">
                         <button class="btn-sync-protocol" style="padding:6px 14px; font-size:11.5px; font-weight:700;" onclick="openUserFullPanel(${actualIndex})">
                             <span>Inspect User ➔</span>
                         </button>
-                        <button class="btn-inspect-action" style="padding:6px 9px; font-size:11px; color:${u.is_locked ? '#10b981' : '#f59e0b'};" title="${u.is_locked ? 'Unlock Device' : 'Lock Device'}" onclick="event.stopPropagation(); toggleDeviceLock('${u.device_id || ''}')">
-                            ${u.is_locked ? '🔓' : '🔒'}
-                        </button>
-                        <button class="btn-inspect-action" style="padding:6px 9px; font-size:11px; color:#ef4444; border-color:rgba(239,68,68,0.25);" title="Delete Device Record" onclick="event.stopPropagation(); deleteDeviceRecord('${u.device_id || ''}')">
+                        <button class="btn-inspect-action" style="padding:6px 9px; font-size:11px; color:#ef4444; border-color:rgba(239,68,68,0.3); background:rgba(239,68,68,0.08);" title="Delete User &amp; Cascade Wipe Data" onclick="event.stopPropagation(); deleteUserCascade('${escapeHtml(u.uid || '')}', '${escapeHtml(u.email || '')}')">
                             🗑️
                         </button>
                     </div>
@@ -5201,6 +5045,44 @@
                 tbody.appendChild(tr);
             });
         }
+
+        async function deleteUserCascade(uid, email) {
+            if (!uid && !email) return;
+            const targetName = email || uid;
+            const confirmed = confirm(
+                `⚠️ PERMANENT USER & DATA WIPE!\n\n` +
+                `Are you sure you want to completely delete this user?\n` +
+                `• UID: ${uid}\n` +
+                `• Email: ${email || 'N/A'}\n\n` +
+                `This will permanently delete:\n` +
+                `1. Cloudflare D1 Wallet & Coin Balance\n` +
+                `2. All Connected Google Play Accounts & Vault Tokens\n` +
+                `3. Registered Device Nodes\n` +
+                `4. Orders & Task Records\n\n` +
+                `This action CANNOT be undone. Proceed?`
+            );
+            if (!confirmed) return;
+
+            try {
+                showToast(`Wiping user ${targetName}...`, "info");
+                const res = await fetch(`${API_BASE}/api/admin/user/delete`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ uid: uid, email: email })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    showToast(data.message || `✓ User ${targetName} permanently wiped.`, "success");
+                    closeUserFullPanel();
+                    await loadUsersList();
+                } else {
+                    showToast(data.error || "Failed to wipe user.", "error");
+                }
+            } catch (e) {
+                showToast("Network error wiping user: " + e.message, "error");
+            }
+        }
+        window.deleteUserCascade = deleteUserCascade;
 
         async function toggleDeviceLock(deviceId) {
             if (!deviceId) return;
@@ -5227,9 +5109,10 @@
                 const res = await fetch(`${API_BASE}/api/app/version`);
                 const data = await res.json();
                 if (data.ok) {
-                    if (document.getElementById("updMinVerCode")) document.getElementById("updMinVerCode").value = data.min_required_version_code || 5;
-                    if (document.getElementById("updVerName")) document.getElementById("updVerName").value = data.latest_version_name || "v4.1 Official";
+                    if (document.getElementById("updMinVerCode")) document.getElementById("updMinVerCode").value = data.min_required_version_code || 6;
+                    if (document.getElementById("updVerName")) document.getElementById("updVerName").value = data.latest_version_name || "v4.5 Official";
                     if (document.getElementById("updDownloadUrl")) document.getElementById("updDownloadUrl").value = data.download_url || "";
+                    if (document.getElementById("portalApkDownloadUrl")) document.getElementById("portalApkDownloadUrl").value = data.download_url || "";
                     if (document.getElementById("updReleaseNotes")) document.getElementById("updReleaseNotes").value = data.release_notes || "";
                     if (document.getElementById("chkForceUpdate")) document.getElementById("chkForceUpdate").checked = !!data.is_force_update;
                     if (document.getElementById("chkMaintenanceMode")) document.getElementById("chkMaintenanceMode").checked = !!data.maintenance_mode;
@@ -5244,9 +5127,10 @@
         }
 
         async function pushAppForceUpdate() {
-            const minCode = parseInt(document.getElementById("updMinVerCode")?.value || "5");
+            const minCode = parseInt(document.getElementById("updMinVerCode")?.value || "6");
             const verName = document.getElementById("updVerName")?.value || "";
             const dlUrl = document.getElementById("updDownloadUrl")?.value || "";
+            if (document.getElementById("portalApkDownloadUrl")) document.getElementById("portalApkDownloadUrl").value = dlUrl;
             const notes = document.getElementById("updReleaseNotes")?.value || "";
             const force = document.getElementById("chkForceUpdate")?.checked ?? true;
             const maint = document.getElementById("chkMaintenanceMode")?.checked ?? false;
@@ -5622,6 +5506,9 @@
                 <button class="btn-sync-protocol" style="padding:7px 16px; font-size:12px; font-weight:700;" onclick="targetUserInPushConsole('${u.device_id || ''}')">
                     <span>📲 Send Push Alert</span>
                 </button>
+                <button class="btn-inspect-action" style="padding:7px 14px; font-size:12px; color:#ef4444; border-color:rgba(239,68,68,0.4); background:rgba(239,68,68,0.1); font-weight:800;" onclick="deleteUserCascade('${escapeHtml(u.uid || '')}', '${escapeHtml(u.email || '')}')">
+                    <span>🗑️ Delete User &amp; Wipe Data</span>
+                </button>
             `;
             }
 
@@ -5663,21 +5550,21 @@
                                 ${aIdx + 1}
                             </div>
                             <div>
-                                <strong style="font-size:13.5px; color:var(--text-primary); display:block; font-family:'JetBrains Mono';">${acc.email}</strong>
+                                <strong style="font-size:13.5px; color:var(--text-primary); display:block; font-family:'JetBrains Mono';">${escapeHtml(acc.email)}</strong>
                                 <div style="font-size:11px; color:var(--text-muted); margin-top:3px; display:flex; align-items:center; gap:8px;">
-                                    <span>Region: <strong style="color:var(--text-primary);">${acc.country || 'GLOBAL'}</strong></span>
+                                    <span>Region: <strong style="color:var(--text-primary);">${escapeHtml(acc.country || 'GLOBAL')}</strong></span>
                                     <span>•</span>
-                                    <span style="color:var(--accent-cyan); font-family:'JetBrains Mono'; font-weight:800; background:rgba(14,165,233,0.12); padding:1px 6px; border-radius:4px;">Code: ${acc.code}</span>
+                                    <span style="color:var(--accent-cyan); font-family:'JetBrains Mono'; font-weight:800; background:rgba(14,165,233,0.12); padding:1px 6px; border-radius:4px;">Code: ${escapeHtml(acc.code)}</span>
                                 </div>
                             </div>
                         </div>
                         <div style="display:flex; align-items:center; gap:8px;">
-                            <button class="btn-inspect-action" style="padding:6px 12px; font-size:11.5px;" onclick="event.stopPropagation(); copyTextToClipboard('${acc.code}', '6-Digit Code')">📋 Copy Code</button>
+                            <button class="btn-inspect-action" style="padding:6px 12px; font-size:11.5px;" onclick="event.stopPropagation(); copyTextToClipboard('${escapeHtml(acc.code)}', '6-Digit Code')">📋 Copy Code</button>
                             <button class="btn-sync-protocol" style="padding:6px 14px; font-size:11.5px; font-weight:700;" onclick="event.stopPropagation(); openAccountDetailPopup(selectedUserDetail.accounts ? selectedUserDetail.accounts[${aIdx}] : {email:selectedUserDetail.email, code:selectedUserDetail.sync_code, token:selectedUserDetail.master_token}, selectedUserDetail)">
                                 <span>🔍 Inspect Details ▶</span>
                             </button>
-                            <button class="btn-inspect-action" style="padding:6px 10px; font-size:11.5px; color:#ef4444; border-color:rgba(239,68,68,0.3);" title="Remove account from device" onclick="event.stopPropagation(); removeAccountFromDevice('${u.device_id || ''}', '${acc.email}', '${acc.code}')">
-                                🗑️ Remove
+                            <button class="btn-inspect-action" style="padding:6px 12px; font-size:11.5px; color:#ef4444; border-color:rgba(239,68,68,0.3); background:rgba(239,68,68,0.06); font-weight:700;" title="Delete this Google account from user" onclick="event.stopPropagation(); removeAccountFromDevice('${escapeHtml(u.device_id || '')}', '${escapeHtml(acc.email)}', '${escapeHtml(acc.code)}', '${escapeHtml(u.uid || '')}')">
+                                🗑️ Delete Email
                             </button>
                         </div>
                     `;
@@ -5797,15 +5684,15 @@
             await removeAccountFromDevice(devId, email, code);
         }
 
-        async function removeAccountFromDevice(deviceId, email, code) {
-            const targetDesc = email ? `account '${email}'` : (code ? `code '${code}'` : 'this account');
-            if (!confirm(`Are you sure you want to remove ${targetDesc} from this device?`)) return;
+        async function removeAccountFromDevice(deviceId, email, code, uid = "") {
+            const targetDesc = email ? `email account '${email}'` : (code ? `code '${code}'` : 'this account');
+            if (!confirm(`Are you sure you want to remove ${targetDesc} from this user's synced accounts?`)) return;
 
             try {
                 const res = await fetch(`${API_BASE}/api/admin/device/remove-account`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ device_id: deviceId, email: email, code: code })
+                    body: JSON.stringify({ device_id: deviceId, email: email, code: code, uid: uid })
                 });
                 const data = await res.json();
                 if (data.ok) {
@@ -6493,6 +6380,54 @@
             }).join('');
         }
 
+        function renderPortalGamesSkeleton() {
+            const container = document.getElementById("portalGamesVisualList");
+            if (!container) return;
+            container.innerHTML = [1, 2, 3, 4, 5, 6].map(() => `
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 14px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-md);">
+                    <div style="display:flex; align-items:center; gap:12px; flex:1;">
+                        <div class="skeleton-shimmer" style="width:40px; height:40px; border-radius:var(--radius-sm); flex-shrink:0;"></div>
+                        <div style="flex:1;">
+                            <div class="skeleton-shimmer" style="width:55%; height:14px; border-radius:4px; margin-bottom:6px;"></div>
+                            <div class="skeleton-shimmer" style="width:75%; height:11px; border-radius:4px;"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-shimmer" style="width:70px; height:24px; border-radius:4px; flex-shrink:0;"></div>
+                </div>
+            `).join('');
+        }
+
+        function resetPortalQuestViewSkeleton() {
+            const titleEl = document.getElementById("portalSelectedGameTitle");
+            const pkgEl = document.getElementById("portalSelectedGamePkg");
+            const catEl = document.getElementById("portalSelectedGameCategory");
+            const iconEl = document.getElementById("portalSelectedGameIcon");
+            const questsList = document.getElementById("portalQuestsList");
+            const btnSave = document.getElementById("btnSavePortalService");
+
+            if (btnSave) btnSave.disabled = true;
+            if (titleEl) titleEl.innerHTML = `<span class="skeleton-shimmer" style="display:inline-block; width:170px; height:16px; border-radius:4px;"></span>`;
+            if (pkgEl) pkgEl.innerHTML = `<span class="skeleton-shimmer" style="display:inline-block; width:130px; height:12px; border-radius:4px;"></span>`;
+            if (catEl) catEl.innerText = "Loading...";
+            if (iconEl) iconEl.src = "/static/images/default_app.png";
+
+            if (questsList) {
+                questsList.innerHTML = [1, 2, 3, 4].map(() => `
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 14px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-md);">
+                        <div style="display:flex; align-items:center; gap:12px; flex:1;">
+                            <div class="skeleton-shimmer" style="width:18px; height:18px; border-radius:4px; flex-shrink:0;"></div>
+                            <div class="skeleton-shimmer" style="width:36px; height:36px; border-radius:var(--radius-sm); flex-shrink:0;"></div>
+                            <div style="flex:1;">
+                                <div class="skeleton-shimmer" style="width:50%; height:14px; border-radius:4px; margin-bottom:6px;"></div>
+                                <div class="skeleton-shimmer" style="width:80%; height:11px; border-radius:4px;"></div>
+                            </div>
+                        </div>
+                        <div class="skeleton-shimmer" style="width:65px; height:22px; border-radius:4px; flex-shrink:0;"></div>
+                    </div>
+                `).join('');
+            }
+        }
+
         function filterPortalGamesVisualList() {
             const input = document.getElementById("portalGameSearchInput");
             renderPortalGamesVisualList(input ? input.value : '');
@@ -6510,6 +6445,9 @@
 
             const questSearch = document.getElementById("portalQuestSearchInput");
             if (questSearch) questSearch.value = "";
+
+            // Immediately clear previous game data so no old game flashes!
+            resetPortalQuestViewSkeleton();
 
             await loadPortalGameQuests(gameId);
         }
@@ -6541,31 +6479,42 @@
 
             if (gameSearchInput) gameSearchInput.value = "";
             if (questSearchInput) questSearchInput.value = "";
-            btnSave.disabled = true;
-
-            // Fetch latest catalog games so is_added flags and quest counts are accurate
-            try {
-                const res = await fetch(`${API_BASE}/api/portal/games`);
-                const data = await res.json();
-                if (data.ok && Array.isArray(data.games)) {
-                    portalAllGames = data.games;
-                }
-            } catch (e) { }
+            if (btnSave) btnSave.disabled = true;
 
             if (gameId) {
                 titleEl.innerText = (preSelectedIds && preSelectedIds.length > 0)
                     ? "Review & Confirm Auto-Matched Quest Service"
                     : "Edit Public Portal Quest Service";
                 if (hiddenInput) hiddenInput.value = gameId;
-                stepSelect.style.display = "none";
-                stepQuests.style.display = "flex";
+                if (stepSelect) stepSelect.style.display = "none";
+                if (stepQuests) stepQuests.style.display = "flex";
+
+                // Immediately clear previous game data so no glitch/flicker!
+                resetPortalQuestViewSkeleton();
                 await loadPortalGameQuests(gameId, preSelectedIds);
             } else {
                 titleEl.innerText = "Configure Public Portal Quest Service";
                 if (hiddenInput) hiddenInput.value = "";
-                stepSelect.style.display = "block";
-                stepQuests.style.display = "none";
-                renderPortalGamesVisualList();
+                if (stepSelect) stepSelect.style.display = "block";
+                if (stepQuests) stepQuests.style.display = "none";
+
+                // Instant rendering if already in cache:
+                if (portalAllGames && portalAllGames.length > 0) {
+                    renderPortalGamesVisualList();
+                } else {
+                    renderPortalGamesSkeleton();
+                }
+
+                // Refresh in background without freezing UI
+                fetch(`${API_BASE}/api/portal/games`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.ok && Array.isArray(data.games)) {
+                            portalAllGames = data.games;
+                            const input = document.getElementById("portalGameSearchInput");
+                            renderPortalGamesVisualList(input ? input.value : '');
+                        }
+                    }).catch(() => {});
             }
         }
 

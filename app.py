@@ -3461,94 +3461,153 @@ def get_admin_user_detail(device_id):
 @app.route("/api/admin/users", methods=["GET"])
 def get_admin_users():
     """
-    Return comprehensive list of registered devices and authenticated PP Mod users.
-    Every hardware device that opens the PPM Server app is registered immediately.
-    When the user logs in, their real PP Mod UID, display name, and synced accounts populate automatically.
+    Return comprehensive list of authenticated PP Mod users grouped by UID,
+    including all their connected mobile devices and added Google Play accounts.
     """
     banned = load_banned_users()
     locked_devices = load_locked_devices()
     devices = load_registered_devices()
 
-    user_list = []
-    seen_device_ids = set()
+    users_map = {}
 
     for dev_id, dev_data in devices.items():
         is_logged_in = dev_data.get("is_logged_in", False)
-        ppmod_email = dev_data.get("ppmod_email", "").strip()
+        ppmod_email = dev_data.get("ppmod_email", "").strip().lower()
+        ppmod_uid = dev_data.get("ppmod_uid", "").strip()
+        display_name = dev_data.get("ppmod_name", "").strip()
+        avatar = dev_data.get("ppmod_avatar", "").strip()
         accs = dev_data.get("accounts", [])
-        seen_device_ids.add(dev_id)
         is_locked = dev_id in locked_devices
 
         primary_email = ppmod_email or (accs[0].get("email") if accs else "")
         if not primary_email:
             primary_email = f"Guest Device ({dev_id[:8]})"
 
-        ppmod_uid = dev_data.get("ppmod_uid", "").strip()
-        display_name = dev_data.get("ppmod_name", "").strip()
-        avatar = dev_data.get("ppmod_avatar", "").strip()
+        # Resolve primary UID key
+        user_key = ppmod_uid or (ppmod_email if ("@" in ppmod_email) else f"dev_{dev_id[:8]}")
 
-        # Fast non-blocking profile resolution (uses memory cache to avoid blocking admin console)
-        if is_logged_in and ppmod_email and ("@" in ppmod_email):
-            if not ppmod_uid or ppmod_uid.startswith("UID-") or not display_name:
-                if ppmod_email in CF_USER_FIND_CACHE:
-                    cf_cached = CF_USER_FIND_CACHE[ppmod_email]
-                    ppmod_uid = cf_cached.get("uid") or ppmod_uid
-                    display_name = cf_cached.get("name") or display_name
-                    avatar = cf_cached.get("avatar") or avatar
-                elif not display_name:
-                    display_name = ppmod_email.split("@")[0].capitalize()
+        if user_key not in users_map:
+            if not display_name:
+                display_name = primary_email.split("@")[0].capitalize() if ("@" in primary_email) else dev_data.get("model", "User")
+            if not avatar and ("@" in primary_email):
+                avatar = f"https://ui-avatars.com/api/?name={requests.utils.quote(display_name)}&background=10b981&color=fff&bold=true&rounded=true&size=128"
 
-        if not ppmod_uid:
-            ppmod_uid = "—"
+            users_map[user_key] = {
+                "uid": ppmod_uid or user_key,
+                "display_name": display_name,
+                "email": primary_email,
+                "avatar": avatar,
+                "devices": [],
+                "accounts": [],
+                "accounts_count": 0,
+                "seen_emails": set(),
+                "is_banned": (primary_email.lower() in banned) if ("@" in primary_email) else False,
+                "status": "Active" if is_logged_in else "App Active",
+                "last_seen": dev_data.get("last_seen", "Active"),
+                "created_at": dev_data.get("first_seen", "Active")
+            }
 
-        if not display_name:
-            if is_logged_in and primary_email and ("@" in primary_email):
-                display_name = primary_email.split("@")[0].capitalize()
-            else:
-                display_name = dev_data.get("model", "Android Device")
+        u = users_map[user_key]
+        if is_logged_in:
+            u["status"] = "Active"
+        if u["is_banned"]:
+            u["status"] = "Banned"
 
-        is_banned = (primary_email.lower() in banned) if ("@" in primary_email) else False
-        primary_code = accs[0].get("code") if accs else "------"
-        primary_token = accs[0].get("token", "") if accs else ""
-        tok_preview = f"{primary_token[:12]}...{primary_token[-8:]}" if primary_token else ("aas_et/CloudStored" if primary_token else "No token yet")
-
-        if is_banned:
-            status_str = "Banned"
-        elif is_locked:
-            status_str = "Locked"
-        elif is_logged_in:
-            status_str = "Active"
-        else:
-            status_str = "App Active (Device Connected)"
-
-        user_list.append({
-            "uid": ppmod_uid,
-            "display_name": display_name,
-            "email": primary_email,
-            "avatar": avatar,
+        # Attach device info
+        u["devices"].append({
             "device_id": dev_id,
             "model": dev_data.get("model", "Android Device"),
             "android_version": dev_data.get("android_version", "Android"),
-            "app_version": dev_data.get("app_version", "3.0 (PPM Server)"),
+            "app_version": dev_data.get("app_version", "v4.5 Official"),
             "is_locked": is_locked,
-            "sync_code": primary_code,
-            "accounts_count": len(accs),
-            "accounts": accs,
-            "server_url": "https://pp-mod-auto-quest.onrender.com",
-            "server_status": "200 OK (Operational)",
-            "master_token": primary_token,
-            "token_masked": tok_preview,
-            "status": status_str,
-            "is_banned": is_banned,
-            "last_seen": dev_data.get("last_seen", "Active"),
-            "created_at": dev_data.get("first_seen", "Active")
+            "last_seen": dev_data.get("last_seen", "Active")
         })
+
+        # Collect & deduplicate connected Google Play accounts
+        for a in accs:
+            a_em = str(a.get("email") or "").lower()
+            if a_em and a_em not in u["seen_emails"]:
+                u["seen_emails"].add(a_em)
+                tok = a.get("token", "")
+                u["accounts"].append({
+                    "email": a_em,
+                    "code": a.get("code", "------"),
+                    "country": a.get("country", "US"),
+                    "timestamp": a.get("timestamp"),
+                    "token_masked": f"{tok[:10]}...{tok[-6:]}" if tok else "aas_et/CloudStored"
+                })
+
+    user_list = []
+    for u in users_map.values():
+        u["accounts_count"] = len(u["accounts"])
+        u.pop("seen_emails", None)
+        # Primary code / token for quick display
+        u["sync_code"] = u["accounts"][0]["code"] if u["accounts"] else "------"
+        u["device_id"] = u["devices"][0]["device_id"] if u["devices"] else "—"
+        u["model"] = u["devices"][0]["model"] if u["devices"] else "Android Device"
+        user_list.append(u)
+
+    # Sort so users with connected accounts and active status appear first
+    user_list.sort(key=lambda x: (x["accounts_count"], x["status"] == "Active"), reverse=True)
 
     return jsonify({
         "ok": True,
         "total_users": len(user_list),
-        "banned_count": len([u for u in user_list if u["is_banned"]]),
+        "banned_count": len([u for u in user_list if u.get("is_banned")]),
         "users": user_list
+    })
+
+@app.route("/api/admin/user/delete", methods=["POST"])
+def admin_delete_user():
+    """
+    Completely deletes a user, their wallet, and cascade-deletes all their
+    connected Google Play accounts, sync codes, and registered device records.
+    """
+    data = request.get_json() or {}
+    uid = str(data.get("uid") or "").strip()
+    email = str(data.get("email") or "").strip().lower()
+
+    if not uid and not email:
+        return jsonify({"ok": False, "error": "User UID or Email is required."}), 400
+
+    devices = load_registered_devices()
+    removed_devs = []
+    removed_emails = set()
+
+    for d_id, d_data in list(devices.items()):
+        dev_uid = str(d_data.get("ppmod_uid") or "").strip()
+        dev_email = str(d_data.get("ppmod_email") or "").strip().lower()
+        if (uid and (dev_uid == uid or dev_uid.lower() == uid.lower())) or (email and dev_email == email):
+            for acc in d_data.get("accounts", []):
+                if acc.get("email"):
+                    removed_emails.add(acc["email"].lower())
+            devices.pop(d_id, None)
+            removed_devs.append(d_id)
+
+    save_registered_devices(devices)
+
+    # Delete from known tokens
+    tokens = load_known_tokens()
+    for em in removed_emails:
+        tokens.pop(em, None)
+    if email:
+        tokens.pop(email, None)
+    save_known_tokens(tokens)
+
+    # Cascade delete on Cloudflare D1
+    def _cf_cascade():
+        try:
+            if uid:
+                requests.post("https://ppmod-api.tredarskvt.workers.dev/api/admin/user/delete", json={"uid": uid}, timeout=5)
+            for em in removed_emails:
+                requests.post("https://ppmod-api.tredarskvt.workers.dev/api/sync/delete", json={"email": em}, timeout=5)
+        except Exception as e:
+            print(f"[-] Cloudflare cascade delete error: {e}")
+    threading.Thread(target=_cf_cascade, daemon=True).start()
+
+    return jsonify({
+        "ok": True,
+        "message": f"User '{uid or email}' and all associated accounts were successfully deleted!"
     })
 
 @app.route("/api/admin/users/add", methods=["POST"])
@@ -3666,6 +3725,15 @@ def admin_remove_device_account():
 
     if removed_any or not device_id:
         save_registered_devices(devices)
+
+    if email:
+        try:
+            tokens = load_known_tokens()
+            if email in tokens:
+                tokens.pop(email, None)
+                save_known_tokens(tokens)
+        except Exception as e:
+            print(f"[-] Error removing token for {email}: {e}")
 
     # 2. Asynchronously delete pairing from Cloudflare D1 sync_accounts table
     def _delete_cf():

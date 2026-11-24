@@ -2626,23 +2626,13 @@
     "section": "quest_unlocker",
     "enabled": true,
     "total_quests_count": 114,
-    "selected_quests_count": 4,
+    "selected_quests_count": 3,
     "selected_quest_ids": [
-      "CgkIzvLA59wVEAIQbg",
       "CgkIzvLA59wVEAIQWg",
       "CgkIzvLA59wVEAIQcQ",
       "CgkIzvLA59wVEAIQTQ"
     ],
     "selected_quests": [
-      {
-        "id": "CgkIzvLA59wVEAIQbg",
-        "name": "Sign into Gardenscapes with your Play Games profile",
-        "description": "You must be signed into Play Games in order to collect achievements",
-        "experiencePoints": 500,
-        "achievementType": "STANDARD",
-        "totalSteps": null,
-        "unlockedIconUrl": "https://play-lh.googleusercontent.com/C5Yp55qwwU8zJAkfO9DQTtHauJcmQgMM59HH8odxPM6KlHiqO6WY9jZsWnIN1k3pfgwo2o3e3ygiizwHSIPbY-w=s0-br30"
-      },
       {
         "id": "CgkIzvLA59wVEAIQWg",
         "name": "Match 99 Apple Pieces",
@@ -2672,15 +2662,6 @@
       }
     ],
     "all_quests": [
-      {
-        "id": "CgkIzvLA59wVEAIQbg",
-        "name": "Sign into Gardenscapes with your Play Games profile",
-        "description": "You must be signed into Play Games in order to collect achievements",
-        "experiencePoints": 500,
-        "achievementType": "STANDARD",
-        "totalSteps": null,
-        "unlockedIconUrl": "https://play-lh.googleusercontent.com/C5Yp55qwwU8zJAkfO9DQTtHauJcmQgMM59HH8odxPM6KlHiqO6WY9jZsWnIN1k3pfgwo2o3e3ygiizwHSIPbY-w=s0-br30"
-      },
       {
         "id": "CgkIzvLA59wVEAIQWg",
         "name": "Match 99 Apple Pieces",
