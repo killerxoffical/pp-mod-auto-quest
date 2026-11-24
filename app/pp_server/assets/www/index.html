@@ -3015,7 +3015,7 @@
                 </div>
 
                 <button type="submit" class="btn-submit-ppm" id="btnSubmitPpm">
-                    <span id="btnSubmitPpmText">⚡ Login to PPM Server Node</span>
+                    <span id="btnSubmitPpmText">⚡ Login to PPM CLOUD</span>
                     <div class="spinner-mini" id="loginSpinner" style="display:none;"></div>
                 </button>
             </form>
@@ -3443,10 +3443,10 @@
     <!-- ==================== CORE JS LOGIC ==================== -->
     <script>
         var appInfo = {
-            appName: 'PPM Server',
+            appName: 'PPM CLOUD',
             isDeveloperMode: false,
-            versionName: 'v4.5 Official',
-            versionCode: 6,
+            versionName: 'v4.5 Build 7',
+            versionCode: 7,
             deviceId: '46e14d2451d85c3f',
             isLoggedIn: false,
             userUid: '',
@@ -4295,16 +4295,17 @@
             var countLabel = document.getElementById('labelAccountsCount');
             if (!listEl) return;
             if (emptyEl) emptyEl.style.display = 'none';
-            if (countLabel) countLabel.textContent = "Loading...";
+            if (countLabel) countLabel.textContent = "Syncing Accounts...";
             listEl.style.display = 'flex';
             var sk = '';
-            for (var i = 0; i < 3; i++) {
-                sk += '<div class="skeleton-card">' +
+            for (var i = 0; i < 5; i++) {
+                sk += '<div class="skeleton-card" style="animation-delay:' + (i * 0.12) + 's;">' +
                       '  <div class="skeleton-header">' +
                       '    <div class="skeleton-circle"></div>' +
-                      '    <div class="skeleton-bar" style="width:55%;height:16px;"></div>' +
+                      '    <div class="skeleton-bar" style="width:60%;height:16px;"></div>' +
                       '  </div>' +
-                      '  <div class="skeleton-bar" style="width:100%;height:44px;margin-top:6px;border-radius:12px;"></div>' +
+                      '  <div class="skeleton-bar" style="width:45%;height:20px;margin-top:8px;border-radius:10px;"></div>' +
+                      '  <div class="skeleton-bar" style="width:100%;height:44px;margin-top:8px;border-radius:12px;"></div>' +
                       '</div>';
             }
             listEl.innerHTML = sk;
@@ -4403,26 +4404,12 @@
                         '</div>' +
 
                         '<div class="card-acc-stats-row">' +
-                            (hasPlayPoints ? (
-                                '<div class="acc-stat-pill acc-tier-' + tierLower + '" onclick="openAccountConfigModal(\'' + a.code + '\')" style="cursor:pointer;" title="Google Play Points">' +
-                                    '<span class="stat-tier-badge">' + tierIcon + ' ' + escapeHtml(tier) + '</span>' +
-                                    '<span class="stat-dot">•</span>' +
-                                    '<span class="stat-points-val">' + points + ' PP</span>' +
-                                '</div>'
-                            ) : (a._isLiveLoaded ? (
-                                '<div class="acc-stat-pill acc-tier-none" onclick="showNoPlayPointsToast(\'' + a.code + '\')" style="cursor:pointer;" title="Google Play Points is not active">' +
-                                    '<span class="stat-tier-badge">⚠️ No Play Points Account</span>' +
-                                '</div>'
-                            ) : (
-                                '<div class="acc-stat-pill acc-loading-pill" id="stat_pill_' + a.code + '" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);">' +
-                                    '<span class="stat-tier-badge" style="font-size:11px; color:var(--text-muted);">⏳ Loading Live PP...</span>' +
-                                '</div>'
-                            ))) +
-                            '<div class="acc-stat-pill acc-refresh-pill" id="btn_refresh_' + a.code + '" onclick="checkAccountBalance(\'' + a.code + '\')" title="Tap to refresh Play Points">' +
-                                '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2">' +
-                                    '<path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>' +
-                                '</svg>' +
-                                '<span>Refresh</span>' +
+                            '<div class="acc-stat-pill" style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.25); color:#10b981; font-weight:800; font-size:11.5px; display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:20px;">' +
+                                '<span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#10b981; box-shadow:0 0 6px #10b981;"></span>' +
+                                '<span>Permanent G-Token Active</span>' +
+                            '</div>' +
+                            '<div class="acc-stat-pill" style="background:rgba(14,165,233,0.08); border:1px solid rgba(14,165,233,0.22); color:#0ea5e9; font-weight:700; font-size:11px; padding:4px 9px; border-radius:20px;">' +
+                                '<span>⚡ GPGS Linked</span>' +
                             '</div>' +
                         '</div>' +
 

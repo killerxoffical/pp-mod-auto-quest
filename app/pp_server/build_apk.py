@@ -34,7 +34,7 @@ print("=" * 60)
 # STEP 1: Resources
 print("\n>>> Step 1: Compiling resources with aapt...")
 shutil.copy2("AndroidManifest_ppserver.xml", "AndroidManifest.xml")
-cmd_aapt = [AAPT, "package", "-f", "-m", "-J", "src", "-M", "AndroidManifest.xml", "-S", "res", "-I", ANDROID_JAR]
+cmd_aapt = [AAPT, "package", "-f", "-m", "-J", "src", "--custom-package", "com.vareon.playquest", "-M", "AndroidManifest.xml", "-S", "res", "-I", ANDROID_JAR]
 subprocess.run(cmd_aapt, check=True)
 print(">>> R.java generated successfully.")
 

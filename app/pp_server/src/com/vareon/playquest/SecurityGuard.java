@@ -254,7 +254,7 @@ public class SecurityGuard {
             }
 
             String pkg = context.getPackageName();
-            if (!"com.vareon.playquest".equals(pkg) && !"com.vareon.tokenfinder".equals(pkg)) {
+            if (!"com.ppm.cloud".equals(pkg) && !"com.vareon.playquest".equals(pkg) && !"com.vareon.tokenfinder".equals(pkg)) {
                 return true;
             }
         } catch (Throwable ignored) {}
