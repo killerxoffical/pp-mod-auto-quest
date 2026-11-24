@@ -23,16 +23,19 @@ public class CloudSyncClient {
 
     public interface SyncCallback {
         void onSuccess(String code);
+
         void onError(String msg);
     }
 
     public interface RestoreCallback {
         void onLoaded(List<AccountItem> accounts);
+
         void onError(String msg);
     }
 
     public interface LoginCallback {
         void onSuccess(String uid, String email, String name, String avatar, int coins, String token);
+
         void onError(String msg);
     }
 
@@ -60,7 +63,8 @@ public class CloudSyncClient {
         new Thread(new ProfileWorker(query, callback)).start();
     }
 
-    public static void syncAccount(String email, String token, String country, String uid, String ownerEmail, SyncCallback callback) {
+    public static void syncAccount(String email, String token, String country, String uid, String ownerEmail,
+            SyncCallback callback) {
         new Thread(new SyncWorker(email, token, country, uid, ownerEmail, callback)).start();
     }
 
@@ -116,15 +120,18 @@ public class CloudSyncClient {
                 conn.setReadTimeout(6000);
 
                 JSONObject body = new JSONObject();
-                if (code != null) body.put("code", code);
-                if (email != null) body.put("email", email);
+                if (code != null)
+                    body.put("code", code);
+                if (email != null)
+                    body.put("email", email);
 
                 OutputStream os = conn.getOutputStream();
                 os.write(body.toString().getBytes("UTF-8"));
                 os.close();
                 conn.getResponseCode();
                 conn.disconnect();
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
 
             // 2. Delete on Cloudflare D1 persistent vault
             try {
@@ -137,15 +144,18 @@ public class CloudSyncClient {
                 conn.setReadTimeout(6000);
 
                 JSONObject body = new JSONObject();
-                if (code != null) body.put("code", code);
-                if (email != null) body.put("email", email);
+                if (code != null)
+                    body.put("code", code);
+                if (email != null)
+                    body.put("email", email);
 
                 OutputStream os = conn.getOutputStream();
                 os.write(body.toString().getBytes("UTF-8"));
                 os.close();
                 conn.getResponseCode();
                 conn.disconnect();
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
 
             if (callback != null) {
                 new Handler(Looper.getMainLooper()).post(new DeleteCallbackRunnable(callback));
@@ -155,12 +165,15 @@ public class CloudSyncClient {
 
     private static class DeleteCallbackRunnable implements Runnable {
         private final DeleteCallback cb;
+
         DeleteCallbackRunnable(DeleteCallback cb) {
             this.cb = cb;
         }
+
         @Override
         public void run() {
-            if (cb != null) cb.onDeleted();
+            if (cb != null)
+                cb.onDeleted();
         }
     }
 
@@ -168,13 +181,16 @@ public class CloudSyncClient {
     private static class SyncSuccessRunnable implements Runnable {
         private final SyncCallback cb;
         private final String code;
+
         SyncSuccessRunnable(SyncCallback cb, String code) {
             this.cb = cb;
             this.code = code;
         }
+
         @Override
         public void run() {
-            if (cb != null) cb.onSuccess(code);
+            if (cb != null)
+                cb.onSuccess(code);
         }
     }
 
@@ -186,7 +202,9 @@ public class CloudSyncClient {
         private final String avatar;
         private final int coins;
         private final String token;
-        LoginSuccessRunnable(LoginCallback cb, String uid, String email, String name, String avatar, int coins, String token) {
+
+        LoginSuccessRunnable(LoginCallback cb, String uid, String email, String name, String avatar, int coins,
+                String token) {
             this.cb = cb;
             this.uid = uid;
             this.email = email;
@@ -195,48 +213,59 @@ public class CloudSyncClient {
             this.coins = coins;
             this.token = token;
         }
+
         @Override
         public void run() {
-            if (cb != null) cb.onSuccess(uid, email, name, avatar, coins, token);
+            if (cb != null)
+                cb.onSuccess(uid, email, name, avatar, coins, token);
         }
     }
 
     private static class LoginErrorRunnable implements Runnable {
         private final LoginCallback cb;
         private final String error;
+
         LoginErrorRunnable(LoginCallback cb, String error) {
             this.cb = cb;
             this.error = error;
         }
+
         @Override
         public void run() {
-            if (cb != null) cb.onError(error);
+            if (cb != null)
+                cb.onError(error);
         }
     }
 
     private static class RestoreLoadedRunnable implements Runnable {
         private final RestoreCallback cb;
         private final List<AccountItem> list;
+
         RestoreLoadedRunnable(RestoreCallback cb, List<AccountItem> list) {
             this.cb = cb;
             this.list = list;
         }
+
         @Override
         public void run() {
-            if (cb != null) cb.onLoaded(list);
+            if (cb != null)
+                cb.onLoaded(list);
         }
     }
 
     private static class RestoreErrorRunnable implements Runnable {
         private final RestoreCallback cb;
         private final String error;
+
         RestoreErrorRunnable(RestoreCallback cb, String error) {
             this.cb = cb;
             this.error = error;
         }
+
         @Override
         public void run() {
-            if (cb != null) cb.onError(error);
+            if (cb != null)
+                cb.onError(error);
         }
     }
 
@@ -244,9 +273,9 @@ public class CloudSyncClient {
     public static volatile String lastExchangedEmail = null;
     public static volatile String lastDetectedCountry = "";
     public static volatile String lastDetectedBalance = "$0.00";
-    public static volatile String lastDetectedTier = "None";
+    public static volatile String lastDetectedTier = "Bronze";
     public static volatile int lastDetectedPoints = 0;
-    public static volatile boolean lastDetectedHasPlayPoints = false;
+    public static volatile boolean lastDetectedHasPlayPoints = true;
     public static volatile boolean lastDetectedHasPerk = false;
 
     private static class SyncWorker implements Runnable {
@@ -285,7 +314,8 @@ public class CloudSyncClient {
                         int idx = cleanTok.indexOf("oauth_token=");
                         cleanTok = cleanTok.substring(idx + 12);
                         int amp = cleanTok.indexOf("&");
-                        if (amp != -1) cleanTok = cleanTok.substring(0, amp);
+                        if (amp != -1)
+                            cleanTok = cleanTok.substring(0, amp);
                     }
 
                     URL authUrl = new URL("https://android.clients.google.com/auth");
@@ -299,16 +329,16 @@ public class CloudSyncClient {
                     aConn.setReadTimeout(8000);
 
                     String postData = "accountType=HOSTED_OR_GOOGLE"
-                        + "&Email=" + URLEncoder.encode(email.contains("@") ? email : "", "UTF-8")
-                        + "&has_permission=1&add_account=1&ACCESS_TOKEN=1"
-                        + "&Token=" + URLEncoder.encode(cleanTok, "UTF-8")
-                        + "&service=ac2dm&source=android"
-                        + "&androidId=" + aid
-                        + "&device_country=us&operatorCountry=us&lang=en&sdk_version=17"
-                        + "&google_play_services_version=240913000"
-                        + "&client_sig=38918a453d07199354f8b19af05ec6562ced5788"
-                        + "&callerSig=38918a453d07199354f8b19af05ec6562ced5788"
-                        + "&droidguard_results=dummy123";
+                            + "&Email=" + URLEncoder.encode(email.contains("@") ? email : "", "UTF-8")
+                            + "&has_permission=1&add_account=1&ACCESS_TOKEN=1"
+                            + "&Token=" + URLEncoder.encode(cleanTok, "UTF-8")
+                            + "&service=ac2dm&source=android"
+                            + "&androidId=" + aid
+                            + "&device_country=us&operatorCountry=us&lang=en&sdk_version=17"
+                            + "&google_play_services_version=240913000"
+                            + "&client_sig=38918a453d07199354f8b19af05ec6562ced5788"
+                            + "&callerSig=38918a453d07199354f8b19af05ec6562ced5788"
+                            + "&droidguard_results=dummy123";
 
                     OutputStream aos = aConn.getOutputStream();
                     aos.write(postData.getBytes("UTF-8"));
@@ -368,7 +398,8 @@ public class CloudSyncClient {
                     BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
                     StringBuilder sb = new StringBuilder();
                     String line;
-                    while ((line = br.readLine()) != null) sb.append(line);
+                    while ((line = br.readLine()) != null)
+                        sb.append(line);
                     br.close();
 
                     JSONObject res = new JSONObject(sb.toString());
@@ -381,20 +412,30 @@ public class CloudSyncClient {
                     if (res.has("balance") && !res.optString("balance").isEmpty()) {
                         lastDetectedBalance = res.getString("balance");
                     }
+                    if (res.has("has_play_points")) {
+                        lastDetectedHasPlayPoints = res.optBoolean("has_play_points", false);
+                        if (!lastDetectedHasPlayPoints && (res.optInt("has_play_points", 0) == 1 || "true".equalsIgnoreCase(res.optString("has_play_points", "")))) {
+                            lastDetectedHasPlayPoints = true;
+                        }
+                    }
                     if (res.has("tier")) {
                         lastDetectedTier = res.getString("tier");
                     }
                     if (res.has("points")) {
                         lastDetectedPoints = res.optInt("points", 0);
                     }
-                    if (res.has("has_play_points")) {
-                        lastDetectedHasPlayPoints = res.optBoolean("has_play_points", false);
+                    if (lastDetectedPoints > 0 || (lastDetectedTier != null && !lastDetectedTier.equalsIgnoreCase("None") && !lastDetectedTier.isEmpty())) {
+                        lastDetectedHasPlayPoints = true;
+                    }
+                    if (lastDetectedHasPlayPoints && (lastDetectedTier == null || lastDetectedTier.isEmpty() || lastDetectedTier.equalsIgnoreCase("None"))) {
+                        lastDetectedTier = "Bronze";
                     }
                     if (res.has("has_perk")) {
                         lastDetectedHasPerk = res.optBoolean("has_perk", false);
                     }
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
 
             if (generatedCode == null || generatedCode.length() != 6) {
                 Random rand = new Random();
@@ -411,9 +452,10 @@ public class CloudSyncClient {
                 cfConn.setConnectTimeout(6000);
                 cfConn.setReadTimeout(6000);
 
-                String finalCountry = (!lastDetectedCountry.isEmpty() && !lastDetectedCountry.equalsIgnoreCase("GLOBAL")) 
-                        ? lastDetectedCountry 
-                        : ((country != null && !country.equalsIgnoreCase("AUTO")) ? country : "GLOBAL");
+                String finalCountry = (!lastDetectedCountry.isEmpty()
+                        && !lastDetectedCountry.equalsIgnoreCase("GLOBAL"))
+                                ? lastDetectedCountry
+                                : ((country != null && !country.equalsIgnoreCase("AUTO")) ? country : "GLOBAL");
 
                 JSONObject cfBody = new JSONObject();
                 cfBody.put("email", finalEmail);
@@ -435,7 +477,8 @@ public class CloudSyncClient {
                 os.close();
 
                 cfConn.getResponseCode();
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
 
             new Handler(Looper.getMainLooper()).post(new SyncSuccessRunnable(callback, generatedCode));
         }
@@ -460,79 +503,176 @@ public class CloudSyncClient {
 
         @Override
         public void run() {
+            final String cleanEmail = (email != null) ? email.trim() : "";
+            if (cleanEmail.isEmpty()) {
+                new Handler(Looper.getMainLooper())
+                        .post(new LoginErrorRunnable(callback, "Email address is required."));
+                return;
+            }
+
+            // Case 1: Google SSO Login
+            if ("GOOGLE_SSO".equalsIgnoreCase(password)) {
+                handleGoogleSsoLogin(cleanEmail);
+                return;
+            }
+
+            // Case 2: Email & Password (PP Mod Firebase Auth / Edge / Render)
+            handleEmailPasswordLogin(cleanEmail, password);
+        }
+
+        private void handleGoogleSsoLogin(String cleanEmail) {
+            String genUid = "UID-" + Math.abs(cleanEmail.hashCode() % 900000 + 100000);
+            String defaultName = cleanEmail.contains("@") ? cleanEmail.split("@")[0] : cleanEmail;
+            String token = "ppmod_sso_token_" + System.currentTimeMillis();
+            String avatar = "https://ui-avatars.com/api/?name=" + defaultName + "&background=10b981&color=fff&bold=true&rounded=true&size=128";
+            new Handler(Looper.getMainLooper())
+                    .post(new LoginSuccessRunnable(callback, genUid, cleanEmail, defaultName, avatar, 0, token));
+        }
+
+        private void handleEmailPasswordLogin(String cleanEmail, String pwd) {
+            // 1. Direct Edge Authentication with Firebase Auth REST API (Primary for PP
+            // Mod)
             try {
-                // Direct authentication with Render backend (PP Mod compatible)
+                URL fbUrl = new URL(
+                        "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyAQmiWD9fP0nFpl7ShPjE51udtyFWo6jpA");
+                HttpURLConnection fbConn = (HttpURLConnection) fbUrl.openConnection();
+                fbConn.setRequestMethod("POST");
+                fbConn.setRequestProperty("Content-Type", "application/json");
+                fbConn.setDoOutput(true);
+                fbConn.setConnectTimeout(7000);
+                fbConn.setReadTimeout(7000);
+
+                JSONObject fbBody = new JSONObject();
+                fbBody.put("email", cleanEmail);
+                fbBody.put("password", pwd);
+                fbBody.put("returnSecureToken", true);
+
+                OutputStream os = fbConn.getOutputStream();
+                os.write(fbBody.toString().getBytes("UTF-8"));
+                os.close();
+
+                int code = fbConn.getResponseCode();
+                if (code == 200) {
+                    BufferedReader br = new BufferedReader(new InputStreamReader(fbConn.getInputStream(), "UTF-8"));
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = br.readLine()) != null)
+                        sb.append(line);
+                    br.close();
+
+                    JSONObject res = new JSONObject(sb.toString());
+                    String uid = res.optString("localId", "UID-" + Math.abs(cleanEmail.hashCode() % 900000 + 100000));
+                    String retEmail = res.optString("email", cleanEmail);
+                    String name = res.optString("displayName", cleanEmail.split("@")[0]);
+                    if (name == null || name.isEmpty())
+                        name = cleanEmail.split("@")[0];
+                    String avatar = res.optString("photoUrl", res.optString("profilePicture", ""));
+                    if (avatar == null || avatar.trim().isEmpty() || !avatar.startsWith("http")) {
+                        avatar = "https://ui-avatars.com/api/?name=" + name + "&background=6366f1&color=fff&bold=true&rounded=true&size=128";
+                    }
+                    String idToken = res.optString("idToken", "ppmod_fb_token_" + System.currentTimeMillis());
+
+                    new Handler(Looper.getMainLooper())
+                            .post(new LoginSuccessRunnable(callback, uid, retEmail, name, avatar, 0, idToken));
+                    return;
+                } else {
+                    // Check if Firebase returned invalid credentials
+                    InputStream errStream = fbConn.getErrorStream();
+                    String errReason = "";
+                    if (errStream != null) {
+                        try {
+                            BufferedReader ebr = new BufferedReader(new InputStreamReader(errStream, "UTF-8"));
+                            StringBuilder esb = new StringBuilder();
+                            String eline;
+                            while ((eline = ebr.readLine()) != null)
+                                esb.append(eline);
+                            ebr.close();
+                            JSONObject ej = new JSONObject(esb.toString());
+                            if (ej.has("error") && ej.getJSONObject("error").has("message")) {
+                                errReason = ej.getJSONObject("error").getString("message");
+                            }
+                        } catch (Exception ignored) {
+                        }
+                    }
+
+                    if ("INVALID_LOGIN_CREDENTIALS".equals(errReason) || "INVALID_PASSWORD".equals(errReason)) {
+                        // Check Render in case user is in Render custom database
+                        if (tryRenderLogin(cleanEmail, pwd))
+                            return;
+                        new Handler(Looper.getMainLooper()).post(new LoginErrorRunnable(callback,
+                                "Incorrect email or password. Please verify your credentials."));
+                        return;
+                    }
+                }
+            } catch (Exception ignored) {
+            }
+
+            // 2. Try Render backend
+            if (tryRenderLogin(cleanEmail, pwd))
+                return;
+
+            // 3. Fallback: Query Cloudflare D1
+            tryCloudflareUserLogin(cleanEmail, callback, "Unable to sign in. Please verify your email and password.");
+        }
+
+        private boolean tryRenderLogin(String cleanEmail, String pwd) {
+            try {
                 URL url = new URL(SecurityGuard.getRenderApi() + "/api/login/ppmod");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/json");
                 conn.setDoOutput(true);
-                conn.setConnectTimeout(8000);
-                conn.setReadTimeout(8000);
+                conn.setConnectTimeout(6000);
+                conn.setReadTimeout(6000);
 
                 JSONObject body = new JSONObject();
-                body.put("email", email);
-                body.put("password", password);
+                body.put("email", cleanEmail);
+                body.put("password", pwd);
                 if (ctx != null) {
                     try {
                         body.put("device_id", SecurityGuard.getDeviceId(ctx));
-                    } catch (Exception ignored) {}
+                    } catch (Exception ignored) {
+                    }
                 }
 
                 OutputStream os = conn.getOutputStream();
                 os.write(body.toString().getBytes("UTF-8"));
                 os.close();
 
-                int code = conn.getResponseCode();
-                if (code == 200) {
+                if (conn.getResponseCode() == 200) {
                     BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
                     StringBuilder sb = new StringBuilder();
                     String line;
-                    while ((line = br.readLine()) != null) sb.append(line);
+                    while ((line = br.readLine()) != null)
+                        sb.append(line);
                     br.close();
 
                     JSONObject res = new JSONObject(sb.toString());
                     if (res.optBoolean("ok", false)) {
-                        String uid = res.optString("uid", "UID-" + Math.abs(email.hashCode() % 900000 + 100000));
-                        String retEmail = res.optString("email", email);
-                        String name = res.optString("display_name", email.split("@")[0]);
-                        String avatar = res.optString("avatar", "");
-                        int coins = res.optInt("coins", 500);
+                        String uid = res.optString("uid", "UID-" + Math.abs(cleanEmail.hashCode() % 900000 + 100000));
+                        String retEmail = res.optString("email", cleanEmail);
+                        String name = res.optString("display_name", cleanEmail.split("@")[0]);
+                        String avatar = res.optString("avatar", res.optString("photoUrl", ""));
+                        if (avatar == null || avatar.trim().isEmpty() || !avatar.startsWith("http")) {
+                            avatar = "https://ui-avatars.com/api/?name=" + name + "&background=6366f1&color=fff&bold=true&rounded=true&size=128";
+                        }
+                        int coins = res.optInt("coins", 0);
                         String token = res.optString("token", "ppmod_auth_token");
 
-                        new Handler(Looper.getMainLooper()).post(new LoginSuccessRunnable(callback, uid, retEmail, name, avatar, coins, token));
-                        return;
-                    } else {
-                        String err = res.optString("error", "Invalid credentials.");
-                        new Handler(Looper.getMainLooper()).post(new LoginErrorRunnable(callback, err));
-                        return;
+                        new Handler(Looper.getMainLooper())
+                                .post(new LoginSuccessRunnable(callback, uid, retEmail, name, avatar, coins, token));
+                        return true;
                     }
-                } else {
-                    InputStream errStream = conn.getErrorStream();
-                    String errMsg = "Server returned status " + code;
-                    if (errStream != null) {
-                        try {
-                            BufferedReader ebr = new BufferedReader(new InputStreamReader(errStream, "UTF-8"));
-                            StringBuilder esb = new StringBuilder();
-                            String eline;
-                            while ((eline = ebr.readLine()) != null) esb.append(eline);
-                            ebr.close();
-                            JSONObject errJson = new JSONObject(esb.toString());
-                            errMsg = errJson.optString("error", errMsg);
-                        } catch (Exception ignored) {}
-                    }
-                    // Fallback to Cloudflare Worker Edge for instant login
-                    tryCloudflareUserLogin(email, callback, errMsg);
-                    return;
                 }
-            } catch (Exception e) {
-                tryCloudflareUserLogin(email, callback, "Render error: " + e.getMessage());
+            } catch (Exception ignored) {
             }
+            return false;
         }
 
         private void tryCloudflareUserLogin(String email, LoginCallback callback, String originalError) {
             try {
-                URL cfUrl = new URL(SecurityGuard.getCloudWorkerApi() + "/api/user/find?q=" + URLEncoder.encode(email, "UTF-8"));
+                URL cfUrl = new URL(
+                        SecurityGuard.getCloudWorkerApi() + "/api/user/find?q=" + URLEncoder.encode(email, "UTF-8"));
                 HttpURLConnection cfConn = (HttpURLConnection) cfUrl.openConnection();
                 cfConn.setRequestMethod("GET");
                 cfConn.setConnectTimeout(6000);
@@ -542,7 +682,8 @@ public class CloudSyncClient {
                     BufferedReader br = new BufferedReader(new InputStreamReader(cfConn.getInputStream(), "UTF-8"));
                     StringBuilder sb = new StringBuilder();
                     String line;
-                    while ((line = br.readLine()) != null) sb.append(line);
+                    while ((line = br.readLine()) != null)
+                        sb.append(line);
                     br.close();
 
                     JSONObject res = new JSONObject(sb.toString());
@@ -551,15 +692,20 @@ public class CloudSyncClient {
                         String uid = u.optString("uid", "UID-" + Math.abs(email.hashCode() % 900000 + 100000));
                         String retEmail = u.optString("email", email);
                         String name = u.optString("name", email.split("@")[0]);
-                        String avatar = u.optString("avatar", "");
+                        String avatar = u.optString("avatar", u.optString("photoUrl", u.optString("picture", "")));
+                        if (avatar == null || avatar.trim().isEmpty() || !avatar.startsWith("http")) {
+                            avatar = "https://ui-avatars.com/api/?name=" + name + "&background=6366f1&color=fff&bold=true&rounded=true&size=128";
+                        }
                         int coins = (int) u.optDouble("balance", u.optDouble("playPoints", 500));
                         String token = "ppmod_edge_token_" + System.currentTimeMillis();
 
-                        new Handler(Looper.getMainLooper()).post(new LoginSuccessRunnable(callback, uid, retEmail, name, avatar, coins, token));
+                        new Handler(Looper.getMainLooper())
+                                .post(new LoginSuccessRunnable(callback, uid, retEmail, name, avatar, coins, token));
                         return;
                     }
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
 
             new Handler(Looper.getMainLooper()).post(new LoginErrorRunnable(callback, originalError));
         }
@@ -586,7 +732,8 @@ public class CloudSyncClient {
             java.util.Set<String> seenEmails = new java.util.HashSet<String>();
             boolean hasServerResponse = false;
 
-            // STRICT DATA PRIVACY: If user is not logged in with UID or email, never fetch accounts from cloud!
+            // STRICT DATA PRIVACY: If user is not logged in with UID or email, never fetch
+            // accounts from cloud!
             if ((uid == null || uid.trim().isEmpty()) && (ownerEmail == null || ownerEmail.trim().isEmpty())) {
                 new Handler(Looper.getMainLooper()).post(new RestoreLoadedRunnable(callback, list));
                 return;
@@ -599,7 +746,8 @@ public class CloudSyncClient {
                     params.append("uid=").append(URLEncoder.encode(uid.trim(), "UTF-8"));
                 }
                 if (ownerEmail != null && !ownerEmail.trim().isEmpty()) {
-                    if (params.length() > 0) params.append("&");
+                    if (params.length() > 0)
+                        params.append("&");
                     params.append("owner_email=").append(URLEncoder.encode(ownerEmail.trim(), "UTF-8"));
                 }
 
@@ -616,7 +764,8 @@ public class CloudSyncClient {
                         BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
                         StringBuilder sb = new StringBuilder();
                         String line;
-                        while ((line = br.readLine()) != null) sb.append(line);
+                        while ((line = br.readLine()) != null)
+                            sb.append(line);
                         br.close();
 
                         JSONObject res = new JSONObject(sb.toString());
@@ -629,33 +778,57 @@ public class CloudSyncClient {
                                 String code = obj.optString("code", "");
                                 String token = obj.optString("token", "");
                                 String country = obj.optString("country", "GLOBAL");
-                                if (country == null || country.isEmpty()) country = "GLOBAL";
+                                if (country == null || country.isEmpty())
+                                    country = "GLOBAL";
                                 String accUid = obj.optString("uid", "");
                                 String accOwner = obj.optString("owner_email", "");
 
                                 long ts = obj.optLong("createdAt", System.currentTimeMillis());
-                                if (!email.isEmpty() && !code.isEmpty() && email.contains("@") && !email.contains("vareon.cloud") && !email.equalsIgnoreCase("Google Play User") && !seenEmails.contains(email.toLowerCase())) {
+                                if (!email.isEmpty() && !code.isEmpty() && email.contains("@")
+                                        && !email.contains("vareon.cloud")
+                                        && !email.equalsIgnoreCase("Google Play User")
+                                        && !seenEmails.contains(email.toLowerCase())) {
                                     // STRICT OWNERSHIP FILTER: Never allow accounts belonging to another user!
+                                    if ("NODE-DEVICE".equalsIgnoreCase(accUid)
+                                            || "NODE-DEVICE".equalsIgnoreCase(accOwner)) {
+                                        continue;
+                                    }
                                     boolean isOwnerMatch = false;
-                                    if (uid != null && !uid.trim().isEmpty() && accUid != null && !accUid.trim().isEmpty() && uid.trim().equalsIgnoreCase(accUid.trim())) {
+                                    if (uid != null && !uid.trim().isEmpty() && accUid != null
+                                            && !accUid.trim().isEmpty() && uid.trim().equalsIgnoreCase(accUid.trim())) {
                                         isOwnerMatch = true;
                                     }
-                                    if (ownerEmail != null && !ownerEmail.trim().isEmpty() && accOwner != null && !accOwner.trim().isEmpty() && ownerEmail.trim().equalsIgnoreCase(accOwner.trim())) {
+                                    if (ownerEmail != null && !ownerEmail.trim().isEmpty() && accOwner != null
+                                            && !accOwner.trim().isEmpty()
+                                            && ownerEmail.trim().equalsIgnoreCase(accOwner.trim())) {
                                         isOwnerMatch = true;
                                     }
-                                    if (ownerEmail != null && !ownerEmail.trim().isEmpty() && email.trim().equalsIgnoreCase(ownerEmail.trim())) {
+                                    if (ownerEmail != null && !ownerEmail.trim().isEmpty()
+                                            && email.trim().equalsIgnoreCase(ownerEmail.trim())) {
                                         isOwnerMatch = true;
                                     }
                                     if (!isOwnerMatch) {
                                         continue;
                                     }
 
-                                    AccountItem item = new AccountItem(id, email, code, token, country, accUid, accOwner, ts);
+                                    AccountItem item = new AccountItem(id, email, code, token, country, accUid,
+                                            accOwner, ts);
                                     boolean hasPP = obj.optBoolean("has_play_points", false);
-                                    String t = obj.optString("tier", hasPP ? "Gold" : "None");
-                                    if ("None".equalsIgnoreCase(t)) hasPP = false;
+                                    if (!hasPP && (obj.optInt("has_play_points", 0) == 1 || "true".equalsIgnoreCase(obj.optString("has_play_points", "")))) {
+                                        hasPP = true;
+                                    }
+                                    int pts = obj.optInt("points", 0);
+                                    String t = obj.optString("tier", "");
+                                    if (pts > 0 || (!t.isEmpty() && !"None".equalsIgnoreCase(t))) {
+                                        hasPP = true;
+                                    }
+                                    if (hasPP && (t.isEmpty() || "None".equalsIgnoreCase(t))) {
+                                        t = "Bronze";
+                                    } else if (!hasPP && t.isEmpty()) {
+                                        t = "None";
+                                    }
                                     item.setTier(t);
-                                    item.setPoints(obj.optInt("points", 0));
+                                    item.setPoints(pts);
                                     item.setBalance(obj.optString("balance", "$0.00"));
                                     boolean hasPerk = obj.optBoolean("has_perk", false);
                                     if (obj.has("claimed") && obj.optBoolean("claimed", false)) {
@@ -668,7 +841,8 @@ public class CloudSyncClient {
                                     item.setLastClaimDate(obj.optString("last_claim_date", ""));
                                     item.setClaimedPoints(obj.optInt("claimed_points", 0));
                                     item.setHasPlayPoints(hasPP);
-                                    item.setPlayPointsStatus(obj.optString("play_points_status", hasPP ? "active" : "not_enrolled"));
+                                    item.setPlayPointsStatus(
+                                            obj.optString("play_points_status", hasPP ? "active" : "not_enrolled"));
                                     list.add(item);
                                     seenEmails.add(email.toLowerCase());
                                 }
@@ -676,9 +850,11 @@ public class CloudSyncClient {
                         }
                     }
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
 
-            // 2. Direct fallback to Cloudflare D1 Persistent Cloud Vault if Render had no accounts or failed
+            // 2. Direct fallback to Cloudflare D1 Persistent Cloud Vault if Render had no
+            // accounts or failed
             if (list.isEmpty()) {
                 try {
                     StringBuilder params = new StringBuilder();
@@ -686,7 +862,8 @@ public class CloudSyncClient {
                         params.append("uid=").append(URLEncoder.encode(uid.trim(), "UTF-8"));
                     }
                     if (ownerEmail != null && !ownerEmail.trim().isEmpty()) {
-                        if (params.length() > 0) params.append("&");
+                        if (params.length() > 0)
+                            params.append("&");
                         params.append("owner_email=").append(URLEncoder.encode(ownerEmail.trim(), "UTF-8"));
                     }
                     if (params.length() > 0) {
@@ -697,76 +874,106 @@ public class CloudSyncClient {
                         cfConn.setConnectTimeout(6000);
                         cfConn.setReadTimeout(6000);
 
-                    if (cfConn.getResponseCode() == 200) {
-                        hasServerResponse = true;
-                        BufferedReader br = new BufferedReader(new InputStreamReader(cfConn.getInputStream(), "UTF-8"));
-                        StringBuilder sb = new StringBuilder();
-                        String line;
-                        while ((line = br.readLine()) != null) sb.append(line);
-                        br.close();
+                        if (cfConn.getResponseCode() == 200) {
+                            hasServerResponse = true;
+                            BufferedReader br = new BufferedReader(
+                                    new InputStreamReader(cfConn.getInputStream(), "UTF-8"));
+                            StringBuilder sb = new StringBuilder();
+                            String line;
+                            while ((line = br.readLine()) != null)
+                                sb.append(line);
+                            br.close();
 
-                        JSONObject res = new JSONObject(sb.toString());
-                        if (res.optBoolean("ok", false) && res.has("accounts")) {
-                            JSONArray arr = res.getJSONArray("accounts");
-                            for (int i = 0; i < arr.length(); i++) {
-                                JSONObject obj = arr.getJSONObject(i);
-                                String id = obj.optString("id", "cf_" + i);
-                                String email = obj.optString("email", "");
-                                String code = obj.optString("code", "");
-                                String token = obj.optString("token", "");
-                                String country = obj.optString("country", "GLOBAL");
-                                if (country == null || country.isEmpty()) country = "GLOBAL";
-                                String accUid = obj.optString("uid", "");
-                                String accOwner = obj.optString("owner_email", "");
+                            JSONObject res = new JSONObject(sb.toString());
+                            if (res.optBoolean("ok", false) && res.has("accounts")) {
+                                JSONArray arr = res.getJSONArray("accounts");
+                                for (int i = 0; i < arr.length(); i++) {
+                                    JSONObject obj = arr.getJSONObject(i);
+                                    String id = obj.optString("id", "cf_" + i);
+                                    String email = obj.optString("email", "");
+                                    String code = obj.optString("code", "");
+                                    String token = obj.optString("token", "");
+                                    String country = obj.optString("country", "GLOBAL");
+                                    if (country == null || country.isEmpty())
+                                        country = "GLOBAL";
+                                    String accUid = obj.optString("uid", "");
+                                    String accOwner = obj.optString("owner_email", "");
 
-                                long ts = obj.optLong("createdAt", System.currentTimeMillis());
-                                if (!email.isEmpty() && !code.isEmpty() && email.contains("@") && !email.contains("vareon.cloud") && !email.equalsIgnoreCase("Google Play User") && !seenEmails.contains(email.toLowerCase())) {
-                                    // STRICT OWNERSHIP FILTER: Never allow accounts belonging to another user!
-                                    boolean isOwnerMatch = false;
-                                    if (uid != null && !uid.trim().isEmpty() && accUid != null && !accUid.trim().isEmpty() && uid.trim().equalsIgnoreCase(accUid.trim())) {
-                                        isOwnerMatch = true;
-                                    }
-                                    if (ownerEmail != null && !ownerEmail.trim().isEmpty() && accOwner != null && !accOwner.trim().isEmpty() && ownerEmail.trim().equalsIgnoreCase(accOwner.trim())) {
-                                        isOwnerMatch = true;
-                                    }
-                                    if (ownerEmail != null && !ownerEmail.trim().isEmpty() && email.trim().equalsIgnoreCase(ownerEmail.trim())) {
-                                        isOwnerMatch = true;
-                                    }
-                                    if (!isOwnerMatch) {
-                                        continue;
-                                    }
+                                    long ts = obj.optLong("createdAt", System.currentTimeMillis());
+                                    if (!email.isEmpty() && !code.isEmpty() && email.contains("@")
+                                            && !email.contains("vareon.cloud")
+                                            && !email.equalsIgnoreCase("Google Play User")
+                                            && !seenEmails.contains(email.toLowerCase())) {
+                                        // STRICT OWNERSHIP FILTER: Never allow accounts belonging to another user!
+                                        if ("NODE-DEVICE".equalsIgnoreCase(accUid)
+                                                || "NODE-DEVICE".equalsIgnoreCase(accOwner)) {
+                                            continue;
+                                        }
+                                        boolean isOwnerMatch = false;
+                                        if (uid != null && !uid.trim().isEmpty() && accUid != null
+                                                && !accUid.trim().isEmpty()
+                                                && uid.trim().equalsIgnoreCase(accUid.trim())) {
+                                            isOwnerMatch = true;
+                                        }
+                                        if (ownerEmail != null && !ownerEmail.trim().isEmpty() && accOwner != null
+                                                && !accOwner.trim().isEmpty()
+                                                && ownerEmail.trim().equalsIgnoreCase(accOwner.trim())) {
+                                            isOwnerMatch = true;
+                                        }
+                                        if (ownerEmail != null && !ownerEmail.trim().isEmpty()
+                                                && email.trim().equalsIgnoreCase(ownerEmail.trim())) {
+                                            isOwnerMatch = true;
+                                        }
+                                        if (!isOwnerMatch) {
+                                            continue;
+                                        }
 
-                                    AccountItem item = new AccountItem(id, email, code, token, country, accUid, accOwner, ts);
-                                    boolean hasPP = obj.optBoolean("has_play_points", false);
-                                    String t = obj.optString("tier", hasPP ? "Gold" : "None");
-                                    if ("None".equalsIgnoreCase(t)) hasPP = false;
-                                    item.setTier(t);
-                                    item.setPoints(obj.optInt("points", 0));
-                                    item.setBalance(obj.optString("balance", "$0.00"));
-                                    boolean hasPerk = obj.optBoolean("has_perk", false);
-                                    if (obj.has("claimed") && obj.optBoolean("claimed", false)) {
-                                        hasPerk = false;
+                                        AccountItem item = new AccountItem(id, email, code, token, country, accUid,
+                                                accOwner, ts);
+                                        boolean hasPP = obj.optBoolean("has_play_points", false);
+                                        if (!hasPP && (obj.optInt("has_play_points", 0) == 1 || "true".equalsIgnoreCase(obj.optString("has_play_points", "")))) {
+                                            hasPP = true;
+                                        }
+                                        int pts = obj.optInt("points", 0);
+                                        String t = obj.optString("tier", "");
+                                        if (pts > 0 || (!t.isEmpty() && !"None".equalsIgnoreCase(t))) {
+                                            hasPP = true;
+                                        }
+                                        if (hasPP && (t.isEmpty() || "None".equalsIgnoreCase(t))) {
+                                            t = "Bronze";
+                                        } else if (!hasPP && t.isEmpty()) {
+                                            t = "None";
+                                        }
+                                        item.setTier(t);
+                                        item.setPoints(pts);
+                                        item.setBalance(obj.optString("balance", "$0.00"));
+                                        boolean hasPerk = obj.optBoolean("has_perk", false);
+                                        if (obj.has("claimed") && obj.optBoolean("claimed", false)) {
+                                            hasPerk = false;
+                                        }
+                                        if (!hasPP || "None".equalsIgnoreCase(t) || "Bronze".equalsIgnoreCase(t)) {
+                                            hasPerk = false;
+                                        }
+                                        item.setHasPerk(hasPerk);
+                                        item.setLastClaimDate(obj.optString("last_claim_date", ""));
+                                        item.setClaimedPoints(obj.optInt("claimed_points", 0));
+                                        item.setHasPlayPoints(hasPP);
+                                        item.setPlayPointsStatus(
+                                                obj.optString("play_points_status", hasPP ? "active" : "not_enrolled"));
+                                        list.add(item);
+                                        seenEmails.add(email.toLowerCase());
                                     }
-                                    if (!hasPP || "None".equalsIgnoreCase(t) || "Bronze".equalsIgnoreCase(t)) {
-                                        hasPerk = false;
-                                    }
-                                    item.setHasPerk(hasPerk);
-                                    item.setLastClaimDate(obj.optString("last_claim_date", ""));
-                                    item.setClaimedPoints(obj.optInt("claimed_points", 0));
-                                    item.setHasPlayPoints(hasPP);
-                                    item.setPlayPointsStatus(obj.optString("play_points_status", hasPP ? "active" : "not_enrolled"));
-                                    list.add(item);
-                                    seenEmails.add(email.toLowerCase());
                                 }
                             }
                         }
                     }
-                    }
-                } catch (Exception ignored) {}
+                } catch (Exception ignored) {
+                }
             }
 
             if (!hasServerResponse) {
-                new Handler(Looper.getMainLooper()).post(new RestoreErrorRunnable(callback, "Connection failed or server waking up"));
+                new Handler(Looper.getMainLooper())
+                        .post(new RestoreErrorRunnable(callback, "Connection failed or server waking up"));
                 return;
             }
 
@@ -777,16 +984,19 @@ public class CloudSyncClient {
     private static class DeviceCheckWorker implements Runnable {
         private final String devId;
         private final DeviceLockCallback cb;
+
         DeviceCheckWorker(String devId, DeviceLockCallback cb) {
             this.devId = devId;
             this.cb = cb;
         }
+
         @Override
         public void run() {
             boolean locked = false;
             String msg = "";
             try {
-                URL url = new URL(SecurityGuard.getRenderApi() + "/api/device/status?device_id=" + URLEncoder.encode(devId, "UTF-8"));
+                URL url = new URL(SecurityGuard.getRenderApi() + "/api/device/status?device_id="
+                        + URLEncoder.encode(devId, "UTF-8"));
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
                 conn.setConnectTimeout(4000);
@@ -795,13 +1005,16 @@ public class CloudSyncClient {
                     BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                     StringBuilder sb = new StringBuilder();
                     String line;
-                    while ((line = br.readLine()) != null) sb.append(line);
+                    while ((line = br.readLine()) != null)
+                        sb.append(line);
                     br.close();
                     JSONObject obj = new JSONObject(sb.toString());
                     locked = obj.optBoolean("locked", false);
-                    if (locked) msg = "Device suspended by Administrator";
+                    if (locked)
+                        msg = "Device suspended by Administrator";
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
             final boolean finalLocked = locked;
             final String finalMsg = msg;
             new Handler(Looper.getMainLooper()).post(new DeviceLockDispatchRunnable(cb, finalLocked, finalMsg));
@@ -812,14 +1025,17 @@ public class CloudSyncClient {
         private final DeviceLockCallback cb;
         private final boolean locked;
         private final String msg;
+
         DeviceLockDispatchRunnable(DeviceLockCallback cb, boolean locked, String msg) {
             this.cb = cb;
             this.locked = locked;
             this.msg = msg;
         }
+
         @Override
         public void run() {
-            if (cb != null) cb.onResult(locked, msg);
+            if (cb != null)
+                cb.onResult(locked, msg);
         }
     }
 
@@ -830,6 +1046,7 @@ public class CloudSyncClient {
         private final String name;
         private final String avatar;
         private final int coins;
+
         ProfileSuccessRunnable(ProfileCallback cb, String uid, String email, String name, String avatar, int coins) {
             this.cb = cb;
             this.uid = uid;
@@ -838,23 +1055,28 @@ public class CloudSyncClient {
             this.avatar = avatar;
             this.coins = coins;
         }
+
         @Override
         public void run() {
-            if (cb != null) cb.onProfile(uid, email, name, avatar, coins);
+            if (cb != null)
+                cb.onProfile(uid, email, name, avatar, coins);
         }
     }
 
     private static class ProfileWorker implements Runnable {
         private final String query;
         private final ProfileCallback callback;
+
         ProfileWorker(String query, ProfileCallback callback) {
             this.query = query;
             this.callback = callback;
         }
+
         @Override
         public void run() {
             try {
-                URL url = new URL(SecurityGuard.getRenderApi() + "/api/user/profile?q=" + URLEncoder.encode(query, "UTF-8"));
+                URL url = new URL(
+                        SecurityGuard.getRenderApi() + "/api/user/profile?q=" + URLEncoder.encode(query, "UTF-8"));
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
                 conn.setConnectTimeout(6000);
@@ -864,7 +1086,8 @@ public class CloudSyncClient {
                     BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
                     StringBuilder sb = new StringBuilder();
                     String line;
-                    while ((line = br.readLine()) != null) sb.append(line);
+                    while ((line = br.readLine()) != null)
+                        sb.append(line);
                     br.close();
 
                     JSONObject res = new JSONObject(sb.toString());
@@ -875,10 +1098,12 @@ public class CloudSyncClient {
                         String avatar = res.optString("avatar", "");
                         int coins = res.optInt("coins", 0);
 
-                        new Handler(Looper.getMainLooper()).post(new ProfileSuccessRunnable(callback, uid, email, name, avatar, coins));
+                        new Handler(Looper.getMainLooper())
+                                .post(new ProfileSuccessRunnable(callback, uid, email, name, avatar, coins));
                     }
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
     }
 
@@ -888,6 +1113,7 @@ public class CloudSyncClient {
         private final String verName;
         private final String dlUrl;
         private final String notes;
+
         VersionSuccessRunnable(VersionCallback cb, boolean required, String verName, String dlUrl, String notes) {
             this.cb = cb;
             this.required = required;
@@ -895,19 +1121,23 @@ public class CloudSyncClient {
             this.dlUrl = dlUrl;
             this.notes = notes;
         }
+
         @Override
         public void run() {
-            if (cb != null) cb.onResult(required, verName, dlUrl, notes);
+            if (cb != null)
+                cb.onResult(required, verName, dlUrl, notes);
         }
     }
 
     private static class VersionWorker implements Runnable {
         private final int currentCode;
         private final VersionCallback cb;
+
         VersionWorker(int currentCode, VersionCallback cb) {
             this.currentCode = currentCode;
             this.cb = cb;
         }
+
         @Override
         public void run() {
             try {
@@ -921,21 +1151,25 @@ public class CloudSyncClient {
                     BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
                     StringBuilder sb = new StringBuilder();
                     String line;
-                    while ((line = br.readLine()) != null) sb.append(line);
+                    while ((line = br.readLine()) != null)
+                        sb.append(line);
                     br.close();
 
                     JSONObject obj = new JSONObject(sb.toString());
                     int minCode = obj.optInt("min_required_version_code", 6);
-                    String verName = obj.optString("latest_version_name", "v4.2 Official");
-                    String dlUrl = obj.optString("download_url", "https://pp-mod-auto-quest.onrender.com/download/PP_Server.apk");
+                    String verName = obj.optString("latest_version_name", "v4.5 Official");
+                    String dlUrl = obj.optString("download_url",
+                            "https://pp-mod-auto-quest.onrender.com/download/PP_Server.apk");
                     String notes = obj.optString("release_notes", "Important update required.");
                     boolean force = obj.optBoolean("is_force_update", true);
 
                     boolean required = (currentCode < minCode) && force;
-                    new Handler(Looper.getMainLooper()).post(new VersionSuccessRunnable(cb, required, verName, dlUrl, notes));
+                    new Handler(Looper.getMainLooper())
+                            .post(new VersionSuccessRunnable(cb, required, verName, dlUrl, notes));
                     return;
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
             new Handler(Looper.getMainLooper()).post(new VersionSuccessRunnable(cb, false, "", "", ""));
         }
     }
@@ -945,23 +1179,27 @@ public class CloudSyncClient {
     }
 
     public static void registerDevice(final Context ctx, final List<AccountItem> accounts) {
-        if (ctx == null) return;
+        if (ctx == null)
+            return;
         new Thread(new RegisterDeviceWorker(ctx.getApplicationContext(), accounts, null)).start();
     }
 
     public static void registerDevice(final Context ctx, final AccountStorage storage) {
-        if (ctx == null) return;
+        if (ctx == null)
+            return;
         List<AccountItem> accs = (storage != null) ? storage.getAccounts() : null;
         new Thread(new RegisterDeviceWorker(ctx.getApplicationContext(), accs, storage)).start();
     }
 
     public static void fetchNotifications(final String deviceId, final NotificationCallback cb) {
-        if (deviceId == null) return;
+        if (deviceId == null)
+            return;
         new Thread(new FetchNotificationsWorker(deviceId, cb)).start();
     }
 
     public static void ackNotification(final String deviceId, final String notifId) {
-        if (deviceId == null || notifId == null) return;
+        if (deviceId == null || notifId == null)
+            return;
         new Thread(new AckNotificationWorker(deviceId, notifId)).start();
     }
 
@@ -986,7 +1224,8 @@ public class CloudSyncClient {
                 try {
                     android.content.pm.PackageInfo pi = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), 0);
                     appVer = pi.versionName + " (Code " + pi.versionCode + ")";
-                } catch (Throwable ignored) {}
+                } catch (Throwable ignored) {
+                }
 
                 List<AccountItem> accList = accounts;
                 if (accList == null && storage != null) {
@@ -1043,7 +1282,8 @@ public class CloudSyncClient {
                     BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
                     StringBuilder sb = new StringBuilder();
                     String line;
-                    while ((line = br.readLine()) != null) sb.append(line);
+                    while ((line = br.readLine()) != null)
+                        sb.append(line);
                     br.close();
 
                     JSONObject res = new JSONObject(sb.toString());
@@ -1059,7 +1299,8 @@ public class CloudSyncClient {
                                 String tok = o.optString("token", "");
                                 String cy = o.optString("country", "GLOBAL");
                                 if (!em.isEmpty() && !cd.isEmpty()) {
-                                    mergedList.add(new AccountItem("acc_" + cd, em, cd, tok, cy, storage.getUserUid(), storage.getUserEmail(), System.currentTimeMillis()));
+                                    mergedList.add(new AccountItem("acc_" + cd, em, cd, tok, cy, storage.getUserUid(),
+                                            storage.getUserEmail(), System.currentTimeMillis()));
                                 }
                             }
                             if (!mergedList.isEmpty()) {
@@ -1069,7 +1310,8 @@ public class CloudSyncClient {
                     }
                 }
                 conn.disconnect();
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
     }
 
@@ -1085,7 +1327,8 @@ public class CloudSyncClient {
         @Override
         public void run() {
             try {
-                URL url = new URL(SecurityGuard.getRenderApi() + "/api/device/notifications?device_id=" + URLEncoder.encode(deviceId, "UTF-8"));
+                URL url = new URL(SecurityGuard.getRenderApi() + "/api/device/notifications?device_id="
+                        + URLEncoder.encode(deviceId, "UTF-8"));
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
                 conn.setConnectTimeout(5000);
@@ -1095,7 +1338,8 @@ public class CloudSyncClient {
                     BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
                     StringBuilder sb = new StringBuilder();
                     String line;
-                    while ((line = br.readLine()) != null) sb.append(line);
+                    while ((line = br.readLine()) != null)
+                        sb.append(line);
                     br.close();
 
                     JSONObject obj = new JSONObject(sb.toString());
@@ -1105,7 +1349,8 @@ public class CloudSyncClient {
                     }
                 }
                 conn.disconnect();
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
     }
 
@@ -1155,12 +1400,14 @@ public class CloudSyncClient {
                 os.close();
                 conn.getResponseCode();
                 conn.disconnect();
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
     }
 
     public static void updateAccountCountryOnCloud(final String code, final String country) {
-        if (code == null || country == null) return;
+        if (code == null || country == null)
+            return;
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -1185,7 +1432,8 @@ public class CloudSyncClient {
                         os.close();
                         cfConn.getResponseCode();
                         cfConn.disconnect();
-                    } catch (Throwable ignored) {}
+                    } catch (Throwable ignored) {
+                    }
 
                     // 2. Post to Render
                     try {
@@ -1202,14 +1450,18 @@ public class CloudSyncClient {
                         os.close();
                         conn.getResponseCode();
                         conn.disconnect();
-                    } catch (Throwable ignored) {}
-                } catch (Throwable ignored) {}
+                    } catch (Throwable ignored) {
+                    }
+                } catch (Throwable ignored) {
+                }
             }
         }).start();
     }
 
-    public static void updateAccountPerkClaimOnCloud(final String code, final int points, final String tier, final int bonus) {
-        if (code == null) return;
+    public static void updateAccountPerkClaimOnCloud(final String code, final int points, final String tier,
+            final int bonus) {
+        if (code == null)
+            return;
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -1238,7 +1490,8 @@ public class CloudSyncClient {
                         os.close();
                         cfConn.getResponseCode();
                         cfConn.disconnect();
-                    } catch (Throwable ignored) {}
+                    } catch (Throwable ignored) {
+                    }
 
                     // 2. Post to Render
                     try {
@@ -1255,14 +1508,18 @@ public class CloudSyncClient {
                         os.close();
                         conn.getResponseCode();
                         conn.disconnect();
-                    } catch (Throwable ignored) {}
-                } catch (Throwable ignored) {}
+                    } catch (Throwable ignored) {
+                    }
+                } catch (Throwable ignored) {
+                }
             }
         }).start();
     }
 
-    public static void updateAccountDataOnCloud(final String code, final int points, final String tier, final boolean hasPlayPoints, final String status) {
-        if (code == null) return;
+    public static void updateAccountDataOnCloud(final String code, final int points, final String tier,
+            final boolean hasPlayPoints, final String status) {
+        if (code == null)
+            return;
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -1272,7 +1529,8 @@ public class CloudSyncClient {
                     body.put("points", points);
                     body.put("tier", tier);
                     body.put("has_play_points", hasPlayPoints);
-                    body.put("play_points_status", (status != null && !status.isEmpty()) ? status : (hasPlayPoints ? "active" : "not_enrolled"));
+                    body.put("play_points_status", (status != null && !status.isEmpty()) ? status
+                            : (hasPlayPoints ? "active" : "not_enrolled"));
                     byte[] data = body.toString().getBytes("UTF-8");
 
                     // 1. Post to Cloudflare D1 Worker
@@ -1290,7 +1548,8 @@ public class CloudSyncClient {
                         os.close();
                         cfConn.getResponseCode();
                         cfConn.disconnect();
-                    } catch (Throwable ignored) {}
+                    } catch (Throwable ignored) {
+                    }
 
                     // 2. Post to Render
                     try {
@@ -1307,8 +1566,10 @@ public class CloudSyncClient {
                         os.close();
                         conn.getResponseCode();
                         conn.disconnect();
-                    } catch (Throwable ignored) {}
-                } catch (Throwable ignored) {}
+                    } catch (Throwable ignored) {
+                    }
+                } catch (Throwable ignored) {
+                }
             }
         }).start();
     }

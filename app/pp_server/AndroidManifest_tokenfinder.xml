@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.vareon.tokenfinder"
     android:versionCode="6"
-    android:versionName="v4.2 Dev Pro">
+    android:versionName="v4.5 Dev Pro">
 
     <uses-sdk
         android:minSdkVersion="21"

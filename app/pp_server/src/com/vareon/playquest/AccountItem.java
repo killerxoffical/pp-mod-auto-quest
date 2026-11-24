@@ -102,14 +102,23 @@ public class AccountItem {
 
     
     public String getTier() {
-        if (tier != null && !tier.isEmpty()) {
+        if (tier != null && !tier.isEmpty() && !"None".equalsIgnoreCase(tier)) {
             return tier;
         }
-        return hasPlayPoints ? "Gold" : "None";
+        if (hasPlayPoints || points > 0) {
+            return "Bronze";
+        }
+        return "None";
     }
 
     public void setTier(String tier) {
-        this.tier = (tier != null && !tier.isEmpty()) ? tier : (hasPlayPoints ? "Gold" : "None");
+        if (tier != null && !tier.isEmpty() && !"None".equalsIgnoreCase(tier)) {
+            this.tier = tier;
+        } else if (hasPlayPoints || points > 0) {
+            this.tier = "Bronze";
+        } else {
+            this.tier = "None";
+        }
     }
 
     public int getPoints() {
@@ -169,7 +178,9 @@ public class AccountItem {
     }
 
     public boolean hasPlayPoints() {
-        return hasPlayPoints;
+        if (hasPlayPoints || points > 0) return true;
+        if (tier != null && !tier.isEmpty() && !"None".equalsIgnoreCase(tier)) return true;
+        return false;
     }
 
     public void setHasPlayPoints(boolean hasPlayPoints) {
@@ -182,6 +193,22 @@ public class AccountItem {
 
     public void setPlayPointsStatus(String playPointsStatus) {
         this.playPointsStatus = playPointsStatus;
+    }
+
+    public JSONObject toStorageJson() {
+        JSONObject obj = new JSONObject();
+        try {
+            obj.put("id", id);
+            obj.put("email", email);
+            obj.put("code", code);
+            obj.put("token", token);
+            obj.put("country", getCountry());
+            obj.put("timestamp", timestamp);
+            obj.put("owner_uid", ownerUid);
+            obj.put("owner_email", ownerEmail);
+        } catch (JSONException ignored) {
+        }
+        return obj;
     }
 
     public JSONObject toJson() {
@@ -226,9 +253,18 @@ public class AccountItem {
         item.setPoints(obj.optInt("points", 0));
         
         boolean hasPP = obj.optBoolean("has_play_points", false);
-        String tierVal = obj.optString("tier", hasPP ? "Gold" : "None");
-        if ("None".equalsIgnoreCase(tierVal)) {
-            hasPP = false;
+        if (!hasPP && (obj.optInt("has_play_points", 0) == 1 || "true".equalsIgnoreCase(obj.optString("has_play_points", "")))) {
+            hasPP = true;
+        }
+        int pts = obj.optInt("points", 0);
+        String tierVal = obj.optString("tier", "");
+        if (pts > 0 || (!tierVal.isEmpty() && !"None".equalsIgnoreCase(tierVal))) {
+            hasPP = true;
+        }
+        if (hasPP && (tierVal.isEmpty() || "None".equalsIgnoreCase(tierVal))) {
+            tierVal = "Bronze";
+        } else if (!hasPP && tierVal.isEmpty()) {
+            tierVal = "None";
         }
         item.setTier(tierVal);
         item.setHasPlayPoints(hasPP);

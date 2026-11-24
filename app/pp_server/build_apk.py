@@ -28,7 +28,7 @@ KEYSTORE_PASS = "ppserver123"
 KEY_ALIAS = "ppserver"
 
 print("=" * 60)
-print(">>> BULLETPROOF BUILD STARTING: PP SERVER & PLAYQUEST TOKEN FINDER")
+print(">>> BULLETPROOF BUILD STARTING: PP SERVER (USER EDITION)")
 print("=" * 60)
 
 # STEP 1: Resources
@@ -153,17 +153,14 @@ def package_and_sign(manifest_src, apk_name, title):
 
     print(f">>> SUCCESS: {apk_name} built, zipaligned, and verified signed ({os.path.getsize(apk_name)} bytes)!")
 
-# STEP 4A: PP_Server.apk
+# STEP 4: Package and Sign PP_Server.apk (User Edition)
 package_and_sign("AndroidManifest_ppserver.xml", "PP_Server.apk", "User Edition")
-
-# STEP 4B: PlayQuest_Token_Finder.apk
-package_and_sign("AndroidManifest_tokenfinder.xml", "PlayQuest_Token_Finder.apk", "Developer Edition")
 
 # Restore base manifest
 shutil.copy2("AndroidManifest_ppserver.xml", "AndroidManifest.xml")
 
-# STEP 5: Distribute
-print("\n>>> Step 5: Distributing APKs...")
+# STEP 5: Distribute PP_Server.apk
+print("\n>>> Step 5: Distributing PP_Server.apk...")
 base_script_dir = os.path.dirname(os.path.abspath(__file__))
 achievement_dir = os.path.abspath(os.path.join(base_script_dir, "..", ".."))
 
@@ -172,21 +169,11 @@ dist_targets = [
     os.path.join(achievement_dir, "PP_Server.apk"),
     os.path.join(achievement_dir, "static", "PP_Server.apk"),
 ]
-dist_targets_dev = [
-    os.path.join(base_script_dir, "..", "PlayQuest_Token_Finder.apk"),
-    os.path.join(achievement_dir, "PlayQuest_Token_Finder.apk"),
-    os.path.join(achievement_dir, "static", "PlayQuest_Token_Finder.apk"),
-]
 
 for t in dist_targets:
     os.makedirs(os.path.dirname(t), exist_ok=True)
     shutil.copy2(os.path.join(base_script_dir, "PP_Server.apk"), t)
     print(f"  -> Copied PP_Server.apk to {t}")
-
-for t in dist_targets_dev:
-    os.makedirs(os.path.dirname(t), exist_ok=True)
-    shutil.copy2(os.path.join(base_script_dir, "PlayQuest_Token_Finder.apk"), t)
-    print(f"  -> Copied PlayQuest_Token_Finder.apk to {t}")
 
 # Also update build_out in bin for consistency
 bin_dex = os.path.join("bin", "dex")
@@ -194,7 +181,6 @@ os.makedirs(bin_dex, exist_ok=True)
 shutil.copy2(classes_dex, os.path.join(bin_dex, "classes.dex"))
 
 print("\n" + "=" * 60)
-print(">>> ALL BUILDS COMPLETE AND CERTIFIED CRASH-PROOF!")
-print(">>> [1] PP_Server.apk              -> User Mode (com.vareon.playquest)")
-print(">>> [2] PlayQuest_Token_Finder.apk -> Dev Mode  (com.vareon.tokenfinder)")
+print(">>> PP SERVER BUILD COMPLETE AND CERTIFIED CRASH-PROOF!")
+print(">>> [1] PP_Server.apk -> User Mode (com.vareon.playquest) [v4.5 Official | Code 6]")
 print("=" * 60)

@@ -27,18 +27,26 @@ public class AccountStorage {
 
     public AccountStorage(Context context) {
         this.prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        // Purge legacy global key to strictly isolate per-user accounts
+        if (prefs.contains("accounts_list_v3")) {
+            prefs.edit().remove("accounts_list_v3").apply();
+        }
+        if (prefs.contains("accounts_list_v3_guest")) {
+            prefs.edit().remove("accounts_list_v3_guest").apply();
+        }
         purgeDeletedAccounts();
     }
 
     public synchronized void purgeDeletedAccounts() {
         try {
-            String[] keysToCheck = new String[]{
-                getAccountsStorageKey(),
-                KEY_ACCOUNTS + "_guest",
-                KEY_ACCOUNTS + "_" + getUserUid()
+            String[] keysToCheck = new String[] {
+                    getAccountsStorageKey(),
+                    KEY_ACCOUNTS + "_guest",
+                    KEY_ACCOUNTS + "_" + getUserUid()
             };
             for (String key : keysToCheck) {
-                if (key == null) continue;
+                if (key == null)
+                    continue;
                 String jsonStr = prefs.getString(key, null);
                 if (jsonStr != null && !jsonStr.isEmpty() && !jsonStr.equals("[]")) {
                     org.json.JSONArray arr = new org.json.JSONArray(jsonStr);
@@ -59,7 +67,8 @@ public class AccountStorage {
                     }
                 }
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
 
     // ================= USER SESSION MANAGEMENT =================
@@ -69,14 +78,14 @@ public class AccountStorage {
 
     public void saveUserSession(String uid, String email, String name, String avatar, int coins, String token) {
         prefs.edit()
-            .putBoolean(KEY_IS_LOGGED_IN, true)
-            .putString(KEY_USER_UID, uid)
-            .putString(KEY_USER_EMAIL, email)
-            .putString(KEY_USER_NAME, name)
-            .putString(KEY_USER_AVATAR, avatar != null ? avatar : "")
-            .putInt(KEY_USER_COINS, coins)
-            .putString(KEY_USER_AUTH_TOKEN, token)
-            .apply();
+                .putBoolean(KEY_IS_LOGGED_IN, true)
+                .putString(KEY_USER_UID, uid)
+                .putString(KEY_USER_EMAIL, email)
+                .putString(KEY_USER_NAME, name)
+                .putString(KEY_USER_AVATAR, avatar != null ? avatar : "")
+                .putInt(KEY_USER_COINS, coins)
+                .putString(KEY_USER_AUTH_TOKEN, token)
+                .apply();
     }
 
     public void saveUserSession(String uid, String email, String name, int coins, String token) {
@@ -100,7 +109,18 @@ public class AccountStorage {
     }
 
     public String getUserAvatar() {
-        return prefs.getString(KEY_USER_AVATAR, "");
+        String av = prefs.getString(KEY_USER_AVATAR, "");
+        if (av != null && av.trim().startsWith("http")) {
+            return av.trim();
+        }
+        String name = getUserName();
+        if (name == null || name.trim().isEmpty() || "PP User".equalsIgnoreCase(name)) {
+            name = getUserEmail();
+        }
+        if (name != null && !name.trim().isEmpty()) {
+            return "https://ui-avatars.com/api/?name=" + name + "&background=10b981&color=fff&bold=true&rounded=true&size=128";
+        }
+        return "";
     }
 
     public String getUserDisplayName() {
@@ -130,15 +150,15 @@ public class AccountStorage {
     public void clearUserSession() {
         String accKey = getAccountsStorageKey();
         prefs.edit()
-            .putBoolean(KEY_IS_LOGGED_IN, false)
-            .remove(KEY_USER_UID)
-            .remove(KEY_USER_EMAIL)
-            .remove(KEY_USER_NAME)
-            .remove(KEY_USER_AVATAR)
-            .remove(KEY_USER_COINS)
-            .remove(KEY_USER_AUTH_TOKEN)
-            .remove(accKey)
-            .apply();
+                .putBoolean(KEY_IS_LOGGED_IN, false)
+                .remove(KEY_USER_UID)
+                .remove(KEY_USER_EMAIL)
+                .remove(KEY_USER_NAME)
+                .remove(KEY_USER_AVATAR)
+                .remove(KEY_USER_COINS)
+                .remove(KEY_USER_AUTH_TOKEN)
+                .remove(accKey)
+                .apply();
     }
 
     public synchronized void clearAccounts() {
@@ -151,30 +171,31 @@ public class AccountStorage {
     }
 
     public synchronized void addDeletedBlacklist(String code, String email) {
-        java.util.Set<String> set = new java.util.HashSet<String>(prefs.getStringSet(getDeletedKey(), new java.util.HashSet<String>()));
-        if (code != null && !code.trim().isEmpty()) set.add(code.trim());
-        if (email != null && !email.trim().isEmpty()) set.add(email.trim().toLowerCase());
+        java.util.Set<String> set = new java.util.HashSet<String>(
+                prefs.getStringSet(getDeletedKey(), new java.util.HashSet<String>()));
+        if (code != null && !code.trim().isEmpty())
+            set.add(code.trim());
+        if (email != null && !email.trim().isEmpty())
+            set.add(email.trim().toLowerCase());
         prefs.edit().putStringSet(getDeletedKey(), set).apply();
     }
 
     public synchronized boolean isDeleted(String code, String email) {
-        if (code != null && (code.equals("155448") || code.equals("161170"))) return true;
-        if (email != null) {
-            String el = email.toLowerCase().trim();
-            if (el.contains("sagorvai") || el.contains("thebranrk") || el.contains("sadibhasan") || (el.startsWith("sa") && el.endsWith("21@gmail.com"))) {
-                return true;
-            }
-        }
-
         java.util.Set<String> set = prefs.getStringSet(getDeletedKey(), null);
-        if (set == null || set.isEmpty()) return false;
-        if (code != null && set.contains(code.trim())) return true;
-        if (email != null && set.contains(email.trim().toLowerCase())) return true;
+        if (set == null || set.isEmpty())
+            return false;
+        if (code != null && set.contains(code.trim()))
+            return true;
+        if (email != null && set.contains(email.trim().toLowerCase()))
+            return true;
         return false;
     }
 
     public synchronized List<AccountItem> getAccounts() {
         List<AccountItem> list = new ArrayList<AccountItem>();
+        if (!isLoggedIn()) {
+            return list;
+        }
         String jsonStr = prefs.getString(getAccountsStorageKey(), "[]");
         String curUid = getUserUid();
         String curEmail = getUserEmail();
@@ -187,23 +208,26 @@ public class AccountStorage {
                     if (isDeleted(item.getCode(), item.getEmail())) {
                         continue;
                     }
-                    if (isLoggedIn()) {
-                        String oUid = item.getOwnerUid();
-                        String oEm = item.getOwnerEmail();
-                        String em = item.getEmail();
-                        boolean match = false;
-                        if (curUid != null && !curUid.trim().isEmpty() && oUid != null && curUid.trim().equalsIgnoreCase(oUid.trim())) match = true;
-                        if (curEmail != null && !curEmail.trim().isEmpty() && oEm != null && curEmail.trim().equalsIgnoreCase(oEm.trim())) match = true;
-                        if (curEmail != null && !curEmail.trim().isEmpty() && em != null && curEmail.trim().equalsIgnoreCase(em.trim())) match = true;
-                        if (match) {
-                            list.add(item);
-                        }
-                    } else {
+                    String oUid = item.getOwnerUid();
+                    String oEm = item.getOwnerEmail();
+                    String em = item.getEmail();
+                    boolean match = false;
+                    if (curUid != null && !curUid.trim().isEmpty() && oUid != null
+                            && curUid.trim().equalsIgnoreCase(oUid.trim()))
+                        match = true;
+                    if (curEmail != null && !curEmail.trim().isEmpty() && oEm != null
+                            && curEmail.trim().equalsIgnoreCase(oEm.trim()))
+                        match = true;
+                    if (curEmail != null && !curEmail.trim().isEmpty() && em != null
+                            && curEmail.trim().equalsIgnoreCase(em.trim()))
+                        match = true;
+                    if (match) {
                         list.add(item);
                     }
                 }
             }
-        } catch (JSONException ignored) {}
+        } catch (JSONException ignored) {
+        }
         return list;
     }
 
@@ -212,7 +236,8 @@ public class AccountStorage {
         List<AccountItem> filtered = new ArrayList<AccountItem>();
 
         String q = (searchQuery != null) ? searchQuery.toLowerCase().trim() : "";
-        boolean filterCountry = (countryFilter != null && !countryFilter.equalsIgnoreCase("ALL") && !countryFilter.equalsIgnoreCase("GLOBAL"));
+        boolean filterCountry = (countryFilter != null && !countryFilter.equalsIgnoreCase("ALL")
+                && !countryFilter.equalsIgnoreCase("GLOBAL"));
 
         for (AccountItem item : all) {
             // Country filter
@@ -235,7 +260,8 @@ public class AccountStorage {
     }
 
     public synchronized void saveAccount(AccountItem newItem) {
-        if (newItem == null) return;
+        if (newItem == null)
+            return;
         if (newItem.getOwnerUid().isEmpty()) {
             newItem.setOwnerUid(getUserUid());
         }
@@ -244,7 +270,7 @@ public class AccountStorage {
         }
         List<AccountItem> current = getAccounts();
         List<AccountItem> updated = new ArrayList<AccountItem>();
-        
+
         // Add new item at top
         updated.add(newItem);
 
@@ -261,7 +287,8 @@ public class AccountStorage {
     }
 
     public synchronized void deleteAccount(String code) {
-        if (code == null) return;
+        if (code == null)
+            return;
         List<AccountItem> current = getAccounts();
         List<AccountItem> updated = new ArrayList<AccountItem>();
         String deletedEmail = "";
@@ -276,16 +303,20 @@ public class AccountStorage {
         saveList(updated);
     }
 
-    
-    public synchronized void updateAccountData(String code, int points, String tier, boolean hasPlayPoints, String status) {
-        if (code == null) return;
+    public synchronized void updateAccountData(String code, int points, String tier, boolean hasPlayPoints,
+            String status) {
+        if (code == null)
+            return;
         List<AccountItem> current = getAccounts();
         for (AccountItem item : current) {
             if (code.equals(item.getCode())) {
-                if (points >= 0) item.setPoints(points);
-                if (tier != null && !tier.isEmpty()) item.setTier(tier);
+                if (points >= 0)
+                    item.setPoints(points);
+                if (tier != null && !tier.isEmpty())
+                    item.setTier(tier);
                 item.setHasPlayPoints(hasPlayPoints);
-                if (status != null && !status.isEmpty()) item.setPlayPointsStatus(status);
+                if (status != null && !status.isEmpty())
+                    item.setPlayPointsStatus(status);
                 break;
             }
         }
@@ -297,7 +328,8 @@ public class AccountStorage {
     }
 
     public synchronized void updateAccountCountry(String code, String newCountry) {
-        if (code == null || newCountry == null) return;
+        if (code == null || newCountry == null)
+            return;
         List<AccountItem> current = getAccounts();
         for (AccountItem item : current) {
             if (code.equals(item.getCode())) {
@@ -309,7 +341,8 @@ public class AccountStorage {
     }
 
     public synchronized void replaceAllAccounts(List<AccountItem> list) {
-        if (list == null) return;
+        if (list == null)
+            return;
         List<AccountItem> current = getAccounts();
         java.util.Map<String, AccountItem> localMap = new java.util.HashMap<String, AccountItem>();
         for (AccountItem item : current) {
@@ -325,8 +358,10 @@ public class AccountStorage {
 
         // Merge intelligently to protect user manual edits & claim state
         for (AccountItem cloudItem : list) {
-            if (cloudItem == null || cloudItem.getCode() == null) continue;
-            if (isDeleted(cloudItem.getCode(), cloudItem.getEmail())) continue;
+            if (cloudItem == null || cloudItem.getCode() == null)
+                continue;
+            if (isDeleted(cloudItem.getCode(), cloudItem.getEmail()))
+                continue;
 
             // Strict User Isolation Check: Discard any account belonging to another user
             if (isLoggedIn()) {
@@ -334,32 +369,46 @@ public class AccountStorage {
                 String oEm = cloudItem.getOwnerEmail();
                 String em = cloudItem.getEmail();
                 boolean match = false;
-                if (curUid != null && !curUid.trim().isEmpty() && oUid != null && curUid.trim().equalsIgnoreCase(oUid.trim())) match = true;
-                if (curEmail != null && !curEmail.trim().isEmpty() && oEm != null && curEmail.trim().equalsIgnoreCase(oEm.trim())) match = true;
-                if (curEmail != null && !curEmail.trim().isEmpty() && em != null && curEmail.trim().equalsIgnoreCase(em.trim())) match = true;
-                if (!match) continue; // Skip accounts of other users!
+                if (curUid != null && !curUid.trim().isEmpty() && oUid != null
+                        && curUid.trim().equalsIgnoreCase(oUid.trim()))
+                    match = true;
+                if (curEmail != null && !curEmail.trim().isEmpty() && oEm != null
+                        && curEmail.trim().equalsIgnoreCase(oEm.trim()))
+                    match = true;
+                if (curEmail != null && !curEmail.trim().isEmpty() && em != null
+                        && curEmail.trim().equalsIgnoreCase(em.trim()))
+                    match = true;
+                if (!match)
+                    continue; // Skip accounts of other users!
             }
 
             AccountItem local = localMap.get(cloudItem.getCode());
             if (local != null) {
+                // NEVER let cloud overwrite local live points, level (tier), dollar balance, or
+                // perks!
+                cloudItem.setPoints(local.getPoints());
+                cloudItem.setTier(local.getTier());
+                cloudItem.setBalance(local.getBalance());
+                cloudItem.setHasPlayPoints(local.hasPlayPoints());
+                cloudItem.setHasPerk(local.hasPerk());
+                cloudItem.setPlayPointsStatus(local.getPlayPointsStatus());
+                cloudItem.setLastClaimDate(local.getLastClaimDate());
+                cloudItem.setClaimedPoints(local.getClaimedPoints());
+
                 // If cloud country is default but local has customized country, keep local
                 String cloudCountry = cloudItem.getCountry();
                 String localCountry = local.getCountry();
-                if ((cloudCountry.equals("GLOBAL") || cloudCountry.equals("US")) && (!localCountry.equals("GLOBAL") && !localCountry.equals("US"))) {
+                if ((cloudCountry.equals("GLOBAL") || cloudCountry.equals("US"))
+                        && (!localCountry.equals("GLOBAL") && !localCountry.equals("US"))) {
                     cloudItem.setCountry(localCountry);
-                }
-                // If local claimed perk today, keep claimed state
-                if (!local.hasPerk() && cloudItem.hasPerk()) {
-                    cloudItem.setHasPerk(false);
-                    cloudItem.setLastClaimDate(local.getLastClaimDate());
-                    cloudItem.setClaimedPoints(local.getClaimedPoints());
                 }
             }
             secureList.add(cloudItem);
             processedCodes.add(cloudItem.getCode());
         }
 
-        // Protect freshly added local accounts (< 3 minutes old) that haven't synced to cloud yet
+        // Protect freshly added local accounts (< 3 minutes old) that haven't synced to
+        // cloud yet
         long now = System.currentTimeMillis();
         for (AccountItem local : current) {
             if (local != null && local.getCode() != null && !processedCodes.contains(local.getCode())) {
@@ -393,7 +442,7 @@ public class AccountStorage {
                         item.setOwnerEmail(curEmail);
                     }
                 }
-                arr.put(item.toJson());
+                arr.put(item.toStorageJson());
             }
         }
         prefs.edit().putString(getAccountsStorageKey(), arr.toString()).apply();

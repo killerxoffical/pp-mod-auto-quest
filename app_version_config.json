@@ -1,9 +1,9 @@
 {
   "latest_version_code": 6,
-  "latest_version_name": "v4.2 Official",
+  "latest_version_name": "v4.5 Official",
   "min_required_version_code": 6,
   "download_url": "",
-  "release_notes": "Official v4.2 Release - Single-tap instant login transition, real-time maintenance sync, authentic Google icon cycle, and 3D UI upgrade.",
+  "release_notes": "Official v4.5 Release - Live local points and level caching, zero cloud point overwrites, instant Google auth, and streamlined APK performance.",
   "is_force_update": false,
   "maintenance_mode": false,
   "maintenance_title": "Scheduled Server Maintenance",

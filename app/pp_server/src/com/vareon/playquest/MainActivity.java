@@ -43,7 +43,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     private static final String TAG = "MainActivity";
     public static final String SETUP_URL = "https://accounts.google.com/EmbeddedSetup";
     public static final int APP_VERSION_CODE = 6;
-    public static final String APP_VERSION_NAME = "v4.2 Official";
+    public static final String APP_VERSION_NAME = "v4.5 Official";
     public static final int REQUEST_CODE_PICK_ACCOUNT = 1002;
     public volatile boolean isSystemBlocked = false;
 
@@ -78,13 +78,16 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             // 1. Install Crash Shield to prevent abrupt crashes
             setupCrashShield();
 
-            // Request GET_ACCOUNTS permission on Android 6.0+ (crucial for emulators & newer Android versions)
+            // Request GET_ACCOUNTS permission on Android 6.0+ (crucial for emulators &
+            // newer Android versions)
             if (Build.VERSION.SDK_INT >= 23) {
                 try {
-                    if (checkSelfPermission("android.permission.GET_ACCOUNTS") != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                        requestPermissions(new String[]{"android.permission.GET_ACCOUNTS"}, 1001);
+                    if (checkSelfPermission(
+                            "android.permission.GET_ACCOUNTS") != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                        requestPermissions(new String[] { "android.permission.GET_ACCOUNTS" }, 1001);
                     }
-                } catch (Throwable ignored) {}
+                } catch (Throwable ignored) {
+                }
             }
 
             // 2. Initialize local account storage
@@ -94,10 +97,12 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 Log.e(TAG, "AccountStorage init error", t);
             }
 
-            // 3. Security checks: strictly block and terminate App Cloners / Virtual Containers
+            // 3. Security checks: strictly block and terminate App Cloners / Virtual
+            // Containers
             try {
                 if (SecurityGuard.detectCloneOrDualSpace(this)) {
-                    Toast.makeText(this, "Security Alert: Virtual Container or App Cloner is not allowed!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Security Alert: Virtual Container or App Cloner is not allowed!",
+                            Toast.LENGTH_LONG).show();
                     SecurityGuard.killAppProcess();
                     return;
                 }
@@ -133,7 +138,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             try {
                 buildProgrammaticLayout();
                 setupMainAppWebView();
-            } catch (Throwable ignored) {}
+            } catch (Throwable ignored) {
+            }
         }
     }
 
@@ -141,7 +147,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         try {
             final Thread.UncaughtExceptionHandler defaultHandler = Thread.getDefaultUncaughtExceptionHandler();
             Thread.setDefaultUncaughtExceptionHandler(new SafeCrashHandler(defaultHandler));
-        } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {
+        }
     }
 
     private void bindViews() {
@@ -167,17 +174,20 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         try {
             android.widget.FrameLayout root = new android.widget.FrameLayout(this);
             root.setLayoutParams(new android.widget.FrameLayout.LayoutParams(
-                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT, android.widget.FrameLayout.LayoutParams.MATCH_PARENT));
+                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT));
             root.setBackgroundColor(0xFFF8FAFC);
 
             mainAppWebView = new WebView(this);
             mainAppWebView.setLayoutParams(new android.widget.FrameLayout.LayoutParams(
-                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT, android.widget.FrameLayout.LayoutParams.MATCH_PARENT));
+                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT));
             root.addView(mainAppWebView);
 
             googleLoginContainer = new RelativeLayout(this);
             googleLoginContainer.setLayoutParams(new android.widget.FrameLayout.LayoutParams(
-                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT, android.widget.FrameLayout.LayoutParams.MATCH_PARENT));
+                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT));
             googleLoginContainer.setBackgroundColor(0xFFFFFFFF);
             googleLoginContainer.setVisibility(View.GONE);
 
@@ -545,7 +555,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             } else if (accountStorage != null && !accountStorage.getUserEmail().isEmpty()) {
                 finalEmail = accountStorage.getUserEmail();
             } else {
-                finalEmail = "device_account@gmail.com";
+                finalEmail = "";
             }
         }
 
@@ -556,7 +566,11 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 txtLoginStatus.setVisibility(View.VISIBLE);
                 txtLoginStatus.setText("Connecting to server, please wait...");
             }
-            doLogin(finalEmail, "GOOGLE_SSO");
+            if (!finalEmail.isEmpty()) {
+                doLogin(finalEmail, "GOOGLE_SSO");
+            } else {
+                Toast.makeText(this, "Could not detect Google account email.", Toast.LENGTH_SHORT).show();
+            }
             return;
         }
 
@@ -565,8 +579,12 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             txtLoginStatus.setText("Connecting to server, please wait...");
         }
 
-        String uid = (accountStorage != null) ? accountStorage.getUserUid() : "NODE-DEVICE";
-        String ownerEmail = (accountStorage != null) ? accountStorage.getUserEmail() : "";
+        String uid = (accountStorage != null && !accountStorage.getUserUid().isEmpty())
+                ? accountStorage.getUserUid()
+                : ("DEV-" + SecurityGuard.getDeviceId(this));
+        String ownerEmail = (accountStorage != null && !accountStorage.getUserEmail().isEmpty())
+                ? accountStorage.getUserEmail()
+                : finalEmail;
         CloudSyncClient.syncAccount(finalEmail, token, pendingAccountCountry, uid, ownerEmail, this);
     }
 
@@ -588,14 +606,16 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             } else if (accountStorage != null && !accountStorage.getUserEmail().isEmpty()) {
                 finalEmail = accountStorage.getUserEmail();
             } else {
-                finalEmail = "device_account@gmail.com";
+                finalEmail = "";
             }
         }
 
         String resolvedCountry = pendingAccountCountry;
-        if (resolvedCountry != null && !resolvedCountry.isEmpty() && !resolvedCountry.equalsIgnoreCase("AUTO") && !resolvedCountry.equalsIgnoreCase("GLOBAL")) {
+        if (resolvedCountry != null && !resolvedCountry.isEmpty() && !resolvedCountry.equalsIgnoreCase("AUTO")
+                && !resolvedCountry.equalsIgnoreCase("GLOBAL")) {
             // Keep user selected or specified country
-        } else if (CloudSyncClient.lastDetectedCountry != null && !CloudSyncClient.lastDetectedCountry.isEmpty() && !CloudSyncClient.lastDetectedCountry.equalsIgnoreCase("GLOBAL")) {
+        } else if (CloudSyncClient.lastDetectedCountry != null && !CloudSyncClient.lastDetectedCountry.isEmpty()
+                && !CloudSyncClient.lastDetectedCountry.equalsIgnoreCase("GLOBAL")) {
             resolvedCountry = CloudSyncClient.lastDetectedCountry.toUpperCase();
         } else {
             resolvedCountry = "US";
@@ -611,12 +631,21 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 (accountStorage != null ? accountStorage.getUserEmail() : ""),
                 System.currentTimeMillis());
 
+        boolean hasPP = CloudSyncClient.lastDetectedHasPlayPoints;
+        int pts = CloudSyncClient.lastDetectedPoints;
+        String tierVal = CloudSyncClient.lastDetectedTier;
+        if (pts > 0 || (tierVal != null && !tierVal.isEmpty() && !tierVal.equalsIgnoreCase("None"))) {
+            hasPP = true;
+        }
+        if (hasPP && (tierVal == null || tierVal.isEmpty() || tierVal.equalsIgnoreCase("None"))) {
+            tierVal = "Bronze";
+        }
         item.setBalance(CloudSyncClient.lastDetectedBalance != null ? CloudSyncClient.lastDetectedBalance : "$0.00");
-        item.setTier(CloudSyncClient.lastDetectedTier != null ? CloudSyncClient.lastDetectedTier : "None");
-        item.setPoints(CloudSyncClient.lastDetectedPoints);
-        item.setHasPlayPoints(CloudSyncClient.lastDetectedHasPlayPoints);
+        item.setTier(tierVal);
+        item.setPoints(pts);
+        item.setHasPlayPoints(hasPP);
         item.setHasPerk(CloudSyncClient.lastDetectedHasPerk);
-        item.setPlayPointsStatus(CloudSyncClient.lastDetectedHasPlayPoints ? "active" : "not_enrolled");
+        item.setPlayPointsStatus(hasPP ? "active" : "not_enrolled");
 
         if (accountStorage != null) {
             accountStorage.saveAccount(item);
@@ -704,11 +733,15 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         for (AccountItem item : list) {
             if (code.equals(item.getCode())) {
                 if (!item.hasPlayPoints() || "None".equalsIgnoreCase(item.getTier())) {
-                    Toast.makeText(this, "⚠️ This Google account has no Play Points account! Join in Google Play Store first.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this,
+                            "⚠️ This Google account has no Play Points account! Join in Google Play Store first.",
+                            Toast.LENGTH_LONG).show();
                     return;
                 }
                 if ("Bronze".equalsIgnoreCase(item.getTier())) {
-                    Toast.makeText(this, "🥉 Bronze Level accounts do not receive weekly perks. Perks start at Silver level.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this,
+                            "🥉 Bronze Level accounts do not receive weekly perks. Perks start at Silver level.",
+                            Toast.LENGTH_LONG).show();
                     return;
                 }
                 item.setLastClaimDate(todayStr);
@@ -749,13 +782,14 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     }
 
     public void doRefreshUserData() {
-        if (accountStorage == null || !accountStorage.isLoggedIn()) return;
+        if (accountStorage == null || !accountStorage.isLoggedIn())
+            return;
         String email = accountStorage.getUserEmail();
-        if (email.isEmpty()) return;
+        if (email.isEmpty())
+            return;
         CloudSyncClient.fetchUserProfile(email, new RefreshProfileCallbackImpl(this));
     }
 
-    
     public void notifyWebProfileUpdated(String uid, String email, String name, String avatar, int coins) {
         final JSONObject userObj = new JSONObject();
         try {
@@ -766,12 +800,14 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             userObj.put("avatar", avatar);
             userObj.put("coins", coins);
             userObj.put("balance", coins);
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
         runOnUiThread(new NotifyWebProfileUpdatedRunnable(this, userObj.toString()));
     }
 
     public void notifyWebLoginSuccess(String uid, String email, String name, String avatar, int coins) {
-        if (mainAppWebView == null) return;
+        if (mainAppWebView == null)
+            return;
         try {
             JSONObject u = new JSONObject();
             u.put("ok", true);
@@ -780,13 +816,16 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             u.put("name", name);
             u.put("avatar", avatar);
             u.put("coins", coins);
-            final String rawJs = "if(window.onLoginSuccess) { window.onLoginSuccess(" + u.toString() + "); } else if(window.refreshAccounts) { window.refreshAccounts(); }";
+            final String rawJs = "if(window.onLoginSuccess) { window.onLoginSuccess(" + u.toString()
+                    + "); } else if(window.refreshAccounts) { window.refreshAccounts(); }";
             runOnUiThread(new PostWebJsRunnable(this, rawJs));
-        } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {
+        }
     }
 
     public void notifyWebLoginError(final String error) {
-        if (mainAppWebView == null) return;
+        if (mainAppWebView == null)
+            return;
         final String quoted = JSONObject.quote(error != null ? error : "Unknown error");
         final String rawJs = "if(window.onLoginError) { window.onLoginError(" + quoted + "); }";
         runOnUiThread(new PostWebJsRunnable(this, rawJs));
@@ -822,9 +861,15 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 String accOwner = item.getOwnerEmail();
                 String em = item.getEmail();
                 boolean match = false;
-                if (curUid != null && !curUid.trim().isEmpty() && accUid != null && curUid.trim().equalsIgnoreCase(accUid.trim())) match = true;
-                if (curEmail != null && !curEmail.trim().isEmpty() && accOwner != null && curEmail.trim().equalsIgnoreCase(accOwner.trim())) match = true;
-                if (curEmail != null && !curEmail.trim().isEmpty() && em != null && curEmail.trim().equalsIgnoreCase(em.trim())) match = true;
+                if (curUid != null && !curUid.trim().isEmpty() && accUid != null
+                        && curUid.trim().equalsIgnoreCase(accUid.trim()))
+                    match = true;
+                if (curEmail != null && !curEmail.trim().isEmpty() && accOwner != null
+                        && curEmail.trim().equalsIgnoreCase(accOwner.trim()))
+                    match = true;
+                if (curEmail != null && !curEmail.trim().isEmpty() && em != null
+                        && curEmail.trim().equalsIgnoreCase(em.trim()))
+                    match = true;
                 if (!match) {
                     continue; // Strictly filter out any account that does not belong to this user!
                 }
@@ -860,11 +905,13 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
             try {
                 CloudSyncClient.registerDevice(this, accountStorage);
-            } catch (Throwable ignored) {}
+            } catch (Throwable ignored) {
+            }
         }
         Toast.makeText(this, "Account removed from vault.", Toast.LENGTH_SHORT).show();
         if (mainAppWebView != null) {
-            final String js = "javascript:(function(){ if(window.onAccountDeleted) window.onAccountDeleted('" + code + "'); else if(window.refreshAccounts) window.refreshAccounts(); })();";
+            final String js = "javascript:(function(){ if(window.onAccountDeleted) window.onAccountDeleted('" + code
+                    + "'); else if(window.refreshAccounts) window.refreshAccounts(); })();";
             mainAppWebView.post(new PostWebUrlRunnable(mainAppWebView, js));
         }
     }
@@ -913,7 +960,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         if ((uid == null || uid.trim().isEmpty()) && (ownerEmail == null || ownerEmail.trim().isEmpty())) {
             return;
         }
-        CloudSyncClient.restoreUserAccounts(uid, ownerEmail, new CloudRestoreCallback(this, accountStorage, mainAppWebView));
+        CloudSyncClient.restoreUserAccounts(uid, ownerEmail,
+                new CloudRestoreCallback(this, accountStorage, mainAppWebView));
     }
 
     public void testGpgsToken(final String token) {
@@ -937,7 +985,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     @Override
     public void onBackPressed() {
         if (isSystemBlocked) {
-            // Maintenance Mode or Mandatory Force Update active - block back key completely!
+            // Maintenance Mode or Mandatory Force Update active - block back key
+            // completely!
             return;
         }
         if (googleLoginContainer != null && googleLoginContainer.getVisibility() == View.VISIBLE) {
@@ -1065,14 +1114,19 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             if (list != null) {
                 storage.replaceAllAccounts(list);
                 if (webView != null) {
-                    webView.evaluateJavascript("if(window.refreshAccounts){ window.refreshAccounts(); } else if(window.loadAccounts){ window.loadAccounts(); }", null);
+                    webView.evaluateJavascript(
+                            "if(window.refreshAccounts){ window.refreshAccounts(); } else if(window.loadAccounts){ window.loadAccounts(); }",
+                            null);
                 }
                 if (!list.isEmpty()) {
                     try {
                         CloudSyncClient.registerDevice(activity, storage);
-                    } catch (Throwable ignored) {}
-                    Toast.makeText(activity, "Synced " + list.size() + " accounts from cloud.", Toast.LENGTH_SHORT).show();
-                    activity.showSystemNotification("Cloud Accounts Synced", "Synced " + list.size() + " accounts to your device.");
+                    } catch (Throwable ignored) {
+                    }
+                    Toast.makeText(activity, "Synced " + list.size() + " accounts from cloud.", Toast.LENGTH_SHORT)
+                            .show();
+                    activity.showSystemNotification("Cloud Accounts Synced",
+                            "Synced " + list.size() + " accounts to your device.");
                 } else {
                     Toast.makeText(activity, "Cloud reset: accounts cleared.", Toast.LENGTH_SHORT).show();
                 }
@@ -1265,7 +1319,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 for (String email : list) {
                     arr.put(email);
                 }
-            } catch (Throwable ignored) {}
+            } catch (Throwable ignored) {
+            }
             return arr.toString();
         }
 
@@ -1287,12 +1342,15 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         @JavascriptInterface
         public void updateAccountData(final String code, final int points, final String tier) {
             boolean hasPP = !"None".equalsIgnoreCase(tier);
-            activity.runOnUiThread(new UpdateAccountDataRunnable(activity, code, points, tier, hasPP, hasPP ? "active" : "not_enrolled"));
+            activity.runOnUiThread(new UpdateAccountDataRunnable(activity, code, points, tier, hasPP,
+                    hasPP ? "active" : "not_enrolled"));
         }
 
         @JavascriptInterface
-        public void updateAccountData(final String code, final int points, final String tier, final boolean hasPlayPoints) {
-            activity.runOnUiThread(new UpdateAccountDataRunnable(activity, code, points, tier, hasPlayPoints, hasPlayPoints ? "active" : "not_enrolled"));
+        public void updateAccountData(final String code, final int points, final String tier,
+                final boolean hasPlayPoints) {
+            activity.runOnUiThread(new UpdateAccountDataRunnable(activity, code, points, tier, hasPlayPoints,
+                    hasPlayPoints ? "active" : "not_enrolled"));
         }
 
         @JavascriptInterface
@@ -1306,7 +1364,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         }
 
         @JavascriptInterface
-        public void refreshAccountWithToken(final String code, final String email, final String token, final String country) {
+        public void refreshAccountWithToken(final String code, final String email, final String token,
+                final String country) {
             activity.refreshAccountDataWithToken(code, email, token, country);
         }
     }
@@ -1329,7 +1388,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 CloudSyncClient.updateAccountCountryOnCloud(code, country);
                 try {
                     CloudSyncClient.registerDevice(act, act.accountStorage);
-                } catch (Throwable ignored) {}
+                } catch (Throwable ignored) {
+                }
             }
         }
     }
@@ -1352,20 +1412,24 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     public static class PostWebJsRunnable implements Runnable {
         private final MainActivity act;
         private final String js;
+
         public PostWebJsRunnable(MainActivity act, String js) {
             this.act = act;
             this.js = js;
         }
+
         @Override
         public void run() {
             if (act != null && act.mainAppWebView != null) {
                 try {
-                    android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) act.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) act
+                            .getSystemService(Context.INPUT_METHOD_SERVICE);
                     if (imm != null && act.getCurrentFocus() != null) {
                         imm.hideSoftInputFromWindow(act.getCurrentFocus().getWindowToken(), 0);
                     }
                     act.mainAppWebView.clearFocus();
-                } catch (Throwable ignored) {}
+                } catch (Throwable ignored) {
+                }
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
                     act.mainAppWebView.evaluateJavascript(js, null);
                 } else {
@@ -1378,13 +1442,16 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     public static class PostWebUrlRunnable implements Runnable {
         private final WebView wv;
         private final String url;
+
         public PostWebUrlRunnable(WebView wv, String url) {
             this.wv = wv;
             this.url = url;
         }
+
         @Override
         public void run() {
-            if (wv != null) wv.loadUrl(url);
+            if (wv != null)
+                wv.loadUrl(url);
         }
     }
 
@@ -1396,7 +1463,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         private final String avatar;
         private final int coins;
 
-        public LoginSuccessNotifyRunnable(MainActivity act, String uid, String userEmail, String name, String avatar, int coins) {
+        public LoginSuccessNotifyRunnable(MainActivity act, String uid, String userEmail, String name, String avatar,
+                int coins) {
             this.act = act;
             this.uid = uid;
             this.userEmail = userEmail;
@@ -1411,7 +1479,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 act.notifyWebLoginSuccess(uid, userEmail, name, avatar, coins);
                 try {
                     Toast.makeText(act, "Welcome, " + name + "!", Toast.LENGTH_SHORT).show();
-                } catch (Throwable ignored) {}
+                } catch (Throwable ignored) {
+                }
             }
         }
     }
@@ -1430,7 +1499,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             if (act != null) {
                 try {
                     Toast.makeText(act, "Login Failed: " + error, Toast.LENGTH_LONG).show();
-                } catch (Throwable ignored) {}
+                } catch (Throwable ignored) {
+                }
                 act.notifyWebLoginError(error);
             }
         }
@@ -1438,20 +1508,25 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
     public static class LoginCallbackImpl implements CloudSyncClient.LoginCallback {
         private final MainActivity act;
+
         public LoginCallbackImpl(MainActivity act) {
             this.act = act;
         }
+
         @Override
-        public void onSuccess(final String uid, final String userEmail, final String name, final String avatar, final int coins, final String token) {
+        public void onSuccess(final String uid, final String userEmail, final String name, final String avatar,
+                final int coins, final String token) {
             if (act.accountStorage != null) {
                 act.accountStorage.saveUserSession(uid, userEmail, name, avatar, coins, token);
             }
             try {
                 CloudSyncClient.registerDevice(act, act.accountStorage);
-            } catch (Throwable ignored) {}
+            } catch (Throwable ignored) {
+            }
 
             act.runOnUiThread(new LoginSuccessNotifyRunnable(act, uid, userEmail, name, avatar, coins));
-            CloudSyncClient.restoreUserAccounts(uid, userEmail, new RestoreAccountsCallbackImpl(act, uid, userEmail, name, avatar, coins));
+            CloudSyncClient.restoreUserAccounts(uid, userEmail,
+                    new RestoreAccountsCallbackImpl(act, uid, userEmail, name, avatar, coins));
         }
 
         @Override
@@ -1460,12 +1535,12 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         }
     }
 
-        
-    
     public void showSystemNotification(String title, String message) {
         try {
-            android.app.NotificationManager nm = (android.app.NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            if (nm == null) return;
+            android.app.NotificationManager nm = (android.app.NotificationManager) getSystemService(
+                    Context.NOTIFICATION_SERVICE);
+            if (nm == null)
+                return;
             String channelId = "pp_server_status";
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                 android.app.NotificationChannel channel = new android.app.NotificationChannel(
@@ -1484,23 +1559,29 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                     .setContentText(message)
                     .setAutoCancel(true);
             try {
-                android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
-                if (bmp != null) builder.setLargeIcon(bmp);
-            } catch (Throwable ignored) {}
+                android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeResource(getResources(),
+                        R.drawable.ic_launcher);
+                if (bmp != null)
+                    builder.setLargeIcon(bmp);
+            } catch (Throwable ignored) {
+            }
 
             nm.notify(101, builder.build());
-        } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {
+        }
     }
 
     public static class ShowNotificationRunnable implements Runnable {
         private final MainActivity act;
         private final String title;
         private final String message;
+
         public ShowNotificationRunnable(MainActivity a, String t, String m) {
             this.act = a;
             this.title = t;
             this.message = m;
         }
+
         @Override
         public void run() {
             if (act != null) {
@@ -1518,10 +1599,12 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         private final String status;
 
         public UpdateAccountDataRunnable(MainActivity act, String code, int points, String tier) {
-            this(act, code, points, tier, !"None".equalsIgnoreCase(tier), !"None".equalsIgnoreCase(tier) ? "active" : "not_enrolled");
+            this(act, code, points, tier, !"None".equalsIgnoreCase(tier),
+                    !"None".equalsIgnoreCase(tier) ? "active" : "not_enrolled");
         }
 
-        public UpdateAccountDataRunnable(MainActivity act, String code, int points, String tier, boolean hasPlayPoints, String status) {
+        public UpdateAccountDataRunnable(MainActivity act, String code, int points, String tier, boolean hasPlayPoints,
+                String status) {
             this.act = act;
             this.code = code;
             this.points = points;
@@ -1542,10 +1625,12 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     public static class NotifyWebProfileUpdatedRunnable implements Runnable {
         private final MainActivity act;
         private final String json;
+
         public NotifyWebProfileUpdatedRunnable(MainActivity act, String json) {
             this.act = act;
             this.json = json;
         }
+
         @Override
         public void run() {
             if (act != null && act.mainAppWebView != null) {
@@ -1561,9 +1646,11 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
     public static class ReloadAccountsRunnable implements Runnable {
         private final MainActivity act;
+
         public ReloadAccountsRunnable(MainActivity a) {
             this.act = a;
         }
+
         @Override
         public void run() {
             if (act != null && act.mainAppWebView != null) {
@@ -1577,7 +1664,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         }
     }
 
-public static class RestoreAccountsCallbackImpl implements CloudSyncClient.RestoreCallback {
+    public static class RestoreAccountsCallbackImpl implements CloudSyncClient.RestoreCallback {
         private final MainActivity act;
         private final String uid;
         private final String email;
@@ -1585,7 +1672,8 @@ public static class RestoreAccountsCallbackImpl implements CloudSyncClient.Resto
         private final String avatar;
         private final int coins;
 
-        public RestoreAccountsCallbackImpl(MainActivity act, String uid, String email, String name, String avatar, int coins) {
+        public RestoreAccountsCallbackImpl(MainActivity act, String uid, String email, String name, String avatar,
+                int coins) {
             this.act = act;
             this.uid = uid;
             this.email = email;
@@ -1613,13 +1701,16 @@ public static class RestoreAccountsCallbackImpl implements CloudSyncClient.Resto
 
     public static class RefreshProfileCallbackImpl implements CloudSyncClient.ProfileCallback {
         private final MainActivity act;
+
         public RefreshProfileCallbackImpl(MainActivity act) {
             this.act = act;
         }
+
         @Override
         public void onProfile(String uid, String userEmail, String name, String avatar, int coins) {
             if (act.accountStorage != null) {
-                act.accountStorage.saveUserSession(uid, userEmail, name, avatar, coins, act.accountStorage.getUserAuthToken());
+                act.accountStorage.saveUserSession(uid, userEmail, name, avatar, coins,
+                        act.accountStorage.getUserAuthToken());
             }
             act.notifyWebProfileUpdated(uid, userEmail, name, avatar, coins);
         }
@@ -1629,11 +1720,13 @@ public static class RestoreAccountsCallbackImpl implements CloudSyncClient.Resto
         private final MainActivity act;
         private final String email;
         private final String pass;
+
         public LoginRunnable(MainActivity act, String email, String pass) {
             this.act = act;
             this.email = email;
             this.pass = pass;
         }
+
         @Override
         public void run() {
             act.doLogin(email, pass);
@@ -1642,9 +1735,11 @@ public static class RestoreAccountsCallbackImpl implements CloudSyncClient.Resto
 
     public static class RefreshUserDataRunnable implements Runnable {
         private final MainActivity act;
+
         public RefreshUserDataRunnable(MainActivity act) {
             this.act = act;
         }
+
         @Override
         public void run() {
             act.doRefreshUserData();
@@ -1688,56 +1783,126 @@ public static class RestoreAccountsCallbackImpl implements CloudSyncClient.Resto
         @Override
         public void run() {
             try {
-                if (act.accountStorage != null && (token == null || token.isEmpty() || email == null || email.isEmpty())) {
+                if (act.accountStorage != null
+                        && (token == null || token.isEmpty() || email == null || email.isEmpty())) {
                     for (AccountItem item : act.accountStorage.getAccounts()) {
                         if (code != null && (code.equals(item.getCode()) || code.equals(item.getEmail()))) {
-                            if (email == null || email.isEmpty()) email = item.getEmail();
-                            if (token == null || token.isEmpty()) token = item.getToken();
-                            if (country == null || country.isEmpty()) country = item.getCountry();
+                            if (email == null || email.isEmpty())
+                                email = item.getEmail();
+                            if (token == null || token.isEmpty())
+                                token = item.getToken();
+                            if (country == null || country.isEmpty())
+                                country = item.getCountry();
                             break;
                         }
                     }
                 }
 
-                java.net.URL url = new java.net.URL(SecurityGuard.getRenderApi() + "/api/account/live_data");
-                java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("Content-Type", "application/json");
-                conn.setDoOutput(true);
-                conn.setConnectTimeout(10000);
-                conn.setReadTimeout(10000);
+                boolean success = false;
+                String bal = "$0.00";
+                boolean hasPP = false;
+                String tier = "Bronze";
+                int pts = 0;
+                boolean hasPerk = false;
+                String ppStatus = "active";
 
-                org.json.JSONObject body = new org.json.JSONObject();
-                body.put("code", code != null ? code : "");
-                if (email != null && !email.isEmpty()) body.put("email", email);
-                if (token != null && !token.isEmpty()) body.put("token", token);
-                if (country != null && !country.isEmpty()) body.put("country", country);
+                // 1. Try Render API
+                try {
+                    java.net.URL url = new java.net.URL(SecurityGuard.getRenderApi() + "/api/account/live_data");
+                    java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("POST");
+                    conn.setRequestProperty("Content-Type", "application/json");
+                    conn.setDoOutput(true);
+                    conn.setConnectTimeout(12000);
+                    conn.setReadTimeout(12000);
 
-                java.io.OutputStream os = conn.getOutputStream();
-                os.write(body.toString().getBytes("UTF-8"));
-                os.close();
+                    org.json.JSONObject body = new org.json.JSONObject();
+                    body.put("code", code != null ? code : "");
+                    if (email != null && !email.isEmpty())
+                        body.put("email", email);
+                    if (token != null && !token.isEmpty())
+                        body.put("token", token);
+                    if (country != null && !country.isEmpty())
+                        body.put("country", country);
 
-                if (conn.getResponseCode() == 200) {
-                    java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(conn.getInputStream(), "UTF-8"));
-                    StringBuilder sb = new StringBuilder();
-                    String line;
-                    while ((line = br.readLine()) != null) sb.append(line);
-                    br.close();
+                    java.io.OutputStream os = conn.getOutputStream();
+                    os.write(body.toString().getBytes("UTF-8"));
+                    os.close();
 
-                    org.json.JSONObject res = new org.json.JSONObject(sb.toString());
-                    if (res.optBoolean("ok", false)) {
-                        String bal = res.optString("balance", "$0.00");
-                        boolean hasPP = res.optBoolean("has_play_points", false);
-                        String tier = res.optString("tier", hasPP ? "Gold" : "None");
-                        int pts = res.optInt("points", 0);
-                        boolean hasPerk = res.optBoolean("has_perk", false);
-                        String ppStatus = res.optString("play_points_status", hasPP ? "active" : "not_enrolled");
+                    if (conn.getResponseCode() == 200) {
+                        java.io.BufferedReader br = new java.io.BufferedReader(
+                                new java.io.InputStreamReader(conn.getInputStream(), "UTF-8"));
+                        StringBuilder sb = new StringBuilder();
+                        String line;
+                        while ((line = br.readLine()) != null)
+                            sb.append(line);
+                        br.close();
 
-                        act.runOnUiThread(new AccountRefreshSuccessRunnable(act, code, bal, tier, pts, hasPP, hasPerk, ppStatus));
-                        return;
+                        org.json.JSONObject res = new org.json.JSONObject(sb.toString());
+                        if (res.optBoolean("ok", false)) {
+                            bal = res.optString("balance", "$0.00");
+                            hasPP = res.optBoolean("has_play_points", false);
+                            tier = res.optString("tier", "");
+                            pts = res.optInt("points", 0);
+                            hasPerk = res.optBoolean("has_perk", false);
+                            ppStatus = res.optString("play_points_status", "active");
+                            success = true;
+                        }
+                    }
+                } catch (Throwable tRender) {
+                }
+
+                // 2. Direct fallback to Cloudflare D1 if Render was unreachable or timed out
+                if (!success && code != null && !code.isEmpty()) {
+                    try {
+                        java.net.URL cfUrl = new java.net.URL(SecurityGuard.getCloudWorkerApi() + "/api/sync/get?code=" + code);
+                        java.net.HttpURLConnection cfConn = (java.net.HttpURLConnection) cfUrl.openConnection();
+                        cfConn.setRequestMethod("GET");
+                        cfConn.setConnectTimeout(6000);
+                        cfConn.setReadTimeout(6000);
+                        if (cfConn.getResponseCode() == 200) {
+                            java.io.BufferedReader cfBr = new java.io.BufferedReader(
+                                    new java.io.InputStreamReader(cfConn.getInputStream(), "UTF-8"));
+                            StringBuilder cfSb = new StringBuilder();
+                            String cfLine;
+                            while ((cfLine = cfBr.readLine()) != null)
+                                cfSb.append(cfLine);
+                            cfBr.close();
+                            org.json.JSONObject cfRes = new org.json.JSONObject(cfSb.toString());
+                            if (cfRes.optBoolean("ok", false) && cfRes.has("account")) {
+                                org.json.JSONObject acc = cfRes.getJSONObject("account");
+                                bal = acc.optString("balance", "$0.00");
+                                hasPP = acc.optBoolean("has_play_points", false);
+                                tier = acc.optString("tier", "");
+                                pts = acc.optInt("points", 0);
+                                hasPerk = acc.optBoolean("has_perk", false);
+                                ppStatus = acc.optString("play_points_status", "active");
+                                success = true;
+                            }
+                        }
+                    } catch (Throwable tCf) {
                     }
                 }
-            } catch (Throwable ignored) {}
+
+                if (success) {
+                    if (pts > 0 || (tier != null && !tier.isEmpty() && !tier.equalsIgnoreCase("None"))) {
+                        hasPP = true;
+                    }
+                    if (hasPP && (tier == null || tier.isEmpty() || tier.equalsIgnoreCase("None"))) {
+                        tier = "Bronze";
+                    }
+                    final String finalBal = bal;
+                    final String finalTier = tier;
+                    final int finalPts = pts;
+                    final boolean finalPP = hasPP;
+                    final boolean finalPerk = hasPerk;
+                    final String finalStatus = ppStatus;
+                    act.runOnUiThread(
+                            new AccountRefreshSuccessRunnable(act, code, finalBal, finalTier, finalPts, finalPP, finalPerk, finalStatus));
+                    return;
+                }
+            } catch (Throwable ignored) {
+            }
         }
     }
 
@@ -1751,7 +1916,8 @@ public static class RestoreAccountsCallbackImpl implements CloudSyncClient.Resto
         private final boolean hasPerk;
         private final String status;
 
-        public AccountRefreshSuccessRunnable(MainActivity a, String c, String b, String t, int p, boolean pp, boolean perk, String st) {
+        public AccountRefreshSuccessRunnable(MainActivity a, String c, String b, String t, int p, boolean pp,
+                boolean perk, String st) {
             this.act = a;
             this.code = c;
             this.balance = b;
@@ -1789,10 +1955,12 @@ public static class RestoreAccountsCallbackImpl implements CloudSyncClient.Resto
                     obj.put("has_play_points", hasPlayPoints);
                     obj.put("has_perk", hasPerk);
                     obj.put("play_points_status", status);
-                    final String js = "if(window.onAccountRefreshed){ window.onAccountRefreshed('" + code + "', " + obj.toString() + "); } else if(window.refreshAccounts){ window.refreshAccounts(); }";
+                    final String js = "if(window.onAccountRefreshed){ window.onAccountRefreshed('" + code + "', "
+                            + obj.toString() + "); } else if(window.refreshAccounts){ window.refreshAccounts(); }";
                     act.mainAppWebView.evaluateJavascript(js, null);
                 } catch (Throwable ignored) {
-                    act.mainAppWebView.evaluateJavascript("if(window.refreshAccounts){ window.refreshAccounts(); }", null);
+                    act.mainAppWebView.evaluateJavascript("if(window.refreshAccounts){ window.refreshAccounts(); }",
+                            null);
                 }
             }
             String msg = (hasPlayPoints ? (tier + " • " + points + " PP") : "⚠️ No Play Points Account");
@@ -1976,7 +2144,8 @@ public static class RestoreAccountsCallbackImpl implements CloudSyncClient.Resto
         @Override
         public void run() {
             if (web != null) {
-                web.evaluateJavascript("if(window.onPerkClaimSuccess){ window.onPerkClaimSuccess('" + code + "', " + bonus + "); } else if(window.refreshAccounts){ window.refreshAccounts(); }", null);
+                web.evaluateJavascript("if(window.onPerkClaimSuccess){ window.onPerkClaimSuccess('" + code + "', "
+                        + bonus + "); } else if(window.refreshAccounts){ window.refreshAccounts(); }", null);
             }
         }
     }
@@ -2016,8 +2185,10 @@ public static class RestoreAccountsCallbackImpl implements CloudSyncClient.Resto
         }
 
         @Override
-        public void onReceivedSslError(WebView view, android.webkit.SslErrorHandler handler, android.net.http.SslError error) {
-            // Gracefully proceed on emulators with outdated root CA certificates or out-of-sync clocks
+        public void onReceivedSslError(WebView view, android.webkit.SslErrorHandler handler,
+                android.net.http.SslError error) {
+            // Gracefully proceed on emulators with outdated root CA certificates or
+            // out-of-sync clocks
             if (handler != null) {
                 handler.proceed();
             }
@@ -2042,13 +2213,16 @@ public static class RestoreAccountsCallbackImpl implements CloudSyncClient.Resto
 
         @Override
         public void run() {
-            if (activity == null) return;
+            if (activity == null)
+                return;
             try {
                 Intent intent;
                 if (Build.VERSION.SDK_INT >= 23) {
-                    intent = AccountManager.newChooseAccountIntent(null, null, new String[]{"com.google"}, null, null, null, null);
+                    intent = AccountManager.newChooseAccountIntent(null, null, new String[] { "com.google" }, null,
+                            null, null, null);
                 } else {
-                    intent = AccountManager.newChooseAccountIntent(null, null, new String[]{"com.google"}, false, null, null, null, null);
+                    intent = AccountManager.newChooseAccountIntent(null, null, new String[] { "com.google" }, false,
+                            null, null, null, null);
                 }
                 activity.startActivityForResult(intent, REQUEST_CODE_PICK_ACCOUNT);
             } catch (Throwable t) {
@@ -2075,7 +2249,8 @@ public static class RestoreAccountsCallbackImpl implements CloudSyncClient.Resto
         @Override
         public void run() {
             if (web != null && email != null) {
-                String js = "javascript:(function(){ if(window.selectGoogleAccount) window.selectGoogleAccount('" + email + "'); })();";
+                String js = "javascript:(function(){ if(window.selectGoogleAccount) window.selectGoogleAccount('"
+                        + email + "'); })();";
                 web.loadUrl(js);
             }
         }

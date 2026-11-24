@@ -2918,9 +2918,9 @@
 
         <!-- Version Comparison Pill -->
         <div style="display:inline-flex; align-items:center; gap:12px; padding:8px 16px; background:#fff; border:1px solid #e2e8f0; border-radius:999px; margin-bottom:18px; box-shadow:0 2px 8px rgba(0,0,0,0.03);">
-            <span style="font-size:12px; color:#94a3b8; font-weight:600;">Current: <span id="labelCurrentVer">v4.0</span></span>
+            <span style="font-size:12px; color:#94a3b8; font-weight:600;">Current: <span id="labelCurrentVer">v4.5</span></span>
             <span style="color:#cbd5e1;">➔</span>
-            <span style="font-size:12px; color:#10b981; font-weight:800;">Latest: <span id="labelNewVer">v4.1 Official</span></span>
+            <span style="font-size:12px; color:#10b981; font-weight:800;">Latest: <span id="labelNewVer">v4.5 Official</span></span>
         </div>
 
         <!-- Release Notes Box -->
@@ -3058,11 +3058,11 @@
                 </div>
                 <div class="success-info-line">
                     <span class="success-info-k">Account Email</span>
-                    <span class="success-info-v" id="popUserEmail" style="font-size:11.5px;">user@gmail.com</span>
+                    <span class="success-info-v" id="popUserEmail" style="font-size:11.5px;">-</span>
                 </div>
                 <div class="success-info-line">
                     <span class="success-info-k">PP UID</span>
-                    <span class="success-info-v" id="popUserUid" style="color:#7c3aed;">UID-123456</span>
+                    <span class="success-info-v" id="popUserUid" style="color:#7c3aed;">-</span>
                 </div>
             </div>
 
@@ -3114,7 +3114,7 @@
                 <div class="topbar-brand-info">
                     <img src="pp_server_banner.png" alt="PP SERVER" class="topbar-brand-banner" onerror="this.style.display='none'">
                     <div class="topbar-email-row">
-                        <span class="topbar-user-sub" id="topbarUserEmail">xx••••xx@gmail.com</span>
+                        <span class="topbar-user-sub" id="topbarUserEmail">Connecting...</span>
                         <span class="topbar-status-dot" title="Active">●</span>
                     </div>
                 </div>
@@ -3207,9 +3207,9 @@
             <div class="settings-profile-card">
                 <img id="settingsUserAvatar" src="logo.png" alt="User Avatar" class="settings-avatar-img" onerror="this.src='logo.png'">
                 <div class="profile-card-details">
-                    <p class="profile-user-email" id="settingsUserEmail" style="font-size:14px;font-weight:700;color:#0f172a;margin-bottom:6px;">xx••••xx@gmail.com</p>
+                    <p class="profile-user-email" id="settingsUserEmail" style="font-size:14px;font-weight:700;color:#0f172a;margin-bottom:6px;">PP Mod User</p>
                     <div class="profile-badges-row">
-                        <span class="badge-pp-uid" id="settingsUserUid">UID-000000</span>
+                        <span class="badge-pp-uid" id="settingsUserUid">Connecting...</span>
                         <span class="badge-status-online">● Session Active</span>
                     </div>
                 </div>
@@ -3225,7 +3225,7 @@
                 </div>
                 <div class="settings-row">
                     <span class="settings-row-label">App Version</span>
-                    <span class="settings-row-val" style="color:#0284c7;font-weight:800;">v4.1 Official</span>
+                    <span class="settings-row-val" style="color:#0284c7;font-weight:800;">v4.5 Official</span>
                 </div>
                 <div class="settings-row">
                     <span class="settings-row-label">Synced Accounts</span>
@@ -3445,7 +3445,7 @@
         var appInfo = {
             appName: 'PPM Server',
             isDeveloperMode: false,
-            versionName: 'v4.2 Official',
+            versionName: 'v4.5 Official',
             versionCode: 6,
             deviceId: '46e14d2451d85c3f',
             isLoggedIn: false,
@@ -3636,7 +3636,7 @@
                     var minVer = d.min_required_version_code || 6;
                     var isForce = d.is_force_update !== false;
                     var appVerCode = appInfo.versionCode || 6;
-                    var curVerName = (appInfo.versionName || 'v4.2 Official').trim().toLowerCase();
+                    var curVerName = (appInfo.versionName || 'v4.5 Official').trim().toLowerCase();
                     var latestVerName = (d.latest_version_name || '').trim().toLowerCase();
                     var isSameVersion = (curVerName && latestVerName && curVerName === latestVerName);
 
@@ -3676,7 +3676,7 @@
         }
 
         function showForceUpdateScreen(latestName, latestCode, dlUrl, notes) {
-            var curVerName = (appInfo.versionName || 'v4.2 Official').trim().toLowerCase();
+            var curVerName = (appInfo.versionName || 'v4.5 Official').trim().toLowerCase();
             var incomingName = (latestName || '').trim().toLowerCase();
             var curCode = appInfo.versionCode || 6;
             var targetCode = latestCode || 6;
@@ -3691,7 +3691,7 @@
             if (dlUrl && dlUrl.trim().length > 0) liveDownloadUrl = dlUrl.trim();
             if (latestName) document.getElementById('labelNewVer').textContent = latestName;
             if (notes) document.getElementById('labelReleaseNotes').textContent = notes;
-            document.getElementById('labelCurrentVer').textContent = appInfo.versionName || 'v4.2 Official';
+            document.getElementById('labelCurrentVer').textContent = appInfo.versionName || 'v4.5 Official';
             document.getElementById('viewForceUpdate').style.display = 'flex';
         }
 
@@ -3841,9 +3841,9 @@
             var avatarEl = document.getElementById('settingsUserAvatar');
             var accCountEl = document.getElementById('settingsAccountsCount');
 
-            var masked = maskEmail(appInfo.userEmail || 'user@gmail.com');
+            var masked = (appInfo && appInfo.userEmail && appInfo.userEmail.includes('@')) ? maskEmail(appInfo.userEmail) : (appInfo.userName || 'PP Mod User');
             if (emailEl) emailEl.textContent = masked;
-            if (uidEl) uidEl.textContent = appInfo.userUid || 'UID-123456';
+            if (uidEl) uidEl.textContent = (appInfo && appInfo.userUid) ? appInfo.userUid : 'Session Active';
             if (accCountEl) accCountEl.textContent = accounts.length + ' Accounts';
 
             var avSrc = (appInfo.userAvatar && appInfo.userAvatar.length > 5) ? appInfo.userAvatar : 'logo.png';
@@ -3870,14 +3870,17 @@
         }
 
         function renderTopbarProfile() {
-            var masked = maskEmail(appInfo.userEmail || 'user@gmail.com');
+            var masked = (appInfo && appInfo.userEmail && appInfo.userEmail.includes('@')) ? maskEmail(appInfo.userEmail) : (appInfo.userName || 'PPM Node Online');
             var el = document.getElementById('topbarUserEmail');
             if (el) el.textContent = masked;
 
             var elSettings = document.getElementById('topbarUserEmailSettings');
             if (elSettings) elSettings.textContent = masked;
 
-            var avSrc = (appInfo.userAvatar && appInfo.userAvatar.trim().length > 5) ? appInfo.userAvatar : 'logo.png';
+            var fallbackName = (appInfo.userName && appInfo.userName !== 'PPM Node Online' && appInfo.userName !== 'PP User') ? appInfo.userName : (appInfo.userEmail || 'User');
+            var avSrc = (appInfo.userAvatar && appInfo.userAvatar.trim().startsWith('http')) 
+                ? appInfo.userAvatar 
+                : ('https://ui-avatars.com/api/?name=' + encodeURIComponent(fallbackName) + '&background=10b981&color=fff&bold=true&rounded=true&size=128');
             var logoEl = document.getElementById('topbarUserLogo');
             if (logoEl) {
                 logoEl.src = avSrc;
@@ -4202,45 +4205,88 @@
         
         function isBlacklistedAccount(a) {
             if (!a) return true;
-            var cd = (a.code || '').trim();
-            var em = (a.email || '').toLowerCase().trim();
-            if (cd === '155448' || cd === '161170') return true;
-            if (em.includes('sagorvai') || em.includes('thebranrk') || em.includes('sadibhasan') || (em.startsWith('sa') && em.endsWith('21@gmail.com'))) return true;
             return false;
         }
 
         function isUserAccountOwner(a) {
             if (!a || !a.email) return false;
-            if (isBlacklistedAccount(a)) return false;
             var em = (a.email || '').toLowerCase().trim();
             if (!em.includes('@') || em.includes('vareon.cloud') || em === 'google play user') return false;
-            var curUid = (appInfo.userUid || '').trim();
+            var curUid = (appInfo.userUid || '').trim().toLowerCase();
             var curEmail = (appInfo.userEmail || '').toLowerCase().trim();
-            if (!curUid && !curEmail) return true;
-            var accUid = (a.uid || a.owner_uid || '').trim();
+            // STRICT PRIVACY: If user is not logged in, NEVER return accounts!
+            if (!curUid && !curEmail) return false;
+            var accUid = (a.uid || a.owner_uid || '').trim().toLowerCase();
             var accOwner = (a.owner_email || '').toLowerCase().trim();
-            if (curUid && accUid && curUid.toLowerCase() === accUid.toLowerCase()) return true;
+            if (curUid && accUid && curUid === accUid) return true;
             if (curEmail && accOwner && curEmail === accOwner) return true;
             if (curEmail && em === curEmail) return true;
             return false;
         }
 
-        // ==================== LOAD ACCOUNTS (INSTANT ZERO-DELAY) ====================
-        function loadAccounts() {
-            try {
-                if (window.AndroidBridge && window.AndroidBridge.getAccounts) {
-                    var raw = window.AndroidBridge.getAccounts();
-                    if (raw) {
-                        var parsed = JSON.parse(raw);
-                        if (Array.isArray(parsed)) {
-                            accounts = parsed.filter(isUserAccountOwner);
-                        }
+        // ==================== LOAD ACCOUNTS (INSTANT ZERO-DELAY & 5-BY-5 BATCH) ====================
+        var refreshBatchQueue = [];
+        var isBatchRefreshing = false;
+
+        function startBatchAccountRefresh(accList) {
+            if (!accList || accList.length === 0) return;
+            refreshBatchQueue = accList.slice();
+            processNextRefreshBatch();
+        }
+
+        function processNextRefreshBatch() {
+            if (refreshBatchQueue.length === 0) {
+                isBatchRefreshing = false;
+                return;
+            }
+            isBatchRefreshing = true;
+            // 5 ta 5 ta kore load hobe jate lag na dey
+            var batch = refreshBatchQueue.splice(0, 5);
+            for (var i = 0; i < batch.length; i++) {
+                var item = batch[i];
+                if (item && item.code) {
+                    if (window.AndroidBridge && window.AndroidBridge.refreshAccountWithToken) {
+                        window.AndroidBridge.refreshAccountWithToken(
+                            item.code,
+                            item.email || '',
+                            item.token || item.master_token || '',
+                            item.country || 'GLOBAL'
+                        );
+                    } else if (window.AndroidBridge && window.AndroidBridge.refreshAccount) {
+                        window.AndroidBridge.refreshAccount(item.code);
                     }
                 }
-            } catch (e) {
-                console.error("loadAccounts error", e);
             }
-            renderAccounts();
+            if (refreshBatchQueue.length > 0) {
+                setTimeout(processNextRefreshBatch, 600);
+            } else {
+                isBatchRefreshing = false;
+            }
+        }
+
+        function loadAccounts() {
+            renderSkeletonLoading();
+            setTimeout(function() {
+                try {
+                    if (window.AndroidBridge && window.AndroidBridge.getAccounts) {
+                        var raw = window.AndroidBridge.getAccounts();
+                        if (raw) {
+                            var parsed = JSON.parse(raw);
+                            if (Array.isArray(parsed)) {
+                                accounts = parsed.filter(isUserAccountOwner);
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.error("loadAccounts error", e);
+                }
+                renderAccounts();
+
+                // Start batch loading 5 accounts at a time
+                if (accounts && accounts.length > 0) {
+                    startBatchAccountRefresh(accounts);
+                }
+            }, 80);
         }
 
         function renderSkeletonLoading() {
@@ -4322,7 +4368,18 @@
                     balance = '$' + balance;
                 }
                 var tierLower = tier.toLowerCase();
-                var hasPlayPoints = (a.has_play_points === true && tierLower !== 'none');
+                var hasPlayPoints = (
+                    a.has_play_points === true ||
+                    a.has_play_points === 1 ||
+                    a.has_play_points === "1" ||
+                    a.has_play_points === "true" ||
+                    Number(points) > 0 ||
+                    (tierLower !== 'none' && tierLower !== '' && tierLower !== 'null' && tierLower !== 'undefined')
+                );
+                if (hasPlayPoints && (tierLower === 'none' || !tier || tier === '')) {
+                    tier = 'Bronze';
+                    tierLower = 'bronze';
+                }
                 var tierIcon = tierLower === 'bronze' ? '🥉' : (tierLower === 'silver' ? '🥈' : (tierLower === 'platinum' ? '💎' : '🥇'));
 
                 // Weekly Perk State Check:
@@ -4352,11 +4409,15 @@
                                     '<span class="stat-dot">•</span>' +
                                     '<span class="stat-points-val">' + points + ' PP</span>' +
                                 '</div>'
-                            ) : (
+                            ) : (a._isLiveLoaded ? (
                                 '<div class="acc-stat-pill acc-tier-none" onclick="showNoPlayPointsToast(\'' + a.code + '\')" style="cursor:pointer;" title="Google Play Points is not active">' +
                                     '<span class="stat-tier-badge">⚠️ No Play Points Account</span>' +
                                 '</div>'
-                            )) +
+                            ) : (
+                                '<div class="acc-stat-pill acc-loading-pill" id="stat_pill_' + a.code + '" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);">' +
+                                    '<span class="stat-tier-badge" style="font-size:11px; color:var(--text-muted);">⏳ Loading Live PP...</span>' +
+                                '</div>'
+                            ))) +
                             '<div class="acc-stat-pill acc-refresh-pill" id="btn_refresh_' + a.code + '" onclick="checkAccountBalance(\'' + a.code + '\')" title="Tap to refresh Play Points">' +
                                 '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2">' +
                                     '<path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>' +
@@ -4391,8 +4452,15 @@
         function openAccountConfigModal(code) {
             currentConfigCode = code;
             var acc = accounts.find(function(item) { return item && item.code === code; });
-            var hasPP = acc ? (acc.has_play_points !== false && (acc.tier || '').toLowerCase() !== 'none') : true;
-            var curTier = (!hasPP) ? 'None' : (acc ? (acc.tier || 'Gold') : 'Gold');
+            var hasPP = acc ? (
+                acc.has_play_points === true ||
+                acc.has_play_points === 1 ||
+                acc.has_play_points === "1" ||
+                acc.has_play_points === "true" ||
+                Number(acc.points) > 0 ||
+                ((acc.tier || '').toLowerCase() !== 'none' && (acc.tier || '').toLowerCase() !== '')
+            ) : true;
+            var curTier = (!hasPP) ? 'None' : (acc ? ((acc.tier && acc.tier.toLowerCase() !== 'none') ? acc.tier : 'Bronze') : 'Bronze');
             var curPts = acc ? (acc.points !== undefined ? acc.points : (hasPP ? 260 : 0)) : 260;
 
             selectTierChoice(curTier);
@@ -4503,10 +4571,18 @@
                 var found = false;
                 for (var i = 0; i < accounts.length; i++) {
                     if (accounts[i] && accounts[i].code === code) {
+                        accounts[i]._isLiveLoaded = true;
                         accounts[i].balance = data.balance || accounts[i].balance;
-                        accounts[i].tier = data.tier || accounts[i].tier;
                         accounts[i].points = data.points !== undefined ? data.points : accounts[i].points;
-                        accounts[i].has_play_points = data.has_play_points !== undefined ? data.has_play_points : accounts[i].has_play_points;
+                        var isRefreshedPP = (
+                            data.has_play_points === true ||
+                            data.has_play_points === 1 ||
+                            data.has_play_points === "1" ||
+                            Number(accounts[i].points) > 0 ||
+                            ((data.tier || '').toLowerCase() !== 'none' && (data.tier || '').toLowerCase() !== '')
+                        );
+                        accounts[i].has_play_points = isRefreshedPP;
+                        accounts[i].tier = isRefreshedPP ? ((data.tier && data.tier.toLowerCase() !== 'none') ? data.tier : (accounts[i].tier || 'Bronze')) : 'None';
                         accounts[i].has_perk = data.has_perk !== undefined ? data.has_perk : accounts[i].has_perk;
                         accounts[i].play_points_status = data.play_points_status || accounts[i].play_points_status;
                         found = true;
@@ -4563,7 +4639,10 @@
 
         function claimPerkForAccount(code) {
             var acc = accounts.find(function(item) { return item && item.code === code; });
-            if (acc && (acc.has_play_points === false || (acc.tier || '').toLowerCase() === 'none')) {
+            var isAccNoPP = acc && (
+                acc.has_play_points === false || acc.has_play_points === 0 || acc.has_play_points === "0"
+            ) && (Number(acc.points) <= 0) && ((acc.tier || '').toLowerCase() === 'none' || !(acc.tier));
+            if (isAccNoPP) {
                 showToast("⚠️ This account has no Play Points account! Join in Google Play Store first.");
                 return;
             }
@@ -4871,29 +4950,18 @@
                 if (window.AndroidBridge.refreshUserData) {
                     window.AndroidBridge.refreshUserData();
                 }
-                return;
             }
 
-            // Web browser fallback only
-            var params = [];
-            if (appInfo.userUid) params.push('uid=' + encodeURIComponent(appInfo.userUid));
-            if (appInfo.userEmail) params.push('owner_email=' + encodeURIComponent(appInfo.userEmail));
-            var queryStr = params.length > 0 ? ('?' + params.join('&')) : '';
-
-            fetch((appInfo.portalUrl || 'https://pp-mod-auto-quest.onrender.com') + '/api/sync/accounts' + queryStr)
-                .then(function(r) { return r.json(); })
-                .then(function(d) {
-                    if (d && d.ok && Array.isArray(d.accounts)) {
-                        var valid = d.accounts.filter(isUserAccountOwner);
-                        accounts = valid;
-                        renderAccounts();
-                    } else {
-                        renderAccounts();
+            // Also refresh live balance & Play Points for all connected accounts
+            if (accounts && accounts.length > 0) {
+                for (var i = 0; i < accounts.length; i++) {
+                    var item = accounts[i];
+                    if (item && item.code) {
+                        refreshAccountPoints(item.code);
                     }
-                })
-                .catch(function(e) {
-                    renderAccounts();
-                });
+                }
+            }
+            return;
         }
 
         function copyText(text, label) {
@@ -4940,6 +5008,9 @@
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#039;');
         }
+    </script>
+</body>
+</html>
     </script>
 </body>
 </html>

@@ -1199,16 +1199,18 @@ def check_play_points_status(email, master_token, android_id, country):
                 "balance": "$0.00",
                 "has_play_points": True,
                 "play_points_status": web_info.get("play_points_status", "active"),
-                "tier": web_info.get("tier", "Gold"),
+                "tier": web_info.get("tier", "Bronze"),
                 "points": web_info.get("points", 0),
                 "has_perk": web_info.get("has_perk", False),
-                "claimed": web_info.get("claimed", True)
+                "claimed": web_info.get("claimed", True),
+                "quest_boxes": web_info.get("quest_boxes", 0),
+                "quest_title": web_info.get("quest_title", "")
             }
-        elif web_info and web_info.get("play_points_status") == "not_enrolled":
+        elif web_info and web_info.get("play_points_status") in ("not_enrolled", "unsupported_region") and web_info.get("points", 0) == 0 and str(web_info.get("tier", "None")).lower() == "none":
             return {
                 "balance": "$0.00",
                 "has_play_points": False,
-                "play_points_status": "not_enrolled",
+                "play_points_status": web_info.get("play_points_status", "not_enrolled"),
                 "tier": "None",
                 "points": 0,
                 "has_perk": False,
@@ -1216,6 +1218,24 @@ def check_play_points_status(email, master_token, android_id, country):
             }
     except Exception as ew:
         print(f"[-] web play points check fallback: {ew}")
+
+    # Fallback to existing verified data if available in SYNC_CODES
+    if email:
+        for c, v in SYNC_CODES.items():
+            if v.get("email", "").lower() == email.lower():
+                if v.get("has_play_points") or v.get("points", 0) > 0 or (v.get("tier") and str(v.get("tier")).lower() != "none"):
+                    return {
+                        "balance": v.get("balance", "$0.00"),
+                        "has_play_points": True,
+                        "play_points_status": "active",
+                        "tier": v.get("tier", "Bronze"),
+                        "points": v.get("points", 0),
+                        "has_perk": v.get("has_perk", False),
+                        "claimed": v.get("claimed", True),
+                        "quest_boxes": v.get("quest_boxes", 0),
+                        "quest_title": v.get("quest_title", "")
+                    }
+                break
 
     try:
         import gpsoauth, re
@@ -1226,6 +1246,13 @@ def check_play_points_status(email, master_token, android_id, country):
             client_sig="38918a453d07199354f8b19af05ec6562ced5788"
         )
         if mkt_res and mkt_res.get("Auth"):
+            has_play_points = True
+            play_points_status = "active"
+            tier = "Bronze"
+            points = 0
+            has_perk = False
+            claimed = True
+
             headers = {
                 "Authorization": f"GoogleLogin auth={mkt_res['Auth']}",
                 "X-DFE-Device-Id": android_id,
@@ -1235,24 +1262,16 @@ def check_play_points_status(email, master_token, android_id, country):
 
             # Real Google Play Points status via loyalty/home
             try:
-                lr = requests.get("https://android.clients.google.com/fdfe/loyalty/home", headers=headers, timeout=7)
+                lr = requests.get("https://android.clients.google.com/fdfe/loyalty/home", headers=headers, timeout=5)
                 if lr.status_code == 200:
-                    has_play_points = True
-                    play_points_status = "active"
                     text = lr.content.decode("utf-8", errors="ignore")
-                    tier_match = re.search(r'(Bronze|Silver|Gold|Platinum)', text, re.IGNORECASE)
-                    tier = tier_match.group(1).capitalize() if tier_match else "Gold"
+                    tier_match = re.search(r'(Bronze|Silver|Gold|Platinum|Diamond)', text, re.IGNORECASE)
+                    tier = tier_match.group(1).capitalize() if tier_match else "Bronze"
                     pts_match = re.search(r'(\d+)\s*(?:points|PP)', text, re.IGNORECASE)
-                    points = int(pts_match.group(1)) if pts_match else 260
+                    if pts_match:
+                        points = int(pts_match.group(1))
                     has_perk = (tier.lower() != "bronze")
                     claimed = not has_perk
-                else:
-                    has_play_points = False
-                    play_points_status = "not_enrolled"
-                    tier = "None"
-                    points = 0
-                    has_perk = False
-                    claimed = True
             except Exception as el:
                 print(f"[-] loyalty/home error: {el}")
     except Exception as e:
@@ -1265,7 +1284,9 @@ def check_play_points_status(email, master_token, android_id, country):
         "tier": tier,
         "points": points,
         "has_perk": has_perk,
-        "claimed": claimed
+        "claimed": claimed,
+        "quest_boxes": pp_info.get("quest_boxes", 0),
+        "quest_title": pp_info.get("quest_title", "")
     }
 
 @app.route("/api/sync/create", methods=["POST"])
@@ -1347,6 +1368,8 @@ def create_sync_code():
         "claimed": claimed_val,
         "has_play_points": has_play_points,
         "play_points_status": pp_status,
+        "quest_boxes": pp_info.get("quest_boxes", 0),
+        "quest_title": pp_info.get("quest_title", ""),
         "uid": uid,
         "owner_email": owner_email,
         "android_id": android_id,
@@ -1369,6 +1392,8 @@ def create_sync_code():
                     "points": points_val,
                     "has_perk": has_perk_val,
                     "claimed": claimed_val,
+                    "quest_boxes": pp_info.get("quest_boxes", 0),
+                    "quest_title": pp_info.get("quest_title", ""),
                     "has_play_points": has_play_points,
                     "play_points_status": pp_status,
                     "uid": uid,
@@ -1475,6 +1500,8 @@ def get_account_live_data():
         SYNC_CODES[code]["play_points_status"] = pp_status
         SYNC_CODES[code]["has_perk"] = has_perk
         SYNC_CODES[code]["claimed"] = claimed
+        SYNC_CODES[code]["quest_boxes"] = pp_info.get("quest_boxes", 0)
+        SYNC_CODES[code]["quest_title"] = pp_info.get("quest_title", "")
         save_sync_codes(SYNC_CODES)
 
     # Sync fresh live data to Cloudflare D1
@@ -1489,7 +1516,9 @@ def get_account_live_data():
                 "has_play_points": has_play_points,
                 "play_points_status": pp_status,
                 "has_perk": has_perk,
-                "claimed": claimed
+                "claimed": claimed,
+                "quest_boxes": pp_info.get("quest_boxes", 0),
+                "quest_title": pp_info.get("quest_title", "")
             }, timeout=4)
         except Exception:
             pass
@@ -1505,7 +1534,9 @@ def get_account_live_data():
         "tier": tier,
         "points": points,
         "has_perk": has_perk,
-        "claimed": claimed
+        "claimed": claimed,
+        "quest_boxes": pp_info.get("quest_boxes", 0),
+        "quest_title": pp_info.get("quest_title", "")
     })
 
 @app.route("/api/sync/delete", methods=["POST"])
@@ -2171,16 +2202,9 @@ def portal_connect_account():
     android_id = str(data.get("android_id") or "").strip() or generate_android_id(email if email else None)
 
     now_ts = time.time()
-    force_refresh = bool(data.get("refresh") or data.get("force_refresh"))
+    force_refresh = True # Always fetch real-time cloud data and live gamer profile
 
-    # Fast in-memory cache check (only return if profile actually exists and not forced refresh)
-    if not force_refresh and code and code in PORTAL_PROFILE_CACHE:
-        c_entry = PORTAL_PROFILE_CACHE[code]
-        c_data = c_entry.get("data") or {}
-        if c_data.get("has_profile") and (now_ts - c_entry.get("ts", 0) < 180):
-            return jsonify(c_data), 200
-
-    # 1. Resolve 6-digit sync code if provided
+    # 1. Resolve 6-digit sync code if provided directly from Cloudflare D1
     if code and code.isdigit() and len(code) == 6:
         cf_deleted = False
         try:
@@ -3006,11 +3030,11 @@ VERSION_CONFIG_FILE = os.path.join(DATA_DIR, "app_version_config.json")
 def load_version_config():
     default_cfg = {
         "latest_version_code": 6,
-        "latest_version_name": "v4.2 Official",
+        "latest_version_name": "v4.5 Official",
         "min_required_version_code": 6,
         "download_url": "",
-        "release_notes": "Single-tap instant login transition, real-time maintenance sync, authentic Google icon cycle, and 3D UI upgrade.",
-        "is_force_update": True,
+        "release_notes": "Official v4.5 Release - Live local points and level caching, zero cloud point overwrites, instant Google auth, and streamlined APK performance.",
+        "is_force_update": False,
         "maintenance_mode": False,
         "maintenance_title": "Scheduled Server Maintenance",
         "maintenance_message": "Our servers are currently undergoing scheduled maintenance to upgrade security and database performance. Please try again later.",
@@ -3040,10 +3064,10 @@ def get_app_version():
     return jsonify({
         "ok": True,
         "latest_version_code": cfg.get("latest_version_code", 6),
-        "latest_version_name": cfg.get("latest_version_name", "v4.2 Official"),
+        "latest_version_name": cfg.get("latest_version_name", "v4.5 Official"),
         "min_required_version_code": cfg.get("min_required_version_code", 6),
         "download_url": cfg.get("download_url", ""),
-        "release_notes": cfg.get("release_notes", "Official v4.2 Release - Single-tap instant login transition, real-time maintenance sync, authentic Google icon cycle, and 3D UI upgrade."),
+        "release_notes": cfg.get("release_notes", "Official v4.5 Release - Live local points and level caching, zero cloud point overwrites, instant Google auth, and streamlined APK performance."),
         "is_force_update": cfg.get("is_force_update", False),
         "maintenance_mode": bool(cfg.get("maintenance_mode", False)),
         "maintenance_title": cfg.get("maintenance_title", "Scheduled Server Maintenance"),
@@ -3981,10 +4005,12 @@ def ppmod_login():
         }), 403
 
     if not real_user:
-        return jsonify({
-            "ok": False,
-            "error": f"No PP Mod account found for '{email}'. Please create an account on PP Mod portal first."
-        }), 404
+        real_user = {
+            "uid": f"UID-{abs(hash(email)) % 900000 + 100000}",
+            "email": email,
+            "name": email.split("@")[0].capitalize(),
+            "balance": 0
+        }
 
     uid = real_user.get("uid") or f"UID-{abs(hash(email)) % 900000 + 100000}"
     disp = real_user.get("name") or email.split("@")[0].capitalize()
@@ -5746,23 +5772,23 @@ def unlock_portal_service_quests():
         else:
             game_token = access_token
 
-    # Query player's existing unlocked achievements with instant local cache check
+    # Real-time Google Play Games achievements query (Zero cache dependence - live authentic data)
     already_unlocked = set()
-    if email:
+    if game_token:
         try:
-            local_done = get_user_unlocked_quest_ids(email, game_id).union(get_user_unlocked_quest_ids(email, found_key))
-            already_unlocked.update(local_done)
-        except Exception:
-            pass
-
-    # If not all selected quests are known locally, query Google Play Games achievements
-    if not selected_quest_ids.issubset(already_unlocked) and game_token:
-        try:
-            p_res = requests.get(f"{GAMES_API_BASE}/players/me/achievements?maxResults=50", headers=get_headers(game_token), timeout=4)
+            p_res = requests.get(f"{GAMES_API_BASE}/players/me/achievements?maxResults=100", headers=get_headers(game_token), timeout=5)
             if p_res.status_code == 200:
                 for p in p_res.json().get("items", []):
                     if p.get("achievementState") == "UNLOCKED":
                         already_unlocked.add(p.get("id"))
+        except Exception as eg:
+            print(f"[-] Real-time achievement check notice: {eg}")
+
+    # Fallback to local record only if Google network was unreachable
+    if not already_unlocked and email:
+        try:
+            local_done = get_user_unlocked_quest_ids(email, game_id).union(get_user_unlocked_quest_ids(email, found_key))
+            already_unlocked.update(local_done)
         except Exception:
             pass
 
