@@ -3076,11 +3076,11 @@ def get_app_version():
     dl_url = cfg.get("download_url") or "https://pp-mod-auto-quest.onrender.com/download/PPM_Cloud.apk"
     return jsonify({
         "ok": True,
-        "latest_version_code": cfg.get("latest_version_code", 45),
-        "latest_version_name": cfg.get("latest_version_name", "4.5"),
-        "min_required_version_code": cfg.get("min_required_version_code", 45),
+        "latest_version_code": cfg.get("latest_version_code", 7),
+        "latest_version_name": cfg.get("latest_version_name", "5.0"),
+        "min_required_version_code": cfg.get("min_required_version_code", 7),
         "download_url": dl_url,
-        "release_notes": cfg.get("release_notes", "PPM CLOUD 4.5 Official Release - Permanent G-Token Cloud Sync, 5-Card Staggered Shimmer Loader, Zero Point Bloat."),
+        "release_notes": cfg.get("release_notes", "PPM CLOUD V5.0 (Build 7) - Major Engine Upgrade, Pure Cloud Sync, Enhanced UI & Performance."),
         "is_force_update": True,
         "maintenance_mode": bool(cfg.get("maintenance_mode", False)),
         "maintenance_title": cfg.get("maintenance_title", "Scheduled Server Maintenance"),
@@ -3526,6 +3526,27 @@ def get_admin_users():
         primary_email = ppmod_email or (accs[0].get("email") if accs else "")
         if not primary_email:
             primary_email = f"Guest Device ({dev_id[:8]})"
+
+        # Resolve real user info from Cloudflare D1 if UID is synthetic or missing
+        if ("@" in primary_email) and (not ppmod_uid or ppmod_uid.startswith("UID-")):
+            try:
+                cf_url = f"https://ppmod-api.tredarskvt.workers.dev/api/user/find?q={requests.utils.quote(primary_email)}"
+                cf_res = requests.get(cf_url, timeout=3)
+                if cf_res.status_code == 200:
+                    cf_data = cf_res.json()
+                    if cf_data.get("ok") and cf_data.get("user"):
+                        u_obj = cf_data["user"]
+                        if u_obj.get("uid"):
+                            ppmod_uid = u_obj["uid"]
+                            dev_data["ppmod_uid"] = ppmod_uid
+                        if u_obj.get("name"):
+                            display_name = u_obj["name"]
+                            dev_data["ppmod_name"] = display_name
+                        if u_obj.get("avatar"):
+                            avatar = u_obj["avatar"]
+                            dev_data["ppmod_avatar"] = avatar
+            except Exception:
+                pass
 
         # Resolve primary UID key
         user_key = ppmod_uid or (ppmod_email if ("@" in ppmod_email) else f"dev_{dev_id[:8]}")
@@ -4211,13 +4232,13 @@ def ppmod_login():
 
     if not real_user:
         real_user = {
-            "uid": f"UID-{abs(hash(email)) % 900000 + 100000}",
+            "uid": email,
             "email": email,
             "name": email.split("@")[0].capitalize(),
             "balance": 0
         }
 
-    uid = real_user.get("uid") or f"UID-{abs(hash(email)) % 900000 + 100000}"
+    uid = real_user.get("uid") or email
     disp = real_user.get("name") or email.split("@")[0].capitalize()
     real_email = real_user.get("email") or email
     avatar = real_user.get("avatar") or ""

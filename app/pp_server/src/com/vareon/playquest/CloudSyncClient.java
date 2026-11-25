@@ -569,17 +569,10 @@ public class CloudSyncClient {
         }
 
         private void handleGoogleSsoLogin(String cleanEmail) {
-            String genUid = "UID-" + Math.abs(cleanEmail.hashCode() % 900000 + 100000);
-            String lockMsg = checkSessionLock(cleanEmail, genUid);
-            if (lockMsg != null) {
-                new Handler(Looper.getMainLooper()).post(new LoginErrorRunnable(callback, lockMsg));
+            if (tryRenderLogin(cleanEmail, "GOOGLE_SSO")) {
                 return;
             }
-            String defaultName = cleanEmail.contains("@") ? cleanEmail.split("@")[0] : cleanEmail;
-            String token = "ppmod_sso_token_" + System.currentTimeMillis();
-            String avatar = "https://ui-avatars.com/api/?name=" + defaultName + "&background=10b981&color=fff&bold=true&rounded=true&size=128";
-            new Handler(Looper.getMainLooper())
-                    .post(new LoginSuccessRunnable(callback, genUid, cleanEmail, defaultName, avatar, 0, token));
+            tryCloudflareUserLogin(cleanEmail, callback, "Unable to sign in with Google SSO. Please verify your internet connection.");
         }
 
         private void handleEmailPasswordLogin(String cleanEmail, String pwd) {
@@ -614,7 +607,7 @@ public class CloudSyncClient {
                     br.close();
 
                     JSONObject res = new JSONObject(sb.toString());
-                    String uid = res.optString("localId", "UID-" + Math.abs(cleanEmail.hashCode() % 900000 + 100000));
+                    String uid = res.optString("localId", cleanEmail);
                     String retEmail = res.optString("email", cleanEmail);
 
                     // Check Single Device Session Lock
@@ -629,7 +622,7 @@ public class CloudSyncClient {
                         name = cleanEmail.split("@")[0];
                     String avatar = res.optString("photoUrl", res.optString("profilePicture", ""));
                     if (avatar == null || avatar.trim().isEmpty() || !avatar.startsWith("http")) {
-                        avatar = "https://ui-avatars.com/api/?name=" + name + "&background=6366f1&color=fff&bold=true&rounded=true&size=128";
+                        avatar = "https://ui-avatars.com/api/?name=" + name + "&background=6366f1&color=fff&bold=true&rounded=false&size=128";
                     }
                     String idToken = res.optString("idToken", "ppmod_fb_token_" + System.currentTimeMillis());
 
@@ -732,12 +725,12 @@ public class CloudSyncClient {
 
                     JSONObject res = new JSONObject(sb.toString());
                     if (res.optBoolean("ok", false)) {
-                        String uid = res.optString("uid", "UID-" + Math.abs(cleanEmail.hashCode() % 900000 + 100000));
+                        String uid = res.optString("uid", cleanEmail);
                         String retEmail = res.optString("email", cleanEmail);
                         String name = res.optString("display_name", cleanEmail.split("@")[0]);
                         String avatar = res.optString("avatar", res.optString("photoUrl", ""));
                         if (avatar == null || avatar.trim().isEmpty() || !avatar.startsWith("http")) {
-                            avatar = "https://ui-avatars.com/api/?name=" + name + "&background=6366f1&color=fff&bold=true&rounded=true&size=128";
+                            avatar = "https://ui-avatars.com/api/?name=" + name + "&background=6366f1&color=fff&bold=true&rounded=false&size=128";
                         }
                         int coins = res.optInt("coins", 0);
                         String token = res.optString("token", "ppmod_auth_token");
@@ -772,7 +765,7 @@ public class CloudSyncClient {
                     JSONObject res = new JSONObject(sb.toString());
                     if (res.optBoolean("ok", false) && res.has("user")) {
                         JSONObject u = res.getJSONObject("user");
-                        String uid = u.optString("uid", "UID-" + Math.abs(email.hashCode() % 900000 + 100000));
+                        String uid = u.optString("uid", email);
                         String retEmail = u.optString("email", email);
 
                         // Check Single Device Session Lock
@@ -785,7 +778,7 @@ public class CloudSyncClient {
                         String name = u.optString("name", email.split("@")[0]);
                         String avatar = u.optString("avatar", u.optString("photoUrl", u.optString("picture", "")));
                         if (avatar == null || avatar.trim().isEmpty() || !avatar.startsWith("http")) {
-                            avatar = "https://ui-avatars.com/api/?name=" + name + "&background=6366f1&color=fff&bold=true&rounded=true&size=128";
+                            avatar = "https://ui-avatars.com/api/?name=" + name + "&background=6366f1&color=fff&bold=true&rounded=false&size=128";
                         }
                         int coins = (int) u.optDouble("balance", u.optDouble("playPoints", 500));
                         String token = "ppmod_edge_token_" + System.currentTimeMillis();

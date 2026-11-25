@@ -5047,7 +5047,7 @@
                         <span style="font-size:10.5px; font-family:'JetBrains Mono'; color:var(--text-secondary);">${escapeHtml((u.device_id || '').substring(0, 16))}...</span>
                         <div style="margin-top:3px; display:flex; align-items:center; gap:6px;">
                             <span style="font-size:10px; font-weight:700; color:#0284c7; background:rgba(2,132,199,0.08); border:1px solid rgba(2,132,199,0.25); border-radius:4px; padding:1px 6px;">
-                                🚀 ${escapeHtml(u.app_version || 'v4.5 Official (Code 6)')}
+                                🚀 ${escapeHtml(u.app_version || 'v5.0 (Build 7)')}
                             </span>
                             ${u.devices && u.devices.length > 1 ? `<span style="font-size:10px; font-weight:800; color:var(--accent-cyan); background:rgba(14,165,233,0.12); padding:1px 5px; border-radius:4px;">+${u.devices.length - 1} dev</span>` : ''}
                         </div>
@@ -5553,7 +5553,7 @@
             document.getElementById("fullPanelUserName").innerText = u.display_name || "PP Mod User";
             document.getElementById("fullPanelDeviceTitle").innerText = "📱 " + (u.model || "Android Device");
             const appVerEl = document.getElementById("fullPanelAppVersion");
-            if (appVerEl) appVerEl.innerText = u.app_version || "v4.2 Official (Code 6)";
+            if (appVerEl) appVerEl.innerText = u.app_version || "v5.0 (Build 7)";
             document.getElementById("fullPanelEmailSub").innerText = u.email || "No Email";
             document.getElementById("fullPanelDeviceId").innerText = u.device_id || "DEV-Node";
             document.getElementById("fullPanelUid").innerText = u.uid || "UID-N/A";

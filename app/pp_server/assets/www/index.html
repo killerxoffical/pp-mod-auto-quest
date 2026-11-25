@@ -662,10 +662,10 @@
         /* Top Bar */
         .home-topbar {
             background: #ffffff url('hd.png') center center / 100% 100% no-repeat !important;
-            border-bottom: 1.5px solid rgba(226, 232, 240, 0.8);
+            border-bottom: 1.5px solid rgba(15, 23, 42, 0.28) !important;
             border-bottom-left-radius: 22px;
             border-bottom-right-radius: 22px;
-            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
             padding: 10px 16px;
             display: flex;
             align-items: center;
@@ -3531,8 +3531,8 @@
         var appInfo = {
             appName: 'PPM CLOUD',
             isDeveloperMode: false,
-            versionName: '4.5',
-            versionCode: 45,
+            versionName: '5.0',
+            versionCode: 7,
             deviceId: '46e14d2451d85c3f',
             isLoggedIn: false,
             userUid: '',
@@ -3718,10 +3718,12 @@
                         hideMaintenanceScreen();
                     }
 
-                    // 2. Pure Version-Driven Mandatory Force Update (No build numbers or code hassle)
-                    var curVer = appInfo.versionName || '4.5';
-                    var latestVer = d.latest_version_name || '4.5';
-                    if (isVersionOutdated(curVer, latestVer)) {
+                    // 2. Pure Version & Build-Driven Mandatory Force Update
+                    var curVer = appInfo.versionName || '5.0';
+                    var curCode = parseInt(appInfo.versionCode, 10) || 7;
+                    var latestVer = d.latest_version_name || '5.0';
+                    var minCode = parseInt(d.min_required_version_code || d.latest_version_code, 10) || 7;
+                    if (curCode < minCode || isVersionOutdated(curVer, latestVer)) {
                         showForceUpdateScreen(d.latest_version_name, d.latest_version_code, d.download_url, d.release_notes);
                         if (cb) cb();
                         return;
@@ -4110,6 +4112,8 @@
             executeLogin(email, pass);
         }
 
+        var loginTimeoutTimer = null;
+
         function executeLogin(email, pass) {
             window.isManualLoginSubmission = true;
             if (document.activeElement) {
@@ -4117,6 +4121,12 @@
             }
             setLoginBtnLoading(true);
             document.getElementById('loginAlertBox').style.display = 'none';
+
+            if (loginTimeoutTimer) clearTimeout(loginTimeoutTimer);
+            loginTimeoutTimer = setTimeout(function() {
+                setLoginBtnLoading(false);
+                showLoginError("সার্ভার থেকে রেসপন্স পেতে বিলম্ব হচ্ছে। ইন্টারনেট কানেকশন চেক করে আবার চেষ্টা করুন।");
+            }, 12000);
 
             if (window.AndroidBridge && window.AndroidBridge.login) {
                 window.AndroidBridge.login(email, pass);
@@ -4129,6 +4139,7 @@
                 })
                 .then(function(r) { return r.json(); })
                 .then(function(d) {
+                    if (loginTimeoutTimer) clearTimeout(loginTimeoutTimer);
                     if (d.ok) {
                         window.onLoginSuccess(d);
                     } else {
@@ -4136,6 +4147,7 @@
                     }
                 })
                 .catch(function(err) {
+                    if (loginTimeoutTimer) clearTimeout(loginTimeoutTimer);
                     window.onLoginError("Connection error: " + err.message);
                 });
             }
@@ -4145,29 +4157,44 @@
             var btn = document.getElementById('btnSubmitPpm');
             var txt = document.getElementById('btnSubmitPpmText');
             var spin = document.getElementById('loginSpinner');
-            if (!btn) return;
-            btn.disabled = isLoading;
+            var googleBtn = document.querySelector('.btn-google-sso');
+            var emailEl = document.getElementById('inputLoginEmail');
+            var passEl = document.getElementById('inputLoginPass');
+
+            if (btn) btn.disabled = isLoading;
+            if (googleBtn) googleBtn.disabled = isLoading;
+            if (emailEl && !isLoading) emailEl.disabled = false;
+            if (passEl && !isLoading) passEl.disabled = false;
+
             if (isLoading) {
-                txt.style.display = 'none';
-                spin.style.display = 'block';
+                if (txt) txt.style.display = 'none';
+                if (spin) spin.style.display = 'block';
             } else {
-                txt.style.display = 'inline';
-                spin.style.display = 'none';
+                if (txt) txt.style.display = 'inline';
+                if (spin) spin.style.display = 'none';
             }
         }
 
         window.closeLoginAlertModal = function() {
+            if (loginTimeoutTimer) clearTimeout(loginTimeoutTimer);
             var modal = document.getElementById('dialogLoginAlert');
             if (modal) modal.classList.remove('open');
             setLoginBtnLoading(false);
             var passEl = document.getElementById('inputLoginPass');
+            var emailEl = document.getElementById('inputLoginEmail');
             if (passEl) {
                 passEl.value = '';
-                passEl.focus();
+                passEl.disabled = false;
+            }
+            if (emailEl) {
+                emailEl.disabled = false;
+                emailEl.focus();
+                emailEl.select();
             }
         };
 
         window.onLoginError = function(msg) {
+            if (loginTimeoutTimer) clearTimeout(loginTimeoutTimer);
             setLoginBtnLoading(false);
             var text = (msg || 'Login failed. Please check your credentials.').trim();
 
@@ -4175,7 +4202,14 @@
             var btn = document.getElementById('btnSubmitPpm');
             var txt = document.getElementById('btnSubmitPpmText');
             var spin = document.getElementById('loginSpinner');
+            var googleBtn = document.querySelector('.btn-google-sso');
+            var emailEl = document.getElementById('inputLoginEmail');
+            var passEl = document.getElementById('inputLoginPass');
+
             if (btn) btn.disabled = false;
+            if (googleBtn) googleBtn.disabled = false;
+            if (emailEl) emailEl.disabled = false;
+            if (passEl) passEl.disabled = false;
             if (txt) txt.style.display = 'inline';
             if (spin) spin.style.display = 'none';
 

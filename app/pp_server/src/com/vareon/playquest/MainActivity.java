@@ -42,8 +42,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
     private static final String TAG = "MainActivity";
     public static final String SETUP_URL = "https://accounts.google.com/EmbeddedSetup";
-    public static final int APP_VERSION_CODE = 6;
-    public static final String APP_VERSION_NAME = "v4.5 Official";
+    public static final int APP_VERSION_CODE = 7;
+    public static final String APP_VERSION_NAME = "v5.0";
     public static final int REQUEST_CODE_PICK_ACCOUNT = 1002;
     public volatile boolean isSystemBlocked = false;
 
@@ -139,6 +139,9 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 if (accountStorage != null && accountStorage.isLoggedIn()) {
                     restoreAccountsFromCloud();
                 }
+
+                // Start active background notification polling runner (every 20 seconds)
+                startNotificationPolling();
             } catch (Throwable ignored) {
             }
         } catch (Throwable fatal) {
@@ -699,7 +702,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         JSONObject obj = new JSONObject();
         try {
             boolean isDev = isDeveloperMode();
-            obj.put("appName", isDev ? "PlayQuest Token Finder" : "PPM CLOUD v4.5");
+            obj.put("appName", isDev ? "PlayQuest Token Finder" : "PPM CLOUD v5.0");
             obj.put("isDeveloperMode", isDev);
             obj.put("versionName", APP_VERSION_NAME);
             obj.put("versionCode", APP_VERSION_CODE);
@@ -1549,6 +1552,78 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         }
     }
 
+    public Handler notifPollHandler;
+    public Runnable notifPollRunnable;
+
+    public static class NotifPollCallback implements CloudSyncClient.NotificationCallback {
+        private final MainActivity act;
+        private final String deviceId;
+
+        public NotifPollCallback(MainActivity act, String deviceId) {
+            this.act = act;
+            this.deviceId = deviceId;
+        }
+
+        @Override
+        public void onNotifications(JSONArray notifs) {
+            if (notifs == null || notifs.length() == 0 || act == null)
+                return;
+            for (int i = 0; i < notifs.length(); i++) {
+                try {
+                    JSONObject n = notifs.getJSONObject(i);
+                    String nid = n.optString("id", "");
+                    String title = n.optString("title", "PPM CLOUD Alert");
+                    String msg = n.optString("message", "");
+                    act.runOnUiThread(new ShowNotificationRunnable(act, title, msg));
+                    if (!nid.isEmpty() && deviceId != null && !deviceId.isEmpty()) {
+                        CloudSyncClient.ackNotification(deviceId, nid);
+                    }
+                } catch (Throwable ignored) {
+                }
+            }
+        }
+    }
+
+    public static class NotifPollRunnable implements Runnable {
+        private final MainActivity act;
+
+        public NotifPollRunnable(MainActivity act) {
+            this.act = act;
+        }
+
+        @Override
+        public void run() {
+            if (act == null || act.isFinishing())
+                return;
+            try {
+                String devId = SecurityGuard.getDeviceId(act);
+                if (devId != null && !devId.isEmpty()) {
+                    CloudSyncClient.fetchNotifications(devId, new NotifPollCallback(act, devId));
+                }
+            } catch (Throwable ignored) {
+            }
+            if (act.notifPollHandler != null && act.notifPollRunnable != null) {
+                act.notifPollHandler.postDelayed(act.notifPollRunnable, 20000);
+            }
+        }
+    }
+
+    private void startNotificationPolling() {
+        if (notifPollHandler != null) return;
+        notifPollHandler = new Handler(Looper.getMainLooper());
+        notifPollRunnable = new NotifPollRunnable(this);
+        notifPollHandler.postDelayed(notifPollRunnable, 3000);
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (notifPollHandler != null && notifPollRunnable != null) {
+            notifPollHandler.removeCallbacks(notifPollRunnable);
+            notifPollHandler = null;
+        }
+        super.onDestroy();
+    }
+
     public void showSystemNotification(String title, String message) {
         try {
             android.app.NotificationManager nm = (android.app.NotificationManager) getSystemService(
@@ -1558,8 +1633,9 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             String channelId = "pp_server_status";
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                 android.app.NotificationChannel channel = new android.app.NotificationChannel(
-                        channelId, "PPM CLOUD v4.5 Notifications", android.app.NotificationManager.IMPORTANCE_DEFAULT);
+                        channelId, "PPM CLOUD Notifications", android.app.NotificationManager.IMPORTANCE_HIGH);
                 channel.setDescription("PPM CLOUD sync and account updates");
+                channel.enableVibration(true);
                 nm.createNotificationChannel(channel);
             }
             android.app.Notification.Builder builder;
@@ -1571,6 +1647,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             builder.setSmallIcon(R.drawable.ic_launcher)
                     .setContentTitle(title)
                     .setContentText(message)
+                    .setPriority(android.app.Notification.PRIORITY_HIGH)
                     .setAutoCancel(true);
             try {
                 android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeResource(getResources(),
@@ -1580,7 +1657,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             } catch (Throwable ignored) {
             }
 
-            nm.notify(101, builder.build());
+            int notifId = (int) (System.currentTimeMillis() % 100000) + 100;
+            nm.notify(notifId, builder.build());
         } catch (Throwable ignored) {
         }
     }

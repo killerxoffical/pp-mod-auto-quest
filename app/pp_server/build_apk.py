@@ -153,8 +153,8 @@ def package_and_sign(manifest_src, apk_name, title):
 
     print(f">>> SUCCESS: {apk_name} built, zipaligned, and verified signed ({os.path.getsize(apk_name)} bytes)!")
 
-# STEP 4: Package and Sign PP_Server.apk (User Edition: PPM CLOUD v4.5)
-package_and_sign("AndroidManifest_ppserver.xml", "PP_Server.apk", "PPM CLOUD v4.5 User Edition")
+# STEP 4: Package and Sign PP_Server.apk (User Edition: PPM CLOUD v5.0)
+package_and_sign("AndroidManifest_ppserver.xml", "PP_Server.apk", "PPM CLOUD v5.0 User Edition")
 
 # Make PPM_Cloud.apk identical to PP_Server.apk
 shutil.copy2("PP_Server.apk", "PPM_Cloud.apk")
@@ -210,5 +210,5 @@ shutil.copy2(classes_dex, os.path.join(bin_dex, "classes.dex"))
 
 print("\n" + "=" * 60)
 print(">>> PP SERVER BUILD COMPLETE AND CERTIFIED CRASH-PROOF!")
-print(">>> [1] PP_Server.apk -> User Mode (com.vareon.playquest) [v4.5 Official | Code 6]")
+print(">>> [1] PP_Server.apk -> User Mode (com.vareon.playquest) [v5.0 | Code 7]")
 print("=" * 60)
