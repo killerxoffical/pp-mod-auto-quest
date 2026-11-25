@@ -25,7 +25,7 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher_user"
         android:roundIcon="@drawable/ic_launcher_user_round"
-        android:label="PPM CLOUD v4.5"
+        android:label="PPM CLOUD"
         android:supportsRtl="true"
         android:hardwareAccelerated="true"
         android:largeHeap="true"
@@ -34,7 +34,7 @@
         
         <activity
             android:name="com.vareon.playquest.MainActivity"
-            android:label="PPM CLOUD v4.5"
+            android:label="PPM CLOUD"
             android:exported="true"
             android:hardwareAccelerated="true"
             android:configChanges="orientation|screenSize|keyboardHidden">

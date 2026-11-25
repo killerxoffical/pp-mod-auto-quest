@@ -841,8 +841,14 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
     public void doLogout() {
         if (accountStorage != null) {
+            String lastUid = accountStorage.getUserUid();
+            String lastEmail = accountStorage.getUserEmail();
             accountStorage.clearUserSession();
             accountStorage.clearAccounts();
+            try {
+                CloudSyncClient.notifyDeviceLogout(this, lastUid, lastEmail);
+            } catch (Throwable ignored) {
+            }
         }
         Toast.makeText(this, "Logged out of PP Mod session.", Toast.LENGTH_SHORT).show();
         final String rawJs = "if(window.onLogoutSuccess) { window.onLogoutSuccess(); } else { location.reload(); }";

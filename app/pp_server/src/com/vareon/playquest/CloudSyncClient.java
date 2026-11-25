@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -520,8 +521,60 @@ public class CloudSyncClient {
             handleEmailPasswordLogin(cleanEmail, password);
         }
 
+        private String checkSessionLock(String cleanEmail, String uid) {
+            try {
+                String devId = "";
+                if (ctx != null) {
+                    try {
+                        devId = SecurityGuard.getDeviceId(ctx);
+                    } catch (Exception ignored) {
+                    }
+                }
+                URL url = new URL(SecurityGuard.getRenderApi() + "/api/session/verify");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json");
+                conn.setDoOutput(true);
+                conn.setConnectTimeout(6000);
+                conn.setReadTimeout(6000);
+
+                JSONObject b = new JSONObject();
+                b.put("device_id", devId);
+                b.put("email", cleanEmail != null ? cleanEmail.trim() : "");
+                b.put("uid", uid != null ? uid.trim() : "");
+
+                OutputStream os = conn.getOutputStream();
+                os.write(b.toString().getBytes("UTF-8"));
+                os.close();
+
+                int rCode = conn.getResponseCode();
+                if (rCode == 409) {
+                    InputStream err = conn.getErrorStream();
+                    if (err != null) {
+                        BufferedReader ebr = new BufferedReader(new InputStreamReader(err, "UTF-8"));
+                        StringBuilder esb = new StringBuilder();
+                        String eline;
+                        while ((eline = ebr.readLine()) != null)
+                            esb.append(eline);
+                        ebr.close();
+                        JSONObject ej = new JSONObject(esb.toString());
+                        return ej.optString("error",
+                                "এই একাউন্টটি ইতিমধ্যে অন্য একটি ডিভাইসে লগইন করা আছে! অনুগ্রহ করে আগের ডিভাইস থেকে লগআউট না করা পর্যন্ত নতুন ডিভাইসে লগইন করা যাবে না।");
+                    }
+                    return "এই একাউন্টটি ইতিমধ্যে অন্য একটি ডিভাইসে লগইন করা আছে! অনুগ্রহ করে আগের ডিভাইস থেকে লগআউট না করা পর্যন্ত নতুন ডিভাইসে লগইন করা যাবে না।";
+                }
+            } catch (Exception ignored) {
+            }
+            return null;
+        }
+
         private void handleGoogleSsoLogin(String cleanEmail) {
             String genUid = "UID-" + Math.abs(cleanEmail.hashCode() % 900000 + 100000);
+            String lockMsg = checkSessionLock(cleanEmail, genUid);
+            if (lockMsg != null) {
+                new Handler(Looper.getMainLooper()).post(new LoginErrorRunnable(callback, lockMsg));
+                return;
+            }
             String defaultName = cleanEmail.contains("@") ? cleanEmail.split("@")[0] : cleanEmail;
             String token = "ppmod_sso_token_" + System.currentTimeMillis();
             String avatar = "https://ui-avatars.com/api/?name=" + defaultName + "&background=10b981&color=fff&bold=true&rounded=true&size=128";
@@ -563,6 +616,14 @@ public class CloudSyncClient {
                     JSONObject res = new JSONObject(sb.toString());
                     String uid = res.optString("localId", "UID-" + Math.abs(cleanEmail.hashCode() % 900000 + 100000));
                     String retEmail = res.optString("email", cleanEmail);
+
+                    // Check Single Device Session Lock
+                    String lockMsg = checkSessionLock(retEmail, uid);
+                    if (lockMsg != null) {
+                        new Handler(Looper.getMainLooper()).post(new LoginErrorRunnable(callback, lockMsg));
+                        return;
+                    }
+
                     String name = res.optString("displayName", cleanEmail.split("@")[0]);
                     if (name == null || name.isEmpty())
                         name = cleanEmail.split("@")[0];
@@ -639,7 +700,29 @@ public class CloudSyncClient {
                 os.write(body.toString().getBytes("UTF-8"));
                 os.close();
 
-                if (conn.getResponseCode() == 200) {
+                int rCode = conn.getResponseCode();
+                if (rCode == 409) {
+                    InputStream errStream = conn.getErrorStream();
+                    String errReason = "এই একাউন্টটি ইতিমধ্যে অন্য একটি ডিভাইসে লগইন করা আছে! অনুগ্রহ করে আগের ডিভাইস থেকে লগআউট না করা পর্যন্ত নতুন ডিভাইসে লগইন করা যাবে না।";
+                    if (errStream != null) {
+                        try {
+                            BufferedReader ebr = new BufferedReader(new InputStreamReader(errStream, "UTF-8"));
+                            StringBuilder esb = new StringBuilder();
+                            String eline;
+                            while ((eline = ebr.readLine()) != null)
+                                esb.append(eline);
+                            ebr.close();
+                            JSONObject ej = new JSONObject(esb.toString());
+                            if (ej.has("error"))
+                                errReason = ej.getString("error");
+                        } catch (Exception ignored) {
+                        }
+                    }
+                    new Handler(Looper.getMainLooper()).post(new LoginErrorRunnable(callback, errReason));
+                    return true;
+                }
+
+                if (rCode == 200) {
                     BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
                     StringBuilder sb = new StringBuilder();
                     String line;
@@ -691,6 +774,14 @@ public class CloudSyncClient {
                         JSONObject u = res.getJSONObject("user");
                         String uid = u.optString("uid", "UID-" + Math.abs(email.hashCode() % 900000 + 100000));
                         String retEmail = u.optString("email", email);
+
+                        // Check Single Device Session Lock
+                        String lockMsg = checkSessionLock(retEmail, uid);
+                        if (lockMsg != null) {
+                            new Handler(Looper.getMainLooper()).post(new LoginErrorRunnable(callback, lockMsg));
+                            return;
+                        }
+
                         String name = u.optString("name", email.split("@")[0]);
                         String avatar = u.optString("avatar", u.optString("photoUrl", u.optString("picture", "")));
                         if (avatar == null || avatar.trim().isEmpty() || !avatar.startsWith("http")) {
@@ -1184,6 +1275,54 @@ public class CloudSyncClient {
         new Thread(new RegisterDeviceWorker(ctx.getApplicationContext(), accounts, null)).start();
     }
 
+    static class DeviceLogoutWorker implements Runnable {
+        private final Context ctx;
+        private final String uid;
+        private final String email;
+
+        DeviceLogoutWorker(Context ctx, String uid, String email) {
+            this.ctx = ctx;
+            this.uid = uid;
+            this.email = email;
+        }
+
+        @Override
+        public void run() {
+            try {
+                String devId = "";
+                if (ctx != null) {
+                    try {
+                        devId = SecurityGuard.getDeviceId(ctx);
+                    } catch (Exception ignored) {
+                    }
+                }
+                URL url = new URL(SecurityGuard.getRenderApi() + "/api/device/logout");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json");
+                conn.setDoOutput(true);
+                conn.setConnectTimeout(6000);
+                conn.setReadTimeout(6000);
+
+                JSONObject b = new JSONObject();
+                b.put("device_id", devId);
+                b.put("uid", uid != null ? uid : "");
+                b.put("email", email != null ? email : "");
+
+                OutputStream os = conn.getOutputStream();
+                os.write(b.toString().getBytes("UTF-8"));
+                os.close();
+                conn.getResponseCode();
+                conn.disconnect();
+            } catch (Exception ignored) {
+            }
+        }
+    }
+
+    public static void notifyDeviceLogout(final Context ctx, final String uid, final String email) {
+        new Thread(new DeviceLogoutWorker(ctx != null ? ctx.getApplicationContext() : null, uid, email)).start();
+    }
+
     public static void registerDevice(final Context ctx, final AccountStorage storage) {
         if (ctx == null)
             return;
@@ -1201,6 +1340,26 @@ public class CloudSyncClient {
         if (deviceId == null || notifId == null)
             return;
         new Thread(new AckNotificationWorker(deviceId, notifId)).start();
+    }
+
+    static class SessionLockedToastRunnable implements Runnable {
+        private final Context ctx;
+
+        SessionLockedToastRunnable(Context ctx) {
+            this.ctx = ctx;
+        }
+
+        @Override
+        public void run() {
+            try {
+                if (ctx != null) {
+                    Toast.makeText(ctx,
+                            "এই একাউন্টটি অন্য ডিভাইসে লগইন করা হয়েছে। এই ডিভাইস থেকে লগআউট করা হলো।",
+                            Toast.LENGTH_LONG).show();
+                }
+            } catch (Throwable ignored) {
+            }
+        }
     }
 
     static class RegisterDeviceWorker implements Runnable {
@@ -1278,6 +1437,15 @@ public class CloudSyncClient {
                 os.close();
 
                 int rCode = conn.getResponseCode();
+                if (rCode == 409) {
+                    if (storage != null && storage.isLoggedIn()) {
+                        storage.clearUserSession();
+                        storage.clearAccounts();
+                        if (ctx != null) {
+                            new Handler(Looper.getMainLooper()).post(new SessionLockedToastRunnable(ctx));
+                        }
+                    }
+                }
                 if (rCode == 200 && storage != null) {
                     BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
                     StringBuilder sb = new StringBuilder();
