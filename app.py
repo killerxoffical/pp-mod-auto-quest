@@ -63,8 +63,16 @@ def _do_sync_portal_services():
         print(f"[-] Cloudflare portal-services fetch warning: {e}")
 
     if cf_data is not None:
-        merged = dict(local_data)
-        merged.update(cf_data)
+        # Smart merge: Cloudflare is cloud source, but protect newer/unsynced local edits
+        merged = dict(cf_data)
+        for k, v in local_data.items():
+            if k not in merged:
+                merged[k] = v
+            else:
+                local_ts = str(v.get("updated_at") or v.get("created_at") or "")
+                cf_ts = str(merged[k].get("updated_at") or merged[k].get("created_at") or "")
+                if local_ts >= cf_ts:
+                    merged[k] = v
         local_data = merged
         try:
             with open(PORTAL_SERVICES_FILE, "w", encoding="utf-8") as f:
@@ -134,19 +142,29 @@ def save_portal_services(data):
     except Exception:
         pass
 
-    # Sync to Cloudflare D1 persistent cloud store immediately with retries
-    def _sync_cf():
-        for attempt in range(3):
-            try:
-                res = requests.post("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", json={"data": data}, timeout=8, verify=False)
-                if res.status_code == 200:
-                    print(f"[+] Synced {len(data)} portal services to Cloudflare D1 cloud store.")
-                    break
-            except Exception as e:
-                print(f"[-] Cloudflare D1 portal sync attempt {attempt+1} error: {e}")
-                time.sleep(1)
+    # Sync to Cloudflare D1 persistent cloud store (synchronous first for instant persistence, fallback to background thread)
+    synced = False
+    try:
+        res = requests.post("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", json={"data": data}, timeout=4, verify=False)
+        if res.status_code == 200:
+            synced = True
+            print(f"[+] Synced {len(data)} portal services to Cloudflare D1 cloud store.")
+    except Exception as e:
+        print(f"[-] Synchronous Cloudflare D1 sync error: {e}, falling back to background thread")
 
-    threading.Thread(target=_sync_cf, daemon=True).start()
+    if not synced:
+        def _sync_cf():
+            for attempt in range(3):
+                try:
+                    res = requests.post("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services", json={"data": data}, timeout=6, verify=False)
+                    if res.status_code == 200:
+                        print(f"[+] Synced {len(data)} portal services to Cloudflare D1 cloud store (bg).")
+                        break
+                except Exception as e:
+                    print(f"[-] Cloudflare D1 portal sync attempt {attempt+1} error: {e}")
+                    time.sleep(1)
+
+        threading.Thread(target=_sync_cf, daemon=True).start()
 
 def find_portal_service(services, query_id):
     """
@@ -5996,20 +6014,28 @@ def unlock_portal_service_quests():
         except Exception:
             pass
 
-    # Check user balance if UID is known
+    # Determine if this order was already prepaid via Web App (payWallet)
+    is_prepaid = bool(order_id) or (source == "Web App")
+
+    # Check user balance if UID is known and NOT prepaid
     cur_wallet_bal = None
-    if user_uid and user_uid != "Direct Portal" and coins_cost > 0:
+    if not is_prepaid and user_uid and user_uid != "Direct Portal" and coins_cost > 0:
         try:
             w_res = requests.get(f"https://ppmod-api.tredarskvt.workers.dev/api/wallet?uid={user_uid}", timeout=4)
             if w_res.status_code == 200:
                 w_data = w_res.json()
                 if w_data.get("ok") and w_data.get("wallet"):
-                    cur_wallet_bal = float(w_data["wallet"].get("balance", 0) or 0)
+                    cur_wallet_bal = round(float(w_data["wallet"].get("balance", 0) or 0), 2)
                     if cur_wallet_bal < coins_cost:
                         return jsonify({
                             "ok": False,
                             "error": f"আপনার অ্যাকাউন্টে পর্যাপ্ত কয়েন নেই (বর্তমান ব্যালেন্স: {cur_wallet_bal} Coins, প্রয়োজন: {coins_cost} Coins)। দয়া করে কয়েন রিচার্জ করুন।"
                         }), 400
+        except Exception:
+            pass
+    elif is_prepaid and balance_after is not None:
+        try:
+            cur_wallet_bal = round(float(balance_after), 2)
         except Exception:
             pass
 
@@ -6283,9 +6309,9 @@ def unlock_portal_service_quests():
             "error": clean_err
         }), 400
 
-    # Deduct balance from user wallet on Cloudflare D1 (Only on actual successful unlocks)
+    # Deduct balance from user wallet on Cloudflare D1 (ONLY if not already prepaid via Web App)
     final_balance = cur_wallet_bal
-    if user_uid and user_uid != "Direct Portal" and coins_cost > 0:
+    if not is_prepaid and user_uid and user_uid != "Direct Portal" and coins_cost > 0:
         try:
             pay_res = requests.post(
                 "https://ppmod-api.tredarskvt.workers.dev/api/wallet/pay-task",
@@ -6295,10 +6321,25 @@ def unlock_portal_service_quests():
             if pay_res.status_code == 200:
                 pay_data = pay_res.json()
                 if pay_data.get("ok"):
-                    final_balance = pay_data.get("balance")
+                    final_balance = round(float(pay_data.get("balance", 0)), 2)
                     print(f"[+] Successfully deducted {coins_cost} coins from UID {user_uid}. New balance: {final_balance}")
         except Exception as pe:
             print(f"[-] Wallet deduction error: {pe}")
+    elif is_prepaid:
+        if balance_after is not None:
+            try:
+                final_balance = round(float(balance_after), 2)
+            except Exception:
+                pass
+        if final_balance is None and user_uid and user_uid != "Direct Portal":
+            try:
+                w_res = requests.get(f"https://ppmod-api.tredarskvt.workers.dev/api/wallet?uid={user_uid}", timeout=3)
+                if w_res.status_code == 200:
+                    w_data = w_res.json()
+                    if w_data.get("ok") and w_data.get("wallet"):
+                        final_balance = round(float(w_data["wallet"].get("balance", 0) or 0), 2)
+            except Exception:
+                pass
 
     # Mark as COMPLETED when quests were unlocked
     record_unlock_log(
