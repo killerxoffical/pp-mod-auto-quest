@@ -34,13 +34,10 @@ PORTAL_SERVICES_CACHE = None
 PORTAL_SERVICES_CACHE_TIME = 0
 WARMED_GAME_TOKENS = {}
 
-def load_portal_services(force_refresh=False):
-    global PORTAL_SERVICES_CACHE, PORTAL_SERVICES_CACHE_TIME
-    now = time.time()
-    if not force_refresh and PORTAL_SERVICES_CACHE is not None and (now - PORTAL_SERVICES_CACHE_TIME < 5):
-        return PORTAL_SERVICES_CACHE
+PORTAL_SERVICES_SYNCING = False
 
-    # 1. Read local file first as baseline
+def _do_sync_portal_services():
+    global PORTAL_SERVICES_CACHE, PORTAL_SERVICES_CACHE_TIME
     local_data = {}
     if os.path.exists(PORTAL_SERVICES_FILE):
         try:
@@ -51,7 +48,6 @@ def load_portal_services(force_refresh=False):
         except Exception as e:
             print(f"[-] Error reading local portal_services: {e}")
 
-    # 2. Always query Cloudflare D1 persistent cloud store so new games added on live site are NEVER lost on redeploy
     cf_data = None
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) PPMod-Server/2.0"}
     try:
@@ -67,7 +63,6 @@ def load_portal_services(force_refresh=False):
         print(f"[-] Cloudflare portal-services fetch warning: {e}")
 
     if cf_data is not None:
-        # Merge Cloudflare D1 into local so any games in cloud or local are safely combined
         merged = dict(local_data)
         merged.update(cf_data)
         local_data = merged
@@ -77,7 +72,6 @@ def load_portal_services(force_refresh=False):
         except Exception:
             pass
 
-    # Ensure every game with known signature in real_achievements_db has client_sig populated
     try:
         real_db_path = os.path.join(DATA_DIR, "real_achievements_db.json")
         if os.path.exists(real_db_path):
@@ -96,6 +90,28 @@ def load_portal_services(force_refresh=False):
     PORTAL_SERVICES_CACHE = local_data
     PORTAL_SERVICES_CACHE_TIME = time.time()
     return local_data
+
+def load_portal_services(force_refresh=False):
+    global PORTAL_SERVICES_CACHE, PORTAL_SERVICES_CACHE_TIME, PORTAL_SERVICES_SYNCING
+    now = time.time()
+    # 1. Instant 0ms return if cache is fresh (< 60s)
+    if not force_refresh and PORTAL_SERVICES_CACHE is not None and (now - PORTAL_SERVICES_CACHE_TIME < 60):
+        return PORTAL_SERVICES_CACHE
+
+    # 2. If cache exists (> 60s), return cached immediately and refresh in background (Stale-While-Revalidate)
+    if not force_refresh and PORTAL_SERVICES_CACHE is not None:
+        if not PORTAL_SERVICES_SYNCING:
+            def _bg_portal():
+                global PORTAL_SERVICES_SYNCING
+                PORTAL_SERVICES_SYNCING = True
+                try:
+                    _do_sync_portal_services()
+                finally:
+                    PORTAL_SERVICES_SYNCING = False
+            threading.Thread(target=_bg_portal, daemon=True).start()
+        return PORTAL_SERVICES_CACHE
+
+    return _do_sync_portal_services()
 
 def save_portal_services(data):
     global PORTAL_SERVICES_CACHE, PORTAL_SERVICES_CACHE_TIME
@@ -306,15 +322,12 @@ def deep_merge_device_dicts(base_dict: dict, incoming_dict: dict) -> dict:
 REGISTERED_DEVICES_CACHE = None
 REGISTERED_DEVICES_CACHE_TIME = 0
 
-def load_registered_devices(force_refresh=False):
-    global REGISTERED_DEVICES_CACHE, REGISTERED_DEVICES_CACHE_TIME
-    now = time.time()
-    if not force_refresh and REGISTERED_DEVICES_CACHE is not None and (now - REGISTERED_DEVICES_CACHE_TIME < 5):
-        return REGISTERED_DEVICES_CACHE
+REGISTERED_DEVICES_SYNCING = False
 
+def _do_sync_registered_devices():
+    global REGISTERED_DEVICES_CACHE, REGISTERED_DEVICES_CACHE_TIME
     cf_success = False
     cloud_data = {}
-    # 1. Primary Authority: Cloudflare D1 persistent cloud store
     try:
         cf_res = requests.get("https://ppmod-api.tredarskvt.workers.dev/api/cloud/registered-devices", timeout=5)
         if cf_res.status_code == 200:
@@ -329,7 +342,6 @@ def load_registered_devices(force_refresh=False):
         print(f"[-] Cloudflare device fetch error: {e}")
 
     if cf_success:
-        # Cloudflare D1 is authoritative! If admin wiped devices (cloud_data is {}), THAT is the truth!
         data = cloud_data
         try:
             with open(REGISTERED_DEVICES_FILE, "w", encoding="utf-8") as f:
@@ -337,7 +349,6 @@ def load_registered_devices(force_refresh=False):
         except Exception:
             pass
     else:
-        # Fallback to local file ONLY when Cloudflare D1 network call completely fails
         data = {}
         if os.path.exists(REGISTERED_DEVICES_FILE):
             try:
@@ -358,6 +369,28 @@ def load_registered_devices(force_refresh=False):
     REGISTERED_DEVICES_CACHE = data
     REGISTERED_DEVICES_CACHE_TIME = time.time()
     return data
+
+def load_registered_devices(force_refresh=False):
+    global REGISTERED_DEVICES_CACHE, REGISTERED_DEVICES_CACHE_TIME, REGISTERED_DEVICES_SYNCING
+    now = time.time()
+    # 1. Instant 0ms return if cache is fresh (< 60s)
+    if not force_refresh and REGISTERED_DEVICES_CACHE is not None and (now - REGISTERED_DEVICES_CACHE_TIME < 60):
+        return REGISTERED_DEVICES_CACHE
+
+    # 2. If cache exists (> 60s), return cached immediately and refresh in background (Stale-While-Revalidate)
+    if not force_refresh and REGISTERED_DEVICES_CACHE is not None:
+        if not REGISTERED_DEVICES_SYNCING:
+            def _bg_devs():
+                global REGISTERED_DEVICES_SYNCING
+                REGISTERED_DEVICES_SYNCING = True
+                try:
+                    _do_sync_registered_devices()
+                finally:
+                    REGISTERED_DEVICES_SYNCING = False
+            threading.Thread(target=_bg_devs, daemon=True).start()
+        return REGISTERED_DEVICES_CACHE
+
+    return _do_sync_registered_devices()
 
 def save_registered_devices(data, overwrite_cloud=True):
     global REGISTERED_DEVICES_CACHE, REGISTERED_DEVICES_CACHE_TIME

@@ -3047,7 +3047,7 @@
                     <path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path>
                 </svg>
             </div>
-            <img id="popUserAvatar" src="logo.png" alt="Profile" style="width:52px;height:52px;border-radius:50%;object-fit:cover;margin:0 auto 12px;display:none;border:2px solid #10b981;box-shadow:0 4px 12px rgba(16,185,129,0.3);">
+            <img id="popUserAvatar" src="logo.png" alt="Profile" style="width:52px;height:52px;border-radius:12px;object-fit:cover;margin:0 auto 12px;display:none;border:2px solid #10b981;box-shadow:0 4px 12px rgba(16,185,129,0.3);">
             <h3 class="success-3d-title">PP Mod Verified!</h3>
             <p class="success-3d-sub">Authenticated with PP Mod Cloud Network</p>
 
@@ -3890,7 +3890,7 @@
             var fallbackName = (appInfo.userName && appInfo.userName !== 'PPM Node Online' && appInfo.userName !== 'PP User') ? appInfo.userName : (appInfo.userEmail || 'User');
             var avSrc = (appInfo.userAvatar && appInfo.userAvatar.trim().startsWith('http')) 
                 ? appInfo.userAvatar 
-                : ('https://ui-avatars.com/api/?name=' + encodeURIComponent(fallbackName) + '&background=10b981&color=fff&bold=true&rounded=true&size=128');
+                : ('https://ui-avatars.com/api/?name=' + encodeURIComponent(fallbackName) + '&background=10b981&color=fff&bold=true&rounded=false&size=128');
             var logoEl = document.getElementById('topbarUserLogo');
             if (logoEl) {
                 logoEl.src = avSrc;

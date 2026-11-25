@@ -3,17 +3,17 @@
     "device_id": "571317c7543090d9",
     "model": "TECNO TECNO KM4",
     "android_version": "15 (API 35)",
-    "app_version": "v4.2 Official (Code 6)",
-    "first_seen": "2026-11-25 03:09:48",
-    "last_seen": "2026-11-25 03:11:36",
+    "app_version": "4.5 (Code 45)",
+    "first_seen": "2026-11-25 03:46:15",
+    "last_seen": "2026-11-25 03:53:57",
     "ip": "127.0.0.1",
     "status": "Active",
     "accounts": [
       {
         "email": "tpggournodi@gmail.com",
-        "code": "635632",
+        "code": "436434",
         "country": "US",
-        "token": "aas_et/AKppINa-5fSHl3i7O17F_0Y3Bb0aq7gBj3bhERoYgZJT0mhBMprqix_rQwCDIgYkEvCop3wxIktmLZ1FOTLC2NFHgKXuQU3y8K9_cJV-o_Pw0eOJC5g3_xb13CVt7M9qYOs9KLhaZRi5vmV6L5gD8O2COsS4a9SMd4lmxTekqMNd_1I1B4RCH7ZsRjpfX5mJ2P2tMA83yS4P3lQeghIuMqF8DH7va4xB0t1e7UYStugK",
+        "token": "aas_et/AKppINYZVm4N2tWNxo3v3O43wW8VO_yclY7LHrUNsK_tVWbDrveSI6sVb2iWbN4J-okztPUhUBhjIiY-4JXx78A60OZjVZrBb3n-CUUmqtXhvJJy5cfjrO3M8rlsUM5C9qz_dZ_bJQpRVQx16Mwfk2dY1KKjC48zDXXxpxiO9UV43s5kXnURwCW1IgWedwXd7T2kROv4pjxdFPnG9PUM609BaF__2btT6PVobV6b3O10",
         "masked_email": "tp••••di@gmail.com"
       }
     ],
@@ -22,21 +22,5 @@
     "ppmod_email": "siyjoy7@gmail.com",
     "ppmod_name": "Shuvo Das",
     "ppmod_avatar": "https://lh3.googleusercontent.com/a/ACg8ocKz96HYLvE8p0vmajnyyfGF-FNmkinjz_1-epOtABCPEhvZToA=s96-c"
-  },
-  "2bd551865d5ad912": {
-    "device_id": "2bd551865d5ad912",
-    "model": "MOTOROLA motorola edge 40",
-    "android_version": "15 (API 35)",
-    "app_version": "v4.2 Official (Code 6)",
-    "first_seen": "2026-11-25 03:25:22",
-    "last_seen": "2026-11-25 03:25:22",
-    "ip": "127.0.0.1",
-    "status": "Active",
-    "accounts": [],
-    "is_logged_in": true,
-    "ppmod_uid": "PI9gODTZwTV4sVltSxU8FLnAaEv2",
-    "ppmod_email": "wnew11138@gmail.com",
-    "ppmod_name": "New Work",
-    "ppmod_avatar": "https://lh3.googleusercontent.com/a/ACg8ocJpIDmFc7M3e6aoddsHAvUkxV7QKb-VkSFbva2J3YPCzQmyGQ=s96-c"
   }
 }
