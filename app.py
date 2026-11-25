@@ -4041,6 +4041,28 @@ def admin_claim_transaction():
         "message": f"TrxID '{trx_id}' has been permanently claimed and locked by Admin! Anti-duplicate protection active."
     })
 
+@app.route("/api/device/logout", methods=["POST"])
+def device_logout():
+    """
+    Clears device session so the user account can be logged in on another device.
+    """
+    data = request.get_json(silent=True) or {}
+    device_id = str(data.get("device_id", "")).strip()
+    uid = str(data.get("uid", "")).strip()
+    email = str(data.get("email", "")).strip().lower()
+
+    devices = load_registered_devices()
+    updated = False
+    for did, dev in devices.items():
+        if (device_id and did == device_id) or (uid and dev.get("ppmod_uid") == uid) or (email and dev.get("ppmod_email") == email):
+            dev["is_logged_in"] = False
+            dev["last_seen"] = time.strftime("%Y-%m-%d %H:%M:%S")
+            updated = True
+
+    if updated:
+        save_registered_devices(devices)
+    return jsonify({"ok": True, "message": "Successfully logged out from device session."})
+
 @app.route("/api/login/ppmod", methods=["POST"])
 def ppmod_login():
     """
@@ -4098,9 +4120,19 @@ def ppmod_login():
     avatar = real_user.get("avatar") or ""
     coins = int(real_user.get("playPoints") or real_user.get("balance") or 500)
 
+    # Enforce strictly 1 active device per account (Single Device Session Lock)
+    devices = load_registered_devices()
+    if device_id:
+        for did, dev in devices.items():
+            if did != device_id and dev.get("is_logged_in"):
+                if (dev.get("ppmod_uid") and dev.get("ppmod_uid") == uid) or (dev.get("ppmod_email") and dev.get("ppmod_email") == real_email):
+                    return jsonify({
+                        "ok": False,
+                        "error": "এই একাউন্টটি ইতিমধ্যে অন্য একটি ডিভাইসে লগইন করা আছে! অনুগ্রহ করে আগের ডিভাইস থেকে লগআউট না করা পর্যন্ত নতুন ডিভাইসে লগইন করা যাবে না।"
+                    }), 409
+
     # Auto-link and persist device session in registered_devices.json
     now_str = time.strftime("%Y-%m-%d %H:%M:%S")
-    devices = load_registered_devices()
     if device_id:
         if device_id in devices:
             devices[device_id]["is_logged_in"] = True

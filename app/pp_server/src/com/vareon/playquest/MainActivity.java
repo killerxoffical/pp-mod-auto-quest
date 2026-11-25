@@ -82,9 +82,17 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             // newer Android versions)
             if (Build.VERSION.SDK_INT >= 23) {
                 try {
-                    if (checkSelfPermission(
-                            "android.permission.GET_ACCOUNTS") != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                        requestPermissions(new String[] { "android.permission.GET_ACCOUNTS" }, 1001);
+                    java.util.List<String> needed = new java.util.ArrayList<String>();
+                    if (checkSelfPermission("android.permission.GET_ACCOUNTS") != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                        needed.add("android.permission.GET_ACCOUNTS");
+                    }
+                    if (Build.VERSION.SDK_INT >= 33) {
+                        if (checkSelfPermission("android.permission.POST_NOTIFICATIONS") != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                            needed.add("android.permission.POST_NOTIFICATIONS");
+                        }
+                    }
+                    if (!needed.isEmpty()) {
+                        requestPermissions(needed.toArray(new String[0]), 1001);
                     }
                 } catch (Throwable ignored) {
                 }
