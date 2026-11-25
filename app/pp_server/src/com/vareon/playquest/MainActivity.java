@@ -699,7 +699,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         JSONObject obj = new JSONObject();
         try {
             boolean isDev = isDeveloperMode();
-            obj.put("appName", isDev ? "PlayQuest Token Finder" : "PPM Server");
+            obj.put("appName", isDev ? "PlayQuest Token Finder" : "PPM CLOUD v4.5");
             obj.put("isDeveloperMode", isDev);
             obj.put("versionName", APP_VERSION_NAME);
             obj.put("versionCode", APP_VERSION_CODE);
@@ -1552,8 +1552,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             String channelId = "pp_server_status";
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                 android.app.NotificationChannel channel = new android.app.NotificationChannel(
-                        channelId, "PP Server Notifications", android.app.NotificationManager.IMPORTANCE_DEFAULT);
-                channel.setDescription("PP Server sync and account updates");
+                        channelId, "PPM CLOUD v4.5 Notifications", android.app.NotificationManager.IMPORTANCE_DEFAULT);
+                channel.setDescription("PPM CLOUD sync and account updates");
                 nm.createNotificationChannel(channel);
             }
             android.app.Notification.Builder builder;
