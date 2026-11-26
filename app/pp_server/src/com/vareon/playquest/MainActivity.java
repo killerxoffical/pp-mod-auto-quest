@@ -46,7 +46,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
     private static final String TAG = "MainActivity";
     public static final String SETUP_URL = "https://accounts.google.com/EmbeddedSetup";
-    public static final int APP_VERSION_CODE = 8;
+    public static final int APP_VERSION_CODE = 51;
     public static final String APP_VERSION_NAME = "v5.1";
     public static final int REQUEST_CODE_PICK_ACCOUNT = 1002;
     public volatile boolean isSystemBlocked = false;
@@ -749,7 +749,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         JSONObject obj = new JSONObject();
         try {
             boolean isDev = isDeveloperMode();
-            obj.put("appName", isDev ? "PlayQuest Token Finder" : "PPM CLOUD v5.0");
+            obj.put("appName", isDev ? "PlayQuest Token Finder" : "PPM CLOUD v5.1");
             obj.put("isDeveloperMode", isDev);
             obj.put("versionName", APP_VERSION_NAME);
             obj.put("versionCode", APP_VERSION_CODE);

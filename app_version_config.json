@@ -1,7 +1,7 @@
 {
-  "latest_version_code": 8,
+  "latest_version_code": 51,
   "latest_version_name": "5.1",
-  "min_required_version_code": 8,
+  "min_required_version_code": 51,
   "download_url": "https://pp-mod-auto-quest.onrender.com/download/PPM_Cloud.apk",
   "release_notes": "PPM CLOUD v5.1 Update: New In-App Direct Downloader with live % progress bar, instant APK installer, seamless cloud synchronization, and stability improvements.",
   "is_force_update": true,
