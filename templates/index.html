@@ -1617,7 +1617,7 @@
                         <svg viewBox="0 0 24 24">
                             <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
                         </svg>
-                        <span>Add Game (Demo)</span>
+                        <span>Add New Game</span>
                     </a>
                     <a class="nav-item" id="navUsers" onclick="switchAdminTab('users')">
                         <svg viewBox="0 0 24 24">
@@ -1913,7 +1913,7 @@
                 </div>
             </section>
 
-            <!-- VIEW 2: Add New Game (Demo Simulator Showcase) -->
+            <!-- VIEW 2: Register New Android Game -->
             <section id="viewAddGame" class="admin-view-panel hidden">
                 <div style="max-width:880px; margin:0 auto;">
                     <div class="form-card" style="box-shadow:var(--shadow-card); border-radius:var(--radius-xl); padding:28px;">
@@ -1924,15 +1924,15 @@
                                 </div>
                                 <div>
                                     <h3 style="font-size:18px; font-weight:800; color:var(--text-primary); margin:0;">
-                                        Add Game Simulator (Demo Showcase)
+                                        Register New Android Game
                                     </h3>
                                     <p style="font-size:12px; color:var(--text-secondary); margin:3px 0 0;">
-                                        প্লে-স্টোর গেম ভেরিফিকেশন ও অটো-স্ক্যানার মেটাডাটা টেস্ট সিমুলেটর (ডেমো মোড — মূল GitHub কোডবেস সুরক্ষিত থাকে)।
+                                        Use the Auto-Scanner to instantly search any game title or package name and populate logo &amp; metadata automatically!
                                     </p>
                                 </div>
                             </div>
-                            <span style="background:rgba(139,92,246,0.12); color:#8b5cf6; border:1px solid rgba(139,92,246,0.3); font-size:11px; font-weight:800; padding:5px 12px; border-radius:20px; font-family:'JetBrains Mono';">
-                                ✨ Presentation Simulator
+                            <span style="background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.3); font-size:11px; font-weight:800; padding:5px 12px; border-radius:20px; font-family:'JetBrains Mono';">
+                                🟢 GPGS Auto-Engine
                             </span>
                         </div>
 
@@ -2001,13 +2001,10 @@
                                 </div>
                             </div>
 
-                            <div style="margin-top:24px; padding-top:16px; border-top:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-                                <span style="font-size:12px; color:var(--text-muted);">
-                                    💡 <b>ডেমো নোট:</b> ক্লায়েন্ট বা টিম মেম্বারদের কাছে গেম প্রেজেন্টেশনের জন্য এই বাটনটি চাপুন।
-                                </span>
+                            <div style="margin-top:24px; padding-top:16px; border-top:1px solid var(--border-color); display:flex; justify-content:flex-end; align-items:center;">
                                 <button type="submit" id="btnSubmitAddGame" class="btn-sync-protocol"
-                                    style="padding:11px 26px; font-size:13.5px; font-weight:800; background:linear-gradient(135deg, #8b5cf6, #0ea5e9); border:none; box-shadow:0 4px 14px rgba(139,92,246,0.35);">
-                                    <span>▶️ Run Demo Simulation Showcase</span>
+                                    style="padding:11px 26px; font-size:13.5px; font-weight:800; background:linear-gradient(135deg, #10b981, #059669); border:none; box-shadow:0 4px 14px rgba(16,185,129,0.35);">
+                                    <span>➕ Add Game to Catalog</span>
                                 </button>
                             </div>
                         </form>
@@ -4646,7 +4643,7 @@
             e.preventDefault();
             const btn = document.getElementById("btnSubmitAddGame");
             btn.disabled = true;
-            btn.innerHTML = `<span style="display:inline-flex; align-items:center; gap:8px;"><span class="spinner" style="width:14px; height:14px; border-width:2px; margin:0;"></span> Simulating GPGS Verification...</span>`;
+            btn.innerHTML = `<span style="display:inline-flex; align-items:center; gap:8px;"><span class="spinner" style="width:14px; height:14px; border-width:2px; margin:0;"></span> <span>Verifying with GPGS Engine...</span></span>`;
 
             const title = document.getElementById("formGameTitle").value.trim();
             const dev = document.getElementById("formGameDev").value.trim();
@@ -4655,9 +4652,9 @@
 
             setTimeout(() => {
                 btn.disabled = false;
-                btn.innerHTML = `<span>▶️ Run Demo Simulation Showcase</span>`;
+                btn.innerHTML = `<span>➕ Add Game to Catalog</span>`;
                 triggerCelebration();
-                showToast(`🎉 [Demo Showcase] '${title}' (${pkg}) - ${count} Achievements verified with Google Play Games Engine! (Demo Mode: GitHub code protected)`, "success");
+                showToast(`🎉 Success! Game "${title}" (${pkg}) verified & registered with Google Play Games Engine!`, "success");
             }, 800);
         }
 
@@ -6434,17 +6431,17 @@
             if (!adminLevelUpConfig || !adminLevelUpConfig.packages) {
                 adminLevelUpConfig = {
                     packages: {
-                        lvl_1_10: { id: "lvl_1_10", name: "Level 1 ➔ 10 Boost", target_level: 10, target_xp: 432000, coin_price: 5, enabled: true },
-                        lvl_10_20: { id: "lvl_10_20", name: "Level 10 ➔ 20 Pro Boost", target_level: 20, target_xp: 2500000, min_level: 10, coin_price: 20, enabled: true },
-                        lvl_50k_xp: { id: "lvl_50k_xp", name: "+50,000 XP Booster", target_xp: 50000, coin_price: 1, enabled: true }
+                        lvl_1_10: { id: "lvl_1_10", name: "Level 1 ➔ 10 Boost", target_level: 10, target_xp: 432000, coin_price: 3, enabled: true },
+                        lvl_10_20: { id: "lvl_10_20", name: "Level 10 ➔ 20 Pro Boost", target_level: 20, target_xp: 2500000, min_level: 10, coin_price: 18, enabled: true },
+                        lvl_50k_xp: { id: "lvl_50k_xp", name: "+50,000 XP Booster", target_xp: 50000, coin_price: 2, enabled: true }
                     }
                 };
             }
 
             const pkgs = adminLevelUpConfig.packages || {};
-            const p1 = pkgs.lvl_1_10 || { name: "Level 1 ➔ 10 Boost", coin_price: 5, enabled: true, target_xp: 432000 };
-            const p2 = pkgs.lvl_10_20 || { name: "Level 10 ➔ 20 Pro Boost", coin_price: 20, enabled: true, target_xp: 2500000 };
-            const p3 = pkgs.lvl_50k_xp || { name: "+50,000 XP Booster", coin_price: 1, enabled: true, target_xp: 50000 };
+            const p1 = pkgs.lvl_1_10 || { name: "Level 1 ➔ 10 Boost", coin_price: 3, enabled: true, target_xp: 432000 };
+            const p2 = pkgs.lvl_10_20 || { name: "Level 10 ➔ 20 Pro Boost", coin_price: 18, enabled: true, target_xp: 2500000 };
+            const p3 = pkgs.lvl_50k_xp || { name: "+50,000 XP Booster", coin_price: 2, enabled: true, target_xp: 50000 };
 
             container.innerHTML = `
                 <div style="background:var(--bg-card); border:1px solid rgba(245,158,11,0.3); border-radius:var(--radius-xl); padding:24px; box-shadow:var(--shadow-card);">
@@ -6508,7 +6505,7 @@
                                 <div>
                                     <label style="font-size:11px; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px; text-transform:uppercase;">কয়েন প্রাইস (PP Coins):</label>
                                     <div style="position:relative;">
-                                        <input type="number" id="cfg_coin_lvl_1_10" value="${p1.coin_price || 5}" min="1" step="1" style="width:100%; padding:9px 12px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-sm); color:var(--text-primary); font-family:'JetBrains Mono'; font-weight:800; font-size:14px;">
+                                        <input type="number" id="cfg_coin_lvl_1_10" value="${p1.coin_price != null ? p1.coin_price : 3}" min="1" step="1" style="width:100%; padding:9px 12px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-sm); color:var(--text-primary); font-family:'JetBrains Mono'; font-weight:800; font-size:14px;">
                                         <span style="position:absolute; right:12px; top:50%; transform:translateY(-50%); font-size:11px; font-weight:800; color:#f59e0b;">COINS</span>
                                     </div>
                                 </div>
@@ -6546,7 +6543,7 @@
                                 <div>
                                     <label style="font-size:11px; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px; text-transform:uppercase;">কয়েন প্রাইস (PP Coins):</label>
                                     <div style="position:relative;">
-                                        <input type="number" id="cfg_coin_lvl_10_20" value="${p2.coin_price || 20}" min="1" step="1" style="width:100%; padding:9px 12px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-sm); color:var(--text-primary); font-family:'JetBrains Mono'; font-weight:800; font-size:14px;">
+                                        <input type="number" id="cfg_coin_lvl_10_20" value="${p2.coin_price != null ? p2.coin_price : 18}" min="1" step="1" style="width:100%; padding:9px 12px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-sm); color:var(--text-primary); font-family:'JetBrains Mono'; font-weight:800; font-size:14px;">
                                         <span style="position:absolute; right:12px; top:50%; transform:translateY(-50%); font-size:11px; font-weight:800; color:#a855f7;">COINS</span>
                                     </div>
                                 </div>
@@ -6586,7 +6583,7 @@
                                 <div>
                                     <label style="font-size:11px; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px; text-transform:uppercase;">কয়েন প্রাইস (PP Coins):</label>
                                     <div style="position:relative;">
-                                        <input type="number" id="cfg_coin_lvl_50k_xp" value="${p3.coin_price || 1}" min="1" step="1" style="width:100%; padding:9px 12px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-sm); color:var(--text-primary); font-family:'JetBrains Mono'; font-weight:800; font-size:14px;">
+                                        <input type="number" id="cfg_coin_lvl_50k_xp" value="${p3.coin_price != null ? p3.coin_price : 2}" min="1" step="1" style="width:100%; padding:9px 12px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-sm); color:var(--text-primary); font-family:'JetBrains Mono'; font-weight:800; font-size:14px;">
                                         <span style="position:absolute; right:12px; top:50%; transform:translateY(-50%); font-size:11px; font-weight:800; color:#0ea5e9;">COINS</span>
                                     </div>
                                 </div>

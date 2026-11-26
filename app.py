@@ -5324,6 +5324,8 @@ def get_portal_services():
 
     # 1. Add configured Quest games (from portal_services.json)
     for gid, s in services.items():
+        if str(gid).startswith("__"):
+            continue
         s["id"] = s.get("id") or str(gid)
         s["game_id"] = s.get("game_id") or str(gid)
         s["service_id"] = s.get("service_id") or f"srv_{gid}"
@@ -6773,11 +6775,12 @@ def record_portal_refund():
 
 LEVEL_UP_CONFIG_FILE = os.path.join(DATA_DIR, "level_up_config.json")
 GAMES_LEVELUP_FILE = os.path.join(DATA_DIR, "games_levelup.json")
+CF_LEVELUP_URL = "https://ppmod-api.tredarskvt.workers.dev"
 
 def load_level_up_config():
     """
     Loads level-up package & pricing configuration.
-    Priority: Local level_up_config.json -> Cloudflare D1 -> Defaults
+    Priority: Cloudflare D1 (portal-services & direct) -> Local level_up_config.json -> Defaults
     """
     default_config = {
         "packages": {
@@ -6789,7 +6792,7 @@ def load_level_up_config():
                 "target_level": 10,
                 "target_xp": 432000,
                 "min_level": 1,
-                "coin_price": 5,
+                "coin_price": 3,
                 "enabled": True,
                 "description": "যেকোনো লেভেলের অ্যাকাউন্টকে সরাসরি গোল্ডেন লেভেল ১০ এ উন্নীত করুন"
             },
@@ -6801,7 +6804,7 @@ def load_level_up_config():
                 "target_level": 20,
                 "target_xp": 2500000,
                 "min_level": 10,
-                "coin_price": 20,
+                "coin_price": 18,
                 "enabled": True,
                 "description": "লেভেল ১০+ অ্যাকাউন্টকে সরাসরি আল্ট্রা-প্রো লেভেল ২০ পর্যন্ত বুস্ট করুন (লেভেল ১০ আবশ্যক)"
             },
@@ -6812,13 +6815,48 @@ def load_level_up_config():
                 "type": "fixed_xp",
                 "target_xp": 50000,
                 "min_level": 1,
-                "coin_price": 1,
+                "coin_price": 2,
                 "enabled": True,
                 "description": "ইনস্ট্যান্ট ৫০,০০০ XP বুস্ট নিন এবং দ্রুত লেভেল আপ করুন"
             }
         }
     }
 
+    # 1. First check Cloudflare D1 persistent cloud store (via portal-services cloud cache)
+    try:
+        cf_res = requests.get(f"{CF_LEVELUP_URL}/api/cloud/portal-services", timeout=4)
+        if cf_res.status_code == 200:
+            cloud_json = cf_res.json()
+            src = cloud_json.get("data", cloud_json) if isinstance(cloud_json, dict) else {}
+            if isinstance(src, dict) and "__level_up_config__" in src:
+                c_cfg = src["__level_up_config__"]
+                if isinstance(c_cfg, dict) and "packages" in c_cfg:
+                    try:
+                        with open(LEVEL_UP_CONFIG_FILE, "w", encoding="utf-8") as f:
+                            json.dump(c_cfg, f, indent=2, ensure_ascii=False)
+                    except Exception:
+                        pass
+                    return c_cfg
+    except Exception:
+        pass
+
+    # 2. Check Cloudflare D1 direct level-up-config endpoint if available
+    try:
+        cf_res = requests.get(f"{CF_LEVELUP_URL}/api/cloud/level-up-config", timeout=3)
+        if cf_res.status_code == 200:
+            data = cf_res.json()
+            cfg_cand = data.get("config") if (isinstance(data, dict) and data.get("ok") and data.get("config")) else data
+            if isinstance(cfg_cand, dict) and "packages" in cfg_cand:
+                try:
+                    with open(LEVEL_UP_CONFIG_FILE, "w", encoding="utf-8") as f:
+                        json.dump(cfg_cand, f, indent=2, ensure_ascii=False)
+                except Exception:
+                    pass
+                return cfg_cand
+    except Exception:
+        pass
+
+    # 3. Check local level_up_config.json file
     if os.path.exists(LEVEL_UP_CONFIG_FILE):
         try:
             with open(LEVEL_UP_CONFIG_FILE, "r", encoding="utf-8") as f:
@@ -6826,33 +6864,43 @@ def load_level_up_config():
         except Exception:
             pass
 
-    try:
-        cf_res = requests.get(f"{CLOUDFLARE_API_URL}/api/cloud/level-up-config", timeout=3)
-        if cf_res.ok:
-            data = cf_res.json()
-            if data.get("ok") and data.get("config"):
-                return data["config"]
-    except Exception:
-        pass
-
     return default_config
 
 def save_level_up_config(cfg):
+    # 1. Save to local container file
     try:
         with open(LEVEL_UP_CONFIG_FILE, "w", encoding="utf-8") as f:
             json.dump(cfg, f, indent=2, ensure_ascii=False)
     except Exception as e:
-        logger.error(f"Error saving level_up_config: {e}")
+        logger.error(f"Error saving level_up_config locally: {e}")
 
+    # 2. Persist to Cloudflare D1 via portal-services cloud cache (guaranteed available in live worker)
+    try:
+        cf_res = requests.get(f"{CF_LEVELUP_URL}/api/cloud/portal-services", timeout=4)
+        if cf_res.status_code == 200:
+            cloud_json = cf_res.json()
+            data = cloud_json.get("data", cloud_json) if isinstance(cloud_json, dict) else {}
+            if isinstance(data, dict):
+                data["__level_up_config__"] = cfg
+                requests.post(
+                    f"{CF_LEVELUP_URL}/api/cloud/portal-services",
+                    json={"data": data},
+                    timeout=5,
+                    verify=False
+                )
+    except Exception as e:
+        logger.warning(f"Failed to sync level_up_config to Cloudflare D1 portal-services: {e}")
+
+    # 3. Also attempt direct level-up-config endpoint
     try:
         requests.post(
-            f"{CLOUDFLARE_API_URL}/api/cloud/level-up-config",
-            json={"config": cfg},
+            f"{CF_LEVELUP_URL}/api/cloud/level-up-config",
+            json=cfg,
             headers={"Content-Type": "application/json"},
-            timeout=4
+            timeout=3
         )
     except Exception as e:
-        logger.warning(f"Failed to sync level_up_config to CF: {e}")
+        pass
 
 @app.route("/api/portal/level-up/config", methods=["GET", "POST"])
 def portal_level_up_config():

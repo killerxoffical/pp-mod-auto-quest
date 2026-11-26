@@ -8,7 +8,7 @@
       "target_level": 10,
       "target_xp": 432000,
       "min_level": 1,
-      "coin_price": 5,
+      "coin_price": 3,
       "enabled": true,
       "description": "যেকোনো লেভেলের অ্যাকাউন্টকে সরাসরি গোল্ডেন লেভেল ১০ এ উন্নীত করুন"
     },
@@ -20,7 +20,7 @@
       "target_level": 20,
       "target_xp": 2500000,
       "min_level": 10,
-      "coin_price": 20,
+      "coin_price": 18,
       "enabled": true,
       "description": "লেভেল ১০+ অ্যাকাউন্টকে সরাসরি আল্ট্রা-প্রো লেভেল ২০ পর্যন্ত বুস্ট করুন (লেভেল ১০ আবশ্যক)"
     },
@@ -31,10 +31,10 @@
       "type": "fixed_xp",
       "target_xp": 50000,
       "min_level": 1,
-      "coin_price": 1,
+      "coin_price": 2,
       "enabled": true,
       "description": "ইনস্ট্যান্ট ৫০,০০০ XP বুস্ট নিন এবং দ্রুত লেভেল আপ করুন"
     }
   },
-  "updated_at": 1795685000
+  "updated_at": 1795698500
 }
