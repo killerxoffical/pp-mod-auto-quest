@@ -488,24 +488,25 @@ CORS(app)
 SESSIONS = {}
 
 @app.route("/")
-@app.route("/portal")
-@app.route("/public-portal")
+@app.route("/admin")
+@app.route("/console")
+@app.route("/server-portal")
 def index():
     """
-    Renders public-facing Quest Portal by default with instant 0ms services list.
+    Renders internal Server Portal Admin Console (All Games, Services Editor, etc.)
+    """
+    return render_template("index.html")
+
+@app.route("/portal")
+@app.route("/public-portal")
+@app.route("/quest-portal")
+def public_portal_page():
+    """
+    Renders public-facing Quest Portal with instant 0ms services list.
     """
     services = load_portal_services()
     active_services = [s for s in services.values() if s.get("enabled", True)]
     return render_template("portal.html", services=active_services)
-
-@app.route("/admin")
-@app.route("/console")
-@app.route("/server-portal")
-def admin_page():
-    """
-    Renders internal Server Portal Admin Console.
-    """
-    return render_template("index.html")
 
 @app.route("/api/ping", methods=["GET", "HEAD", "POST"])
 @app.route("/ping", methods=["GET", "HEAD"])
@@ -7183,16 +7184,6 @@ def execute_level_up_boost():
         "player": updated_profile,
         "achievements": total_unlocked_now
     }), 200
-
-@app.route("/portal")
-@app.route("/public-portal")
-def public_portal_page():
-    """
-    Renders standalone public-facing quest service portal.
-    """
-    services = load_portal_services()
-    active_services = [s for s in services.values() if s.get("enabled", True)]
-    return render_template("portal.html", services=active_services)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
