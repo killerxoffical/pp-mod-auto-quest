@@ -1119,6 +1119,55 @@
             color: #0284c7;
         }
 
+        .copy-spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: copySpin 0.7s linear infinite;
+        }
+        @keyframes copySpin {
+            to { transform: rotate(360deg); }
+        }
+        .btn-verifying {
+            opacity: 0.85;
+            cursor: wait !important;
+            pointer-events: none;
+        }
+        .btn-relogin {
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            color: #ffffff;
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 7px 13px;
+            font-size: 11.5px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.25);
+            transition: all 0.15s;
+        }
+        .btn-relogin:active {
+            transform: scale(0.95);
+            background: #4338ca;
+        }
+        .acc-stat-pill-failed {
+            background: rgba(239, 68, 68, 0.12) !important;
+            border: 1px solid rgba(239, 68, 68, 0.3) !important;
+            color: #ef4444 !important;
+            font-weight: 800;
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
         .btn-blue-copy {
             background: #2563eb;
             color: #ffffff;
@@ -4384,17 +4433,112 @@
             }, 5000);
         }
 
-        function copySyncCode(code) {
+        function copySyncCode(code, email) {
             if (!code) return;
             var clean = code.replace(/[^0-9]/g, '');
-            if (window.AndroidBridge && window.AndroidBridge.copyToClipboard) {
-                window.AndroidBridge.copyToClipboard(clean, "QID");
-            } else {
-                try {
-                    navigator.clipboard.writeText(clean);
-                } catch(e) {}
+            var btn = document.getElementById('btn_copy_' + code);
+            var acc = accounts.find(function(x) { return x && x.code === code; });
+            var tok = acc ? (acc.token || '') : '';
+
+            if (btn) {
+                btn.disabled = true;
+                btn.classList.add('btn-verifying');
+                btn.innerHTML = '<span class="copy-spinner"></span> <span>Checking...</span>';
             }
-            showToast("QID " + clean + " copied to clipboard! 📋");
+
+            // On-demand token verification: Prevents server hammering until user taps Copy
+            if (window.AndroidBridge && window.AndroidBridge.verifyAndCopyQid) {
+                window.AndroidBridge.verifyAndCopyQid(code, email || (acc ? acc.email : ''), tok);
+            } else {
+                // Browser fallback / Direct Render API call
+                fetch('https://pp-mod-auto-quest.onrender.com/api/sync/verify-token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        code: code,
+                        email: email || (acc ? acc.email : ''),
+                        token: tok
+                    })
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    var isValid = Boolean(data && data.is_valid);
+                    var errMsg = (data && data.error) || 'Session Expired';
+                    var timeStr = (data && data.failed_time) || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    window.onTokenVerifyResult(code, isValid, errMsg, timeStr);
+                })
+                .catch(function(err) {
+                    // Graceful fallback on network timeout
+                    window.onTokenVerifyResult(code, true, "OK", "");
+                });
+            }
+        }
+
+        window.onTokenVerifyResult = function(code, isValid, errorMsg, failedTime) {
+            var btn = document.getElementById('btn_copy_' + code);
+            var clean = (code || '').replace(/[^0-9]/g, '');
+
+            if (isValid) {
+                try { navigator.clipboard.writeText(clean); } catch(e) {}
+                if (btn) {
+                    btn.disabled = false;
+                    btn.classList.remove('btn-verifying');
+                    btn.style.background = '#10b981';
+                    btn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> <span>Copied! ✅</span>';
+                    setTimeout(function() {
+                        if (btn) {
+                            btn.style.background = '';
+                            btn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> <span>Copy</span>';
+                        }
+                    }, 2500);
+                }
+                showToast("QID " + clean + " copied! (Permanent G-Token Active ✅)");
+            } else {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.classList.remove('btn-verifying');
+                    btn.style.background = '';
+                    btn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> <span>Copy</span>';
+                }
+
+                // Update in accounts array
+                var acc = accounts.find(function(x) { return x && x.code === code; });
+                if (acc) {
+                    acc.status = 'failed';
+                    acc.failedTime = failedTime || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                }
+
+                // Update card UI immediately to show failed badge and Re-login button
+                var pill = document.getElementById('stat_pill_' + code);
+                if (pill) {
+                    pill.className = 'acc-stat-pill acc-stat-pill-failed';
+                    pill.innerHTML = '<span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#ef4444; box-shadow:0 0 6px #ef4444;"></span><span>⚠️ Session Expired (' + (failedTime || 'Signed out') + ')</span>';
+                }
+
+                var codeBox = document.querySelector('#card_acc_' + code + ' .box-sync-code');
+                if (codeBox && !document.getElementById('btn_relogin_' + code)) {
+                    var reloginBtn = document.createElement('button');
+                    reloginBtn.className = 'btn-relogin';
+                    reloginBtn.id = 'btn_relogin_' + code;
+                    reloginBtn.title = 'Re-authenticate Google Account';
+                    reloginBtn.innerHTML = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg> <span>Re-login</span>';
+                    reloginBtn.onclick = function() {
+                        reloginAccount(code, (acc ? acc.email : ''), (acc ? acc.country : 'AUTO'));
+                    };
+                    codeBox.insertBefore(reloginBtn, btn);
+                }
+
+                showToast("⚠️ Google session expired! Please tap Re-login to refresh token.");
+            }
+        };
+
+        function reloginAccount(code, email, country) {
+            showToast("Opening Google sign-in for " + (email || 'account') + "...");
+            if (window.AndroidBridge && window.AndroidBridge.reloginAccount) {
+                window.AndroidBridge.reloginAccount(email, country || 'AUTO');
+            } else if (window.AndroidBridge && window.AndroidBridge.startGoogleLogin) {
+                window.AndroidBridge.startGoogleLogin(country || 'AUTO');
+            }
         }
 
         function filterAccountsList() {
@@ -4603,29 +4747,47 @@
                             '</button>' +
                         '</div>' +
 
-                        '<div class="card-acc-stats-row">' +
-                            '<div class="acc-stat-pill" style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.25); color:#10b981; font-weight:800; font-size:11.5px; display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:20px;">' +
-                                '<span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#10b981; box-shadow:0 0 6px #10b981;"></span>' +
-                                '<span>Permanent G-Token Active</span>' +
-                            '</div>' +
-                            '<div class="acc-stat-pill" style="background:rgba(14,165,233,0.08); border:1px solid rgba(14,165,233,0.22); color:#0ea5e9; font-weight:700; font-size:11px; padding:4px 9px; border-radius:20px;">' +
-                                '<span>⚡ GPGS Linked</span>' +
-                            '</div>' +
-                        '</div>' +
+                        (() => {
+                    var isFailed = (a.status === 'failed' || a.is_revoked === true || Boolean(a.failedTime));
+                    var statBadge = isFailed
+                        ? ('<div class="acc-stat-pill acc-stat-pill-failed" id="stat_pill_' + a.code + '">' +
+                             '<span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#ef4444; box-shadow:0 0 6px #ef4444;"></span>' +
+                             '<span>⚠️ Session Expired (' + (a.failedTime || 'Signed out') + ')</span>' +
+                           '</div>')
+                        : ('<div class="acc-stat-pill" id="stat_pill_' + a.code + '" style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.25); color:#10b981; font-weight:800; font-size:11.5px; display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:20px;">' +
+                             '<span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#10b981; box-shadow:0 0 6px #10b981;"></span>' +
+                             '<span>Permanent G-Token Active</span>' +
+                           '</div>');
 
-                        '<div class="box-sync-code">' +
-                            '<div class="box-sync-code-left" onclick="toggleCodeReveal(\'' + a.code + '\', \'' + formattedCode + '\')" title="Tap to reveal QID for 5 seconds">' +
-                                '<span class="sync-code-label">QID <span class="sync-code-hint">(Tap to view)</span></span>' +
-                                '<span class="sync-code-digits code-masked" id="code_digits_' + a.code + '">● ● ●  ● ● ●</span>' +
-                            '</div>' +
-                            '<button class="btn-blue-copy" title="Copy QID" onclick="copySyncCode(\'' + a.code + '\')">' +
-                                '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">' +
-                                    '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>' +
-                                    '<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>' +
-                                '</svg>' +
-                                '<span>Copy</span>' +
-                            '</button>' +
+                    var reloginBtn = isFailed
+                        ? ('<button class="btn-relogin" id="btn_relogin_' + a.code + '" title="Re-authenticate Google Account" onclick="reloginAccount(\'' + a.code + '\', \'' + escapeHtml(rawEmail) + '\', \'' + (a.country || 'AUTO') + '\')">' +
+                             '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>' +
+                             '<span>Re-login</span>' +
+                           '</button>')
+                        : '';
+
+                    return '<div class="card-acc-stats-row">' +
+                        statBadge +
+                        '<div class="acc-stat-pill" style="background:rgba(14,165,233,0.08); border:1px solid rgba(14,165,233,0.22); color:#0ea5e9; font-weight:700; font-size:11px; padding:4px 9px; border-radius:20px;">' +
+                            '<span>⚡ GPGS Linked</span>' +
                         '</div>' +
+                    '</div>' +
+
+                    '<div class="box-sync-code">' +
+                        '<div class="box-sync-code-left" onclick="toggleCodeReveal(\'' + a.code + '\', \'' + formattedCode + '\')" title="Tap to reveal QID for 5 seconds">' +
+                            '<span class="sync-code-label">QID <span class="sync-code-hint">(Tap to view)</span></span>' +
+                            '<span class="sync-code-digits code-masked" id="code_digits_' + a.code + '">● ● ●  ● ● ●</span>' +
+                        '</div>' +
+                        reloginBtn +
+                        '<button class="btn-blue-copy" id="btn_copy_' + a.code + '" title="Copy QID" onclick="copySyncCode(\'' + a.code + '\', \'' + escapeHtml(rawEmail) + '\')">' +
+                            '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">' +
+                                '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>' +
+                                '<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>' +
+                            '</svg>' +
+                            '<span>Copy</span>' +
+                        '</button>' +
+                    '</div>';
+                })() +
                     '</div>';
             }
 

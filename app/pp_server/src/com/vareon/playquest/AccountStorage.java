@@ -259,6 +259,17 @@ public class AccountStorage {
         return filtered;
     }
 
+    public synchronized AccountItem getAccountByCode(String code) {
+        if (code == null || code.trim().isEmpty())
+            return null;
+        for (AccountItem item : getAccounts()) {
+            if (item != null && item.getCode() != null && code.trim().equalsIgnoreCase(item.getCode().trim())) {
+                return item;
+            }
+        }
+        return null;
+    }
+
     public synchronized void saveAccount(AccountItem newItem) {
         if (newItem == null)
             return;

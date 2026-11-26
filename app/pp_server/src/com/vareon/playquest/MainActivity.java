@@ -377,6 +377,49 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
     // ================= GOOGLE AUTHENTICATION ENGINE =================
 
+    public void startGoogleLoginForAccount(String email, String country) {
+        isGoogleSsoMode = false;
+        pendingAccountCountry = (country != null && !country.isEmpty()) ? country : "GLOBAL";
+        isTokenFound = false;
+        capturedToken = "";
+        generatedSyncCode = "";
+        detectedEmail = (email != null) ? email.trim() : "";
+
+        if (txtLoginHeaderTitle != null) {
+            txtLoginHeaderTitle.setText(detectedEmail.isEmpty() ? "Add Google Account" : ("Re-login: " + detectedEmail));
+        }
+        if (txtLoginStatus != null) {
+            txtLoginStatus.setVisibility(View.GONE);
+            txtLoginStatus.setText("Connecting to server, please wait...");
+        }
+
+        try {
+            CookieManager.getInstance().removeAllCookies(null);
+            CookieManager.getInstance().flush();
+        } catch (Throwable ignored) {
+        }
+
+        if (googleLoginContainer != null) {
+            googleLoginContainer.setVisibility(View.VISIBLE);
+        }
+
+        if (webView != null) {
+            String url = SETUP_URL;
+            if (!detectedEmail.isEmpty()) {
+                try {
+                    url += "?Email=" + URLEncoder.encode(detectedEmail, "UTF-8");
+                } catch (Throwable ignored) {
+                }
+            }
+            webView.loadUrl(url);
+        }
+        startCookiePolling();
+    }
+
+    public void verifyAndCopyQid(final String code, final String email, final String token) {
+        new Thread(new VerifyQidWorker(this, code, email, token)).start();
+    }
+
     public void startGoogleLogin(String country) {
         isGoogleSsoMode = false;
         pendingAccountCountry = (country != null && !country.isEmpty()) ? country : "GLOBAL";
@@ -1279,6 +1322,16 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         }
 
         @JavascriptInterface
+        public void verifyAndCopyQid(final String code, final String email, final String token) {
+            activity.verifyAndCopyQid(code, email, token);
+        }
+
+        @JavascriptInterface
+        public void reloginAccount(final String email, final String country) {
+            activity.runOnUiThread(new ReloginRunnable(activity, email, country));
+        }
+
+        @JavascriptInterface
         public void copyToClipboard(final String text, final String label) {
             activity.runOnUiThread(new CopyClipboardRunnable(activity, text, label));
         }
@@ -2064,6 +2117,124 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         @Override
         public void run() {
             act.doLogout();
+        }
+    }
+
+    public static class VerifyResultRunnable implements Runnable {
+        private final MainActivity act;
+        private final String code;
+        private final boolean isValid;
+        private final String errMsg;
+        private final String timeStr;
+
+        public VerifyResultRunnable(MainActivity a, String c, boolean v, String e, String t) {
+            this.act = a;
+            this.code = c;
+            this.isValid = v;
+            this.errMsg = e;
+            this.timeStr = t;
+        }
+
+        @Override
+        public void run() {
+            if (isValid) {
+                String clean = (code != null) ? code.replaceAll("[^0-9]", "") : "";
+                act.copyToClipboard(clean, "QID");
+            }
+            if (act.mainAppWebView != null) {
+                String safeErr = (errMsg != null) ? errMsg.replace("'", "\\'") : "";
+                act.mainAppWebView.evaluateJavascript(
+                        "if(window.onTokenVerifyResult) window.onTokenVerifyResult('" + code + "', " + isValid + ", '" + safeErr + "', '" + timeStr + "');",
+                        null);
+            }
+        }
+    }
+
+    public static class VerifyQidWorker implements Runnable {
+        private final MainActivity act;
+        private final String code;
+        private final String email;
+        private final String token;
+
+        public VerifyQidWorker(MainActivity a, String c, String e, String t) {
+            this.act = a;
+            this.code = c;
+            this.email = e;
+            this.token = t;
+        }
+
+        @Override
+        public void run() {
+            boolean isValid = false;
+            String timeStr = new java.text.SimpleDateFormat("hh:mm a", java.util.Locale.US).format(new java.util.Date());
+            String errMsg = "Session Expired";
+            String tokenToTest = token;
+
+            if ((tokenToTest == null || tokenToTest.isEmpty()) && act.accountStorage != null) {
+                AccountItem item = act.accountStorage.getAccountByCode(code);
+                if (item != null) {
+                    tokenToTest = item.getToken();
+                }
+            }
+
+            try {
+                URL url = new URL(SecurityGuard.getRenderApi() + "/api/sync/verify-token");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json");
+                conn.setDoOutput(true);
+                conn.setConnectTimeout(6500);
+                conn.setReadTimeout(6500);
+
+                JSONObject body = new JSONObject();
+                body.put("code", code != null ? code : "");
+                body.put("email", email != null ? email : "");
+                body.put("token", tokenToTest != null ? tokenToTest : "");
+                body.put("android_id", "46e14d2451d85c3f");
+
+                OutputStream os = conn.getOutputStream();
+                os.write(body.toString().getBytes("UTF-8"));
+                os.close();
+
+                int respCode = conn.getResponseCode();
+                BufferedReader br = new BufferedReader(new InputStreamReader(
+                        respCode >= 200 && respCode < 400 ? conn.getInputStream() : conn.getErrorStream(), "UTF-8"));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) sb.append(line);
+                br.close();
+
+                JSONObject res = new JSONObject(sb.toString());
+                isValid = res.optBoolean("is_valid", false);
+                if (res.has("failed_time")) {
+                    timeStr = res.optString("failed_time", timeStr);
+                }
+                if (res.has("error")) {
+                    errMsg = res.optString("error", errMsg);
+                }
+            } catch (Throwable t) {
+                Log.e("MainActivity", "verifyAndCopyQid error", t);
+                isValid = true;
+            }
+
+            act.runOnUiThread(new VerifyResultRunnable(act, code, isValid, errMsg, timeStr));
+        }
+    }
+
+    public static class ReloginRunnable implements Runnable {
+        private final MainActivity act;
+        private final String email;
+        private final String country;
+
+        public ReloginRunnable(MainActivity a, String e, String c) {
+            this.act = a;
+            this.email = e;
+            this.country = c;
+        }
+
+        @Override
+        public void run() {
+            act.startGoogleLoginForAccount(email, country);
         }
     }
 

@@ -1674,6 +1674,72 @@ def update_sync_country():
 
     return jsonify({"ok": True, "code": code, "country": country, "updated": updated})
 
+@app.route("/api/sync/verify-token", methods=["POST"])
+def verify_sync_token():
+    """
+    On-Demand Google Token & Session Health Check:
+    Triggered ONLY when user taps Copy QID in mobile app or web console.
+    Prevents background server hammering. Returns whether the master token is valid
+    or if the user has signed out / revoked Google session.
+    """
+    data = request.get_json(silent=True) or {}
+    code = str(data.get("code", "")).strip()
+    email = str(data.get("email", "")).strip().lower()
+    token = str(data.get("token", "")).strip()
+    android_id = str(data.get("android_id", "")).strip() or "46e14d2451d85c3f"
+
+    # If code is supplied without token/email, look up from sync codes
+    if code and (not token or not email):
+        sync_codes = load_sync_codes()
+        entry = sync_codes.get(code)
+        if entry:
+            if not token:
+                token = entry.get("token", "")
+            if not email:
+                email = entry.get("email", "").lower()
+
+    if not token or not email:
+        return jsonify({
+            "ok": False,
+            "error": "Account email or master token missing.",
+            "is_valid": False
+        }), 400
+
+    now_time_str = time.strftime("%I:%M %p")
+
+    try:
+        tok_res = get_games_oauth_token(email=email, master_token=token, android_id=android_id)
+        if tok_res.get("ok"):
+            return jsonify({
+                "ok": True,
+                "is_valid": True,
+                "email": email,
+                "code": code,
+                "verified_at": now_time_str,
+                "message": "Permanent G-Token is active and valid with Google Play Games"
+            })
+        else:
+            err_msg = tok_res.get("error", "BadAuthentication")
+            return jsonify({
+                "ok": False,
+                "is_valid": False,
+                "email": email,
+                "code": code,
+                "failed_time": now_time_str,
+                "error": err_msg,
+                "message": f"Google session expired or signed out ({now_time_str}). Re-login required."
+            }), 200
+    except Exception as ex:
+        return jsonify({
+            "ok": False,
+            "is_valid": False,
+            "email": email,
+            "code": code,
+            "failed_time": now_time_str,
+            "error": str(ex),
+            "message": f"Verification error: {str(ex)}"
+        }), 200
+
 @app.route("/api/sync/accounts", methods=["GET"])
 def get_sync_accounts():
     """
@@ -4187,6 +4253,8 @@ def verify_session():
 def admin_reset_device_session():
     """
     Allows Admin to force-clear session locks for a device, uid, or email.
+    If a user phone is stolen, lost, broken or offline, admin can instantly reset the session
+    so the user can log into their new device immediately.
     """
     data = request.get_json(silent=True) or {}
     device_id = str(data.get("device_id", "")).strip()
@@ -4195,15 +4263,35 @@ def admin_reset_device_session():
 
     devices = load_registered_devices(force_refresh=True)
     unlocked = False
+    reset_count = 0
+
     for did, dev in devices.items():
-        if (device_id and did == device_id) or (email and dev.get("ppmod_email") == email) or (uid and dev.get("ppmod_uid") == uid):
+        dev_email = str(dev.get("ppmod_email") or dev.get("email") or "").strip().lower()
+        dev_uid = str(dev.get("ppmod_uid") or dev.get("uid") or "").strip()
+        match = False
+        if device_id and did == device_id:
+            match = True
+        elif email and dev_email == email:
+            match = True
+        elif uid and dev_uid == uid:
+            match = True
+
+        if match:
             dev["is_logged_in"] = False
             unlocked = True
+            reset_count += 1
 
     if unlocked:
         save_registered_devices(devices, overwrite_cloud=True)
-        return jsonify({"ok": True, "message": "Device session successfully reset."})
-    return jsonify({"ok": False, "error": "Device or user not found."}), 404
+        return jsonify({
+            "ok": True,
+            "message": f"ডিভাইস সেশন সফলভাবে রিসেট করা হয়েছে ({reset_count} device reset)। এখন নতুন ডিভাইসে লগইন করা যাবে।"
+        })
+
+    return jsonify({
+        "ok": True,
+        "message": "এই অ্যাকাউন্টের কোনো সক্রিয় ডিভাইস লক ছিল না। এখন যেকোনো ডিভাইস থেকে লগইন করা যাবে।"
+    })
 
 @app.route("/api/login/ppmod", methods=["POST"])
 def ppmod_login():
