@@ -3025,12 +3025,24 @@
         </div>
 
         <!-- Release Notes Box -->
-        <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:14px 18px; width:100%; max-width:320px; box-shadow:0 4px 14px rgba(0,0,0,0.03); margin-bottom:24px; text-align:left;">
+        <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:14px 18px; width:100%; max-width:320px; box-shadow:0 4px 14px rgba(0,0,0,0.03); margin-bottom:18px; text-align:left;">
             <div style="font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">What's New in this Update:</div>
             <p id="labelReleaseNotes" style="font-size:12.5px; line-height:1.6; color:#334155; margin:0;">User data privacy isolation, full-screen maintenance mode, and enhanced security protection.</p>
         </div>
 
-        <button id="btnDownloadUpdate" onclick="openUpdateDownload()" style="width:100%; max-width:320px; padding:15px 20px; font-size:15px; font-weight:800; border-radius:14px; background:linear-gradient(135deg, #10b981, #059669); color:#fff; border:none; box-shadow:0 8px 24px rgba(16,185,129,0.35); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+        <!-- In-App Download Progress Container -->
+        <div id="boxUpdateProgress" style="display:none; width:100%; max-width:320px; background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:14px 16px; margin-bottom:14px; box-shadow:0 4px 12px rgba(0,0,0,0.04); box-sizing:border-box;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span id="labelDownloadStatus" style="font-size:12px; font-weight:700; color:#334155;">Downloading Update...</span>
+                <span id="labelDownloadPercent" style="font-size:13px; font-weight:900; color:#10b981;">0%</span>
+            </div>
+            <div style="width:100%; height:8px; background:#e2e8f0; border-radius:999px; overflow:hidden;">
+                <div id="barDownloadProgress" style="width:0%; height:100%; background:linear-gradient(90deg, #10b981, #059669); border-radius:999px; transition:width 0.2s ease;"></div>
+            </div>
+            <div id="labelDownloadBytes" style="font-size:11px; color:#94a3b8; font-weight:600; margin-top:6px; text-align:right;">0 MB / 0 MB</div>
+        </div>
+
+        <button id="btnDownloadUpdate" onclick="handleUpdateClick()" style="width:100%; max-width:320px; padding:15px 20px; font-size:15px; font-weight:800; border-radius:14px; background:linear-gradient(135deg, #10b981, #059669); color:#fff; border:none; box-shadow:0 8px 24px rgba(16,185,129,0.35); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="7 10 12 15 17 10"></polyline>
@@ -3865,6 +3877,108 @@
                 }
             });
         }
+
+        var isUpdateDownloaded = false;
+        var isUpdateDownloading = false;
+
+        function handleUpdateClick() {
+            if (isUpdateDownloaded) {
+                if (window.AndroidBridge && window.AndroidBridge.installDownloadedApk) {
+                    window.AndroidBridge.installDownloadedApk();
+                } else {
+                    openUpdateDownload();
+                }
+                return;
+            }
+
+            if (isUpdateDownloading) return;
+
+            var url = (liveDownloadUrl || '').trim();
+            if (!url) url = 'https://pp-mod-auto-quest.onrender.com/static/PPM_Cloud.apk';
+
+            if (window.AndroidBridge && window.AndroidBridge.startInAppDownload) {
+                isUpdateDownloading = true;
+                var pBox = document.getElementById('boxUpdateProgress');
+                if (pBox) pBox.style.display = 'block';
+                var stEl = document.getElementById('labelDownloadStatus');
+                if (stEl) stEl.textContent = 'Starting Download...';
+                var prEl = document.getElementById('labelDownloadPercent');
+                if (prEl) prEl.textContent = '0%';
+                var bEl = document.getElementById('barDownloadProgress');
+                if (bEl) bEl.style.width = '0%';
+                var btEl = document.getElementById('labelDownloadBytes');
+                if (btEl) btEl.textContent = 'Connecting to server...';
+
+                var btn = document.getElementById('btnDownloadUpdate');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.style.opacity = '0.7';
+                    btn.innerHTML = '<span>Downloading (0%)...</span>';
+                }
+
+                window.AndroidBridge.startInAppDownload(url);
+            } else {
+                openUpdateDownload();
+            }
+        }
+
+        window.onApkDownloadProgress = function(percent, downloaded, total) {
+            var pBox = document.getElementById('boxUpdateProgress');
+            if (pBox) pBox.style.display = 'block';
+
+            var pText = (percent >= 0) ? percent + '%' : 'Downloading...';
+            var pEl = document.getElementById('labelDownloadPercent');
+            if (pEl) pEl.textContent = pText;
+
+            var barEl = document.getElementById('barDownloadProgress');
+            if (barEl) barEl.style.width = (percent >= 0 ? percent : 50) + '%';
+
+            var bytesEl = document.getElementById('labelDownloadBytes');
+            if (bytesEl && downloaded) {
+                var dMb = (downloaded / (1024 * 1024)).toFixed(1);
+                var tMb = total > 0 ? (total / (1024 * 1024)).toFixed(1) : '?';
+                bytesEl.textContent = dMb + ' MB / ' + tMb + ' MB';
+            }
+
+            var btn = document.getElementById('btnDownloadUpdate');
+            if (btn) btn.innerHTML = '<span>Downloading (' + pText + ')...</span>';
+        };
+
+        window.onApkDownloadComplete = function() {
+            isUpdateDownloading = false;
+            isUpdateDownloaded = true;
+
+            var pEl = document.getElementById('labelDownloadPercent');
+            if (pEl) pEl.textContent = '100%';
+            var barEl = document.getElementById('barDownloadProgress');
+            if (barEl) barEl.style.width = '100%';
+            var statusEl = document.getElementById('labelDownloadStatus');
+            if (statusEl) statusEl.textContent = '✅ Download Completed!';
+
+            var btn = document.getElementById('btnDownloadUpdate');
+            if (btn) {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.background = 'linear-gradient(135deg, #2563eb, #1d4ed8)';
+                btn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>🚀 Install Update Now</span>';
+            }
+            showToast("Update downloaded! Tap Install to complete update.");
+        };
+
+        window.onApkDownloadError = function(errMsg) {
+            isUpdateDownloading = false;
+            var statusEl = document.getElementById('labelDownloadStatus');
+            if (statusEl) statusEl.textContent = '❌ Download Failed';
+
+            var btn = document.getElementById('btnDownloadUpdate');
+            if (btn) {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.innerHTML = '<span>Retry Download</span>';
+            }
+            showToast("In-app download failed. Opening browser fallback...");
+            openUpdateDownload();
+        };
 
         function openUpdateDownload() {
             var url = (liveDownloadUrl || '').trim();

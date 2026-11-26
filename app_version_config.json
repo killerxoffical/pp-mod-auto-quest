@@ -1,12 +1,12 @@
 {
-  "latest_version_code": 7,
-  "latest_version_name": "5.0",
-  "min_required_version_code": 7,
+  "latest_version_code": 8,
+  "latest_version_name": "5.1",
+  "min_required_version_code": 8,
   "download_url": "https://pp-mod-auto-quest.onrender.com/download/PPM_Cloud.apk",
-  "release_notes": "PPM CLOUD V5.0 (Build 7) - Major Engine Upgrade, Pure Cloud Sync, Enhanced UI & Performance.",
+  "release_notes": "PPM CLOUD v5.1 Update: New In-App Direct Downloader with live % progress bar, instant APK installer, seamless cloud synchronization, and stability improvements.",
   "is_force_update": true,
   "maintenance_mode": false,
   "maintenance_title": "Scheduled Server Maintenance",
   "maintenance_message": "Our servers are currently undergoing scheduled maintenance to upgrade security and database performance. Please try again later.",
-  "updated_at": 1795586400
+  "updated_at": 1795710000
 }

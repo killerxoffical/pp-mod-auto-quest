@@ -23,11 +23,15 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.provider.Settings;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -42,8 +46,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
     private static final String TAG = "MainActivity";
     public static final String SETUP_URL = "https://accounts.google.com/EmbeddedSetup";
-    public static final int APP_VERSION_CODE = 7;
-    public static final String APP_VERSION_NAME = "v5.0";
+    public static final int APP_VERSION_CODE = 8;
+    public static final String APP_VERSION_NAME = "v5.1";
     public static final int REQUEST_CODE_PICK_ACCOUNT = 1002;
     public volatile boolean isSystemBlocked = false;
 
@@ -1438,6 +1442,16 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 final String country) {
             activity.refreshAccountDataWithToken(code, email, token, country);
         }
+
+        @JavascriptInterface
+        public void startInAppDownload(final String apkUrl) {
+            ApkDownloadTask.startDownload(activity, apkUrl);
+        }
+
+        @JavascriptInterface
+        public void installDownloadedApk() {
+            ApkDownloadTask.installApk(activity);
+        }
     }
 
     public static class UpdateAccountCountryRunnable implements Runnable {
@@ -2543,5 +2557,9 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 web.loadUrl(js);
             }
         }
+    }
+
+    public WebView getMainAppWebView() {
+        return mainAppWebView;
     }
 }
