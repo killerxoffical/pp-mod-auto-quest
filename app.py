@@ -6014,12 +6014,17 @@ def unlock_portal_service_quests():
         except Exception:
             pass
 
-    # Determine if this order was already prepaid via Web App (payWallet)
-    is_prepaid = bool(order_id) or (source == "Web App")
+    # Quest Portal is for Admin - it should be 100% free with NO coin requirement or deduction!
+    is_portal_admin = (source in ("Public Portal", "Direct Portal")) or bool(data.get("portal_service")) or (user_uid == "Direct Portal")
+    if is_portal_admin:
+        coins_cost = 0
 
-    # Check user balance if UID is known and NOT prepaid
+    # Determine if this order was already prepaid via Web App (payWallet) or is portal admin
+    is_prepaid = bool(order_id) or (source == "Web App") or is_portal_admin
+
+    # Check user balance if UID is known and NOT prepaid or portal admin
     cur_wallet_bal = None
-    if not is_prepaid and user_uid and user_uid != "Direct Portal" and coins_cost > 0:
+    if not is_prepaid and not is_portal_admin and user_uid and user_uid != "Direct Portal" and coins_cost > 0:
         try:
             w_res = requests.get(f"https://ppmod-api.tredarskvt.workers.dev/api/wallet?uid={user_uid}", timeout=4)
             if w_res.status_code == 200:
@@ -6309,9 +6314,9 @@ def unlock_portal_service_quests():
             "error": clean_err
         }), 400
 
-    # Deduct balance from user wallet on Cloudflare D1 (ONLY if not already prepaid via Web App)
+    # Deduct balance from user wallet on Cloudflare D1 (ONLY if not already prepaid via Web App and NOT portal admin)
     final_balance = cur_wallet_bal
-    if not is_prepaid and user_uid and user_uid != "Direct Portal" and coins_cost > 0:
+    if not is_prepaid and not is_portal_admin and user_uid and user_uid != "Direct Portal" and coins_cost > 0:
         try:
             pay_res = requests.post(
                 "https://ppmod-api.tredarskvt.workers.dev/api/wallet/pay-task",
