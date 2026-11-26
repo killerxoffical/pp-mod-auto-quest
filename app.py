@@ -6910,12 +6910,13 @@ def get_level_up_inventory():
             tot_ach += q_count
             tot_xp += g_xp
 
+            q_icon = quests[0].get("unlockedIconUrl") if quests and quests[0].get("unlockedIconUrl") else None
             games_list.append({
                 "game_id": str(gid),
                 "title": g.get("title", f"Booster Game #{gid}"),
                 "package": g.get("package", ""),
                 "developer": g.get("developer", "Booster Studio"),
-                "icon": g.get("icon") or "https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512",
+                "icon": g.get("icon") or q_icon or "https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512",
                 "achievements_count": q_count,
                 "total_xp": g_xp
             })
