@@ -463,12 +463,6 @@ public class CloudSyncClient {
                 cfBody.put("token", finalToken);
                 cfBody.put("code", generatedCode);
                 cfBody.put("country", finalCountry);
-                cfBody.put("balance", lastDetectedBalance);
-                cfBody.put("tier", lastDetectedTier);
-                cfBody.put("points", lastDetectedPoints);
-                cfBody.put("has_play_points", lastDetectedHasPlayPoints);
-                cfBody.put("has_perk", lastDetectedHasPerk);
-                cfBody.put("claimed", !lastDetectedHasPerk);
                 cfBody.put("uid", uid);
                 cfBody.put("owner_email", ownerEmail);
                 cfBody.put("android_id", aid);
@@ -1677,61 +1671,7 @@ public class CloudSyncClient {
         }).start();
     }
 
-    public static void updateAccountDataOnCloud(final String code, final int points, final String tier,
-            final boolean hasPlayPoints, final String status) {
-        if (code == null)
-            return;
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    JSONObject body = new JSONObject();
-                    body.put("code", code);
-                    body.put("points", points);
-                    body.put("tier", tier);
-                    body.put("has_play_points", hasPlayPoints);
-                    body.put("play_points_status", (status != null && !status.isEmpty()) ? status
-                            : (hasPlayPoints ? "active" : "not_enrolled"));
-                    byte[] data = body.toString().getBytes("UTF-8");
-
-                    // 1. Post to Cloudflare D1 Worker
-                    try {
-                        URL cfUrl = new URL(SecurityGuard.getCloudWorkerApi() + "/api/sync/update");
-                        HttpURLConnection cfConn = (HttpURLConnection) cfUrl.openConnection();
-                        cfConn.setRequestMethod("POST");
-                        cfConn.setConnectTimeout(8000);
-                        cfConn.setReadTimeout(8000);
-                        cfConn.setDoOutput(true);
-                        cfConn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-                        OutputStream os = cfConn.getOutputStream();
-                        os.write(data);
-                        os.flush();
-                        os.close();
-                        cfConn.getResponseCode();
-                        cfConn.disconnect();
-                    } catch (Throwable ignored) {
-                    }
-
-                    // 2. Post to Render
-                    try {
-                        URL url = new URL(SecurityGuard.getRenderApi() + "/api/account/update");
-                        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                        conn.setRequestMethod("POST");
-                        conn.setConnectTimeout(8000);
-                        conn.setReadTimeout(8000);
-                        conn.setDoOutput(true);
-                        conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-                        OutputStream os = conn.getOutputStream();
-                        os.write(data);
-                        os.flush();
-                        os.close();
-                        conn.getResponseCode();
-                        conn.disconnect();
-                    } catch (Throwable ignored) {
-                    }
-                } catch (Throwable ignored) {
-                }
-            }
-        }).start();
+    public static void updateAccountDataOnCloud(final String code, final int points, final String tier, final boolean hasPlayPoints, final String status) {
+        // Disabled: balance, dollar, level, box are no longer synced to cloud
     }
 }

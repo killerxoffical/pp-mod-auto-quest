@@ -2041,12 +2041,6 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 try {
                     org.json.JSONObject obj = new org.json.JSONObject();
                     obj.put("code", code);
-                    obj.put("balance", balance);
-                    obj.put("tier", tier);
-                    obj.put("points", points);
-                    obj.put("has_play_points", hasPlayPoints);
-                    obj.put("has_perk", hasPerk);
-                    obj.put("play_points_status", status);
                     final String js = "if(window.onAccountRefreshed){ window.onAccountRefreshed('" + code + "', "
                             + obj.toString() + "); } else if(window.refreshAccounts){ window.refreshAccounts(); }";
                     act.mainAppWebView.evaluateJavascript(js, null);

@@ -220,16 +220,6 @@ public class AccountItem {
             obj.put("token", token);
             obj.put("country", getCountry());
             obj.put("timestamp", timestamp);
-            obj.put("balance", balance);
-            obj.put("points", points);
-            obj.put("tier", getTier());
-            obj.put("has_perk", hasPerk);
-            obj.put("claimed", !hasPerk);
-            obj.put("last_claim_date", lastClaimDate);
-            obj.put("claimed_points", claimedPoints);
-            obj.put("is_revoked", isRevoked);
-            obj.put("has_play_points", hasPlayPoints);
-            obj.put("play_points_status", getPlayPointsStatus());
             obj.put("owner_uid", ownerUid);
             obj.put("owner_email", ownerEmail);
         } catch (JSONException ignored) {
