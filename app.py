@@ -74,6 +74,10 @@ def _do_sync_portal_services():
                     local_data[k]["enabled"] = bool(cf_entry["enabled"])
                 if "no_data" in cf_entry:
                     local_data[k]["no_data"] = bool(cf_entry["no_data"])
+                if "is_official" in cf_entry:
+                    local_data[k]["is_official"] = bool(cf_entry["is_official"])
+                if "unofficial_note" in cf_entry:
+                    local_data[k]["unofficial_note"] = cf_entry["unofficial_note"]
                 # Preserve selected quests if cf has explicitly customized quests with count > 0
                 if cf_entry.get("selected_quests") and len(cf_entry.get("selected_quests", [])) > 0:
                     local_data[k]["selected_quests"] = cf_entry["selected_quests"]
