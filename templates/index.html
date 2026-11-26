@@ -2259,6 +2259,18 @@
                             </div>
                         </div>
                         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                            <!-- PUBLIC VIEW MODE / ADMIN EDIT MODE TOGGLE -->
+                            <div style="display:inline-flex; background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:3px; gap:3px;">
+                                <button type="button" id="btnModeAdminEdit" onclick="setPortalViewMode('edit')" class="btn-inspect-action" style="padding:6px 12px; font-size:11px; font-weight:800; background:rgba(14,165,233,0.15); color:var(--accent-cyan); border-color:transparent;">
+                                    <span>✏️ Admin Edit Mode</span>
+                                </button>
+                                <button type="button" id="btnModePublicView" onclick="setPortalViewMode('public')" class="btn-inspect-action" style="padding:6px 12px; font-size:11px; font-weight:700; color:var(--text-muted); border-color:transparent; background:transparent;">
+                                    <span>👁️ Public View Mode</span>
+                                </button>
+                            </div>
+                            <a href="/" target="_blank" class="btn-inspect-action" style="padding:8px 14px; font-size:12px; font-weight:800; display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg, #0ea5e9, #10b981); color:#fff; border:none; box-shadow:0 2px 10px rgba(16,185,129,0.25);">
+                                <span>🌐 Open Public Quest Portal ➔</span>
+                            </a>
                             <button class="btn-inspect-action"
                                 style="padding:8px 14px; font-size:12px; font-weight:800; display:inline-flex; align-items:center; gap:6px; background:rgba(14,165,233,0.12); border-color:rgba(14,165,233,0.35); color:var(--accent-cyan);"
                                 onclick="loadPortalServices()"
@@ -6206,6 +6218,18 @@
         window.savePortalApkDownloadUrl = savePortalApkDownloadUrl;
 
         async function loadPortalServices() {
+            // 0. Instant 0ms render from localStorage cache (No waiting spinner!)
+            try {
+                const cachedServices = localStorage.getItem("pp_admin_portal_services_cache");
+                if (cachedServices) {
+                    const parsed = JSON.parse(cachedServices);
+                    if (Array.isArray(parsed) && parsed.length) {
+                        portalAllServices = parsed;
+                        renderPortalServicesGrid();
+                    }
+                }
+            } catch(e) {}
+
             // Auto-load live APK download URL
             fetch(`${API_BASE}/api/app/version`)
                 .then(r => r.json())
@@ -6227,6 +6251,7 @@
                 const data = await res.json();
                 if (data.ok && Array.isArray(data.services)) {
                     portalAllServices = data.services;
+                    try { localStorage.setItem("pp_admin_portal_services_cache", JSON.stringify(portalAllServices)); } catch(e){}
                     renderPortalServicesGrid();
                 } else {
                     container.innerHTML = `<div style="text-align:center; padding:30px; color:#ef4444;">Failed to load services: ${data.error || 'Server error'}</div>`;
@@ -7465,6 +7490,26 @@ async function togglePortalService(gameId) {
         document.addEventListener("DOMContentLoaded", () => {
             loadServicedHistory();
         });
+
+    
+        /* ---------- PUBLIC PORTAL VIEW MODE TOGGLE ---------- */
+        let _portalViewMode = localStorage.getItem("pp_portal_view_mode") || "edit";
+
+        function setPortalViewMode(mode) {
+            _portalViewMode = mode;
+            try { localStorage.setItem("pp_portal_view_mode", mode); } catch(e){}
+            const bEdit = document.getElementById("btnModeAdminEdit");
+            const bPub = document.getElementById("btnModePublicView");
+            if (bEdit) {
+                bEdit.style.background = (mode === "edit") ? "rgba(14,165,233,0.15)" : "transparent";
+                bEdit.style.color = (mode === "edit") ? "var(--accent-cyan)" : "var(--text-muted)";
+            }
+            if (bPub) {
+                bPub.style.background = (mode === "public") ? "rgba(16,185,129,0.15)" : "transparent";
+                bPub.style.color = (mode === "public") ? "var(--accent-green)" : "var(--text-muted)";
+            }
+            renderPortalServicesGrid();
+        }
 
     </script>
 

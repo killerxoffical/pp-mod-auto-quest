@@ -488,7 +488,23 @@ CORS(app)
 SESSIONS = {}
 
 @app.route("/")
+@app.route("/portal")
+@app.route("/public-portal")
 def index():
+    """
+    Renders public-facing Quest Portal by default with instant 0ms services list.
+    """
+    services = load_portal_services()
+    active_services = [s for s in services.values() if s.get("enabled", True)]
+    return render_template("portal.html", services=active_services)
+
+@app.route("/admin")
+@app.route("/console")
+@app.route("/server-portal")
+def admin_page():
+    """
+    Renders internal Server Portal Admin Console.
+    """
     return render_template("index.html")
 
 @app.route("/api/ping", methods=["GET", "HEAD", "POST"])
@@ -5297,14 +5313,15 @@ pinger_thread.start()
 def get_portal_services():
     """
     Returns list of all active/configured quest services for the Public Portal with section tagging.
-    Only returns services explicitly configured by the Admin.
-    Always supports fresh query without stale caching!
+    Includes both Quest Games (47) and Level-Up Booster Games (30).
+    Fast in-memory caching for instant 0ms response!
     """
     force = bool(request.args.get("_t") or request.args.get("refresh") or request.args.get("nocache"))
     services = load_portal_services(force_refresh=force)
     merged = get_merged_games()
     out = []
 
+    # 1. Add configured Quest games (from portal_services.json)
     for gid, s in services.items():
         s["id"] = s.get("id") or str(gid)
         s["game_id"] = s.get("game_id") or str(gid)
@@ -5320,11 +5337,42 @@ def get_portal_services():
             s["no_data"] = bool(s.get("no_data", False))
         out.append(s)
 
-        exclude_level_up = bool(request.args.get("exclude_level_up") == "1" or request.args.get("public") == "1" or request.args.get("for_home") == "1")
+    # 2. Add all 30 Level-Up Booster games (from games_levelup.json) with section: "level_up"
+    if os.path.exists(GAMES_LEVELUP_FILE):
+        try:
+            with open(GAMES_LEVELUP_FILE, "r", encoding="utf-8") as lf:
+                lvl_games = json.load(lf)
+                for lgid, lg in lvl_games.items():
+                    if not isinstance(lg, dict) or lg.get("package") == PLAY_GAMES_PACKAGE:
+                        continue
+                    lvl_srv = {
+                        "id": f"lvl_{lgid}",
+                        "game_id": f"lvl_{lgid}",
+                        "service_id": f"srv_lvl_{lgid}",
+                        "title": lg.get("title"),
+                        "package": lg.get("package"),
+                        "icon": lg.get("icon") or "https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512",
+                        "category": "level_up",
+                        "section": "level_up",
+                        "developer": lg.get("developer", "Level Up Booster"),
+                        "is_official": True,
+                        "enabled": True,
+                        "no_data": False,
+                        "selected_quests": lg.get("achievements") or [],
+                        "selected_quest_ids": [a["id"] for a in (lg.get("achievements") or []) if "id" in a],
+                        "selected_quests_count": len(lg.get("achievements") or []),
+                        "total_xp": lg.get("total_xp", 100000),
+                        "client_sig": lg.get("client_sig")
+                    }
+                    out.append(lvl_srv)
+        except Exception as e:
+            logger.warning(f"Error loading games_levelup in get_portal_services: {e}")
+
+    exclude_level_up = bool(request.args.get("exclude_level_up") == "1" or request.args.get("for_home") == "1")
     if exclude_level_up:
         out = [s for s in out if s.get("section") != "level_up" and s.get("category") != "level_up" and s.get("enabled", True)]
 
-    out.sort(key=lambda x: (not x.get("enabled", True), x.get("title", "")))
+    out.sort(key=lambda x: (not x.get("enabled", True), x.get("section") == "level_up", x.get("title", "")))
     resp = jsonify({"ok": True, "services": out, "total_services": len(out)})
     resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
     resp.headers["Pragma"] = "no-cache"

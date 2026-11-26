@@ -833,9 +833,47 @@
             renderPortalServices();
         }
 
-                async function loadPublicServices() {
+                        function updatePortalCountsAndRender() {
+            const lvlCount = allPortalServices.filter(s => (s.section || "quest_unlocker") === "level_up").length;
+            const offCount = allPortalServices.filter(s => (s.section || "quest_unlocker") !== "level_up" && s.is_official !== false && !s.unofficial_note).length;
+            const rndCount = allPortalServices.filter(s => (s.section || "quest_unlocker") !== "level_up" && (s.is_official === false || !!s.unofficial_note)).length;
+
+            const elAll = document.getElementById("portalCountAll");
+            const elOff = document.getElementById("portalCountOfficial");
+            const elRnd = document.getElementById("portalCountRandom");
+            const elLvl = document.getElementById("portalCountLevelUp");
+            if (elAll) elAll.innerText = allPortalServices.length;
+            if (elOff) elOff.innerText = offCount;
+            if (elRnd) elRnd.innerText = rndCount;
+            if (elLvl) elLvl.innerText = lvlCount;
+
+            const statServices = document.getElementById("statServicesCount");
+            if (statServices) statServices.innerText = `${allPortalServices.length} Configured Services`;
+
+            let totalQ = 0;
+            allPortalServices.forEach(s => {
+                totalQ += (s.selected_quests_count || (s.selected_quests ? s.selected_quests.length : 0));
+            });
+            const statQuests = document.getElementById("statQuestsCount");
+            if (statQuests) statQuests.innerText = `${totalQ} Active Quests`;
+
+            renderPortalServices();
+        }
+
+        async function loadPublicServices() {
+            // 0. Instant 0ms render from localStorage cache (Zero loading wait time!)
             try {
-                let services = [];
+                const localCached = localStorage.getItem("pp_portal_services_cache");
+                if (localCached) {
+                    const parsed = JSON.parse(localCached);
+                    if (Array.isArray(parsed) && parsed.length) {
+                        allPortalServices = parsed.filter(s => s.enabled !== false);
+                        updatePortalCountsAndRender();
+                    }
+                }
+            } catch(e) {}
+
+            let services = [];
                 try {
                     const res = await fetch("/api/portal/services?_t=" + Date.now());
                     const data = await res.json();
@@ -862,6 +900,8 @@
 
                 if (services && services.length) {
                     allPortalServices = services.filter(s => s.enabled !== false);
+                    try { localStorage.setItem("pp_portal_services_cache", JSON.stringify(allPortalServices)); } catch(e){}
+                    updatePortalCountsAndRender(); return;
 
                     const lvlCount = allPortalServices.filter(s => (s.section || "quest_unlocker") === "level_up").length;
                     const offCount = allPortalServices.filter(s => (s.section || "quest_unlocker") !== "level_up" && s.is_official !== false && !s.unofficial_note).length;
