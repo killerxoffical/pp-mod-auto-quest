@@ -5720,6 +5720,49 @@ def restore_portal_services_backup():
         return jsonify({"ok": True, "message": f"Successfully restored {len(restored)} services to server.", "count": len(restored)})
     return jsonify({"ok": False, "error": "No valid services to restore."}), 400
 
+@app.route("/api/portal/services/set-mode", methods=["POST"])
+def set_portal_service_mode():
+    """
+    Sets a game service's instant mode: 'active' (🟢 Live), 'shadow' (🟡 Shadow/No-Data), or 'hidden' (🔴 Hidden/Off).
+    """
+    data = request.get_json(silent=True) or {}
+    game_id = str(data.get("game_id") or data.get("id") or "").strip()
+    mode = str(data.get("mode") or "").strip().lower()
+
+    if mode not in ["active", "shadow", "hidden"]:
+        return jsonify({"ok": False, "error": "Invalid mode. Choose 'active', 'shadow', or 'hidden'."}), 400
+
+    services = load_portal_services()
+    found_key, service = find_portal_service(services, game_id)
+
+    if not found_key:
+        return jsonify({"ok": False, "error": "Service not found."}), 404
+
+    if mode == "active":
+        services[found_key]["enabled"] = True
+        services[found_key]["no_data"] = False
+        mode_label = "🟢 Active (Live Data)"
+    elif mode == "shadow":
+        services[found_key]["enabled"] = True
+        services[found_key]["no_data"] = True
+        mode_label = "🟡 Shadow Mode (Shadow Data)"
+    elif mode == "hidden":
+        services[found_key]["enabled"] = False
+        mode_label = "🔴 Hidden (Offline)"
+
+    services[found_key]["mode"] = mode
+    services[found_key]["updated_at"] = time.strftime("%Y-%m-%d %H:%M:%S")
+    save_portal_services(services)
+
+    return jsonify({
+        "ok": True,
+        "game_id": found_key,
+        "mode": mode,
+        "enabled": services[found_key]["enabled"],
+        "no_data": services[found_key].get("no_data", False),
+        "message": f"Service '{services[found_key].get('title')}' is now {mode_label}."
+    })
+
 @app.route("/api/portal/services/toggle-no-data", methods=["POST"])
 def toggle_portal_service_no_data():
     """

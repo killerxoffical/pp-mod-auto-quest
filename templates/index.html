@@ -1530,6 +1530,57 @@
                 grid-column: span 1;
             }
         }
+
+        /* Instant Status Mode Segmented Pill */
+        .instant-mode-pill {
+            display: inline-flex;
+            align-items: center;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: 30px;
+            padding: 3px;
+            gap: 3px;
+        }
+        .instant-mode-pill .mode-btn {
+            border: 1px solid transparent;
+            background: transparent;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 5px 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            color: var(--text-secondary);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+        .instant-mode-pill .mode-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-primary);
+        }
+        .instant-mode-pill .mode-btn.active-mode {
+            background: rgba(16, 185, 129, 0.18) !important;
+            color: #10b981 !important;
+            font-weight: 800 !important;
+            border-color: rgba(16, 185, 129, 0.4) !important;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+        }
+        .instant-mode-pill .mode-btn.shadow-mode {
+            background: rgba(245, 158, 11, 0.18) !important;
+            color: #f59e0b !important;
+            font-weight: 800 !important;
+            border-color: rgba(245, 158, 11, 0.4) !important;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+        }
+        .instant-mode-pill .mode-btn.hidden-mode {
+            background: rgba(239, 68, 68, 0.18) !important;
+            color: #ef4444 !important;
+            font-weight: 800 !important;
+            border-color: rgba(239, 68, 68, 0.4) !important;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+        }
     </style>
 </head>
 
@@ -6367,13 +6418,25 @@
 
             let html = `<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:20px;">`;
             displayServices.forEach(s => {
+                const serviceKey = s.id || s.game_id || s.service_id || s.package || s.title;
                 const isEnabled = s.enabled !== false;
                 const isNoData = s.no_data === true;
+                const curMode = !isEnabled ? 'hidden' : (isNoData ? 'shadow' : 'active');
                 const selCount = s.selected_quests_count || (s.selected_quest_ids ? s.selected_quest_ids.length : 0);
                 const totCount = s.total_quests_count || (s.all_quests ? s.all_quests.length : selCount);
                 const isLevelUp = (s.section || "quest_unlocker") === "level_up";
                 const isOfficial = !isLevelUp && s.is_official !== false && !s.unofficial_note;
                 const isRandom = !isLevelUp && (s.is_official === false || !!s.unofficial_note);
+
+                // Status Badge
+                let statusBadgeHtml = '';
+                if (curMode === 'active') {
+                    statusBadgeHtml = `<span style="background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3); font-size:10px; font-weight:800; padding:2px 7px; border-radius:4px;">🟢 Active (Live)</span>`;
+                } else if (curMode === 'shadow') {
+                    statusBadgeHtml = `<span style="background:rgba(245,158,11,0.2); color:#f59e0b; border:1px solid rgba(245,158,11,0.4); font-size:10px; font-weight:800; padding:2px 7px; border-radius:4px;">🟡 Shadow (Off)</span>`;
+                } else {
+                    statusBadgeHtml = `<span style="background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3); font-size:10px; font-weight:800; padding:2px 7px; border-radius:4px;">🔴 Hidden (Offline)</span>`;
+                }
 
                 // Preview chips for selected quests
                 let questsPreviewHtml = '';
@@ -6418,24 +6481,53 @@
                     </div>
                 ` : '';
 
+                const cardBorderColor = curMode === 'active' ? 'rgba(16,185,129,0.35)' : (curMode === 'shadow' ? 'rgba(245,158,11,0.35)' : 'rgba(239,68,68,0.25)');
+
                 html += `
-                <div style="background:var(--bg-card); border:1px solid ${isEnabled ? 'var(--border-color)' : 'rgba(239,68,68,0.3)'}; border-radius:var(--radius-xl); padding:20px; box-shadow:var(--shadow-card); display:flex; flex-direction:column; justify-content:space-between; gap:16px; opacity:${isEnabled ? '1' : '0.75'}; transition:all 0.25s ease;">
+                <div style="background:var(--bg-card); border:1px solid ${cardBorderColor}; border-radius:var(--radius-xl); padding:20px; box-shadow:var(--shadow-card); display:flex; flex-direction:column; justify-content:space-between; gap:16px; opacity:${curMode === 'hidden' ? '0.75' : '1'}; transition:all 0.25s ease;">
                     <div>
                         <!-- Top Header -->
-                        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:14px;">
+                        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:12px;">
                             <div style="display:flex; align-items:center; gap:12px;">
                                 <img src="${s.icon || '/static/images/default_app.png'}" onerror="this.src='/static/images/default_app.png'" style="width:50px; height:50px; border-radius:var(--radius-md); object-fit:cover; border:1px solid var(--border-color); box-shadow:0 4px 12px rgba(0,0,0,0.12);">
                                 <div>
                                     <strong style="font-size:14.5px; color:var(--text-primary); display:block; line-height:1.3;">${escapeHtml(s.title)}</strong>
                                     <span class="pkg-stealth-pill" onclick="handleStealthBlurClick(event, this)" title="Single-click: 5s reveal • Double-click: 30s reveal" style="font-size:11px; font-family:'JetBrains Mono'; margin-top:2px; display:inline-block;">${escapeHtml(s.package || '')}</span>
                                     <div style="display:flex; align-items:center; gap:6px; margin-top:4px; flex-wrap:wrap;">
-                                        <span class="badge-status ${isEnabled ? 'active' : 'banned'}" style="font-size:10px; padding:2px 7px;">
-                                             ${isEnabled ? '● Live' : '○ Off (Hidden)'}
-                                        </span>
-                                        ${isNoData ? '<span style="background:rgba(245,158,11,0.2); color:#f59e0b; border:1px solid rgba(245,158,11,0.4); font-size:10px; font-weight:800; padding:2px 7px; border-radius:4px;">🔒 No Data (Shadow)</span>' : '<span style="background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3); font-size:10px; font-weight:800; padding:2px 7px; border-radius:4px;">✓ Data OK</span>'}
+                                        ${statusBadgeHtml}
                                         ${secBadge}
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Instant Status Mode: 3-Way Segmented Controller -->
+                        <div style="margin: 4px 0 14px; padding: 10px 12px; background: var(--bg-card-subtle); border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; flex-wrap:wrap; gap:4px;">
+                                <span style="font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted);">Instant Status Mode:</span>
+                                <span style="font-size:10.5px; font-weight:800; color:${curMode === 'active' ? '#10b981' : (curMode === 'shadow' ? '#f59e0b' : '#ef4444')};">
+                                    ${curMode === 'active' ? '🟢 Live Active' : (curMode === 'shadow' ? '🟡 Shadow (Off)' : '🔴 Hidden')}
+                                </span>
+                            </div>
+                            <div class="instant-mode-pill" style="display:flex; width:100%; gap:4px;">
+                                <button onclick="setPortalServiceMode('${serviceKey}', 'active', event)" 
+                                    class="mode-btn ${curMode === 'active' ? 'active-mode' : ''}" 
+                                    style="flex:1; justify-content:center;" 
+                                    title="Active: Fully live with real Google Play Games quest unlock data">
+                                    🟢 Active
+                                </button>
+                                <button onclick="setPortalServiceMode('${serviceKey}', 'shadow', event)" 
+                                    class="mode-btn ${curMode === 'shadow' ? 'shadow-mode' : ''}" 
+                                    style="flex:1; justify-content:center;" 
+                                    title="Shadow: Visible but operates in Shadow Mode (No Real Data)">
+                                    🟡 Shadow (Off)
+                                </button>
+                                <button onclick="setPortalServiceMode('${serviceKey}', 'hidden', event)" 
+                                    class="mode-btn ${curMode === 'hidden' ? 'hidden-mode' : ''}" 
+                                    style="flex:1; justify-content:center;" 
+                                    title="Hidden: Completely hidden from users in Public Portal & PP MOD">
+                                    🔴 Hidden
+                                </button>
                             </div>
                         </div>
 
@@ -6459,18 +6551,12 @@
 
                     <!-- Action Buttons -->
                     <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; border-top:1px solid var(--border-color); padding-top:14px; flex-wrap:wrap;">
-                        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                            <button class="btn-sync-protocol" style="padding:6px 10px; font-size:11.5px; font-weight:700;" onclick="openPortalServiceModal('${s.id || s.game_id || s.service_id || s.package}')">
-                                <span>✏️ Edit</span>
+                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                            <button class="btn-sync-protocol" style="padding:7px 14px; font-size:12px; font-weight:700;" onclick="openPortalServiceModal('${serviceKey}')">
+                                <span>✏️ Edit Quests</span>
                             </button>
-                            <button class="btn-inspect-action" style="padding:6px 10px; font-size:11.5px; font-weight:700; color:${isEnabled ? '#f59e0b' : '#10b981'};" onclick="togglePortalService('${s.id || s.game_id || s.service_id || s.package}')" title="${isEnabled ? 'Turn Off to hide completely from user' : 'Turn On to show'}">
-                                ${isEnabled ? '👁️ Turn Off' : '▶️ Turn On'}
-                            </button>
-                            <button class="btn-inspect-action" style="padding:6px 10px; font-size:11.5px; font-weight:700; color:${isNoData ? '#10b981' : '#f59e0b'};" onclick="togglePortalServiceNoData('${s.id || s.game_id || s.service_id || s.package}')" title="${isNoData ? 'Normal Data' : 'Shadow Mode (No Data)'}">
-                                ${isNoData ? '🔓 Data OK' : '🔒 No Data'}
-                            </button>
-                            <button class="btn-inspect-action" style="padding:6px 9px; font-size:11.5px; color:#ef4444;" title="Delete Service" onclick="deletePortalService('${s.id || s.game_id || s.service_id || s.package}')">
-                                🗑️
+                            <button class="btn-inspect-action" style="padding:7px 11px; font-size:12px; color:#ef4444;" title="Delete Service" onclick="deletePortalService('${serviceKey}')">
+                                <span>🗑️ Delete</span>
                             </button>
                         </div>
                         <span style="font-size:11px; font-weight:800; color:var(--accent-cyan); font-family:'JetBrains Mono';">${selCount} Selected</span>
@@ -6893,7 +6979,53 @@
             }
         }
 
-                async function togglePortalServiceNoData(gameId) {
+                async function setPortalServiceMode(gameId, mode, ev) {
+            if (ev) ev.stopPropagation();
+            const s = portalAllServices.find(x => (x.id || x.game_id || x.package || x.title) === gameId || x.title === gameId);
+            if (!s) return;
+
+            // 1. Optimistic instant UI update (0ms latency!)
+            if (mode === 'active') {
+                s.enabled = true;
+                s.no_data = false;
+            } else if (mode === 'shadow') {
+                s.enabled = true;
+                s.no_data = true;
+            } else if (mode === 'hidden') {
+                s.enabled = false;
+            }
+            s.mode = mode;
+
+            try {
+                localStorage.setItem("pp_admin_portal_services_cache", JSON.stringify(portalAllServices));
+            } catch(e){}
+            renderPortalServicesGrid();
+
+            const toastLabels = {
+                active: '🟢 ' + (s.title || 'Game') + ' is now Active (Live Quest Data)',
+                shadow: '🟡 ' + (s.title || 'Game') + ' is now Shadow Mode (Off / No Data)',
+                hidden: '🔴 ' + (s.title || 'Game') + ' is now Hidden (Offline from Users)'
+            };
+            showToast(toastLabels[mode] || 'Status updated', 'success');
+
+            // 2. Persist to server & Cloudflare D1
+            try {
+                const res = await fetch(`${API_BASE}/api/portal/services/set-mode`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ game_id: gameId, mode: mode })
+                });
+                const data = await res.json();
+                if (!data.ok) {
+                    showToast('Server update warning: ' + (data.error || 'Check network'), 'warning');
+                }
+            } catch(err) {
+                console.warn('setPortalServiceMode network sync error:', err);
+            }
+        }
+        window.setPortalServiceMode = setPortalServiceMode;
+
+        async function togglePortalServiceNoData(gameId) {
             try {
                 const res = await fetch(`${API_BASE}/api/portal/services/toggle-no-data`, {
                     method: "POST",
