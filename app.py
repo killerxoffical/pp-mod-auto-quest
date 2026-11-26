@@ -24,6 +24,7 @@ from games_db import SUPPORTED_GAMES
 from real_achievements import get_real_game_achievements
 
 DATA_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = DATA_DIR
 TOKENS_FILE = os.path.join(DATA_DIR, "known_tokens.json")
 REGISTERED_DEVICES_FILE = os.path.join(DATA_DIR, "registered_devices.json")
 NOTIFICATIONS_FILE = os.path.join(DATA_DIR, "push_notifications.json")
@@ -6667,48 +6668,53 @@ def record_portal_refund():
 # LEVEL-UP BOOSTER SERVICE (PP SERVICES)
 # ==============================================================================
 
-LEVEL_UP_CONFIG_FILE = os.path.join(BASE_DIR, "level_up_config.json")
-GAMES_LEVELUP_FILE = os.path.join(BASE_DIR, "games_levelup.json")
+LEVEL_UP_CONFIG_FILE = os.path.join(DATA_DIR, "level_up_config.json")
+GAMES_LEVELUP_FILE = os.path.join(DATA_DIR, "games_levelup.json")
 
 def load_level_up_config():
     """
-    Loads level-up dynamic pricing and package configuration.
-    Priority: Cloudflare D1 -> Local level_up_config.json -> Defaults
+    Loads level-up package & pricing configuration.
+    Priority: Local level_up_config.json -> Cloudflare D1 -> Defaults
     """
     default_config = {
-        "xp_per_coin": 50000,
-        "min_coins": 1,
         "packages": {
             "lvl_1_10": {
                 "id": "lvl_1_10",
                 "name": "Level 1 ➔ 10 Boost",
                 "badge": "GOLDEN PROFILE",
-                "from_level": 1,
+                "type": "target_level",
                 "target_level": 10,
                 "target_xp": 432000,
+                "min_level": 1,
+                "coin_price": 5,
                 "enabled": True,
-                "description": "যেকোনো সাধারণ বা নতুন অ্যাকাউন্টকে সরাসরি জনপ্রিয় গোল্ডেন লেভেল ১০ এ উন্নীত করুন"
+                "description": "যেকোনো লেভেলের অ্যাকাউন্টকে সরাসরি গোল্ডেন লেভেল ১০ এ উন্নীত করুন"
             },
             "lvl_10_20": {
                 "id": "lvl_10_20",
                 "name": "Level 10 ➔ 20 Pro Boost",
                 "badge": "ULTRA PRO",
-                "from_level": 10,
+                "type": "target_level",
                 "target_level": 20,
                 "target_xp": 2500000,
+                "min_level": 10,
+                "coin_price": 20,
                 "enabled": True,
-                "description": "লেভেল ১০+ অ্যাকাউন্টকে সরাসরি আল্ট্রা-প্রো লেভেল ২০ পর্যন্ত বুস্ট করুন"
+                "description": "লেভেল ১০+ অ্যাকাউন্টকে সরাসরি আল্ট্রা-প্রো লেভেল ২০ পর্যন্ত বুস্ট করুন (লেভেল ১০ আবশ্যক)"
+            },
+            "lvl_50k_xp": {
+                "id": "lvl_50k_xp",
+                "name": "+50,000 XP Booster",
+                "badge": "CUSTOM XP",
+                "type": "fixed_xp",
+                "target_xp": 50000,
+                "min_level": 1,
+                "coin_price": 1,
+                "enabled": True,
+                "description": "ইনস্ট্যান্ট ৫০,০০০ XP বুস্ট নিন এবং দ্রুত লেভেল আপ করুন"
             }
         }
     }
-    try:
-        cf_res = requests.get(f"{CLOUDFLARE_API_URL}/api/cloud/level-up-config", timeout=4)
-        if cf_res.ok:
-            data = cf_res.json()
-            if data.get("ok") and data.get("config"):
-                return data["config"]
-    except Exception:
-        pass
 
     if os.path.exists(LEVEL_UP_CONFIG_FILE):
         try:
@@ -6716,6 +6722,16 @@ def load_level_up_config():
                 return json.load(f)
         except Exception:
             pass
+
+    try:
+        cf_res = requests.get(f"{CLOUDFLARE_API_URL}/api/cloud/level-up-config", timeout=3)
+        if cf_res.ok:
+            data = cf_res.json()
+            if data.get("ok") and data.get("config"):
+                return data["config"]
+    except Exception:
+        pass
+
     return default_config
 
 def save_level_up_config(cfg):
@@ -6730,7 +6746,7 @@ def save_level_up_config(cfg):
             f"{CLOUDFLARE_API_URL}/api/cloud/level-up-config",
             json={"config": cfg},
             headers={"Content-Type": "application/json"},
-            timeout=5
+            timeout=4
         )
     except Exception as e:
         logger.warning(f"Failed to sync level_up_config to CF: {e}")
@@ -6739,29 +6755,24 @@ def save_level_up_config(cfg):
 def portal_level_up_config():
     """
     Admin configuration endpoint for Level-Up Booster service:
-    - Change xp_per_coin rate (default: 50,000 XP = 1 coin)
-    - Toggle lvl_1_10 and lvl_10_20 packages ON / OFF
+    - Set coin prices for: Level 1->10, Level 10->20, and +50k XP
+    - Toggle packages ON / OFF
     """
     if request.method == "POST":
         data = request.get_json(silent=True) or {}
         cfg = load_level_up_config()
-        if "xp_per_coin" in data:
-            try:
-                cfg["xp_per_coin"] = max(1000, int(data["xp_per_coin"]))
-            except (ValueError, TypeError):
-                pass
         if "packages" in data and isinstance(data["packages"], dict):
             for pkg_id, pkg_val in data["packages"].items():
                 if pkg_id in cfg.get("packages", {}):
                     if "enabled" in pkg_val:
                         cfg["packages"][pkg_id]["enabled"] = bool(pkg_val["enabled"])
-                    if "name" in pkg_val:
-                        cfg["packages"][pkg_id]["name"] = str(pkg_val["name"])
-                    if "target_xp" in pkg_val:
+                    if "coin_price" in pkg_val:
                         try:
-                            cfg["packages"][pkg_id]["target_xp"] = int(pkg_val["target_xp"])
+                            cfg["packages"][pkg_id]["coin_price"] = max(1, int(pkg_val["coin_price"]))
                         except Exception:
                             pass
+                    if "name" in pkg_val:
+                        cfg["packages"][pkg_id]["name"] = str(pkg_val["name"])
         cfg["updated_at"] = int(time.time())
         save_level_up_config(cfg)
         return jsonify({"ok": True, "config": cfg, "message": "Level-Up settings updated successfully!"})
@@ -6772,8 +6783,10 @@ def portal_level_up_config():
 @app.route("/api/portal/level-up/status", methods=["GET", "POST"])
 def get_level_up_status():
     """
-    Checks player's current Google Play Games level, XP, and calculates
-    remaining XP and dynamic coin cost based on xp_per_coin rate.
+    Checks player's current Google Play Games level, XP, and validates package requirements.
+    - Level 1 ➔ 10: Fixed admin price.
+    - Level 10 ➔ 20: Fixed admin price. Requires user level >= 10!
+    - +50,000 XP: Fixed admin price.
     """
     if request.method == "POST":
         data = request.get_json(silent=True) or {}
@@ -6781,26 +6794,25 @@ def get_level_up_status():
         data = request.args.to_dict()
 
     cfg = load_level_up_config()
-    xp_per_coin = cfg.get("xp_per_coin", 50000)
     packages = cfg.get("packages", {})
 
-    target_level = int(data.get("target_level", 10) or 10)
-    if target_level <= 10:
-        target_level = 10
-        pkg_key = "lvl_1_10"
-    else:
-        target_level = 20
-        pkg_key = "lvl_10_20"
+    pkg_key = str(data.get("package_id") or "").strip()
+    target_lvl_arg = int(data.get("target_level", 0) or 0)
+    if not pkg_key:
+        if target_lvl_arg == 50000:
+            pkg_key = "lvl_50k_xp"
+        elif target_lvl_arg > 10:
+            pkg_key = "lvl_10_20"
+        else:
+            pkg_key = "lvl_1_10"
 
-    pkg = packages.get(pkg_key, {})
+    pkg = packages.get(pkg_key, packages.get("lvl_1_10", {}))
     if not pkg.get("enabled", True):
         return jsonify({
             "ok": False,
             "error": f"{pkg.get('name', 'This package')} বর্তমানে সাময়িকভাবে বন্ধ রয়েছে।",
             "package_disabled": True
         }), 403
-
-    target_xp = int(pkg.get("target_xp", 432000 if target_level == 10 else 2500000))
 
     email, master_token, access_token, android_id = resolve_credentials_from_input(data)
     if not (master_token or access_token):
@@ -6829,29 +6841,49 @@ def get_level_up_status():
     profile = format_profile(profile_res)
     cur_level = int(profile.get("current_level", 1) or 1)
     cur_xp = int(profile.get("current_xp", 0) or 0)
-    needed_xp = max(0, target_xp - cur_xp)
-    already_reached = (cur_level >= target_level or cur_xp >= target_xp)
 
-    # Dynamic coin cost: every 50,000 XP (or configured rate) = 1 coin
-    calculated_coins = max(1, math.ceil(needed_xp / xp_per_coin)) if needed_xp > 0 else 0
+    # Restriction check: Level 10 to 20 package requires current level >= 10!
+    min_lvl = int(pkg.get("min_level", 1) or 1)
+    if cur_level < min_lvl:
+        return jsonify({
+            "ok": False,
+            "error": f"এই প্যাকেজটি ব্যবহারের জন্য আপনার অ্যাকাউন্ট কমপক্ষে লেভেল {min_lvl} হতে হবে! (আপনার বর্তমান লেভেল: {cur_level})",
+            "level_restricted": True,
+            "min_level": min_lvl,
+            "current_level": cur_level,
+            "player": profile
+        }), 400
+
+    pkg_type = pkg.get("type", "target_level")
+    if pkg_type == "fixed_xp":
+        needed_xp = int(pkg.get("target_xp", 50000))
+        target_xp = cur_xp + needed_xp
+        already_reached = False
+    else:
+        target_xp = int(pkg.get("target_xp", 432000))
+        needed_xp = max(0, target_xp - cur_xp)
+        already_reached = (cur_level >= pkg.get("target_level", 10) or cur_xp >= target_xp)
+
+    coins_cost = int(pkg.get("coin_price", 5))
 
     return jsonify({
         "ok": True,
         "player": profile,
         "current_level": cur_level,
         "current_xp": cur_xp,
-        "target_level": target_level,
+        "target_level": pkg.get("target_level"),
         "target_xp": target_xp,
         "needed_xp": needed_xp,
         "already_reached": already_reached,
-        "xp_per_coin": xp_per_coin,
         "package": {
             "id": pkg_key,
-            "name": pkg.get("name", f"Level {target_level} Boost"),
-            "badge": pkg.get("badge", "BOOST"),
-            "target_level": target_level,
+            "name": pkg.get("name"),
+            "badge": pkg.get("badge"),
+            "type": pkg_type,
+            "target_level": pkg.get("target_level"),
             "target_xp": target_xp,
-            "coins_cost": calculated_coins,
+            "min_level": min_lvl,
+            "coins_cost": coins_cost,
             "enabled": pkg.get("enabled", True),
             "description": pkg.get("description", "")
         },
@@ -6861,28 +6893,29 @@ def get_level_up_status():
 @app.route("/api/portal/level-up/execute", methods=["POST"])
 def execute_level_up_boost():
     """
-    Executes automated Level-Up boost for the user up to Level 20.
-    Unlocks achievements from booster catalog (games_levelup.json - 30 booster games, 3.1M XP!)
-    until cumulative gained XP >= needed XP.
+    Executes automated Level-Up boost for the user.
+    - Level 1 ➔ 10: Unlocks achievements until Level 10 (432k XP). Fixed admin price.
+    - Level 10 ➔ 20: Unlocks achievements until Level 20 (2.5M XP). Fixed admin price. Requires Level 10+!
+    - +50,000 XP: Unlocks 50,000 XP. Fixed admin price.
     """
     data = request.get_json(silent=True) or {}
     cfg = load_level_up_config()
-    xp_per_coin = cfg.get("xp_per_coin", 50000)
     packages = cfg.get("packages", {})
 
-    target_level = int(data.get("target_level", 10) or 10)
-    if target_level <= 10:
-        target_level = 10
-        pkg_key = "lvl_1_10"
-    else:
-        target_level = 20
-        pkg_key = "lvl_10_20"
+    pkg_key = str(data.get("package_id") or "").strip()
+    target_lvl_arg = int(data.get("target_level", 0) or 0)
+    if not pkg_key:
+        if target_lvl_arg == 50000:
+            pkg_key = "lvl_50k_xp"
+        elif target_lvl_arg > 10:
+            pkg_key = "lvl_10_20"
+        else:
+            pkg_key = "lvl_1_10"
 
-    pkg = packages.get(pkg_key, {})
+    pkg = packages.get(pkg_key, packages.get("lvl_1_10", {}))
     if not pkg.get("enabled", True):
         return jsonify({"ok": False, "error": f"{pkg.get('name', 'This package')} বর্তমানে বন্ধ রয়েছে।"}), 403
 
-    target_xp = int(pkg.get("target_xp", 432000 if target_level == 10 else 2500000))
     user_uid = str(data.get("user_uid", "")).strip() or "Direct Portal"
     balance_before = data.get("balance_before")
     balance_after = data.get("balance_after")
@@ -6919,25 +6952,38 @@ def execute_level_up_boost():
     if not account_name and profile.get("display_name"):
         account_name = profile.get("display_name")
 
-    if cur_level >= target_level or cur_xp >= target_xp:
+    # Restriction check: Level 10 to 20 package requires level >= 10!
+    min_lvl = int(pkg.get("min_level", 1) or 1)
+    if cur_level < min_lvl:
         return jsonify({
-            "ok": True,
-            "message": f"আপনার অ্যাকাউন্ট ইতিমধ্যে লেভেল {cur_level} এ রয়েছে (টার্গেট লেভেল {target_level})!",
-            "already_reached": True,
-            "player": profile,
-            "previous_level": cur_level,
-            "new_level": cur_level,
-            "xp_gained": 0,
-            "unlocked_count": 0
-        }), 200
+            "ok": False,
+            "error": f"লেভেল {min_lvl} এর নিচে এই প্যাকেজটি ব্যবহার করা যাবে না। আপনার বর্তমান লেভেল {cur_level}।"
+        }), 400
 
-    needed_xp = max(0, target_xp - cur_xp)
-    calculated_coins = max(1, math.ceil(needed_xp / xp_per_coin))
-    coins_cost = int(data.get("coins_cost") or calculated_coins)
+    pkg_type = pkg.get("type", "target_level")
+    if pkg_type == "fixed_xp":
+        needed_xp = int(pkg.get("target_xp", 50000))
+        target_xp = cur_xp + needed_xp
+    else:
+        target_xp = int(pkg.get("target_xp", 432000))
+        target_lvl = int(pkg.get("target_level", 10))
+        if cur_level >= target_lvl or cur_xp >= target_xp:
+            return jsonify({
+                "ok": True,
+                "message": f"আপনার অ্যাকাউন্ট ইতিমধ্যে লেভেল {cur_level} এ রয়েছে (টার্গেট লেভেল {target_lvl})!",
+                "already_reached": True,
+                "player": profile,
+                "previous_level": cur_level,
+                "new_level": cur_level,
+                "xp_gained": 0,
+                "unlocked_count": 0
+            }), 200
+        needed_xp = max(0, target_xp - cur_xp)
 
-    # 2. Collect Level-Up Booster games
+    coins_cost = int(pkg.get("coin_price", 5))
+
+    # 2. Collect Level-Up Booster games from games_levelup.json (30 curated booster games, 3,100,000 XP)
     booster_games = []
-    # Primary Source: games_levelup.json (30 curated booster games, 3,100,000 XP)
     if os.path.exists(GAMES_LEVELUP_FILE):
         try:
             with open(GAMES_LEVELUP_FILE, "r", encoding="utf-8") as f:
@@ -6948,19 +6994,18 @@ def execute_level_up_boost():
         except Exception as e:
             logger.warning(f"Error loading games_levelup.json: {e}")
 
-    # Secondary Source: merged catalog games marked for level_up
     merged = get_merged_games()
     existing_packages = {g.get("package") for _, g in booster_games}
     for gid, g in merged.items():
-        pkg = g.get("package")
-        if pkg in existing_packages or pkg == PLAY_GAMES_PACKAGE:
+        pkg_name = g.get("package")
+        if pkg_name in existing_packages or pkg_name == PLAY_GAMES_PACKAGE:
             continue
         sec = g.get("section", "")
         cat = g.get("category", "").lower()
         title = g.get("title", "")
         if sec == "level_up" or "booster" in cat or "level" in cat or "booster" in title.lower():
             booster_games.append((str(gid), g))
-            existing_packages.add(pkg)
+            existing_packages.add(pkg_name)
 
     if not booster_games:
         for gid, g in merged.items():
@@ -7007,11 +7052,11 @@ def execute_level_up_boost():
     total_xp_earned = 0
 
     def _unlock_game_batch(gid, game, quests):
-        pkg = game.get("package")
+        pkg_p = game.get("package")
         sig = game.get("client_sig") or "38918a453d07199354f8b19af05ec6562ced5788"
         token = None
         if master_token:
-            tok = get_games_oauth_token(email=email, master_token=master_token, android_id=android_id, app_package=pkg, client_sig=sig)
+            tok = get_games_oauth_token(email=email, master_token=master_token, android_id=android_id, app_package=pkg_p, client_sig=sig)
             if tok.get("ok"):
                 token = tok.get("access_token")
         elif access_token:
@@ -7053,7 +7098,7 @@ def execute_level_up_boost():
         if up_res and up_res.get("ok"):
             updated_profile = format_profile(up_res)
 
-    new_lvl = updated_profile.get("current_level", max(cur_level + 1, target_level))
+    new_lvl = updated_profile.get("current_level", cur_level)
     new_xp = updated_profile.get("current_xp", cur_xp + total_xp_earned)
 
     # 6. Record in unlock audit trail
@@ -7063,13 +7108,13 @@ def execute_level_up_boost():
         server_code=server_code or "—",
         user_uid=user_uid,
         game_id="level_up_boost",
-        game_title=f"Level Up Booster (Level {target_level})",
+        game_title=pkg.get("name", "Level Up Booster"),
         game_icon="https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512",
         status="COMPLETED",
         unlocked_count=len(total_unlocked_now),
         total_count=len(total_unlocked_now),
         xp_earned=total_xp_earned,
-        message=f"Successfully boosted profile from Level {cur_level} to Level {new_lvl} (+{total_xp_earned:,} XP)!",
+        message=f"Successfully applied {pkg.get('name')} (+{total_xp_earned:,} XP, New Level: {new_lvl})!",
         source="PP Service (Level Up)",
         coins_cost=coins_cost,
         balance_before=balance_before,
@@ -7080,7 +7125,7 @@ def execute_level_up_boost():
 
     return jsonify({
         "ok": True,
-        "message": f"অভিনন্দন! আপনার অ্যাকাউন্ট সফলভাবে লেভেল {new_lvl} এ উন্নীত হয়েছে।",
+        "message": f"অভিনন্দন! আপনার অ্যাকাউন্ট সফলভাবে বুস্ট হয়েছে (নতুন লেভেল: {new_lvl}, অর্জিত XP: +{total_xp_earned:,})।",
         "previous_level": cur_level,
         "new_level": new_lvl,
         "previous_xp": cur_xp,
