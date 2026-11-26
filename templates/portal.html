@@ -617,7 +617,7 @@
                     <span>🎲 Random / Custom (<span id="portalCountRandom">0</span>)</span>
                 </button>
                 <button class="portal-section-pill" id="portalPillLevelUp" onclick="setPortalSection('level_up')" style="color:#d97706; border-color:rgba(217,119,6,0.3); background:rgba(245,158,11,0.08);">
-                    <span>⚡ LEVEL-UP Boosters (<span id="portalCountLevelUp">0</span>)</span>
+                    <span>⚡ Level-Up Packages (<span id="portalCountLevelUp">3</span> Packages)</span>
                 </button>
             </div>
 
@@ -833,25 +833,25 @@
             renderPortalServices();
         }
 
-                        function updatePortalCountsAndRender() {
-            const lvlCount = allPortalServices.filter(s => (s.section || "quest_unlocker") === "level_up").length;
-            const offCount = allPortalServices.filter(s => (s.section || "quest_unlocker") !== "level_up" && s.is_official !== false && !s.unofficial_note).length;
-            const rndCount = allPortalServices.filter(s => (s.section || "quest_unlocker") !== "level_up" && (s.is_official === false || !!s.unofficial_note)).length;
+        function updatePortalCountsAndRender() {
+            const questServices = allPortalServices.filter(s => (s.section || "quest_unlocker") !== "level_up");
+            const offCount = questServices.filter(s => s.is_official !== false && !s.unofficial_note).length;
+            const rndCount = questServices.filter(s => s.is_official === false || !!s.unofficial_note).length;
 
             const elAll = document.getElementById("portalCountAll");
             const elOff = document.getElementById("portalCountOfficial");
             const elRnd = document.getElementById("portalCountRandom");
             const elLvl = document.getElementById("portalCountLevelUp");
-            if (elAll) elAll.innerText = allPortalServices.length;
+            if (elAll) elAll.innerText = questServices.length;
             if (elOff) elOff.innerText = offCount;
             if (elRnd) elRnd.innerText = rndCount;
-            if (elLvl) elLvl.innerText = lvlCount;
+            if (elLvl) elLvl.innerText = "3";
 
             const statServices = document.getElementById("statServicesCount");
-            if (statServices) statServices.innerText = `${allPortalServices.length} Configured Services`;
+            if (statServices) statServices.innerText = `${questServices.length} Configured Services`;
 
             let totalQ = 0;
-            allPortalServices.forEach(s => {
+            questServices.forEach(s => {
                 totalQ += (s.selected_quests_count || (s.selected_quests ? s.selected_quests.length : 0));
             });
             const statQuests = document.getElementById("statQuestsCount");

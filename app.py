@@ -5338,8 +5338,8 @@ def get_portal_services():
             s["no_data"] = bool(s.get("no_data", False))
         out.append(s)
 
-    # 2. Add all 30 Level-Up Booster games (from games_levelup.json) with section: "level_up"
-    if os.path.exists(GAMES_LEVELUP_FILE):
+    # 2. Add Level-Up Booster inventory games ONLY if specifically requested by internal debug/inspection
+    if request.args.get("include_levelup_games") == "1" and os.path.exists(GAMES_LEVELUP_FILE):
         try:
             with open(GAMES_LEVELUP_FILE, "r", encoding="utf-8") as lf:
                 lvl_games = json.load(lf)
@@ -5374,7 +5374,18 @@ def get_portal_services():
         out = [s for s in out if s.get("section") != "level_up" and s.get("category") != "level_up" and s.get("enabled", True)]
 
     out.sort(key=lambda x: (not x.get("enabled", True), x.get("section") == "level_up", x.get("title", "")))
-    resp = jsonify({"ok": True, "services": out, "total_services": len(out)})
+    lvl_cfg = load_level_up_config()
+    resp = jsonify({
+        "ok": True,
+        "services": out,
+        "total_services": len(out),
+        "level_up_inventory": {
+            "games_count": 30,
+            "total_xp": 3100000,
+            "status": "ready"
+        },
+        "level_up_packages": lvl_cfg.get("packages", {})
+    })
     resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
     resp.headers["Pragma"] = "no-cache"
     resp.headers["Expires"] = "0"
