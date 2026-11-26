@@ -18068,14 +18068,14 @@
     "section": "quest_unlocker",
     "enabled": true,
     "no_data": false,
-    "is_official": false,
-    "unofficial_note": "Random 2-3 achievements selected (No official Play Points quest)",
+    "is_official": true,
+    "unofficial_note": "",
     "total_quests_count": 55,
     "selected_quests_count": 3,
     "selected_quest_ids": [
       "CgkI-rOTnLEIEAIQAg",
       "CgkI-rOTnLEIEAIQAQ",
-      "CgkI-rOTnLEIEAIQAw"
+      "CgkI-rOTnLEIEAIQJQ"
     ],
     "selected_quests": [
       {
@@ -18090,20 +18090,20 @@
       {
         "id": "CgkI-rOTnLEIEAIQAQ",
         "name": "Welcome, New Employee!",
-        "description": "Complete \"Cat's Lost & Found\" in Phaethon's Story.\n",
+        "description": "Complete \"Cat's Lost & Found\" in Phaethon's Story.",
         "experiencePoints": 1500,
         "achievementType": "STANDARD",
         "totalSteps": null,
         "unlockedIconUrl": "https://lh3.googleusercontent.com/AodZVllHn5QSElF1oEbqfqvC5cGLVP3oKx-2LgBD0dcvGRZT2alvTd9nzbJTSStj6Q"
       },
       {
-        "id": "CgkI-rOTnLEIEAIQAw",
-        "name": "The Name of a \"Hero\"",
-        "description": "Complete \"A Call From the Hollow's Heart\" in Phaethon's Story.\n",
-        "experiencePoints": 1500,
+        "id": "CgkI-rOTnLEIEAIQJQ",
+        "name": "Atypical Extroverted Proxy",
+        "description": "Obtain 5 Agents",
+        "experiencePoints": 500,
         "achievementType": "STANDARD",
         "totalSteps": null,
-        "unlockedIconUrl": "https://lh3.googleusercontent.com/tCCn3dt4zO1euaeb3mDanC-2Oy8xNbCVpOrZmYCTQ21lVlSVPpHtHeIZlBj3l0HeZ1o"
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/BM--5YlORZ6IYTkviSEelt9VweYvRxtp82DgghBYBUXtJkopm-fDQOpP8MaOk7-gYxE"
       }
     ],
     "all_quests": [
