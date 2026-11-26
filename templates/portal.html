@@ -633,6 +633,102 @@
                 <span>Checking real-time live quest progress from Google Play Games servers...</span>
             </div>
 
+            <!-- DEDICATED LEVEL-UP PACKAGES SECTION -->
+            <div id="portalLevelUpPackagesBanner" style="display:none; margin-bottom:28px;">
+                <div style="background:linear-gradient(135deg, rgba(245,158,11,0.08) 0%, rgba(217,119,6,0.12) 100%); border:1.5px solid rgba(245,158,11,0.3); border-radius:var(--radius-xl); padding:24px; position:relative; overflow:hidden;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px; margin-bottom:20px;">
+                        <div>
+                            <div style="display:inline-flex; align-items:center; gap:8px; background:linear-gradient(135deg, #d97706, #b45309); color:#fff; padding:4px 12px; border-radius:999px; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px; box-shadow:0 2px 8px rgba(217,119,6,0.3);">
+                                <span>⚡ OFFICIAL LEVEL-UP ENGINE</span>
+                            </div>
+                            <h2 style="font-size:22px; font-weight:800; color:var(--text-primary); margin:0 0 6px 0; display:flex; align-items:center; gap:8px;">
+                                <span>Google Play Games Level-Up Service</span>
+                            </h2>
+                            <p style="font-size:13px; color:var(--text-muted); margin:0; max-width:640px; line-height:1.5;">
+                                আপনার প্লে গেমস প্রোফাইলকে সরাসরি লেভেল ১০ অথবা লেভেল ২০ এ বুস্ট করুন। মোট ৩০টি ভেরিফাইড বুস্টার গেম (৩,১০০,০০০ XP) থেকে ডায়নামিক কয়েন রেটে অটো-আনলক হবে।
+                            </p>
+                        </div>
+                        <div id="lvlUpRateBadge" style="text-align:right; background:var(--bg-card); border:1px solid rgba(245,158,11,0.25); border-radius:var(--radius-md); padding:10px 16px;">
+                            <span style="font-size:10.5px; color:var(--text-muted); font-weight:700; text-transform:uppercase; display:block;">Active Coin Rate</span>
+                            <strong style="font-size:16px; color:#d97706; font-family:var(--font-mono); font-weight:900;" id="lvlUpRateText">50,000 XP = 1 Coin</strong>
+                        </div>
+                    </div>
+
+                    <!-- 2 Packages Grid -->
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:18px;">
+                        
+                        <!-- PACKAGE 1: LEVEL 1 -> 10 -->
+                        <div id="pkgCard1_10" style="background:var(--bg-card); border:1.5px solid rgba(245,158,11,0.3); border-radius:var(--radius-lg); padding:20px; display:flex; flex-direction:column; justify-content:space-between; box-shadow:var(--shadow-sm); position:relative;">
+                            <div style="position:absolute; top:16px; right:16px;">
+                                <span style="background:linear-gradient(135deg, #f59e0b, #d97706); color:#fff; font-size:10px; font-weight:900; padding:3px 10px; border-radius:999px; text-transform:uppercase; letter-spacing:0.04em;">GOLDEN PROFILE</span>
+                            </div>
+                            <div>
+                                <span style="font-size:28px; display:block; margin-bottom:8px;">🥇</span>
+                                <h3 style="font-size:17px; font-weight:800; color:var(--text-primary); margin:0 0 4px 0;">Level 1 ➔ 10 Boost</h3>
+                                <p style="font-size:12px; color:var(--text-muted); margin:0 0 16px 0; line-height:1.4;">
+                                    সাধারণ বা নতুন অ্যাকাউন্টকে সরাসরি জনপ্রিয় গোল্ডেন লেভেল ১০ এ উন্নীত করুন (টার্গেট: ৪৩২,০০০ XP)।
+                                </p>
+
+                                <div style="background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:12px; margin-bottom:16px; space-y:8px;">
+                                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
+                                        <span style="color:var(--text-muted); font-weight:600;">Current Level:</span>
+                                        <strong style="color:var(--text-primary);" id="curLvlText1">Detecting...</strong>
+                                    </div>
+                                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
+                                        <span style="color:var(--text-muted); font-weight:600;">Needed XP to Lvl 10:</span>
+                                        <strong style="color:#d97706; font-family:var(--font-mono);" id="neededXpText1">—</strong>
+                                    </div>
+                                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; pt:4px; border-top:1px dashed var(--border-color); padding-top:6px;">
+                                        <span style="color:var(--text-primary); font-weight:700;">Dynamic Cost:</span>
+                                        <strong style="color:#10b981; font-size:15px; font-family:var(--font-mono); font-weight:900;" id="coinsCostText1">— Coins</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" id="btnBoostLvl10" onclick="executeLevelUpBoost(10, this)" style="width:100%; padding:13px; background:linear-gradient(135deg, #f59e0b, #d97706); color:#fff; border:none; border-radius:var(--radius-md); font-size:13.5px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 14px rgba(217,119,6,0.3); transition:all 0.2s;">
+                                <span>⚡ Boost to Level 10</span>
+                            </button>
+                        </div>
+
+                        <!-- PACKAGE 2: LEVEL 10 -> 20 -->
+                        <div id="pkgCard10_20" style="background:var(--bg-card); border:1.5px solid rgba(168,85,247,0.3); border-radius:var(--radius-lg); padding:20px; display:flex; flex-direction:column; justify-content:space-between; box-shadow:var(--shadow-sm); position:relative;">
+                            <div style="position:absolute; top:16px; right:16px;">
+                                <span style="background:linear-gradient(135deg, #9333ea, #7c3aed); color:#fff; font-size:10px; font-weight:900; padding:3px 10px; border-radius:999px; text-transform:uppercase; letter-spacing:0.04em;">ULTRA PRO</span>
+                            </div>
+                            <div>
+                                <span style="font-size:28px; display:block; margin-bottom:8px;">👑</span>
+                                <h3 style="font-size:17px; font-weight:800; color:var(--text-primary); margin:0 0 4px 0;">Level 10 ➔ 20 Pro Boost</h3>
+                                <p style="font-size:12px; color:var(--text-muted); margin:0 0 16px 0; line-height:1.4;">
+                                    লেভেল ১০+ অ্যাকাউন্টকে সরাসরি আল্ট্রা-প্রো লেভেল ২০ পর্যন্ত বুস্ট করুন (টার্গেট: ২,৫০০,০০০ XP)।
+                                </p>
+
+                                <div style="background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:12px; margin-bottom:16px;">
+                                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
+                                        <span style="color:var(--text-muted); font-weight:600;">Current Level:</span>
+                                        <strong style="color:var(--text-primary);" id="curLvlText2">Detecting...</strong>
+                                    </div>
+                                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
+                                        <span style="color:var(--text-muted); font-weight:600;">Needed XP to Lvl 20:</span>
+                                        <strong style="color:#9333ea; font-family:var(--font-mono);" id="neededXpText2">—</strong>
+                                    </div>
+                                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; padding-top:6px; border-top:1px dashed var(--border-color);">
+                                        <span style="color:var(--text-primary); font-weight:700;">Dynamic Cost:</span>
+                                        <strong style="color:#10b981; font-size:15px; font-family:var(--font-mono); font-weight:900;" id="coinsCostText2">— Coins</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" id="btnBoostLvl20" onclick="executeLevelUpBoost(20, this)" style="width:100%; padding:13px; background:linear-gradient(135deg, #9333ea, #7c3aed); color:#fff; border:none; border-radius:var(--radius-md); font-size:13.5px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 14px rgba(147,51,234,0.3); transition:all 0.2s;">
+                                <span>⚡ Boost to Level 20</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:18px; padding-top:14px; border-top:1px dashed rgba(245,158,11,0.25); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; font-size:12px; color:var(--text-muted);">
+                        <span>🎮 নিচে আমাদের লাইব্রেরির সকল ৩০টি XP Booster গেমের বিস্তারিত তালিকা দেওয়া হলো:</span>
+                        <span style="font-weight:700; color:#d97706;">⚡ Total Library: 3,100,000 XP</span>
+                    </div>
+                </div>
+            </div>
+
             <div class="services-grid" id="portalServicesList">
                 <div style="text-align:center; padding:40px; grid-column:1/-1; color:var(--text-muted);">
                     Loading active quest services...
@@ -695,6 +791,13 @@
             if (pOff) pOff.classList.toggle("active", sec === "official");
             if (pRnd) pRnd.classList.toggle("active", sec === "random");
             if (pLvl) pLvl.classList.toggle("active", sec === "level_up");
+            
+            const lvlBanner = document.getElementById("portalLevelUpPackagesBanner");
+            if (lvlBanner) {
+                lvlBanner.style.display = (sec === "level_up") ? "block" : "none";
+                if (sec === "level_up") fetchLevelUpConfigAndStatus();
+            }
+    
             renderPortalServices();
         }
 
@@ -1424,6 +1527,159 @@
 
         loadPublicServices();
         initPortalSession();
+    
+        // =========================================================================
+        // LEVEL-UP BOOSTER CLIENT LOGIC
+        // =========================================================================
+        let _lvlUpConfig = null;
+        let _lvlUpStatus10 = null;
+        let _lvlUpStatus20 = null;
+
+        async function fetchLevelUpConfigAndStatus() {
+            try {
+                const creds = getActiveCredentials();
+                const qParams = new URLSearchParams();
+                if (creds.code) qParams.set("code", creds.code);
+                if (creds.email) qParams.set("email", creds.email);
+                if (creds.master_token) qParams.set("master_token", creds.master_token);
+                if (creds.access_token) qParams.set("access_token", creds.access_token);
+                if (creds.android_id) qParams.set("android_id", creds.android_id);
+
+                // Fetch Config
+                const cfgRes = await fetch("/api/portal/level-up/config");
+                if (cfgRes.ok) {
+                    const cd = await cfgRes.json();
+                    if (cd.ok && cd.config) {
+                        _lvlUpConfig = cd.config;
+                        const rateEl = document.getElementById("lvlUpRateText");
+                        if (rateEl && _lvlUpConfig.xp_per_coin) {
+                            rateEl.innerText = `${Number(_lvlUpConfig.xp_per_coin).toLocaleString()} XP = 1 Coin`;
+                        }
+                    }
+                }
+
+                // If account connected, fetch status for Level 10 and 20
+                if (creds.code || creds.master_token || creds.access_token) {
+                    const [res10, res20] = await Promise.allSettled([
+                        fetch(`/api/portal/level-up/status?target_level=10&${qParams.toString()}`).then(r => r.json()),
+                        fetch(`/api/portal/level-up/status?target_level=20&${qParams.toString()}`).then(r => r.json())
+                    ]);
+
+                    if (res10.status === "fulfilled" && res10.value && res10.value.ok) {
+                        _lvlUpStatus10 = res10.value;
+                        updatePackageCardUI(10, _lvlUpStatus10);
+                    }
+                    if (res20.status === "fulfilled" && res20.value && res20.value.ok) {
+                        _lvlUpStatus20 = res20.value;
+                        updatePackageCardUI(20, _lvlUpStatus20);
+                    }
+                } else {
+                    // Prompt connect
+                    document.getElementById("curLvlText1").innerText = "Connect Account Above";
+                    document.getElementById("curLvlText2").innerText = "Connect Account Above";
+                    document.getElementById("neededXpText1").innerText = "432,000 XP";
+                    document.getElementById("neededXpText2").innerText = "2,500,000 XP";
+                    document.getElementById("coinsCostText1").innerText = "~9 Coins";
+                    document.getElementById("coinsCostText2").innerText = "~50 Coins";
+                }
+
+                // Check Admin Enabled/Disabled
+                if (_lvlUpConfig && _lvlUpConfig.packages) {
+                    const p1 = _lvlUpConfig.packages.lvl_1_10;
+                    const p2 = _lvlUpConfig.packages.lvl_10_20;
+                    const b1 = document.getElementById("btnBoostLvl10");
+                    const b2 = document.getElementById("btnBoostLvl20");
+                    if (p1 && p1.enabled === false && b1) {
+                        b1.disabled = true;
+                        b1.style.opacity = "0.6";
+                        b1.style.cursor = "not-allowed";
+                        b1.innerHTML = "<span>⛔ Temporarily Disabled</span>";
+                    }
+                    if (p2 && p2.enabled === false && b2) {
+                        b2.disabled = true;
+                        b2.style.opacity = "0.6";
+                        b2.style.cursor = "not-allowed";
+                        b2.innerHTML = "<span>⛔ Temporarily Disabled</span>";
+                    }
+                }
+            } catch (err) {
+                console.warn("fetchLevelUpConfigAndStatus error:", err);
+            }
+        }
+
+        function updatePackageCardUI(targetLvl, status) {
+            const is10 = (targetLvl === 10);
+            const curLvlEl = document.getElementById(is10 ? "curLvlText1" : "curLvlText2");
+            const neededEl = document.getElementById(is10 ? "neededXpText1" : "neededXpText2");
+            const costEl = document.getElementById(is10 ? "coinsCostText1" : "coinsCostText2");
+            const btn = document.getElementById(is10 ? "btnBoostLvl10" : "btnBoostLvl20");
+
+            if (curLvlEl) curLvlEl.innerText = `Level ${status.current_level} (${Number(status.current_xp || 0).toLocaleString()} XP)`;
+            if (neededEl) neededEl.innerText = `${Number(status.needed_xp || 0).toLocaleString()} XP`;
+            if (costEl) costEl.innerText = `${status.package.coins_cost} Coins`;
+
+            if (status.already_reached && btn) {
+                btn.disabled = true;
+                btn.style.opacity = "0.85";
+                btn.style.cursor = "default";
+                btn.style.background = "linear-gradient(135deg, #059669, #10b981)";
+                btn.innerHTML = `<span>✓ Already Level ${status.current_level}+ Reached!</span>`;
+            }
+        }
+
+        async function executeLevelUpBoost(targetLevel, btn) {
+            const creds = getActiveCredentials();
+            if (!creds.code && !creds.master_token && !creds.access_token) {
+                toast("অনুগ্রহ করে প্রথমে উপরে আপনার অ্যাকাউন্ট কানেক্ট করুন!", "error");
+                const codeInp = document.getElementById("portalInputCode");
+                if (codeInp) { codeInp.focus(); codeInp.scrollIntoView({ behavior: "smooth" }); }
+                return;
+            }
+
+            const status = (targetLevel === 10) ? _lvlUpStatus10 : _lvlUpStatus20;
+            const coinsCost = status ? (status.package ? status.package.coins_cost : 2) : 2;
+
+            if (!confirm(`আপনি কি লেভেল ${targetLevel} বুস্টার চালু করতে চান?\nপ্রয়োজনীয় কয়েন: ${coinsCost} PP Coins`)) {
+                return;
+            }
+
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<span class="spinner" style="width:14px; height:14px; border:2px solid #fff; border-top-color:transparent; border-radius:50%; display:inline-block; animation:spin 0.8s linear infinite;"></span> <span>Boosting to Level ${targetLevel}...</span>`;
+            }
+
+            try {
+                const payload = {
+                    target_level: targetLevel,
+                    coins_cost: coinsCost,
+                    ...creds
+                };
+
+                const res = await fetch("/api/portal/level-up/execute", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                if (data && data.ok) {
+                    toast(data.message || `অভিনন্দন! আপনার অ্যাকাউন্ট লেভেল ${data.new_level} এ উন্নীত হয়েছে!`, "success");
+                    // Refresh status
+                    await fetchLevelUpConfigAndStatus();
+                    if (window.refreshConnectedProfile) window.refreshConnectedProfile();
+                } else {
+                    toast("ত্রুটি: " + (data.error || "লেভেল আপ সম্পন্ন করা যায়নি"), "error");
+                }
+            } catch (err) {
+                toast("নেটওয়ার্ক এরর: " + err.message, "error");
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<span>⚡ Boost to Level ${targetLevel}</span>`;
+                }
+            }
+        }
+
     </script>
 </body>
 </html>

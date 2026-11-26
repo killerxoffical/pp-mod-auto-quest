@@ -1765,5 +1765,1685 @@
         "unlockedIconUrl": "https://lh3.googleusercontent.com/vvw6i7gRifO00lF3GSbr4Bb7RxecsFBfvamQjDvB8dwJ0JROS5rzJ795jgo1xvF7jP2v"
       }
     ]
+  },
+  "23": {
+    "service_id": "srv_23",
+    "game_id": "23",
+    "title": "Level Up Button | XP Boost",
+    "package": "droid.gamesstudio.LevelUpButton",
+    "client_sig": "59f35316db2c9f9bff365df367d63956325b83f3",
+    "developer": "Level Up Booster",
+    "category": "level_up",
+    "section": "level_up",
+    "enabled": true,
+    "icon": "https://play-lh.googleusercontent.com/kduWrpR_Rd_QaAFiSxe7tNuOEa_Q6oxL4s2YiDDyZXMCmKDTtsEI7Avh67jezwtTF5M_IPN4VqjEESJH1_BwiaI=s0-br30",
+    "total_quests_count": 17,
+    "selected_quests_count": 17,
+    "selected_quest_ids": [
+      "CgkItJO_0PcREAIQAQ",
+      "CgkItJO_0PcREAIQDA",
+      "CgkItJO_0PcREAIQEg",
+      "CgkItJO_0PcREAIQCw",
+      "CgkItJO_0PcREAIQCQ",
+      "CgkItJO_0PcREAIQAg",
+      "CgkItJO_0PcREAIQAw",
+      "CgkItJO_0PcREAIQBA",
+      "CgkItJO_0PcREAIQBQ",
+      "CgkItJO_0PcREAIQBg",
+      "CgkItJO_0PcREAIQBw",
+      "CgkItJO_0PcREAIQCg",
+      "CgkItJO_0PcREAIQDQ",
+      "CgkItJO_0PcREAIQDg",
+      "CgkItJO_0PcREAIQDw",
+      "CgkItJO_0PcREAIQEA",
+      "CgkItJO_0PcREAIQEw"
+    ],
+    "selected_quests": [
+      {
+        "id": "CgkItJO_0PcREAIQAQ",
+        "name": "Welcome back to Level Up Button",
+        "description": "Hello there!\nThanks for come back to Level Up Button after it's suspention",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/RCBT00qW2gyE8Q6pOo7395LxJJbsVHtWjVeQ8_PoU2-LZRItb9yjdrMC6pqpRLgi0w"
+      },
+      {
+        "id": "CgkItJO_0PcREAIQDA",
+        "name": "More XP XP XP!",
+        "description": "You know the drill, more XP\n\nLove you guys, stay healthy and keep playing DroidGames Studio games :D!",
+        "experiencePoints": 5000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/CgQnVvi1PuGTF15ALycsjWagOadC-UB-eqh2uqYMMcV8A3_8TVKzbGns8iJSW5QuB6w"
+      },
+      {
+        "id": "CgkItJO_0PcREAIQEg",
+        "name": "Community Member!",
+        "description": "Join our discord server, be part of our community and get XP!",
+        "experiencePoints": 5000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/_5N3qReWZoNoqXE4Il4fuM7tOuYXXj19jycN0N5xKhl6oeAtFNqdl6scFSpOE_7KvhE"
+      },
+      {
+        "id": "CgkItJO_0PcREAIQCw",
+        "name": "More from DroidGames Studio",
+        "description": "Take a look to my other games :)",
+        "experiencePoints": 5000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/Mb7WjSXKW45I_KLe2Z4ZRL-6lQXC689R3lrxZYlSDI1qLZ4dR5mMl46ktNrrVRFybng"
+      },
+      {
+        "id": "CgkItJO_0PcREAIQCQ",
+        "name": "Share Me!",
+        "description": "Share me and win an achievevment and also for limited time, participate to a $10 giftcard!",
+        "experiencePoints": 5000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/KbnVXUvN0IjajrCoVffwIkcA-XR8dAcRXL7eG9t2S85miQPy-tYuPtR9BEpIOt-hrjw"
+      },
+      {
+        "id": "CgkItJO_0PcREAIQAg",
+        "name": "Prestige Achievement",
+        "description": "An unique Achievement!",
+        "experiencePoints": 2500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/vAziwwLSgo1yCUViPEvH6j6eWtbFQRKNJ1m9FalDFL4JTQZWQVJvJSuGMplNu1x9_IUx"
+      },
+      {
+        "id": "CgkItJO_0PcREAIQAw",
+        "name": "Here some XP for you",
+        "description": "and free!",
+        "experiencePoints": 10000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/BjGQQ7Rep204sRU3BvVRgL6DSv1lSnwEkAVrJXo92KsXZpjQ5jRIHu6eQdg7c5Lhut6K"
+      },
+      {
+        "id": "CgkItJO_0PcREAIQBA",
+        "name": "A little bit more",
+        "description": "just in case",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/BTppM-mqGpo8ZMghMlpenxYPi07-VjL8Vg6zfktpUgHtJ8kaK99LHRmthtmDe2ZGkIJk"
+      },
+      {
+        "id": "CgkItJO_0PcREAIQBQ",
+        "name": "Ok no, stop!, no more XP",
+        "description": "don't ask for more",
+        "experiencePoints": 8500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/2nJ4YusMUffi6WQCHcx8VTPxGBgGM2xz6vsrzWSWz3QdXt-oYAvrfw9kHY7tgf8CIQ"
+      },
+      {
+        "id": "CgkItJO_0PcREAIQBg",
+        "name": "Well.. take more..",
+        "description": "but no more!",
+        "experiencePoints": 7500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/G32FTgYLpHoaZHwLn22pSIK5R5TSeB9GYKbHxCMQ5AnlFhEv4MfAdQV8vIWFC9-JLd0"
+      },
+      {
+        "id": "CgkItJO_0PcREAIQBw",
+        "name": "I don't have more XP sorry...",
+        "description": "and I really really don't have more!",
+        "experiencePoints": 5000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/Iodp6IQxbp2bAlAARuv9SsyPhq3NQ7R3-ltYVxdP1fjJPEDgT9Hvq2R-1dSDTUpSuFc"
+      },
+      {
+        "id": "CgkItJO_0PcREAIQCg",
+        "name": "Watch an ad and get me!",
+        "description": "Go watch a sponsorship video and win this achievement!",
+        "experiencePoints": 1000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/8hZfH-kXsOxQyrFw1VohmhpNKj2kfXi_4fJvsIV-ny_1WrGz7JwpyI-Xg3uaoOzRFA"
+      },
+      {
+        "id": "CgkItJO_0PcREAIQDQ",
+        "name": "Did you see the random texts?",
+        "description": "Just push the button and see the new random text appear!",
+        "experiencePoints": 2500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/vkrCUZzuFM53XgYrTIOzJsTp6fxBY63Jvwakss1sAJ2pIaaE-pzNknCjzBxf0O7oOGk"
+      },
+      {
+        "id": "CgkItJO_0PcREAIQDg",
+        "name": "XP XP XP",
+        "description": "Do you like XP right?",
+        "experiencePoints": 7500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/r77kA4xiff-G-iYlZM3BltBEDiy3hWLyycVs-T66AxGCBme7cF4G02yKKmaLsiXi4w"
+      },
+      {
+        "id": "CgkItJO_0PcREAIQDw",
+        "name": "New look",
+        "description": "Take this achievement celebrating the new look of DroidGames Studio",
+        "experiencePoints": 5000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/0RbWEW6UDiNhn-0lAsFhiJIt9xNkpDXNSUS8sshven4SzM26dimkUcxIfCxwXfY1k1fK"
+      },
+      {
+        "id": "CgkItJO_0PcREAIQEA",
+        "name": "#LUB",
+        "description": "Hey! Take more XP, please use the #LUB on your social media!!!",
+        "experiencePoints": 5000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/zpGXHyyH_IAVzhUDIBM0Ob2P1i81hberG51FN4poDqBq662FNx-pTXZdekcJ5Ts7Mw"
+      },
+      {
+        "id": "CgkItJO_0PcREAIQEw",
+        "name": "Try My Last 20",
+        "description": "Try our new game My Last 20 and get extra XP. Also My Last 20 have extra XP for you.",
+        "experiencePoints": 5000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/BrG8Fi1EkEEJKNiH5l0K0K70WHjwSOwtkbmBFUkyb8v8vYyZOxNXbBAMiLC7kPbKAMs"
+      }
+    ]
+  },
+  "24": {
+    "service_id": "srv_24",
+    "game_id": "24",
+    "title": "Level Up Button Gold: XP Boost",
+    "package": "droid.gamesstudio.Level_Up_Button_Gold",
+    "client_sig": "59f35316db2c9f9bff365df367d63956325b83f3",
+    "developer": "Level Up Booster",
+    "category": "level_up",
+    "section": "level_up",
+    "enabled": true,
+    "icon": "https://play-lh.googleusercontent.com/psVUaX46JprfeoBec708OCVFS6UqxxKQTt6bMtDHa8bycT2fLjtfp8j379RqL7cLb6uzkWqO0EhmJhEYZGb2=s0-br30",
+    "total_quests_count": 21,
+    "selected_quests_count": 21,
+    "selected_quest_ids": [
+      "CgkI_-vnq6gZEAIQAw",
+      "CgkI_-vnq6gZEAIQBA",
+      "CgkI_-vnq6gZEAIQBQ",
+      "CgkI_-vnq6gZEAIQBg",
+      "CgkI_-vnq6gZEAIQBw",
+      "CgkI_-vnq6gZEAIQCA",
+      "CgkI_-vnq6gZEAIQCQ",
+      "CgkI_-vnq6gZEAIQCg",
+      "CgkI_-vnq6gZEAIQEA",
+      "CgkI_-vnq6gZEAIQDw",
+      "CgkI_-vnq6gZEAIQFA",
+      "CgkI_-vnq6gZEAIQGg",
+      "CgkI_-vnq6gZEAIQEw",
+      "CgkI_-vnq6gZEAIQDQ",
+      "CgkI_-vnq6gZEAIQDg",
+      "CgkI_-vnq6gZEAIQEQ",
+      "CgkI_-vnq6gZEAIQEg",
+      "CgkI_-vnq6gZEAIQFQ",
+      "CgkI_-vnq6gZEAIQFw",
+      "CgkI_-vnq6gZEAIQGA",
+      "CgkI_-vnq6gZEAIQGQ"
+    ],
+    "selected_quests": [
+      {
+        "id": "CgkI_-vnq6gZEAIQAw",
+        "name": "Thanks for play!",
+        "description": "You're the best!!!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/7z8YP_9tXYfSHiIMDkLGVYpyz0yoAFOAYKrAPp7D51KUOhzPseue_yXXAmaos7TNFw_s"
+      },
+      {
+        "id": "CgkI_-vnq6gZEAIQBA",
+        "name": "You are now connected!",
+        "description": "You gold will be secured!",
+        "experiencePoints": 5000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/u9Q0NyX1nM72C01v8gxlxwNMiKmJKJYmXymE7Ff0M6IsWxrhv86YtgaX1VrVpFWMbw"
+      },
+      {
+        "id": "CgkI_-vnq6gZEAIQBQ",
+        "name": "My first 0.0007 XAU",
+        "description": ":D precious",
+        "experiencePoints": 7500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/dSENalb_SeaEKQ6h89hUCJjNk4qUB-IVkBGo2X1zk9aUMfiZriJrAiYpBgbkSU_JCVJi"
+      },
+      {
+        "id": "CgkI_-vnq6gZEAIQBg",
+        "name": "Gimme that donut!",
+        "description": "Looks delicious",
+        "experiencePoints": 2500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/6jOC54z6c5-sGRxhp-W2VDWduo4N31658KxwoIW6h9_GcAgfvIEx_vGKPpDPNZf_rQ"
+      },
+      {
+        "id": "CgkI_-vnq6gZEAIQBw",
+        "name": "ez bitcoin",
+        "description": "Got a bitcoin without using 1080 ti to mine them!",
+        "experiencePoints": 2500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/scnHp47TlLjRF1MbS0RgDShMZr_ZSnuqZZL2RUfXPfwfagP5qi4IgkPYFEw0DWRYS8A"
+      },
+      {
+        "id": "CgkI_-vnq6gZEAIQCA",
+        "name": "why are you scared ? D:",
+        "description": "not, seriously tell me why!",
+        "experiencePoints": 2500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/zDrLXhDMVtbN0S9MQ-k0xReGDbddEJThwP4bhu_VJ3jOahPdyHNn7Rj-frQeE3DnRA"
+      },
+      {
+        "id": "CgkI_-vnq6gZEAIQCQ",
+        "name": "Are you ready to drink anywhere?",
+        "description": "Can we drink coffee on this?",
+        "experiencePoints": 2500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/IpFlvOxueNlITytLlGUfbCzkIbj52xlepm5oITuNVUFah_LlPuMFXWDL1g_wJTjV2w"
+      },
+      {
+        "id": "CgkI_-vnq6gZEAIQCg",
+        "name": "Expensive, but cool!",
+        "description": "I'll take a shower with my new ninja rubber duck 3000!",
+        "experiencePoints": 2500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/6YsBXI2qGqiE3_xvHES0KKUSXaLgFu9FRC2OoYVvCxQsTGTu67jO5MU0UE9RxdVsoirX"
+      },
+      {
+        "id": "CgkI_-vnq6gZEAIQEA",
+        "name": "Space Suit",
+        "description": "Put it on and let's go to mars",
+        "experiencePoints": 2500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/_2oUnSZHQ-rer_Ji_AfdFuKIRkXSeoTt8qHpoNzGzn7YQwrVcrHd0sxKXqktgu-XTME"
+      },
+      {
+        "id": "CgkI_-vnq6gZEAIQDw",
+        "name": "Flat army tank!",
+        "description": "Wanna make a Flat army?...",
+        "experiencePoints": 2500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/MtDvSOGz0CnEkWmJt5yflwtF-UE846GexP8ZdsTj6CTvBv6Wz-kUwA3nNni0OGXP-Q"
+      },
+      {
+        "id": "CgkI_-vnq6gZEAIQFA",
+        "name": "A mug cup for you!",
+        "description": "Enjoy your mug cup with coffee, careful still hot!\nah!.. I didn't put sugar on it btw!",
+        "experiencePoints": 2500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/TmzK9sR9lAeWy2c1zmWXAyahwSbbvD2lmR-VNoZXUMFmlkv0CnS_VjycXnVk0ejmBag"
+      },
+      {
+        "id": "CgkI_-vnq6gZEAIQGg",
+        "name": "Guacamole!",
+        "description": "Buy this cute avocado! He is from my game My Last 20!\nYou should check it out too!",
+        "experiencePoints": 4500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/z08c_cW9kAc98CU36fNPko8Ifrhcniv2jW9-OPy05D5SkNwl-gnEvI8VARBQP5LIvOo"
+      },
+      {
+        "id": "CgkI_-vnq6gZEAIQEw",
+        "name": "A free one!",
+        "description": "Yes just press the D letter and win this achievement",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/rN56XnugcbdwsqicPJ85UtjzxjvNJB05zH7iRgrRxm7LlFsXFBLxegsaUEZxIFbdJQ"
+      },
+      {
+        "id": "CgkI_-vnq6gZEAIQDQ",
+        "name": "DroidGames Studio fan!",
+        "description": "Follow me on facebook, twitter or Instagram to see news about my games and more!",
+        "experiencePoints": 5000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/8PlVv7l73JNE0-sjJsT9rhz9JJx7ZSJyaUb1DPhM_70RMxbttjLxMrP7uHtWF8gWwxE"
+      },
+      {
+        "id": "CgkI_-vnq6gZEAIQDg",
+        "name": "Share me!",
+        "description": "Share my game with your friends!",
+        "experiencePoints": 10000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/2OkgPMun5THrvuNbYEvUglrYJ2LgJME519CrcLaKVb3d-lZZzL7FuXrPPwBzkQoEKhM"
+      },
+      {
+        "id": "CgkI_-vnq6gZEAIQEQ",
+        "name": "take more XP!",
+        "description": "Yeah, another achievement!",
+        "experiencePoints": 5000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/g_dNJF61XRELXQGmFVNF-Iq19s7AEKCeR6ESOLk4l6ynqiVy9h5pijj9KUaEd1sNUQ"
+      },
+      {
+        "id": "CgkI_-vnq6gZEAIQEg",
+        "name": "Thanks for rate us!",
+        "description": "You I'll get me if you rate us on Google Play",
+        "experiencePoints": 5000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/bOlLk5qMwZuXyC5T0_mxW6Y4Luloh94JNztdSBIrI7lVT1wgA1eERSPwM6slX_DCXQ"
+      },
+      {
+        "id": "CgkI_-vnq6gZEAIQFQ",
+        "name": "Error 9915D",
+        "description": "something went wrong....",
+        "experiencePoints": 5000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/aB1gecxgB7TB8xY2YK5DweXNpNj2rLYfYkCNKoIQthUgziO0wwPXRwd2njY9D3Ih7btG"
+      },
+      {
+        "id": "CgkI_-vnq6gZEAIQFw",
+        "name": "Weird Potion",
+        "description": "Do not drink it, may cause some weird reactions like seeing an Iphone price lower than $ 1000",
+        "experiencePoints": 5000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/2Jaynrfc3cbD4Gwgu9ZCesueJe1tzzDMZz4l6tzen31rJf-Kqo3oF_4BQoJ3_RrYnQ"
+      },
+      {
+        "id": "CgkI_-vnq6gZEAIQGA",
+        "name": "Gopnik Blin",
+        "description": "I'm about to say something: \"ооох блин \"\n(I don't know Russian btw, I would love)",
+        "experiencePoints": 5000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/DlSW-bYS0BtFZ-US9Rp6Y6V63vy0lqcBm6rw4IVZIMNDyRg_g1i4xJdGdWcXV84NhJE"
+      },
+      {
+        "id": "CgkI_-vnq6gZEAIQGQ",
+        "name": "бабушка майо",
+        "description": "Real high quality mayonnaise",
+        "experiencePoints": 2500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/WO_RL6ehgAE9REFa3P0crbo_HTOW2ehC9TXvUBNUuX0yntmqt02idF-CQ4r6-62PtCs"
+      }
+    ]
+  },
+  "25": {
+    "service_id": "srv_25",
+    "game_id": "25",
+    "title": "Level Up",
+    "package": "com.dmenchetti2.levelupxpbooster6",
+    "client_sig": "e861a7060e7634d75abff0bb25fb2b58553a990a",
+    "developer": "Level Up Booster",
+    "category": "level_up",
+    "section": "level_up",
+    "enabled": true,
+    "icon": "https://play-lh.googleusercontent.com/ywN1_iDBSxvX2zV-tteIgNyEuDZq-Q68YQJICAhnQ7JauovrWVbmyzSDqy1Z1AVE6nSuFcNQLgRM32ppNxUJWA=s0-br30",
+    "total_quests_count": 5,
+    "selected_quests_count": 5,
+    "selected_quest_ids": [
+      "CgkIuu3Or6oXEAIQAQ",
+      "CgkIuu3Or6oXEAIQAg",
+      "CgkIuu3Or6oXEAIQAw",
+      "CgkIuu3Or6oXEAIQBA",
+      "CgkIuu3Or6oXEAIQBQ"
+    ],
+    "selected_quests": [
+      {
+        "id": "CgkIuu3Or6oXEAIQAQ",
+        "name": "2000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/TtZ3_-b0erU6yUX9ILoTSAPHyKrXoMfUiumYatl-h39NbNDdO26qhk04UaXiKwp4L8Q"
+      },
+      {
+        "id": "CgkIuu3Or6oXEAIQAg",
+        "name": "4000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/BlfSA-9b0VMcoAx4XeUepgYuwS8-CsrZI5WnBjAa9DjRCfupYQWxKaoVjaxTHbdy-A"
+      },
+      {
+        "id": "CgkIuu3Or6oXEAIQAw",
+        "name": "6000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/c2CNl1tOz8vNWPQtLKMzRKPO4eiHTUnR_GNwAPomnH0i-W2t_x0OwxvtzvqyGkAHaw"
+      },
+      {
+        "id": "CgkIuu3Or6oXEAIQBA",
+        "name": "8000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/pC7T_71PxP-2XZFRMWEWZz8ARs_pec8MJ3rQVkVPNCDwbnXjrDR0NRdkvXupq7UFP99T"
+      },
+      {
+        "id": "CgkIuu3Or6oXEAIQBQ",
+        "name": "10000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/8TqaP1bkcnD0J6zBC6Ltr1jG5OXOoTRcHVVhP73NDMuuzh8tUk8pofjOf89lY_gzfwg"
+      }
+    ]
+  },
+  "26": {
+    "service_id": "srv_26",
+    "game_id": "26",
+    "title": "Level Up",
+    "package": "com.dmenchetti2.levelupxpbooster9",
+    "client_sig": "eb87dc1981c908e30174e8a50b0d736b8aa9c4cf",
+    "developer": "Level Up Booster",
+    "category": "level_up",
+    "section": "level_up",
+    "enabled": true,
+    "icon": "https://play-lh.googleusercontent.com/VvD8cUa3ai6bwoQp8AQCZ_hjABtoz5j-EzgZ1zmti3TO-i14KrNxqEP0UnqdaVBByKpYG8gTuRIafqdYNJWrJg=s0-br30",
+    "total_quests_count": 5,
+    "selected_quests_count": 5,
+    "selected_quest_ids": [
+      "CgkIitTggu8dEAIQAQ",
+      "CgkIitTggu8dEAIQAg",
+      "CgkIitTggu8dEAIQAw",
+      "CgkIitTggu8dEAIQBA",
+      "CgkIitTggu8dEAIQBQ"
+    ],
+    "selected_quests": [
+      {
+        "id": "CgkIitTggu8dEAIQAQ",
+        "name": "2000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/VG9D7MquXENL1YiiZhY1ngncsaMbCx_bmIoYuvDIg_nC4DIulPs8vZz3k4IkAnBDsGdP"
+      },
+      {
+        "id": "CgkIitTggu8dEAIQAg",
+        "name": "4000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/yU7wKpbQ6o3qVwyJE3UuDb9wOKPdlkruGikIQApCiCdrUdlbz3doUWdqsHE0qSDyG4Wu"
+      },
+      {
+        "id": "CgkIitTggu8dEAIQAw",
+        "name": "6000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/NY5SRt4vHDPtsX4JNKa_kk8rz_Kqb7RzkZJlW_FdfeNArdedgAgCW5tUoanVYkpTSrKr"
+      },
+      {
+        "id": "CgkIitTggu8dEAIQBA",
+        "name": "8000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/zvlF1LvZ8-Umq14rHuxoyt8tgHJNQJi-LvR1cdD94bpayBWmOffZcK6TPQ5EB_QIZA9T"
+      },
+      {
+        "id": "CgkIitTggu8dEAIQBQ",
+        "name": "10000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/fNBZYuJxqoNIkA278X9seo1qDyS9QK46sROo--KQD0Hk22gHZ25I5zqgApYQrQADCbfI"
+      }
+    ]
+  },
+  "27": {
+    "service_id": "srv_27",
+    "game_id": "27",
+    "title": "Level Up",
+    "package": "com.dmenchetti2.levelupxpbooster7",
+    "client_sig": "9d2b22eb800348f3f2277a168cfb122dabbb4f61",
+    "developer": "Level Up Booster",
+    "category": "level_up",
+    "section": "level_up",
+    "enabled": true,
+    "icon": "https://play-lh.googleusercontent.com/151xMJLtN6pn72DMvgKd19x6ezAhBXBTHkhkHkIW4TA_MMvTkVmWz_j4fg3sVr1XvcXm47LJey5_zUGnU97xWD4=s0-br30",
+    "total_quests_count": 5,
+    "selected_quests_count": 5,
+    "selected_quest_ids": [
+      "CgkI8P-4uYcKEAIQAQ",
+      "CgkI8P-4uYcKEAIQAg",
+      "CgkI8P-4uYcKEAIQAw",
+      "CgkI8P-4uYcKEAIQBA",
+      "CgkI8P-4uYcKEAIQBQ"
+    ],
+    "selected_quests": [
+      {
+        "id": "CgkI8P-4uYcKEAIQAQ",
+        "name": "2000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/V7NRct0OfPyIYNCBLBFxYHT8xvXZipOLPLVJU7oapxduCBPF10VcnTOw0IUwyWltYvc"
+      },
+      {
+        "id": "CgkI8P-4uYcKEAIQAg",
+        "name": "4000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/p-B1IxhU_SB2n3Ma1Kp4lbSEx4Yh4Dwipf5-MN6gaKXBbPvyQKvFu7M7ofpTMtisV0o"
+      },
+      {
+        "id": "CgkI8P-4uYcKEAIQAw",
+        "name": "6000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/fPD1q2CquNScLylQpcAC1CTTqyQ5Wi6ixNspv7NW8X7JHCrtqCWGOtIkvGkTt88qQWo"
+      },
+      {
+        "id": "CgkI8P-4uYcKEAIQBA",
+        "name": "8000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/RDBTqT8stF9UBve0IjbsaQ9sa5735fHNP_RAfX_kzNYY5q4F3wCG5C1aXz5HK9CMrzA"
+      },
+      {
+        "id": "CgkI8P-4uYcKEAIQBQ",
+        "name": "10000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/zLKveb7TgkqK_NCn6-gXl0idgFFfwN0HC63K3arM5LpQMOASSWeQS0tC5gCM9HNs7nE"
+      }
+    ]
+  },
+  "28": {
+    "service_id": "srv_28",
+    "game_id": "28",
+    "title": "Level Up",
+    "package": "com.dmenchetti2.levelupxpbooster5",
+    "client_sig": "605d5294e8744e94c782d7640514cf928e7da8b0",
+    "developer": "Level Up Booster",
+    "category": "level_up",
+    "section": "level_up",
+    "enabled": true,
+    "icon": "https://play-lh.googleusercontent.com/BBpB7jd8GD0rVFSb1A2yiAWzi95FjeEYHuJ3uc_nnfFYKTCVLt-7PrH0Jz73rrqPHu0SEaj0oL1gH_LD0xQb=s0-br30",
+    "total_quests_count": 5,
+    "selected_quests_count": 5,
+    "selected_quest_ids": [
+      "CgkIwLiqq_0GEAIQAQ",
+      "CgkIwLiqq_0GEAIQAg",
+      "CgkIwLiqq_0GEAIQAw",
+      "CgkIwLiqq_0GEAIQBA",
+      "CgkIwLiqq_0GEAIQBQ"
+    ],
+    "selected_quests": [
+      {
+        "id": "CgkIwLiqq_0GEAIQAQ",
+        "name": "2000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/7o-RkK1pIg0Zgg5nHOxnVOOTmxJ3d5421Q4xYzpxAeHnpf0d6FHPuVY8MlnwCTL--_k"
+      },
+      {
+        "id": "CgkIwLiqq_0GEAIQAg",
+        "name": "4000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/VC_jLBoFLUb4c-6VFAqQLSyBlbrviI_XkBkZZx-rE6UJpzREpylPx5TZNiFezlPDSNI"
+      },
+      {
+        "id": "CgkIwLiqq_0GEAIQAw",
+        "name": "6000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/yVkDxT4bdFYMULBQ3d8bXAXryXSycpi1vOBkMt9dc-l2i6soJreDXmmrILgawbtgcPw"
+      },
+      {
+        "id": "CgkIwLiqq_0GEAIQBA",
+        "name": "8000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/cfyvIYx1wRWs7qBigiufLdqCSZFNZSQ734XnaD-0vycWCj3AYKhoXLFTEPhWZpcPCw"
+      },
+      {
+        "id": "CgkIwLiqq_0GEAIQBQ",
+        "name": "10000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/GB5j9KJQT3sgkN5915Ro2Z8Auv2nNr5C0HSnBD18HxHl_Ls_yA2puBMWoniO2K_wCgSI"
+      }
+    ]
+  },
+  "29": {
+    "service_id": "srv_29",
+    "game_id": "29",
+    "title": "Level Up",
+    "package": "com.dmenchetti2.levelupxpbooster8",
+    "client_sig": "2985a0168af1cc56b34c97a5386fa98e9f13a442",
+    "developer": "Level Up Booster",
+    "category": "level_up",
+    "section": "level_up",
+    "enabled": true,
+    "icon": "https://play-lh.googleusercontent.com/XHvs-dEUfbhSziHrqcZ5a8HftwhvFsemwj9NOyycL6m8EK_F45WnXkQbmfbp9AVQ6mp55ivvqU2w6pIjPenHvMo=s0-br30",
+    "total_quests_count": 5,
+    "selected_quests_count": 5,
+    "selected_quest_ids": [
+      "CgkIpt3P-ukBEAIQAQ",
+      "CgkIpt3P-ukBEAIQAg",
+      "CgkIpt3P-ukBEAIQAw",
+      "CgkIpt3P-ukBEAIQBA",
+      "CgkIpt3P-ukBEAIQBQ"
+    ],
+    "selected_quests": [
+      {
+        "id": "CgkIpt3P-ukBEAIQAQ",
+        "name": "2000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/nJdfRjtoww14qvqNzyK5LqMM3a9--ovE7AIcrjotW4NGd0Tr7TXl64Ci8Qtt0UP2uA"
+      },
+      {
+        "id": "CgkIpt3P-ukBEAIQAg",
+        "name": "4000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/VDWITExiRG9uUCPNaCXloLsWtDsjGKBV-h4jk57rWEqgRtk0OPP_mnqH5MHBPgUgwZ8"
+      },
+      {
+        "id": "CgkIpt3P-ukBEAIQAw",
+        "name": "6000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/A1t9dqX-j1qyEtv1un9SaSABf6JQnku9KMrXwpOKNrbkyuEImQKnehq6MdSZ8NOnWg"
+      },
+      {
+        "id": "CgkIpt3P-ukBEAIQBA",
+        "name": "8000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/uz3i8dGD3q_W488ZSujexhVw3zEHu9iDSi9mkgDj7tCGtnV3XwN9brJjNjmHAJ5m1FY5"
+      },
+      {
+        "id": "CgkIpt3P-ukBEAIQBQ",
+        "name": "10000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/d4Oa2ktZG0OAj69x1ataQ4q2ffsC-5SWxR_kOKMmGJFhhPFYMPJhheMMlR7VLSw3zQ"
+      }
+    ]
+  },
+  "30": {
+    "service_id": "srv_30",
+    "game_id": "30",
+    "title": "Level Up",
+    "package": "com.dmenchetti2.levelupxpbooster10",
+    "client_sig": "f46be25753d29121ed5316ad41fd5315fd05274a",
+    "developer": "Level Up Booster",
+    "category": "level_up",
+    "section": "level_up",
+    "enabled": true,
+    "icon": "https://play-lh.googleusercontent.com/qQ6MbcQjMIVOC-riuk5S8Z-HZcBSMnRtBU7j5-GfhJAZM6e7p7EL6IdUg8J835rbgYYCuqd-k-e6CpXUoFvB8w=s0-br30",
+    "total_quests_count": 5,
+    "selected_quests_count": 5,
+    "selected_quest_ids": [
+      "CgkIsIy7h8kBEAIQAQ",
+      "CgkIsIy7h8kBEAIQAg",
+      "CgkIsIy7h8kBEAIQAw",
+      "CgkIsIy7h8kBEAIQBA",
+      "CgkIsIy7h8kBEAIQBQ"
+    ],
+    "selected_quests": [
+      {
+        "id": "CgkIsIy7h8kBEAIQAQ",
+        "name": "2000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/IklBoTc5PbngZLVZYoxebD19Mo7YZfZQvUAuqLyHlrHEgecBXCAwHILtLlb_YAbgoOwJ"
+      },
+      {
+        "id": "CgkIsIy7h8kBEAIQAg",
+        "name": "4000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/NM-qAXrwmtyjjUuSkmgRRdz4klarOI2wZQLb_C3ZzSYax2WYJkGFnp60EAZjucOETDTf"
+      },
+      {
+        "id": "CgkIsIy7h8kBEAIQAw",
+        "name": "6000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/nJf1u-k0TW4D5fB3ztuMYjjvo6WNUU-XY16Uv8apjOy1AeaoIak7NnCQxqS31azaGA"
+      },
+      {
+        "id": "CgkIsIy7h8kBEAIQBA",
+        "name": "8000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/SZEwR1XD4TnUWey3e1DpIMUjEnkn95Mj6I-AeK6flmTZS4QLmtHNqHkTB4KSFDf_ul4"
+      },
+      {
+        "id": "CgkIsIy7h8kBEAIQBQ",
+        "name": "10000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/zdUWD_bHRX9O_LUHA-_ge0h3SUdKcoSdbgrjJypC5wrNxycARQjikAossXjfEe3vlQ"
+      }
+    ]
+  },
+  "31": {
+    "service_id": "srv_31",
+    "game_id": "31",
+    "title": "Level Up",
+    "package": "com.dmenchetti2.levelupxpbooster3",
+    "client_sig": "e7ed44ccba02ca9a84ca5e8e1acee9dfacdea1f2",
+    "developer": "Level Up Booster",
+    "category": "level_up",
+    "section": "level_up",
+    "enabled": true,
+    "icon": "https://play-lh.googleusercontent.com/wJLTOdkw96O01hlHL-zpkJX7b6G6yH0jGl0mhaGI3DRNOx2JKC6tNBGGHqd1Z7rXENZ_N1_QZyJtEWPdNHLkuQ=s0-br30",
+    "total_quests_count": 5,
+    "selected_quests_count": 5,
+    "selected_quest_ids": [
+      "CgkI8vWsoKEfEAIQAQ",
+      "CgkI8vWsoKEfEAIQAg",
+      "CgkI8vWsoKEfEAIQAw",
+      "CgkI8vWsoKEfEAIQBA",
+      "CgkI8vWsoKEfEAIQBQ"
+    ],
+    "selected_quests": [
+      {
+        "id": "CgkI8vWsoKEfEAIQAQ",
+        "name": "2000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/ABy1oLSj2oZwIzoM3sx0P0sNgHJE1uX8FBwQEoMB170yLDfPeLkL-5kXUOJ9i8kU6Cs"
+      },
+      {
+        "id": "CgkI8vWsoKEfEAIQAg",
+        "name": "4000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/tWxaGkHJUxkoHMvXxLlkn3LzYUtRqeNXKf50TBchU9c7DZc4BfHkY4Lft1DSaAORs0jT"
+      },
+      {
+        "id": "CgkI8vWsoKEfEAIQAw",
+        "name": "6000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/qHgYkaX6nVZXc4-Re3QCXDIoLHvjCDUMWhAZFNLmoiK7V7rUG_nqeCzM0EVDlIOmOw"
+      },
+      {
+        "id": "CgkI8vWsoKEfEAIQBA",
+        "name": "8000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/jO62skbqJHy08FodjVinK7s0Xz6QIZy-zBvu6fOeyXRz0NhmaZpUFVlcpVGQMTnJznI"
+      },
+      {
+        "id": "CgkI8vWsoKEfEAIQBQ",
+        "name": "10000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/KRMGTAIvAWs7k2hJCXGc-l7diye2olPT-jlbRRciDJ-MhQF1Lw9E_qw1J4LIB45B6w"
+      }
+    ]
+  },
+  "32": {
+    "service_id": "srv_32",
+    "game_id": "32",
+    "title": "Level Up",
+    "package": "com.dmenchetti2.levelupxpbooster2",
+    "client_sig": "38f92112b6484c683ebe51f121f289e04fcd7df5",
+    "developer": "Level Up Booster",
+    "category": "level_up",
+    "section": "level_up",
+    "enabled": true,
+    "icon": "https://play-lh.googleusercontent.com/tvZN4B_fWh34lDvOUWYuYTT_UeZfUI6V8kUnavY06EqjbxVefxOg-kfsTrsDounf2KQto7FkeNODR7wq5mT0b1E=s0-br30",
+    "total_quests_count": 5,
+    "selected_quests_count": 5,
+    "selected_quest_ids": [
+      "CgkIrvzjvo4LEAIQAQ",
+      "CgkIrvzjvo4LEAIQAg",
+      "CgkIrvzjvo4LEAIQAw",
+      "CgkIrvzjvo4LEAIQBA",
+      "CgkIrvzjvo4LEAIQBQ"
+    ],
+    "selected_quests": [
+      {
+        "id": "CgkIrvzjvo4LEAIQAQ",
+        "name": "2000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/oQkahJ6SVDTvdihD9N4BnhsE1ZN-M-Uu7ATKJNHc3y_gFEChl3IBRjlmC0fHFX47H54N"
+      },
+      {
+        "id": "CgkIrvzjvo4LEAIQAg",
+        "name": "4000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/Iyjt9awluF8KKGVK8lwjLWnAWbMn_vLrkF_8ndA1Q5Z8hjClFy2b2CIgm1le8CiYhZ4"
+      },
+      {
+        "id": "CgkIrvzjvo4LEAIQAw",
+        "name": "6000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/3HUz6vwONDNxJnZ8onIOzGOeHhE5rCub4_Sxo9vnFqeBVQrDD--32XIh8aYjExClKZ3_"
+      },
+      {
+        "id": "CgkIrvzjvo4LEAIQBA",
+        "name": "8000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/6VDjEB49rA0BA-NqO7G5Fg5CWHEjU-j9g-LONrJYTHzQdDCv7Sd-ykknFtTbP7tUPgc"
+      },
+      {
+        "id": "CgkIrvzjvo4LEAIQBQ",
+        "name": "10000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/JqHlj3__t91ReV9ZpHmKoRucCNM9WPdo7OpOQlK8aFJUjDEL-RZGPz-wD83JLsl4gw"
+      }
+    ]
+  },
+  "33": {
+    "service_id": "srv_33",
+    "game_id": "33",
+    "title": "Level Up",
+    "package": "com.dmenchetti2.levelupxpbooster4",
+    "client_sig": "fbc4e9018dd831285ba70bd661c197329543c4f5",
+    "developer": "Level Up Booster",
+    "category": "level_up",
+    "section": "level_up",
+    "enabled": true,
+    "icon": "https://play-lh.googleusercontent.com/wqvDbKBA0MXV3kDbQm7bj9faW5gtdMDHFIoIhwLQqDi4BNerd-aaPrfOHuD5O8qCaNfwagz6t4N1eaibfNBZuw=s0-br30",
+    "total_quests_count": 5,
+    "selected_quests_count": 5,
+    "selected_quest_ids": [
+      "CgkIqLuLibcZEAIQAQ",
+      "CgkIqLuLibcZEAIQAg",
+      "CgkIqLuLibcZEAIQAw",
+      "CgkIqLuLibcZEAIQBA",
+      "CgkIqLuLibcZEAIQBQ"
+    ],
+    "selected_quests": [
+      {
+        "id": "CgkIqLuLibcZEAIQAQ",
+        "name": "2000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/nrhY_IVA1EhqIJ4VTT4c6wd2hC5OdRzWIqdzzFi1kjHMT2gXfDcc1MObrAaHxKoM8Syr"
+      },
+      {
+        "id": "CgkIqLuLibcZEAIQAg",
+        "name": "4000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/TatdZjtoeX0xCTfk57ypxcTvtacNA3yttzD5GasxgF5gWN1LowhFcq_ZO8J3tKIIXAU"
+      },
+      {
+        "id": "CgkIqLuLibcZEAIQAw",
+        "name": "6000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/rAdk4dQJm_yHypKgi2TC-nymKXriQFtPp2YDAAugQ5cT1Mccf1uqQq5WfdmlkilOM6yT"
+      },
+      {
+        "id": "CgkIqLuLibcZEAIQBA",
+        "name": "8000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/82qfdje_LUd7Of19GVVWS6QiRJ5xKUFye9b_nCm4dv4GwWz6rYMhFMNVmyurk7x-elhh"
+      },
+      {
+        "id": "CgkIqLuLibcZEAIQBQ",
+        "name": "10000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/P83V6QBsfWkUxuzrpDkWLL5v1TSC1BR7MUHdq4WM0E4vo-GigbQ65LGE4psSlRpegYw"
+      }
+    ]
+  },
+  "34": {
+    "service_id": "srv_34",
+    "game_id": "34",
+    "title": "Level Up",
+    "package": "com.dmenchetti2.levelupxpbooster1",
+    "client_sig": "d2185b334c5367f96512ed16ef4b9aa3e2c3dbe7",
+    "developer": "Level Up Booster",
+    "category": "level_up",
+    "section": "level_up",
+    "enabled": true,
+    "icon": "https://play-lh.googleusercontent.com/Y0IuCaVDDIyqkdd_xBVfpUCAOSm7RgsuKwFJ4PxsRViolEHqSeF5Lj87XyQSXz3O8UG-VnwwUm0GJ_a9wibLJA=s0-br30",
+    "total_quests_count": 5,
+    "selected_quests_count": 5,
+    "selected_quest_ids": [
+      "CgkI9pLdo74XEAIQAQ",
+      "CgkI9pLdo74XEAIQAg",
+      "CgkI9pLdo74XEAIQAw",
+      "CgkI9pLdo74XEAIQBA",
+      "CgkI9pLdo74XEAIQBQ"
+    ],
+    "selected_quests": [
+      {
+        "id": "CgkI9pLdo74XEAIQAQ",
+        "name": "2000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/l42Zfw2xFTp5TBf2VxqfDETJuzUrS9N9DnCoEVs6J0Ll8UTPv1OXDna_rsc_1J9r7Ro"
+      },
+      {
+        "id": "CgkI9pLdo74XEAIQAg",
+        "name": "4000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/Y-06vJvpahuDAmy4QriH7Owx5zusGKFp10kp9ASPwe38v_ekldTAzlfgbsV7UcLXnRVT"
+      },
+      {
+        "id": "CgkI9pLdo74XEAIQAw",
+        "name": "6000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/8BS-iQh01c12tNnu8AIggdOw9qS9ARwbrdzk2NUotuHo2fyLuH7V5bh8OfoQf-ggo4c"
+      },
+      {
+        "id": "CgkI9pLdo74XEAIQBA",
+        "name": "8000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/pvKVaAE_bLsf92tRHLhx5do5G9oqpmX7aTK8VFAIDdohomqRAZWYkwGwzVoSPfurv_0"
+      },
+      {
+        "id": "CgkI9pLdo74XEAIQBQ",
+        "name": "10000 Taps!",
+        "description": "20.000 XP",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/M5t-kT4TtLGlaOGDA-7fvNEFg8sSboDhUUsOzjrJiczt62J8nGa_QujZNSg-u7gLNfw"
+      }
+    ]
+  },
+  "35": {
+    "service_id": "srv_35",
+    "game_id": "35",
+    "title": "Boost XP",
+    "package": "com.lulli.boostxp_levelbooster7",
+    "client_sig": "fd68fd03546ef61f9a94871be16746d88a7a2132",
+    "developer": "Level Up Booster",
+    "category": "level_up",
+    "section": "level_up",
+    "enabled": true,
+    "icon": "https://play-lh.googleusercontent.com/X3wOyskw9XQ6qaU8zOZn7jX6CIgmN620YQPUpCokKr8_E4nRwiN5pbcY59XaZRCsx1xG6lB_pSINY7gOn2A9mw=s0-br30",
+    "total_quests_count": 5,
+    "selected_quests_count": 5,
+    "selected_quest_ids": [
+      "CgkItZufltIWEAIQAQ",
+      "CgkItZufltIWEAIQAg",
+      "CgkItZufltIWEAIQAw",
+      "CgkItZufltIWEAIQBA",
+      "CgkItZufltIWEAIQBQ"
+    ],
+    "selected_quests": [
+      {
+        "id": "CgkItZufltIWEAIQAQ",
+        "name": "2000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/kt5rsOkwOINiFn4g3JuUeCZgaAtgY_DkbxWAuJWcsgvxq6kiGRZCT2KBLVWrGQb0yVU"
+      },
+      {
+        "id": "CgkItZufltIWEAIQAg",
+        "name": "4000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/sNFSHKCESQ5H7TgrXJXRPl-p4fM1RXokeOS3gqcALYVqHllXQV9-vmFpl9qZXoRGvw"
+      },
+      {
+        "id": "CgkItZufltIWEAIQAw",
+        "name": "6000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/BMsWmLWNPXAAHFz4p_asnAvpQSdF9-cNmNvrleZS7G2Azg5BZ6IRXF7W32TIOdR4rqVQ"
+      },
+      {
+        "id": "CgkItZufltIWEAIQBA",
+        "name": "8000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/B7RSk3ycX83aHVnZYAY-1iLYZcFL4F65JGBOOxG_xX3-cUXd1PoySZPS9fA5HajI2w"
+      },
+      {
+        "id": "CgkItZufltIWEAIQBQ",
+        "name": "10000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/Xd8zjRzYQa9E4El5wtScnAkyIcTtsPNhySkgyiNM1EjpJkGJsodDW0stsxnVgqz_3Q"
+      }
+    ]
+  },
+  "36": {
+    "service_id": "srv_36",
+    "game_id": "36",
+    "title": "Boost XP",
+    "package": "com.lulli.boostxp_levelbooster3",
+    "client_sig": "fd68fd03546ef61f9a94871be16746d88a7a2132",
+    "developer": "Level Up Booster",
+    "category": "level_up",
+    "section": "level_up",
+    "enabled": true,
+    "icon": "https://play-lh.googleusercontent.com/pjtpSguF4YDm988FTNwXcwUpXL8mWRaGNX9tNBm-1oB4Ch5H1KiR_LLSq35Jc6k4AULyIEZr9G0fH7LWSPTckw=s0-br30",
+    "total_quests_count": 5,
+    "selected_quests_count": 5,
+    "selected_quest_ids": [
+      "CgkIjoqk4M0TEAIQAQ",
+      "CgkIjoqk4M0TEAIQAg",
+      "CgkIjoqk4M0TEAIQAw",
+      "CgkIjoqk4M0TEAIQBA",
+      "CgkIjoqk4M0TEAIQBQ"
+    ],
+    "selected_quests": [
+      {
+        "id": "CgkIjoqk4M0TEAIQAQ",
+        "name": "2000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/Wio55urEvYKSF0kC2kxkPckmwCfHUAU7g1uEus2j05cRKp_dQFzAVYjE0svFj10Jpw"
+      },
+      {
+        "id": "CgkIjoqk4M0TEAIQAg",
+        "name": "4000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/12XFW1oJ4oJS3J84MFgYQV3XtCPTevBTfxGjm4vyHdFKrYoNiAnT8mKPJmMzsjjt1C7-"
+      },
+      {
+        "id": "CgkIjoqk4M0TEAIQAw",
+        "name": "6000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/L-OVP6G4_NCqH-DrkxN95PBh6dXUeWt-QGKyTcIcuo37M2Lj_UZpm1CNUpv6pdVI-Vs"
+      },
+      {
+        "id": "CgkIjoqk4M0TEAIQBA",
+        "name": "8000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/gA-yoonuAAkTCzxo-iursrvXAou0zo0vW-RBRFP4tDabAWLQcWoAyHIOcBWEGfybcQ"
+      },
+      {
+        "id": "CgkIjoqk4M0TEAIQBQ",
+        "name": "10000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/Wy1gpNXgoTzULk192i__xXcOnTotfr4v2uV7pZj3aH5JaRrbv1VvsNMTkTZCoUHn9Bw"
+      }
+    ]
+  },
+  "37": {
+    "service_id": "srv_37",
+    "game_id": "37",
+    "title": "Boost XP",
+    "package": "com.lulli.boostxp_levelbooster5",
+    "client_sig": "fd68fd03546ef61f9a94871be16746d88a7a2132",
+    "developer": "Level Up Booster",
+    "category": "level_up",
+    "section": "level_up",
+    "enabled": true,
+    "icon": "https://play-lh.googleusercontent.com/szpPJJPygLmaz2q69wuZPHiK6EKnTtDZmj5KmTxKGlcFkw_lJObLfXQR-5C_ixwMssSFl-EDzQA1T8T4lbGYkA=s0-br30",
+    "total_quests_count": 5,
+    "selected_quests_count": 5,
+    "selected_quest_ids": [
+      "CgkI8_LsitsBEAIQAQ",
+      "CgkI8_LsitsBEAIQAg",
+      "CgkI8_LsitsBEAIQAw",
+      "CgkI8_LsitsBEAIQBA",
+      "CgkI8_LsitsBEAIQBQ"
+    ],
+    "selected_quests": [
+      {
+        "id": "CgkI8_LsitsBEAIQAQ",
+        "name": "2000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/t3FXmgbe_dxsL2pyvK5_Loc02BXMk8YCUtZkJzGfxCfhaNmyvWuCSWsC95t-p7RTebM"
+      },
+      {
+        "id": "CgkI8_LsitsBEAIQAg",
+        "name": "4000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/22O0NSXBp9x7iglp2Ur-YpKTuNw_Zkj4C-N4ZYh0FcfxlmlIsz42EhdL0HZoJvStkgI"
+      },
+      {
+        "id": "CgkI8_LsitsBEAIQAw",
+        "name": "6000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/tkYbYMyt7sydS9l7pSYeR3onsgc_Rzl7WCFpBaETWpsQrdbiFeFgCGweDXoE-pcd5WLB"
+      },
+      {
+        "id": "CgkI8_LsitsBEAIQBA",
+        "name": "8000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/2GXDGdGCYwud_kLe2ZEvMvo0P2nkzT_YXjVIwVCTfDUvvA6i9vEgW4VKFk85Vuu5TQ"
+      },
+      {
+        "id": "CgkI8_LsitsBEAIQBQ",
+        "name": "10000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/gZVwM28-1rTFZrEvLObEJ5Md18ULGVG2YVsBJCM3auu1L9ixhfoyM_VDqTN8Y6Nm9Q"
+      }
+    ]
+  },
+  "38": {
+    "service_id": "srv_38",
+    "game_id": "38",
+    "title": "Boost XP",
+    "package": "com.lulli.boostxp_levelbooster9",
+    "client_sig": "fd68fd03546ef61f9a94871be16746d88a7a2132",
+    "developer": "Level Up Booster",
+    "category": "level_up",
+    "section": "level_up",
+    "enabled": true,
+    "icon": "https://play-lh.googleusercontent.com/VwggUnXgKkAjAGh8n16lbQQOUeTLTwf_szwB_rO2HNDxy8ayAlOa0DNih7ynhClT-lJASfi-ABq-eqMwui8LbA=s0-br30",
+    "total_quests_count": 5,
+    "selected_quests_count": 5,
+    "selected_quest_ids": [
+      "CgkI4vaCsLsOEAIQAQ",
+      "CgkI4vaCsLsOEAIQAg",
+      "CgkI4vaCsLsOEAIQAw",
+      "CgkI4vaCsLsOEAIQBA",
+      "CgkI4vaCsLsOEAIQBQ"
+    ],
+    "selected_quests": [
+      {
+        "id": "CgkI4vaCsLsOEAIQAQ",
+        "name": "2000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/nykyBOdNksWqE8WpJpr6_jvoejLOl8ow699hIGqNadLSMohwesEV2AZLLOrhiWV8bw"
+      },
+      {
+        "id": "CgkI4vaCsLsOEAIQAg",
+        "name": "4000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/fa1BxzRzxbVjQb38c7UKHhUWbMRRB2Pb0-6v_vaXaUMSnvbKndhvf7gHYhu81pQPmQ"
+      },
+      {
+        "id": "CgkI4vaCsLsOEAIQAw",
+        "name": "6000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/TUu0TtwXAcNfb7tkmB2gdZUYI96PQNRjFlslFh3gfj6xzFE_hbXZloz5LTwlfGcyN_gk"
+      },
+      {
+        "id": "CgkI4vaCsLsOEAIQBA",
+        "name": "8000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/Jw5iT2AFZE6kxSSyyAzDh8gRVz-pvgdA4Z2JBBmDf1CfSAEPNPNLdlcrn6fjIwnR8ks"
+      },
+      {
+        "id": "CgkI4vaCsLsOEAIQBQ",
+        "name": "10000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/Qv8bBse1sfqppRf5LWxqcN4Mn-6DUWzssufYxBGd1sbgkXSyByJbbADQ6QmymkhEFQ"
+      }
+    ]
+  },
+  "39": {
+    "service_id": "srv_39",
+    "game_id": "39",
+    "title": "Boost XP",
+    "package": "com.lulli.boostxp_levelbooster2",
+    "client_sig": "fd68fd03546ef61f9a94871be16746d88a7a2132",
+    "developer": "Level Up Booster",
+    "category": "level_up",
+    "section": "level_up",
+    "enabled": true,
+    "icon": "https://play-lh.googleusercontent.com/YAJDj0rDcTYGeERg9qhNaXdZ0eZVT7wzklYSMhj6T-WkGHN3nyueoqQxlBZQFoYwFK74Ag2dcUo4Cz0g3MDGODw=s0-br30",
+    "total_quests_count": 5,
+    "selected_quests_count": 5,
+    "selected_quest_ids": [
+      "CgkIor3trIMQEAIQAQ",
+      "CgkIor3trIMQEAIQAg",
+      "CgkIor3trIMQEAIQAw",
+      "CgkIor3trIMQEAIQBA",
+      "CgkIor3trIMQEAIQBQ"
+    ],
+    "selected_quests": [
+      {
+        "id": "CgkIor3trIMQEAIQAQ",
+        "name": "2000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/jurrO_PFkgB26UvEF38Xiw78J02nyJ2aCkMolyUiv5tHsgB-BmZ8oUZGRHR3M0G5qDc"
+      },
+      {
+        "id": "CgkIor3trIMQEAIQAg",
+        "name": "4000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/Jwlmv5XwM7bNa3DJFatOkVkisi03b2TzacFcKFA-tltFOQBm_w9L_4qhQ2arhFqGauw"
+      },
+      {
+        "id": "CgkIor3trIMQEAIQAw",
+        "name": "6000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/ALPH1Ya5MM752vS2FLisu-hHgF5hwkum9Jao3h5IYnn3Zra1RQ4LsDcLaQ12k3OeSveV"
+      },
+      {
+        "id": "CgkIor3trIMQEAIQBA",
+        "name": "8000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/1-VLUOU0yzcqmZ3PLrtBqYuWBpM33V-R30WER-hCTAHkULgZRee1Ke4PqyCU5T6Y3jH9"
+      },
+      {
+        "id": "CgkIor3trIMQEAIQBQ",
+        "name": "10000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/CTNQSnoMPBPPYzdl5f1J2hcVxJziqIOTCKXS4mez44vPRDY9qGFjLtqxr1sCY6HCyA"
+      }
+    ]
+  },
+  "40": {
+    "service_id": "srv_40",
+    "game_id": "40",
+    "title": "Boost XP",
+    "package": "com.lulli.boostxp_levelbooster8",
+    "client_sig": "fd68fd03546ef61f9a94871be16746d88a7a2132",
+    "developer": "Level Up Booster",
+    "category": "level_up",
+    "section": "level_up",
+    "enabled": true,
+    "icon": "https://play-lh.googleusercontent.com/i9sAqistHP5nzmQSNoiUERJpwZ9DStsuu6nJ_mGNKPbkBpRv4puWT64ydThT7Az0lWJM6RlmBO2SV7ez2Eu6qQ=s0-br30",
+    "total_quests_count": 5,
+    "selected_quests_count": 5,
+    "selected_quest_ids": [
+      "CgkIiOXBsqwDEAIQAQ",
+      "CgkIiOXBsqwDEAIQAg",
+      "CgkIiOXBsqwDEAIQAw",
+      "CgkIiOXBsqwDEAIQBA",
+      "CgkIiOXBsqwDEAIQBQ"
+    ],
+    "selected_quests": [
+      {
+        "id": "CgkIiOXBsqwDEAIQAQ",
+        "name": "2000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/tNryONuPYeEfSFayU4Z-HyOE2l1m7wYHNI_qiuyO9uDJYfWplR18_N_TMoD092HPEA"
+      },
+      {
+        "id": "CgkIiOXBsqwDEAIQAg",
+        "name": "4000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/UDQ4_PIu5BkGzPfVOn-yA7cZcEfIjLLcFYifigQT3PkJ3myt39k8fZl1ZpbSZypgK28"
+      },
+      {
+        "id": "CgkIiOXBsqwDEAIQAw",
+        "name": "6000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/aRDbpP8L201_fKWBcakoNadQQ6aWN_Dq1BLjJFaUKpeNpC8fuT7sOLRikm6bv6C4wwo"
+      },
+      {
+        "id": "CgkIiOXBsqwDEAIQBA",
+        "name": "8000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/gklsntCfIojw8pAVmpzNCDFHQbMDAnCJAm2Xk7SuxQ5OWBhOHrmQ0tjff-zAvgn9Jg"
+      },
+      {
+        "id": "CgkIiOXBsqwDEAIQBQ",
+        "name": "10000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/HBEPpuYHvuFZJf0MhGidop38ZutjA6SF6UjgzrRjCCumSkcXjFYBIhQDeIJPilUY2g"
+      }
+    ]
+  },
+  "41": {
+    "service_id": "srv_41",
+    "game_id": "41",
+    "title": "Boost XP",
+    "package": "com.lulli.boostxp_levelbooster4",
+    "client_sig": "fd68fd03546ef61f9a94871be16746d88a7a2132",
+    "developer": "Level Up Booster",
+    "category": "level_up",
+    "section": "level_up",
+    "enabled": true,
+    "icon": "https://play-lh.googleusercontent.com/0pfC2Q7zG9qbM9pE2gk5ewoank-vNNBLHpMx1YKvuG8_x0VjdcIExNWmNLryEDloabyvSxUoPqtp5xAYx4l5Vgo=s0-br30",
+    "total_quests_count": 5,
+    "selected_quests_count": 5,
+    "selected_quest_ids": [
+      "CgkIxa_Ozr0bEAIQAQ",
+      "CgkIxa_Ozr0bEAIQAg",
+      "CgkIxa_Ozr0bEAIQAw",
+      "CgkIxa_Ozr0bEAIQBA",
+      "CgkIxa_Ozr0bEAIQBQ"
+    ],
+    "selected_quests": [
+      {
+        "id": "CgkIxa_Ozr0bEAIQAQ",
+        "name": "2000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/1DIxOOb-MQe8VPWi3_fWNyFPwQGU4oa5IfrS4EEsz-jGFj0ZZr5BkTBL6UIIyMUOtA"
+      },
+      {
+        "id": "CgkIxa_Ozr0bEAIQAg",
+        "name": "4000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/5UNU6gZYWaekQUzcl3gkKocKYpZyIkwrr4Tz23r0CpNzY0Ldpsp5Q-M7P_4jgA9s9rc"
+      },
+      {
+        "id": "CgkIxa_Ozr0bEAIQAw",
+        "name": "6000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/AwOVmoZ2EzD6rR_2FUureekHaLdM3Z2evfPQcnHWRgu52Cr2_Gx5-lMIzEeew0uOOiY"
+      },
+      {
+        "id": "CgkIxa_Ozr0bEAIQBA",
+        "name": "8000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/X-BxwsIiX5yZ6PXiDFZU6keOvkFcLmkF28DXHHvt2hDZF9IGXX0it0wtOQRvHY6QE24"
+      },
+      {
+        "id": "CgkIxa_Ozr0bEAIQBQ",
+        "name": "10000 Clicks!",
+        "description": "20.000 XP!",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/5nZp9_MIEhAYo8_svJkli_IvSieORt8nVE5aQuKfpE8jxTChbL-XmU-ImoT48-pWHw"
+      }
+    ]
+  },
+  "42": {
+    "service_id": "srv_42",
+    "game_id": "42",
+    "title": "Clicker XP Boost Points Tycoon",
+    "package": "com.goose.clickerxpboosterpointstycoon",
+    "client_sig": "5326c933b94ab9a2e6a35dfe3b8c1582d2699264",
+    "developer": "Level Up Booster",
+    "category": "level_up",
+    "section": "level_up",
+    "enabled": true,
+    "icon": "https://play-lh.googleusercontent.com/AujLggCaRJnOKEE3_F476l-MpByMZm6_flLPwhriy6daw7DfAigDsgmJ7007po_tWjwvLWONTMxXHQWbToRccPA=s0-br30",
+    "total_quests_count": 9,
+    "selected_quests_count": 9,
+    "selected_quest_ids": [
+      "CgkI2rCZxb0TEAIQDA",
+      "CgkI2rCZxb0TEAIQAg",
+      "CgkI2rCZxb0TEAIQBA",
+      "CgkI2rCZxb0TEAIQBw",
+      "CgkI2rCZxb0TEAIQCA",
+      "CgkI2rCZxb0TEAIQCQ",
+      "CgkI2rCZxb0TEAIQCg",
+      "CgkI2rCZxb0TEAIQCw",
+      "CgkI2rCZxb0TEAIQDQ"
+    ],
+    "selected_quests": [
+      {
+        "id": "CgkI2rCZxb0TEAIQDA",
+        "name": "Welcome",
+        "description": "Start the game",
+        "experiencePoints": 500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/v1E2gWiG85ZlFkIsZlLPB7Ar737bzN7CSvWShJ-J0uu5UHODFfIY6-Wt_5h1dRnDR5ig"
+      },
+      {
+        "id": "CgkI2rCZxb0TEAIQAg",
+        "name": "100 points",
+        "description": "Reach 100 points",
+        "experiencePoints": 1000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/AjFF-MwX11bxmroVQiOzZcsEiPzPv8Hp6A_fgFE2N7ghEk_XWrHqCuirPQlP6Qyrew"
+      },
+      {
+        "id": "CgkI2rCZxb0TEAIQBA",
+        "name": "30 points/sec",
+        "description": "Reach 30 points per sec",
+        "experiencePoints": 20000,
+        "achievementType": "INCREMENTAL",
+        "totalSteps": 100,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/IagBQZgEmdzqVEY7MQjzRt3ZPw78UCxkH5yxQMD215StBfygImMN2IlvXkYizf_7XxE"
+      },
+      {
+        "id": "CgkI2rCZxb0TEAIQBw",
+        "name": "500 points",
+        "description": "Reach 500 points",
+        "experiencePoints": 5000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/avWSLG2tl1-WkrNI6JgTootLK0eSdvuotQyfjb25ytsSqJEPc1a08xRKp_V63GqIhDU"
+      },
+      {
+        "id": "CgkI2rCZxb0TEAIQCA",
+        "name": "1000 points",
+        "description": "Reach 1000 points",
+        "experiencePoints": 10000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/7tEJep7ZgGyYNTiKvVasXzp2QzPfIE-RoWmpjb8QtpdmnWR1OyEobZndpWpCoj0t1w"
+      },
+      {
+        "id": "CgkI2rCZxb0TEAIQCQ",
+        "name": "2500 points",
+        "description": "Reach 2500 points",
+        "experiencePoints": 15000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/bC9rRhRuyh7wn1DnLlZKLGnyxjzUTbyUJldDueDkU-6Sbt0cjkrSURrBXD-Qg4u4LA"
+      },
+      {
+        "id": "CgkI2rCZxb0TEAIQCg",
+        "name": "5000 points",
+        "description": "Reach 5000 points",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/X_4hNq0-A0Wafb5xWzNuvmVo9gA3RQ1imRZFZRJUO-xpmP2VtauhG7w6ydyCNdRmkMU4"
+      },
+      {
+        "id": "CgkI2rCZxb0TEAIQCw",
+        "name": "10 000 points",
+        "description": "Reach 10 000 points",
+        "experiencePoints": 20000,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/n4Y6X3rC4npcsIuyt6xkoK5LyPByr5azOTops9fI5NIKtqf8MMkbB0RJ4NXl-kBnnAQ"
+      },
+      {
+        "id": "CgkI2rCZxb0TEAIQDQ",
+        "name": "50 000 Points",
+        "description": "Reach 50000 points",
+        "experiencePoints": 8500,
+        "achievementType": "STANDARD",
+        "totalSteps": null,
+        "unlockedIconUrl": "https://lh3.googleusercontent.com/drBM-MnRD4Q2on1P6Y8lqwK7i9Z_LHyyQQMmmYVZtnlQY7BKPceBS0V2eh065qB8xA"
+      }
+    ]
   }
 }

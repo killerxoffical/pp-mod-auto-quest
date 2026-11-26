@@ -1,0 +1,27 @@
+{
+  "xp_per_coin": 50000,
+  "min_coins": 1,
+  "packages": {
+    "lvl_1_10": {
+      "id": "lvl_1_10",
+      "name": "Level 1 ➔ 10 Boost",
+      "badge": "GOLDEN PROFILE",
+      "from_level": 1,
+      "target_level": 10,
+      "target_xp": 432000,
+      "enabled": true,
+      "description": "যেকোনো সাধারণ বা নতুন অ্যাকাউন্টকে সরাসরি জনপ্রিয় গোল্ডেন লেভেল ১০ এ উন্নীত করুন"
+    },
+    "lvl_10_20": {
+      "id": "lvl_10_20",
+      "name": "Level 10 ➔ 20 Pro Boost",
+      "badge": "ULTRA PRO",
+      "from_level": 10,
+      "target_level": 20,
+      "target_xp": 2500000,
+      "enabled": true,
+      "description": "লেভেল ১০+ অ্যাকাউন্টকে সরাসরি আল্ট্রা-প্রো লেভেল ২০ পর্যন্ত বুস্ট করুন"
+    }
+  },
+  "updated_at": 1795684000
+}
