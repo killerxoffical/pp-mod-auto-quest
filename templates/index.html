@@ -1541,6 +1541,7 @@
             padding: 3px;
             gap: 3px;
         }
+
         .instant-mode-pill .mode-btn {
             border: 1px solid transparent;
             background: transparent;
@@ -1556,10 +1557,12 @@
             gap: 4px;
             white-space: nowrap;
         }
+
         .instant-mode-pill .mode-btn:hover {
             background: rgba(255, 255, 255, 0.08);
             color: var(--text-primary);
         }
+
         .instant-mode-pill .mode-btn.active-mode {
             background: rgba(16, 185, 129, 0.18) !important;
             color: #10b981 !important;
@@ -1567,6 +1570,7 @@
             border-color: rgba(16, 185, 129, 0.4) !important;
             box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
         }
+
         .instant-mode-pill .mode-btn.shadow-mode {
             background: rgba(245, 158, 11, 0.18) !important;
             color: #f59e0b !important;
@@ -1574,6 +1578,7 @@
             border-color: rgba(245, 158, 11, 0.4) !important;
             box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
         }
+
         .instant-mode-pill .mode-btn.hidden-mode {
             background: rgba(239, 68, 68, 0.18) !important;
             color: #ef4444 !important;
@@ -1641,7 +1646,8 @@
                         <span>APK Node Builds</span>
                     </a>
                     <a href="/portal" target="_blank" class="nav-item" style="color:#0ea5e9; font-weight:700;">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            style="width:18px;height:18px;">
                             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                             <polyline points="15 3 21 3 21 9"></polyline>
                             <line x1="10" y1="14" x2="21" y2="3"></line>
@@ -1694,7 +1700,8 @@
                                 <span>🏆</span> <span id="topAchievementsCount">592</span> Achievements Unlocked
                             </span>
                             <span id="topEmail"
-                                style="font-size:11.5px; color:var(--text-muted); font-family:'JetBrains Mono';">Active Master Account</span>
+                                style="font-size:11.5px; color:var(--text-muted); font-family:'JetBrains Mono';">Active
+                                Master Account</span>
                             <button type="button" class="btn-sync-protocol"
                                 style="padding:3px 9px; font-size:10.5px; margin-left:6px; border-radius:10px; background:rgba(14,165,233,0.15); border:1px solid rgba(14,165,233,0.4); color:var(--accent-cyan); display:inline-flex; align-items:center; gap:4px;"
                                 onclick="openAccountSwitchModal()">🔄 Switch / Add Account</button>
@@ -1725,7 +1732,13 @@
                     <button id="btnTopQuickRefresh" class="btn-inspect-action" onclick="quickRefreshCurrentData()"
                         style="padding:7px 14px; font-size:12px; font-weight:800; display:inline-flex; align-items:center; gap:6px; border-radius:var(--radius-md); background:linear-gradient(135deg, rgba(14,165,233,0.14), rgba(16,185,129,0.14)); border:1px solid rgba(14,165,233,0.35); color:var(--text-primary); cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.15); transition:all 0.2s ease;"
                         title="Instant Live Refresh (Zero Page Reload)">
-                        <svg id="topRefreshIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                        <svg id="topRefreshIcon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                            style="transition:transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);">
+                            <path d="M23 4v6h-6" />
+                            <path d="M1 20v-6h6" />
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                        </svg>
                         <span id="topRefreshText">🔄 Live Refresh</span>
                     </button>
 
@@ -1749,8 +1762,8 @@
                         <!-- Active State: 6-Digit Pair Code Input -->
                         <div id="pairActiveInput" class="pair-active-input-box">
                             <span style="font-size:10px; font-weight:800; color:var(--accent-green);">CODE:</span>
-                            <input type="text" id="quickPairInput" class="code-input" placeholder="6-DIGIT" maxlength="6"
-                                oninput="resetPairBoxInactivityTimeout()"
+                            <input type="text" id="quickPairInput" class="code-input" placeholder="6-DIGIT"
+                                maxlength="6" oninput="resetPairBoxInactivityTimeout()"
                                 onkeydown="if(event.key==='Enter')connectWith6DigitCode()">
                             <button class="btn-code-connect" onclick="connectWith6DigitCode()">Sync</button>
                             <button class="btn-code-close" onclick="hidePairCodeBox()" title="Cover again">✕</button>
@@ -1916,10 +1929,13 @@
             <!-- VIEW 2: Register New Android Game -->
             <section id="viewAddGame" class="admin-view-panel hidden">
                 <div style="max-width:880px; margin:0 auto;">
-                    <div class="form-card" style="box-shadow:var(--shadow-card); border-radius:var(--radius-xl); padding:28px;">
-                        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:12px; border-bottom:1px solid var(--border-color); padding-bottom:16px;">
+                    <div class="form-card"
+                        style="box-shadow:var(--shadow-card); border-radius:var(--radius-xl); padding:28px;">
+                        <div
+                            style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:12px; border-bottom:1px solid var(--border-color); padding-bottom:16px;">
                             <div style="display:flex; align-items:center; gap:14px;">
-                                <div style="width:48px; height:48px; border-radius:12px; background:linear-gradient(135deg, #8b5cf6, #0ea5e9); display:flex; align-items:center; justify-content:center; font-size:24px; color:#fff; box-shadow:0 4px 14px rgba(139,92,246,0.3);">
+                                <div
+                                    style="width:48px; height:48px; border-radius:12px; background:linear-gradient(135deg, #8b5cf6, #0ea5e9); display:flex; align-items:center; justify-content:center; font-size:24px; color:#fff; box-shadow:0 4px 14px rgba(139,92,246,0.3);">
                                     🎮
                                 </div>
                                 <div>
@@ -1927,11 +1943,13 @@
                                         Register New Android Game
                                     </h3>
                                     <p style="font-size:12px; color:var(--text-secondary); margin:3px 0 0;">
-                                        Use the Auto-Scanner to instantly search any game title or package name and populate logo &amp; metadata automatically!
+                                        Use the Auto-Scanner to instantly search any game title or package name and
+                                        populate logo &amp; metadata automatically!
                                     </p>
                                 </div>
                             </div>
-                            <span style="background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.3); font-size:11px; font-weight:800; padding:5px 12px; border-radius:20px; font-family:'JetBrains Mono';">
+                            <span
+                                style="background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.3); font-size:11px; font-weight:800; padding:5px 12px; border-radius:20px; font-family:'JetBrains Mono';">
                                 🟢 GPGS Auto-Engine
                             </span>
                         </div>
@@ -1969,7 +1987,8 @@
                                 <div class="form-field">
                                     <label>Client Signature (SHA-1) [Pre-filled]</label>
                                     <input type="text" id="formGameSig" class="form-input-element"
-                                        placeholder="58e71785c961e7328ea9c76de647f8f6c4403b39" value="58e71785c961e7328ea9c76de647f8f6c4403b39">
+                                        placeholder="58e71785c961e7328ea9c76de647f8f6c4403b39"
+                                        value="58e71785c961e7328ea9c76de647f8f6c4403b39">
                                 </div>
                                 <div class="form-field">
                                     <label>Category / Genre</label>
@@ -2001,7 +2020,8 @@
                                 </div>
                             </div>
 
-                            <div style="margin-top:24px; padding-top:16px; border-top:1px solid var(--border-color); display:flex; justify-content:flex-end; align-items:center;">
+                            <div
+                                style="margin-top:24px; padding-top:16px; border-top:1px solid var(--border-color); display:flex; justify-content:flex-end; align-items:center;">
                                 <button type="submit" id="btnSubmitAddGame" class="btn-sync-protocol"
                                     style="padding:11px 26px; font-size:13.5px; font-weight:800; background:linear-gradient(135deg, #10b981, #059669); border:none; box-shadow:0 4px 14px rgba(16,185,129,0.35);">
                                     <span>➕ Add Game to Catalog</span>
@@ -2050,7 +2070,8 @@
                                     onclick="loadUsersList()">
                                     <span>🔄 Refresh</span>
                                 </button>
-                                <button class="btn-inspect-action" style="padding: 8px 14px; font-size: 12px; color:#ef4444; border-color:rgba(239,68,68,0.3); background:rgba(239,68,68,0.08);"
+                                <button class="btn-inspect-action"
+                                    style="padding: 8px 14px; font-size: 12px; color:#ef4444; border-color:rgba(239,68,68,0.3); background:rgba(239,68,68,0.08);"
                                     onclick="wipeAllUsersAction()">
                                     <span>🗑️ Wipe All Users</span>
                                 </button>
@@ -2253,8 +2274,7 @@
                         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                             <button class="btn-inspect-action"
                                 style="padding:9px 16px; font-size:12.5px; font-weight:800; display:inline-flex; align-items:center; gap:6px; background:rgba(14,165,233,0.12); border-color:rgba(14,165,233,0.35); color:var(--accent-cyan); border-radius:var(--radius-md);"
-                                onclick="loadPortalServices()"
-                                title="Instantly reload Public Portal services list">
+                                onclick="loadPortalServices()" title="Instantly reload Public Portal services list">
                                 <span>🔄 Refresh Services</span>
                             </button>
                             <a href="/portal" target="_blank" rel="noopener" class="btn-inspect-action"
@@ -2265,17 +2285,24 @@
                     </div>
 
                     <!-- PPM SERVER App APK Download Link Config Bar -->
-                    <div style="padding:14px 24px; background:linear-gradient(135deg, rgba(79,70,229,0.12), rgba(16,185,129,0.08)); border-bottom:1px solid rgba(79,70,229,0.25); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <div
+                        style="padding:14px 24px; background:linear-gradient(135deg, rgba(79,70,229,0.12), rgba(16,185,129,0.08)); border-bottom:1px solid rgba(79,70,229,0.25); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
                         <div style="display:flex; align-items:center; gap:12px; min-width:280px;">
                             <span style="font-size:24px;">📲</span>
                             <div>
-                                <strong style="font-size:13.5px; color:var(--text-primary); display:block;">PPM SERVER App Download Link (WebApp User Link)</strong>
-                                <span style="font-size:11.5px; color:var(--text-muted);">Webapp-এ ইউজাররা 'Download APK' চাপলে আপনার দেওয়া এই লিংকে যাবে (Google Drive, Mediafire বা APK লিঙ্ক দিন)।</span>
+                                <strong style="font-size:13.5px; color:var(--text-primary); display:block;">PPM SERVER
+                                    App Download Link (WebApp User Link)</strong>
+                                <span style="font-size:11.5px; color:var(--text-muted);">Webapp-এ ইউজাররা 'Download APK'
+                                    চাপলে আপনার দেওয়া এই লিংকে যাবে (Google Drive, Mediafire বা APK লিঙ্ক দিন)।</span>
                             </div>
                         </div>
-                        <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:320px; max-width:600px;">
-                            <input id="portalApkDownloadUrl" type="url" placeholder="https://..." class="form-input-element" style="height:40px; font-size:12.5px; font-family:'JetBrains Mono'; flex:1;">
-                            <button type="button" class="btn-primary" onclick="savePortalApkDownloadUrl()" style="padding:9px 18px; font-size:12.5px; font-weight:800; white-space:nowrap; background:linear-gradient(135deg, #10b981, #059669); cursor:pointer;">
+                        <div
+                            style="display:flex; align-items:center; gap:8px; flex:1; min-width:320px; max-width:600px;">
+                            <input id="portalApkDownloadUrl" type="url" placeholder="https://..."
+                                class="form-input-element"
+                                style="height:40px; font-size:12.5px; font-family:'JetBrains Mono'; flex:1;">
+                            <button type="button" class="btn-primary" onclick="savePortalApkDownloadUrl()"
+                                style="padding:9px 18px; font-size:12.5px; font-weight:800; white-space:nowrap; background:linear-gradient(135deg, #10b981, #059669); cursor:pointer;">
                                 💾 Save Link
                             </button>
                         </div>
@@ -2437,8 +2464,10 @@
                                     <img src="/static/images/pp_logo.png"
                                         style="width:48px; height:48px; border-radius:var(--radius-md); object-fit:cover; box-shadow:0 4px 12px rgba(139,92,246,0.3); border:1px solid var(--border-color);">
                                     <div>
-                                        <h4 style="font-size:16px; font-weight:800; color:var(--text-primary);">PPM CLOUD Client App</h4>
-                                        <span style="font-size:11.5px; color:var(--accent-green); font-weight:700;">v4.5 Official • Release Signed (V1+V2+V3)</span>
+                                        <h4 style="font-size:16px; font-weight:800; color:var(--text-primary);">PPM
+                                            CLOUD Client App</h4>
+                                        <span style="font-size:11.5px; color:var(--accent-green); font-weight:700;">v4.5
+                                            Official • Release Signed (V1+V2+V3)</span>
                                     </div>
                                 </div>
                                 <div style="display:flex; align-items:center; gap:8px;">
@@ -2467,7 +2496,8 @@
                         <div style="display:flex; flex-direction:column; gap:6px;">
                             <a href="/download/PPM_Cloud.apk" class="btn-download-apk" download>
                                 <svg style="width:16px; height:16px; fill:currentColor;" viewBox="0 0 24 24">
-                                    <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z" />
+                                    <path
+                                        d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z" />
                                 </svg>
                                 <span>⬇️ Download PPM_Cloud.apk (v4.5 Official)</span>
                             </a>
@@ -2579,7 +2609,8 @@
                             </div>
                             <p style="font-size:12.5px; color:var(--text-secondary); margin-top:6px; line-height:1.5;">
                                 এডমিন এখান থেকে নতুন ভার্সন নেম পুশ করলে সকল ইউজারের <strong>PPM CLOUD</strong> অ্যাপে
-                                সরাসরি ৩ডি রকেট ফোর্স-আপডেট পপআপ শো করবে এবং আপডেট না করা পর্যন্ত কোনো ইউজার অ্যাপ ব্যবহার করতে পারবে না।
+                                সরাসরি ৩ডি রকেট ফোর্স-আপডেট পপআপ শো করবে এবং আপডেট না করা পর্যন্ত কোনো ইউজার অ্যাপ
+                                ব্যবহার করতে পারবে না।
                             </p>
                         </div>
                         <div style="display:flex; align-items:center; gap:8px;">
@@ -2596,10 +2627,10 @@
                                 style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:6px;">Target
                                 Version (যেমন: 4.5 বা 5.0) *</label>
                             <input id="updVerName" type="text" class="form-input-element" value="4.5"
-                                style="height:42px; font-weight:800; font-size:13.5px;"
-                                placeholder="4.5">
+                                style="height:42px; font-weight:800; font-size:13.5px;" placeholder="4.5">
                             <span style="font-size:11px; color:var(--text-muted); display:block; margin-top:4px;">
-                                💡 কোনো Build বা কোডের ঝামেলা নেই—শুধু ভার্সন সংখ্যা লিখবেন (যেমন: 4.5 বা 5.0)। এখন ৪.৫ চলছে, যখনই ৫.০ লিখে সেভ করবেন সকল ইউজারের অ্যাপে সাথে সাথে রকেট ফোর্স-আপডেট চলে আসবে।
+                                💡 কোনো Build বা কোডের ঝামেলা নেই—শুধু ভার্সন সংখ্যা লিখবেন (যেমন: 4.5 বা 5.0)। এখন ৪.৫
+                                চলছে, যখনই ৫.০ লিখে সেভ করবেন সকল ইউজারের অ্যাপে সাথে সাথে রকেট ফোর্স-আপডেট চলে আসবে।
                             </span>
                         </div>
                         <div>
@@ -2610,7 +2641,8 @@
                                 value="https://pp-mod-auto-quest.onrender.com/download/PPM_Cloud.apk"
                                 style="height:42px; font-family:'JetBrains Mono'; font-size:12.5px;">
                             <span style="font-size:11px; color:var(--text-muted); display:block; margin-top:4px;">ইউজার
-                                আপডেট বাটনে ক্লিক করলে সরাসরি এই লিংক থেকে লেটেস্ট APK ডাউনলোড শুরু হবে (সেভ করলে লিংক আর কখনোই উধাও হবে না)।</span>
+                                আপডেট বাটনে ক্লিক করলে সরাসরি এই লিংক থেকে লেটেস্ট APK ডাউনলোড শুরু হবে (সেভ করলে লিংক
+                                আর কখনোই উধাও হবে না)।</span>
                         </div>
                         <div>
                             <label
@@ -2624,7 +2656,8 @@
 
                     <div
                         style="display:flex; justify-content:space-between; align-items:center; margin-top:18px; padding-top:14px; border-top:1px solid var(--border-color); flex-wrap:wrap; gap:12px;">
-                        <span style="font-size:12.5px; color:var(--accent-purple); font-weight:800; display:flex; align-items:center; gap:6px;">
+                        <span
+                            style="font-size:12.5px; color:var(--accent-purple); font-weight:800; display:flex; align-items:center; gap:6px;">
                             ⚡ সকল ইউজারের জন্য বাধ্যতামূলক ফোর্স আপডেট (আপডেট না দিলে ইউজার অ্যাপে ঢুকতে পারবে না)
                         </span>
                         <button type="button" class="btn-primary" onclick="pushAppForceUpdate()"
@@ -2646,28 +2679,39 @@
                                     PPM CLOUD App Maintenance Mode (ফুলস্ক্রিন অ্যাপ লক)
                                 </h4>
                                 <span style="font-size:11.5px; color:var(--text-secondary); margin-top:2px;">
-                                    অন থাকলে সকল ইউজারের অ্যাপে ফুলস্ক্রিন ৩ডি অ্যাস্ট্রোনাট মেইনটেনেন্স স্ক্রিন চলে আসবে এবং কোনো অপশনে যেতে পারবে না।
+                                    অন থাকলে সকল ইউজারের অ্যাপে ফুলস্ক্রিন ৩ডি অ্যাস্ট্রোনাট মেইনটেনেন্স স্ক্রিন চলে
+                                    আসবে এবং কোনো অপশনে যেতে পারবে না।
                                 </span>
                             </div>
                         </div>
-                        <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:800; color:#ef4444; cursor:pointer;">
-                            <input id="chkMaintenanceMode" type="checkbox" style="width:20px; height:20px; accent-color:#ef4444;">
+                        <label
+                            style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:800; color:#ef4444; cursor:pointer;">
+                            <input id="chkMaintenanceMode" type="checkbox"
+                                style="width:20px; height:20px; accent-color:#ef4444;">
                             <span>Enable Maintenance Mode Now</span>
                         </label>
                     </div>
 
                     <div style="display:grid; grid-template-columns: 1fr 2fr; gap:14px;">
                         <div>
-                            <label style="font-size:11.5px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">Maintenance Title</label>
-                            <input id="updMaintTitle" type="text" class="form-input-element" value="System Under Maintenance" style="height:38px; font-size:12.5px;">
+                            <label
+                                style="font-size:11.5px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">Maintenance
+                                Title</label>
+                            <input id="updMaintTitle" type="text" class="form-input-element"
+                                value="System Under Maintenance" style="height:38px; font-size:12.5px;">
                         </div>
                         <div>
-                            <label style="font-size:11.5px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">Maintenance Message (Display to Users)</label>
-                            <input id="updMaintMsg" type="text" class="form-input-element" value="Our servers are currently undergoing scheduled maintenance to upgrade security and performance. Please try again later." style="height:38px; font-size:12px;">
+                            <label
+                                style="font-size:11.5px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">Maintenance
+                                Message (Display to Users)</label>
+                            <input id="updMaintMsg" type="text" class="form-input-element"
+                                value="Our servers are currently undergoing scheduled maintenance to upgrade security and performance. Please try again later."
+                                style="height:38px; font-size:12px;">
                         </div>
                     </div>
 
-                    <div style="display:flex; justify-content:flex-end; margin-top:16px; padding-top:12px; border-top:1px solid rgba(239,68,68,0.2);">
+                    <div
+                        style="display:flex; justify-content:flex-end; margin-top:16px; padding-top:12px; border-top:1px solid rgba(239,68,68,0.2);">
                         <button type="button" class="btn-primary" onclick="saveAppMaintenanceMode()"
                             style="background:#dc2626; border-color:#b91c1c; padding:10px 24px; font-weight:800; font-size:13px;">
                             🛡️ Save Maintenance Settings
@@ -6105,7 +6149,7 @@
                         renderPortalServicesGrid();
                     }
                 }
-            } catch(e) {}
+            } catch (e) { }
 
             // Auto-load live APK download URL
             fetch(`${API_BASE}/api/app/version`)
@@ -6117,7 +6161,7 @@
                         const upd = document.getElementById("updDownloadUrl");
                         if (upd) upd.value = d.download_url;
                     }
-                }).catch(() => {});
+                }).catch(() => { });
 
             const container = document.getElementById("portalServicesContainer");
             if (!container) return;
@@ -6131,7 +6175,7 @@
                 const data = await res.json();
                 if (data.ok && Array.isArray(data.services) && data.services.length) {
                     portalAllServices = data.services;
-                    try { localStorage.setItem("pp_admin_portal_services_cache", JSON.stringify(portalAllServices)); } catch(e){}
+                    try { localStorage.setItem("pp_admin_portal_services_cache", JSON.stringify(portalAllServices)); } catch (e) { }
                     renderPortalServicesGrid();
                     loaded = true;
                 }
@@ -6149,12 +6193,12 @@
                         const cfServices = Object.values(cfObj).filter(s => s && s.enabled !== false);
                         if (cfServices.length) {
                             portalAllServices = cfServices;
-                            try { localStorage.setItem("pp_admin_portal_services_cache", JSON.stringify(portalAllServices)); } catch(e){}
+                            try { localStorage.setItem("pp_admin_portal_services_cache", JSON.stringify(portalAllServices)); } catch (e) { }
                             renderPortalServicesGrid();
                             loaded = true;
                         }
                     }
-                } catch(cfErr) {
+                } catch (cfErr) {
                     console.error("Cloudflare fallback in admin services editor failed:", cfErr);
                 }
             }
@@ -6424,7 +6468,7 @@
                         };
                     }
                 }
-            } catch(e) {
+            } catch (e) {
                 console.warn("Direct fetch level-up data failed:", e);
             }
 
@@ -6660,7 +6704,7 @@
                         <img src="${g.icon || 'https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512'}" onerror="this.src='https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512'" style="width:42px; height:42px; border-radius:10px; object-fit:cover; border:1px solid var(--border-color); box-shadow:0 2px 6px rgba(0,0,0,0.1); flex-shrink:0;">
                         <div style="min-width:0; flex:1;">
                             <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
-                                <span style="font-size:10px; font-weight:800; color:var(--text-muted); font-family:'JetBrains Mono'; background:var(--bg-card-subtle); padding:1px 5px; border-radius:4px;">#${idx+1}</span>
+                                <span style="font-size:10px; font-weight:800; color:var(--text-muted); font-family:'JetBrains Mono'; background:var(--bg-card-subtle); padding:1px 5px; border-radius:4px;">#${idx + 1}</span>
                                 <strong style="font-size:13px; font-weight:700; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block;" title="${escapeHtml(g.title)}">${escapeHtml(g.title)}</strong>
                             </div>
                             <span style="font-size:10.5px; font-family:'JetBrains Mono'; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block;" title="${escapeHtml(g.package)}">${escapeHtml(g.package)}</span>
@@ -6782,7 +6826,7 @@
                     resetButtons();
                     showFeedbackToast("❌ " + (d.error || "Failed to save configuration"), "error");
                 }
-            } catch(e) {
+            } catch (e) {
                 resetButtons();
                 showFeedbackToast("❌ Connection error while saving configuration.", "error");
             }
@@ -6827,13 +6871,13 @@
                 const isSelected = (selectedGameId === g.id);
 
                 // Check if this game is already added to Public Portal
-                const existingSrv = (portalAllServices || []).find(s => 
-                    String(s.id) === String(g.id) || 
-                    String(s.game_id) === String(g.id) || 
+                const existingSrv = (portalAllServices || []).find(s =>
+                    String(s.id) === String(g.id) ||
+                    String(s.game_id) === String(g.id) ||
                     (s.package && g.package && s.package.toLowerCase() === g.package.toLowerCase())
                 );
                 const isAlreadyAdded = !!existingSrv || !!g.is_added;
-                const addedQuestsCount = existingSrv 
+                const addedQuestsCount = existingSrv
                     ? (existingSrv.selected_quests_count || (existingSrv.selected_quest_ids ? existingSrv.selected_quest_ids.length : 0))
                     : (g.selected_count || 0);
 
@@ -7009,7 +7053,7 @@
                             const input = document.getElementById("portalGameSearchInput");
                             renderPortalGamesVisualList(input ? input.value : '');
                         }
-                    }).catch(() => {});
+                    }).catch(() => { });
             }
         }
 
@@ -7199,7 +7243,7 @@
             }
         }
 
-                async function setPortalServiceMode(gameId, mode, ev) {
+        async function setPortalServiceMode(gameId, mode, ev) {
             if (ev) ev.stopPropagation();
             const s = portalAllServices.find(x => (x.id || x.game_id || x.package || x.title) === gameId || x.title === gameId);
             if (!s) return;
@@ -7218,7 +7262,7 @@
 
             try {
                 localStorage.setItem("pp_admin_portal_services_cache", JSON.stringify(portalAllServices));
-            } catch(e){}
+            } catch (e) { }
             renderPortalServicesGrid();
 
             const toastLabels = {
@@ -7239,7 +7283,7 @@
                 if (!data.ok) {
                     showToast('Server update warning: ' + (data.error || 'Check network'), 'warning');
                 }
-            } catch(err) {
+            } catch (err) {
                 console.warn('setPortalServiceMode network sync error:', err);
             }
         }
@@ -7264,7 +7308,7 @@
             }
         }
 
-async function togglePortalService(gameId) {
+        async function togglePortalService(gameId) {
             try {
                 const res = await fetch(`${API_BASE}/api/portal/services/toggle`, {
                     method: "POST",
@@ -7505,7 +7549,7 @@ async function togglePortalService(gameId) {
                 }
             }
         }
-    
+
         // ================= SERVICED ACCOUNTS AUDIT & HISTORY (CACHED & LIVE) =================
         let allServicedLogs = [];
 
@@ -7539,9 +7583,9 @@ async function togglePortalService(gameId) {
                                 renderServicedHistoryTable(allServicedLogs);
                             }
                         }
-                    }).catch(() => {});
+                    }).catch(() => { });
             }
-            
+
             // 1. Instant Cache Render: load immediately from localStorage with 0ms delay!
             let hasCache = false;
             try {
@@ -7555,7 +7599,7 @@ async function togglePortalService(gameId) {
                         renderServicedHistoryTable(allServicedLogs);
                     }
                 }
-            } catch(e) {}
+            } catch (e) { }
 
             // Only show spinner if no cache exists
             if (!hasCache && tbody) {
@@ -7572,11 +7616,11 @@ async function togglePortalService(gameId) {
                     renderServicedHistoryTable(allServicedLogs);
                     try {
                         localStorage.setItem("pp_serviced_history_cache", JSON.stringify(data));
-                    } catch(e) {}
+                    } catch (e) { }
                 } else if (!hasCache && tbody) {
                     tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:25px; color:#ef4444;">${data.error || "Failed to load audit history."}</td></tr>`;
                 }
-            } catch(e) {
+            } catch (e) {
                 if (!hasCache && tbody) {
                     tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:25px; color:#ef4444;">Error connecting to Render backend: ${e.message}</td></tr>`;
                 }
@@ -7621,7 +7665,7 @@ async function togglePortalService(gameId) {
                     if (parts.length >= 2) {
                         const dp = parts[0].split("-");
                         if (dp.length === 3) {
-                            const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+                            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
                             const mIdx = parseInt(dp[1], 10) - 1;
                             const mName = (mIdx >= 0 && mIdx < 12) ? months[mIdx] : dp[1];
                             dateStr = `${dp[2]} ${mName} ${dp[0]}`;
@@ -7816,17 +7860,17 @@ async function togglePortalService(gameId) {
             tbody.innerHTML = html;
         }
 
-        window.copyTableUid = function(btn, text) {
+        window.copyTableUid = function (btn, text) {
             if (!navigator.clipboard) return;
             navigator.clipboard.writeText(text).then(() => {
                 const orig = btn.innerHTML;
                 btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
                 if (typeof showToast === "function") showToast("Web User UID Copied!");
                 setTimeout(() => { btn.innerHTML = orig; }, 1500);
-            }).catch(() => {});
+            }).catch(() => { });
         };
 
-        window.refreshServicedHistoryWithAnim = async function() {
+        window.refreshServicedHistoryWithAnim = async function () {
             const svg = document.getElementById("historyRefreshSvg");
             const txt = document.getElementById("historyRefreshText");
             const btn = document.getElementById("btnHistoryRefresh");
@@ -7877,13 +7921,13 @@ async function togglePortalService(gameId) {
             loadServicedHistory();
         });
 
-    
+
         /* ---------- PUBLIC PORTAL VIEW MODE TOGGLE ---------- */
         let _portalViewMode = localStorage.getItem("pp_portal_view_mode") || "edit";
 
         function setPortalViewMode(mode) {
             _portalViewMode = mode;
-            try { localStorage.setItem("pp_portal_view_mode", mode); } catch(e){}
+            try { localStorage.setItem("pp_portal_view_mode", mode); } catch (e) { }
             const bEdit = document.getElementById("btnModeAdminEdit");
             const bPub = document.getElementById("btnModePublicView");
             if (bEdit) {
