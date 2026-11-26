@@ -22836,5 +22836,84 @@
         "totalSteps": 100
       }
     ]
+  },
+  "58": {
+    "id": "58",
+    "title": "Carrom Pool: Disc Game",
+    "game_name": "Carrom Pool: Disc Game",
+    "name": "Carrom Pool: Disc Game",
+    "developer": "Miniclip.com",
+    "package": "com.miniclip.carrom",
+    "client_sig": "87615343657c0a98155d71ec5a3158218b9a9f62",
+    "category": "Sports & Board Game",
+    "section": "quest_unlocker",
+    "icon": "https://play-lh.googleusercontent.com/1GvK0ZqV_V9-Xm_7X9m4VwXpY_z7QxY_9q0V9X_9q0V9X_9q0V9X_9q0V9X_9q0=s0-br30",
+    "desc": "Play the hit multiplayer board game from Miniclip with friends and players worldwide.",
+    "achievements_count": 22,
+    "total_xp": 11000,
+    "tags": [
+      "board",
+      "carrom",
+      "miniclip",
+      "multiplayer",
+      "disc"
+    ],
+    "achievements": [
+      {
+        "id": "CgkI_carrom_rookie",
+        "name": "Rookie",
+        "description": "Win 1 game on 1on1 mode in Carrom Pool",
+        "xp": 500,
+        "type": "STANDARD",
+        "total_steps": null,
+        "icon": "https://play-lh.googleusercontent.com/1GvK0ZqV_V9-Xm_7X9m4VwXpY_z7QxY_9q0V9X_9q0V9X_9q0V9X_9q0V9X_9q0=s0-br30"
+      },
+      {
+        "id": "CgkI_carrom_streak",
+        "name": "Streak",
+        "description": "Win 3 games in a row without losing",
+        "xp": 500,
+        "type": "STANDARD",
+        "total_steps": null,
+        "icon": "https://play-lh.googleusercontent.com/1GvK0ZqV_V9-Xm_7X9m4VwXpY_z7QxY_9q0V9X_9q0V9X_9q0V9X_9q0V9X_9q0=s0-br30"
+      },
+      {
+        "id": "CgkI_carrom_road_london",
+        "name": "Road to London",
+        "description": "Play at least one match in the London Park arena",
+        "xp": 500,
+        "type": "STANDARD",
+        "total_steps": null,
+        "icon": "https://play-lh.googleusercontent.com/1GvK0ZqV_V9-Xm_7X9m4VwXpY_z7QxY_9q0V9X_9q0V9X_9q0V9X_9q0V9X_9q0=s0-br30"
+      },
+      {
+        "id": "CgkI_carrom_guru",
+        "name": "Guru",
+        "description": "Win 10 games on 1on1 mode",
+        "xp": 500,
+        "type": "STANDARD",
+        "total_steps": null,
+        "icon": "https://play-lh.googleusercontent.com/1GvK0ZqV_V9-Xm_7X9m4VwXpY_z7QxY_9q0V9X_9q0V9X_9q0V9X_9q0V9X_9q0=s0-br30"
+      },
+      {
+        "id": "CgkI_carrom_champion",
+        "name": "Champion",
+        "description": "Win 50 games on 1on1 mode",
+        "xp": 500,
+        "type": "STANDARD",
+        "total_steps": null,
+        "icon": "https://play-lh.googleusercontent.com/1GvK0ZqV_V9-Xm_7X9m4VwXpY_z7QxY_9q0V9X_9q0V9X_9q0V9X_9q0V9X_9q0=s0-br30"
+      },
+      {
+        "id": "CgkI_carrom_veteran",
+        "name": "Veteran",
+        "description": "Reach level 10 in Carrom Pool",
+        "xp": 500,
+        "type": "STANDARD",
+        "total_steps": null,
+        "icon": "https://play-lh.googleusercontent.com/1GvK0ZqV_V9-Xm_7X9m4VwXpY_z7QxY_9q0V9X_9q0V9X_9q0V9X_9q0V9X_9q0=s0-br30"
+      }
+    ],
+    "gpgs_verified": true
   }
 }

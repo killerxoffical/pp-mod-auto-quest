@@ -63,17 +63,25 @@ def _do_sync_portal_services():
         print(f"[-] Cloudflare portal-services fetch warning: {e}")
 
     if cf_data is not None:
-        # Smart merge: Cloudflare is cloud source, but protect newer/unsynced local edits
-        merged = dict(cf_data)
-        for k, v in local_data.items():
-            if k not in merged:
-                merged[k] = v
+        # Smart Hybrid Merge: Local file is master source of truth for games & achievements
+        # Cloudflare D1 provides dynamic admin state overrides (enabled, no_data, custom additions)
+        for k, cf_entry in cf_data.items():
+            if not isinstance(cf_entry, dict):
+                continue
+            if k in local_data:
+                # Apply dynamic admin state overrides
+                if "enabled" in cf_entry:
+                    local_data[k]["enabled"] = bool(cf_entry["enabled"])
+                if "no_data" in cf_entry:
+                    local_data[k]["no_data"] = bool(cf_entry["no_data"])
+                # Preserve selected quests if cf has explicitly customized quests with count > 0
+                if cf_entry.get("selected_quests") and len(cf_entry.get("selected_quests", [])) > 0:
+                    local_data[k]["selected_quests"] = cf_entry["selected_quests"]
+                    local_data[k]["selected_quest_ids"] = cf_entry.get("selected_quest_ids", [q["id"] for q in cf_entry["selected_quests"]])
+                    local_data[k]["selected_quests_count"] = len(local_data[k]["selected_quests"])
             else:
-                local_ts = str(v.get("updated_at") or v.get("created_at") or "")
-                cf_ts = str(merged[k].get("updated_at") or merged[k].get("created_at") or "")
-                if local_ts >= cf_ts:
-                    merged[k] = v
-        local_data = merged
+                # Newly added custom game from Cloudflare
+                local_data[k] = cf_entry
         try:
             with open(PORTAL_SERVICES_FILE, "w", encoding="utf-8") as f:
                 json.dump(local_data, f, indent=2, ensure_ascii=False)
