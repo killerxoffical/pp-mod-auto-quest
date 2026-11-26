@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PP Mod • Public Quest Service Portal</title>
+    <title>Quest Portal</title>
     <link rel="icon" type="image/svg+xml" href="/static/images/brand_logo.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -45,6 +45,9 @@
             --shadow-elevated: 0 18px 36px -6px rgba(0, 0, 0, 0.45);
             --shadow-glow: 0 0 25px rgba(14, 165, 233, 0.25);
         }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .rotate-spin { display: inline-block; animation: spin 0.8s linear infinite; }
 
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
@@ -475,7 +478,7 @@
             <a href="/portal" class="brand">
                 <div class="brand-icon">🌐</div>
                 <div>
-                    <div class="brand-title">PP Mod • <span>Quest Portal</span></div>
+                    <div class="brand-title">Quest Portal</div>
                 </div>
             </a>
             <div class="header-actions">
@@ -575,10 +578,14 @@
                     </div>
                 </div>
 
-                <div style="display:flex; align-items:center; gap:10px;">
+                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                     <span style="font-size:11px; color:var(--accent-green); font-weight:700; display:inline-flex; align-items:center; gap:4px;">
                         <span style="width:7px; height:7px; border-radius:50%; background:var(--accent-green); display:inline-block;"></span> Active Session
                     </span>
+                    <button type="button" class="btn-action" id="btnRefreshAccount" style="background:var(--bg-card); color:var(--text-primary); border:1px solid var(--border-color); box-shadow:none; padding:8px 14px; font-size:12px; display:inline-flex; align-items:center; gap:6px;" onclick="refreshConnectedAccount(false)" title="Check session validity & refresh gamer profile">
+                        <span id="refreshAccountIcon">🔄</span>
+                        <span id="refreshAccountText">Refresh Account</span>
+                    </button>
                     <button type="button" class="btn-action" style="background:#ef4444; box-shadow:none; padding:8px 16px; font-size:12px;" onclick="disconnectPortalAccount()">✕ Disconnect</button>
                 </div>
             </div>
@@ -598,16 +605,19 @@
                 </span>
             </div>
 
-            <!-- Public Portal 2 Sections: LEVEL-UP & QUEST UNLOCKER -->
+            <!-- Public Portal Filter Tabs: ALL, OFFICIAL QUESTS, RANDOM/CUSTOM, LEVEL-UP -->
             <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
                 <button class="portal-section-pill active" id="portalPillAll" onclick="setPortalSection('all')">
                     <span>🎮 All Services (<span id="portalCountAll">0</span>)</span>
                 </button>
+                <button class="portal-section-pill" id="portalPillOfficial" onclick="setPortalSection('official')" style="color:#10b981; border-color:rgba(16,185,129,0.3); background:rgba(16,185,129,0.06);">
+                    <span>🎯 Official Quests (<span id="portalCountOfficial">0</span>)</span>
+                </button>
+                <button class="portal-section-pill" id="portalPillRandom" onclick="setPortalSection('random')" style="color:#a855f7; border-color:rgba(168,85,247,0.3); background:rgba(168,85,247,0.06);">
+                    <span>🎲 Random / Custom (<span id="portalCountRandom">0</span>)</span>
+                </button>
                 <button class="portal-section-pill" id="portalPillLevelUp" onclick="setPortalSection('level_up')" style="color:#d97706; border-color:rgba(217,119,6,0.3); background:rgba(245,158,11,0.08);">
                     <span>⚡ LEVEL-UP Boosters (<span id="portalCountLevelUp">0</span>)</span>
-                </button>
-                <button class="portal-section-pill" id="portalPillQuests" onclick="setPortalSection('quest_unlocker')">
-                    <span>🎯 Play Points Quests (<span id="portalCountQuests">0</span>)</span>
                 </button>
             </div>
 
@@ -654,7 +664,7 @@
     <!-- Footer -->
     <footer>
         <div class="container">
-            PP Mod Quest Service Portal • Automated GPGS Engine • Zero Firebase Quota
+            Quest Portal • Automated GPGS Engine • Zero Firebase Quota
         </div>
     </footer>
 
@@ -678,11 +688,13 @@
         function setPortalSection(sec) {
             activePortalSection = sec;
             const pAll = document.getElementById("portalPillAll");
+            const pOff = document.getElementById("portalPillOfficial");
+            const pRnd = document.getElementById("portalPillRandom");
             const pLvl = document.getElementById("portalPillLevelUp");
-            const pQst = document.getElementById("portalPillQuests");
             if (pAll) pAll.classList.toggle("active", sec === "all");
+            if (pOff) pOff.classList.toggle("active", sec === "official");
+            if (pRnd) pRnd.classList.toggle("active", sec === "random");
             if (pLvl) pLvl.classList.toggle("active", sec === "level_up");
-            if (pQst) pQst.classList.toggle("active", sec === "quest_unlocker");
             renderPortalServices();
         }
 
@@ -694,14 +706,17 @@
                     allPortalServices = data.services.filter(s => s.enabled !== false);
 
                     const lvlCount = allPortalServices.filter(s => (s.section || "quest_unlocker") === "level_up").length;
-                    const qstCount = allPortalServices.length - lvlCount;
+                    const offCount = allPortalServices.filter(s => (s.section || "quest_unlocker") !== "level_up" && s.is_official !== false && !s.unofficial_note).length;
+                    const rndCount = allPortalServices.filter(s => (s.section || "quest_unlocker") !== "level_up" && (s.is_official === false || !!s.unofficial_note)).length;
 
                     const elAll = document.getElementById("portalCountAll");
+                    const elOff = document.getElementById("portalCountOfficial");
+                    const elRnd = document.getElementById("portalCountRandom");
                     const elLvl = document.getElementById("portalCountLevelUp");
-                    const elQst = document.getElementById("portalCountQuests");
                     if (elAll) elAll.innerText = allPortalServices.length;
+                    if (elOff) elOff.innerText = offCount;
+                    if (elRnd) elRnd.innerText = rndCount;
                     if (elLvl) elLvl.innerText = lvlCount;
-                    if (elQst) elQst.innerText = qstCount;
 
                     const statServices = document.getElementById("statServicesCount");
                     if (statServices) statServices.innerText = `${allPortalServices.length} Configured Services`;
@@ -796,7 +811,16 @@
             const query = (searchInput ? searchInput.value : "").toLowerCase().trim();
 
             const filtered = allPortalServices.filter(s => {
-                const matchSection = (activePortalSection === "all") || ((s.section || "quest_unlocker") === activePortalSection);
+                const isLevelUp = (s.section || "quest_unlocker") === "level_up";
+                const isOfficial = !isLevelUp && s.is_official !== false && !s.unofficial_note;
+                const isRandom = !isLevelUp && (s.is_official === false || !!s.unofficial_note);
+
+                let matchSection = true;
+                if (activePortalSection === "official") matchSection = isOfficial;
+                else if (activePortalSection === "random") matchSection = isRandom;
+                else if (activePortalSection === "level_up") matchSection = isLevelUp;
+                else if (activePortalSection === "quest_unlocker") matchSection = !isLevelUp;
+
                 const questsMatch = Array.isArray(s.selected_quests) && s.selected_quests.some(q => 
                     (q.name && q.name.toLowerCase().includes(query)) || 
                     (q.description && q.description.toLowerCase().includes(query))
@@ -835,6 +859,8 @@
                 const selCount = s.selected_quests_count || (s.selected_quests ? s.selected_quests.length : 0);
                 const quests = s.selected_quests || [];
                 const isLevelUp = (s.section || "quest_unlocker") === "level_up";
+                const isOfficial = !isLevelUp && s.is_official !== false && !s.unofficial_note;
+                const isRandom = !isLevelUp && (s.is_official === false || !!s.unofficial_note);
 
                 // Real-time lookup from Google Play Games API response
                 const srvKey = String(s.id || s.game_id);
@@ -849,15 +875,22 @@
                 const completedCount = prog ? (prog.completed_count || 0) : 0;
                 const completedIds = (prog && prog.completed_quest_ids) ? prog.completed_quest_ids : [];
 
+                let typeBadge = "";
+                if (isLevelUp) {
+                    typeBadge = `<span class="service-badge" style="background:rgba(245,158,11,0.15); color:#d97706; border:1px solid rgba(245,158,11,0.35);">⚡ LEVEL-UP Boost</span>`;
+                } else if (isOfficial) {
+                    typeBadge = `<span class="service-badge" style="background:rgba(16,185,129,0.14); color:#10b981; border:1px solid rgba(16,185,129,0.35);">🎯 Official Quest</span>`;
+                } else {
+                    typeBadge = `<span class="service-badge" style="background:rgba(168,85,247,0.14); color:#a855f7; border:1px solid rgba(168,85,247,0.35);">🎲 Random / Custom</span>`;
+                }
+
                 let secBadge = "";
                 if (isCompleted) {
                     secBadge = `<span class="service-badge-completed"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> ✓ সম্পূর্ণ (COMPLETED)</span>`;
                 } else if (completedCount > 0) {
-                    secBadge = `<span class="service-badge-partial">⚡ ${completedCount}/${quests.length} সম্পূর্ণ (${quests.length - completedCount} টি বাকি)</span>`;
-                } else if (isLevelUp) {
-                    secBadge = `<span class="service-badge" style="background:rgba(245,158,11,0.15); color:#d97706; border-color:rgba(245,158,11,0.3);">⚡ LEVEL-UP Boost</span>`;
+                    secBadge = `<span class="service-badge-partial">⚡ ${completedCount}/${quests.length} সম্পূর্ণ (${quests.length - completedCount} বাকি)</span>`;
                 } else {
-                    secBadge = `<span class="service-badge">🎯 ${selCount} Quests</span>`;
+                    secBadge = `<span class="service-badge">📋 ${selCount} Quests</span>`;
                 }
 
                 let questsHtml = "";
@@ -867,15 +900,31 @@
                     const itemStyle = qDone ? 'background:rgba(16,185,129,0.06); border-color:rgba(16,185,129,0.25);' : '';
                     const doneBadge = qDone ? `<span style="font-size:10px; font-weight:800; color:#10b981; background:rgba(16,185,129,0.15); padding:2px 6px; border-radius:4px; margin-right:4px;">✓ সম্পূর্ণ</span>` : '';
 
+                    let questTypeLabel = "";
+                    if (isLevelUp) {
+                        questTypeLabel = `<span class="quest-xp" style="background:rgba(245,158,11,0.12); color:#d97706; border:1px solid rgba(245,158,11,0.25);">⚡ +${(q.experiencePoints || 10000).toLocaleString()} XP</span>`;
+                    } else if (isOfficial) {
+                        questTypeLabel = `<span class="quest-xp" style="background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.25);">🎯 Official Quest</span>`;
+                    } else {
+                        questTypeLabel = `<span class="quest-xp" style="background:rgba(168,85,247,0.12); color:#a855f7; border:1px solid rgba(168,85,247,0.25);">🎲 Random Ach</span>`;
+                    }
+
                     questsHtml += `
                         <div class="quest-item" style="${itemStyle}">
                             <img src="${iconSrc}" referrerpolicy="no-referrer" onerror="this.src='/static/images/achievements/badge_1.svg'" class="quest-icon">
                             <span class="quest-name">${escapeHtml(q.name)}</span>
                             ${doneBadge}
-                            <span class="quest-xp">🎯 Play Points Quest</span>
+                            ${questTypeLabel}
                         </div>
                     `;
                 });
+
+                const unofficialNoteHtml = isRandom ? `
+                    <div style="font-size:11px; color:#a855f7; background:rgba(168,85,247,0.07); border:1px solid rgba(168,85,247,0.2); border-radius:var(--radius-sm); padding:6px 10px; margin-top:8px; display:flex; align-items:center; gap:6px;">
+                        <span>ℹ️</span>
+                        <span>Google Play Points এর নিজস্ব কোয়েস্ট নেই — রেন্ডম ২-৩ টি কোয়েস্ট সিলেক্ট করা।</span>
+                    </div>
+                ` : '';
 
                 let actionBtn = "";
                 if (isCompleted) {
@@ -907,7 +956,10 @@
                                 <div style="flex:1;">
                                     <div class="service-name">${escapeHtml(s.title)}</div>
                                     <div style="font-size:11px; color:var(--text-muted); margin-top:1px;">${escapeHtml(s.developer || 'Google Partner')}</div>
-                                    ${secBadge}
+                                    <div style="display:flex; align-items:center; gap:6px; margin-top:5px; flex-wrap:wrap;">
+                                        ${typeBadge}
+                                        ${secBadge}
+                                    </div>
                                 </div>
                             </div>
 
@@ -919,6 +971,7 @@
                                 <div class="quests-list">
                                     ${questsHtml}
                                 </div>
+                                ${unofficialNoteHtml}
                             </div>
                         </div>
 
@@ -1070,6 +1123,83 @@
             }, 50);
         }
 
+        async function refreshConnectedAccount(silent = false) {
+            if (!connectedAccountData || (!connectedAccountData.master_token && !connectedAccountData.code)) {
+                return;
+            }
+
+            const btnRefresh = document.getElementById("btnRefreshAccount");
+            const icon = document.getElementById("refreshAccountIcon");
+            const text = document.getElementById("refreshAccountText");
+
+            if (!silent && btnRefresh) {
+                btnRefresh.disabled = true;
+                if (icon) icon.classList.add("rotate-spin");
+                if (text) text.innerText = "Verifying...";
+            }
+
+            try {
+                const reqBody = {
+                    code: connectedAccountData.code || "",
+                    master_token: connectedAccountData.master_token || "",
+                    email: connectedAccountData.email || "",
+                    android_id: connectedAccountData.android_id || ""
+                };
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 20000);
+
+                const res = await fetch("/api/portal/connect", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(reqBody),
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+
+                let data = null;
+                try {
+                    data = await res.json();
+                } catch(e) {
+                    data = { ok: false, error: "Network error verifying account." };
+                }
+
+                if (data && data.ok) {
+                    connectedAccountData.email = data.email || connectedAccountData.email;
+                    connectedAccountData.master_token = data.master_token || connectedAccountData.master_token;
+                    connectedAccountData.android_id = data.android_id || connectedAccountData.android_id;
+                    if (data.profile) {
+                        connectedAccountData.profile = data.profile;
+                    }
+                    sessionStorage.setItem("pp_portal_session", JSON.stringify(connectedAccountData));
+                    localStorage.setItem("pp_portal_session", JSON.stringify(connectedAccountData));
+                    renderConnectedUI(connectedAccountData);
+
+                    // Refresh live quest completion status as well
+                    checkPortalLiveProgress();
+
+                    if (!silent && text) {
+                        text.innerText = "✓ Active";
+                        setTimeout(() => { if (text) text.innerText = "Refresh Account"; }, 2000);
+                    }
+                } else {
+                    // Token revoked, expired, deleted from cloud, or bad authentication
+                    console.warn("[-] Token validation failed on Google servers:", data ? data.error : "Unknown");
+                    disconnectPortalAccount();
+                    alert(`⚠️ আপনার গুগল একাউন্টের সেশন/টোকেন ভেরিফাই হতে পারেনি বা ডিভাইস থেকে লগআউট হয়েছে (${data && data.error ? data.error : 'Session Expired'})!\n\nএকাউন্টটি অটো-লগআউট করা হয়েছে। অনুগ্রহ করে আবার কানেক্ট করুন।`);
+                }
+            } catch(e) {
+                console.warn("[-] Error during account refresh:", e);
+                if (!silent) {
+                    alert("❌ একাউন্ট ভেরিফিকেশন নেটওয়ার্ক সমস্যার কারণে ব্যর্থ হয়েছে। অনুগ্রহ করে ইন্টারনেট সংযোগ চেক করে আবার চেষ্টা করুন।");
+                }
+            } finally {
+                if (btnRefresh) btnRefresh.disabled = false;
+                if (icon) icon.classList.remove("rotate-spin");
+                if (text && text.innerText === "Verifying...") text.innerText = "Refresh Account";
+            }
+        }
+
         function disconnectPortalAccount() {
             connectedAccountData = null;
             sessionStorage.removeItem("pp_portal_session");
@@ -1128,9 +1258,11 @@
                 const saved = sessionStorage.getItem("pp_portal_session") || localStorage.getItem("pp_portal_session");
                 if (saved) {
                     const parsed = JSON.parse(saved);
-                    if (parsed && (parsed.master_token || parsed.email)) {
+                    if (parsed && (parsed.master_token || parsed.email || parsed.code)) {
                         connectedAccountData = parsed;
                         renderConnectedUI(parsed);
+                        // Auto-verify token in background; auto-logout if revoked/expired on Google servers
+                        refreshConnectedAccount(true);
                     }
                 }
             } catch(e) {}
