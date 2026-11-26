@@ -6252,20 +6252,46 @@
 
             const container = document.getElementById("portalServicesContainer");
             if (!container) return;
-            container.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-muted);"><div class="spinner" style="margin:0 auto 12px; border-top-color:var(--accent-cyan);"></div>Loading Public Portal Services...</div>`;
+            if (!portalAllServices || !portalAllServices.length) {
+                container.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-muted);"><div class="spinner" style="margin:0 auto 12px; border-top-color:var(--accent-cyan);"></div>Loading Public Portal Services...</div>`;
+            }
 
+            let loaded = false;
             try {
                 const res = await fetch(`${API_BASE}/api/portal/services?_t=${Date.now()}`);
                 const data = await res.json();
-                if (data.ok && Array.isArray(data.services)) {
+                if (data.ok && Array.isArray(data.services) && data.services.length) {
                     portalAllServices = data.services;
                     try { localStorage.setItem("pp_admin_portal_services_cache", JSON.stringify(portalAllServices)); } catch(e){}
                     renderPortalServicesGrid();
-                } else {
-                    container.innerHTML = `<div style="text-align:center; padding:30px; color:#ef4444;">Failed to load services: ${data.error || 'Server error'}</div>`;
+                    loaded = true;
                 }
             } catch (e) {
-                container.innerHTML = `<div style="text-align:center; padding:30px; color:#ef4444;">Connection error loading portal services.</div>`;
+                console.warn("Direct /api/portal/services fetch error:", e);
+            }
+
+            // Cloudflare D1 Zero-Downtime Fallback for Admin Services Editor
+            if (!loaded) {
+                try {
+                    const cfRes = await fetch("https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services?_t=" + Date.now());
+                    const cfData = await cfRes.json();
+                    const cfObj = (cfData && cfData.data) ? cfData.data : cfData;
+                    if (cfObj && typeof cfObj === "object") {
+                        const cfServices = Object.values(cfObj).filter(s => s && s.enabled !== false);
+                        if (cfServices.length) {
+                            portalAllServices = cfServices;
+                            try { localStorage.setItem("pp_admin_portal_services_cache", JSON.stringify(portalAllServices)); } catch(e){}
+                            renderPortalServicesGrid();
+                            loaded = true;
+                        }
+                    }
+                } catch(cfErr) {
+                    console.error("Cloudflare fallback in admin services editor failed:", cfErr);
+                }
+            }
+
+            if (!loaded && (!portalAllServices || !portalAllServices.length)) {
+                container.innerHTML = `<div style="text-align:center; padding:30px; color:#ef4444;">Failed to load services. Please check network and refresh.</div>`;
             }
         }
 
