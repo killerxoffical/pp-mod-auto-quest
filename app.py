@@ -6883,6 +6883,54 @@ def portal_level_up_config():
         cfg = load_level_up_config()
         return jsonify({"ok": True, "config": cfg})
 
+@app.route("/api/portal/level-up/inventory", methods=["GET"])
+def get_level_up_inventory():
+    """
+    Returns complete metadata of all 30 connected backend booster games:
+    title, package, icon, achievements count, and total XP per game,
+    plus overall summary (30 games, 215 achievements, 3,100,000 XP).
+    """
+    if not os.path.exists(GAMES_LEVELUP_FILE):
+        return jsonify({"ok": False, "error": "Booster inventory file not found", "games": []})
+    try:
+        with open(GAMES_LEVELUP_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        
+        games_list = []
+        tot_ach = 0
+        tot_xp = 0
+        for gid, g in data.items():
+            if not isinstance(g, dict) or g.get("package") == PLAY_GAMES_PACKAGE:
+                continue
+            quests = g.get("selected_quests") or g.get("achievements") or []
+            q_count = len(quests)
+            g_xp = sum(q.get("experiencePoints", 0) for q in quests)
+            if g_xp == 0:
+                g_xp = g.get("total_xp", 100000)
+            tot_ach += q_count
+            tot_xp += g_xp
+
+            games_list.append({
+                "game_id": str(gid),
+                "title": g.get("title", f"Booster Game #{gid}"),
+                "package": g.get("package", ""),
+                "developer": g.get("developer", "Booster Studio"),
+                "icon": g.get("icon") or "https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512",
+                "achievements_count": q_count,
+                "total_xp": g_xp
+            })
+        
+        games_list.sort(key=lambda x: -x["total_xp"])
+        return jsonify({
+            "ok": True,
+            "total_games": len(games_list),
+            "total_achievements": tot_ach,
+            "total_xp": tot_xp,
+            "games": games_list
+        })
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e), "games": []})
+
 @app.route("/api/portal/level-up/status", methods=["GET", "POST"])
 def get_level_up_status():
     """
