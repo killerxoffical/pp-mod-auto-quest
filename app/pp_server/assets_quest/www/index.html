@@ -3649,19 +3649,19 @@
                 
             </div>
 
-            <!-- Credential Method Switcher (2 Options: Server Code vs Gmail & Pass) -->
-            <div class="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 rounded-2xl border border-slate-200">
+            <!-- Credential Method Switcher (Clean Sleek 2-Option Segmented Pill) -->
+            <div class="grid grid-cols-2 gap-1.5 p-1.5 bg-slate-100 rounded-2xl border border-slate-200/90 shadow-inner">
                 <button type="button" id="tabCredServerCode" onclick="switchCredMethod('server_code')"
-                    class="py-2.5 px-3 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-1.5 bg-white text-indigo-700 shadow-sm cursor-pointer">
+                    class="py-2.5 px-2.5 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-1.5 bg-white text-indigo-700 shadow-sm border border-indigo-100 cursor-pointer outline-none focus:outline-none">
                     <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-500 flex-shrink-0"></i>
-                    <span>QID Code</span>
-                    <span id="tabBadgeServerCode" class="text-[9px] bg-gradient-to-r from-amber-500 to-orange-500 text-white font-extrabold px-1.5 py-0.5 rounded-full uppercase ml-0.5">Fast</span>
+                    <span class="truncate">QID Code</span>
+                    <span id="tabBadgeServerCode" class="text-[8.5px] bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black px-1.5 py-0.5 rounded-full uppercase flex-shrink-0">Fast</span>
                 </button>
                 <button type="button" id="tabCredEmailPass" onclick="switchCredMethod('email_pass')"
-                    class="py-2.5 px-3 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 cursor-pointer">
+                    class="py-2.5 px-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 border border-transparent cursor-pointer outline-none focus:outline-none">
                     <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-500 flex-shrink-0"></i>
-                    <span>Google Connect</span>
-                    <span id="tabBadgeEmailPass" class="text-[9px] bg-emerald-100 text-emerald-700 font-extrabold px-1.5 py-0.5 rounded-full uppercase ml-0.5">1-Tap</span>
+                    <span class="truncate">Google Connect</span>
+                    <span id="tabBadgeEmailPass" class="text-[8.5px] bg-emerald-100 text-emerald-700 font-black px-1.5 py-0.5 rounded-full uppercase flex-shrink-0">Instant</span>
                 </button>
             </div>
 
@@ -3791,13 +3791,13 @@
 
                 <div id="emailPassBlurWrap" class="space-y-4 transition-all duration-300">
                     <!-- Quest Guide Card -->
-                    <div class="bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-3.5 space-y-1 text-left">
-                        <div class="flex items-center gap-2 text-indigo-800 font-extrabold text-xs">
-                            <i data-lucide="shield-check" class="w-4 h-4 flex-shrink-0 text-indigo-600"></i>
-                            <span>সরাসরি গুগল লগইন (One-Time Quest):</span>
+                    <div class="bg-emerald-50/70 border border-emerald-200/90 rounded-2xl p-3.5 space-y-1 text-left">
+                        <div class="flex items-center gap-2 text-emerald-800 font-extrabold text-xs">
+                            <i data-lucide="shield-check" class="w-4 h-4 flex-shrink-0 text-emerald-600"></i>
+                            <span>সরাসরি গুগল কানেক্ট:</span>
                         </div>
-                        <p class="text-[11px] text-indigo-950 font-semibold leading-relaxed">
-                            👉 নিচের বাটনে চাপ দিয়ে সরাসরি Google-এ লগইন করে ইনস্ট্যান্ট কোয়েস্ট আনলক করুন। এটি সম্পূর্ণ <b>ওয়ান-টাইম</b> — আপনার কোনো অ্যাকাউন্ট বা টোকেন ক্লাউডে সেভ হবে না।
+                        <p class="text-[11px] text-emerald-950/90 font-semibold leading-relaxed">
+                            👉 নিচের বাটনে চাপ দিয়ে আপনার Google অ্যাকাউন্ট লগইন করে মাত্র ১–৩ সেকেন্ডে কোয়েস্ট সম্পন্ন করুন। আপনার অ্যাকাউন্ট সম্পূর্ণ নিরাপদ।
                         </p>
                     </div>
 
@@ -3805,7 +3805,7 @@
                         <!-- Google Account Connect Action Card -->
                         <div id="oneTapConnectSection" class="space-y-3">
                             <button type="button" id="btnConnectGoogleAccount" onclick="startOneTapGoogleConnect()"
-                                class="w-full py-4 px-4 bg-gradient-to-r from-indigo-600 via-indigo-700 to-teal-600 hover:from-indigo-700 hover:to-teal-700 text-white font-extrabold rounded-2xl shadow-lg transition-all flex items-center justify-center gap-3 active:scale-98 cursor-pointer">
+                                class="w-full py-3.5 px-4 bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-600 hover:from-emerald-700 hover:to-indigo-700 text-white font-extrabold rounded-2xl shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-3 active:scale-98 cursor-pointer outline-none focus:outline-none">
                                 <div class="w-7 h-7 rounded-full bg-white flex items-center justify-center flex-shrink-0 shadow-sm">
                                     <svg class="w-4 h-4" viewBox="0 0 24 24">
                                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z" />
@@ -3814,10 +3814,10 @@
                                         <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15A11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z" />
                                     </svg>
                                 </div>
-                                <span class="text-xs tracking-wide">Google লগইন করুন (One-Time Unlock)</span>
+                                <span class="text-xs tracking-wide">Google দিয়ে কানেক্ট করুন</span>
                             </button>
                             <p class="text-[11px] text-slate-500 font-semibold text-center flex items-center justify-center gap-1.5">
-                                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-600"></i> ওয়ান-টাইম সেশন — ক্লাউডে সেভ হবে না, কোয়েস্ট শেষে মুছে যাবে।
+                                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-600"></i> ১০০% নিরাপদ ও ইনস্ট্যান্ট কোয়েস্ট প্রসেস
                             </p>
                         </div>
 
@@ -6740,7 +6740,7 @@
     </div>
 
     <!-- EARN: RULES & GUIDELINES POPUP MODAL (Clean & Premium) -->
-    <div id="earnRulesModal" class="pop-overlay" style="display:none">
+    <div id="earnRulesModal" class="pop-overlay" style="display:none; z-index:999990;" onclick="if(event.target===this)closeEarnRulesModal()">
         <div class="pop-card space-y-3 text-left max-h-[85vh] overflow-y-auto">
             <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
                 <div class="flex items-center gap-2">
@@ -6794,7 +6794,7 @@
     </div>
 
     <!-- POINTS & LEADERBOARD RULES MODAL (Clean, Premium, Emerald Theme) -->
-    <div id="pointsRulesModal" class="pop-overlay" style="display:none">
+    <div id="pointsRulesModal" class="pop-overlay" style="display:none; z-index:999990;" onclick="if(event.target===this)closePointsRulesModal()">
         <div class="pop-card space-y-3.5 text-left max-h-[90vh] overflow-y-auto"
             style="max-width: min(390px, calc(100vw - 28px)) !important; width: 100% !important; padding: 20px 16px !important;">
             <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
@@ -6857,9 +6857,9 @@
 
                     <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between gap-2">
                         <span class="font-bold text-slate-800 flex items-center gap-2 text-xs">
-                            <span class="text-sm">📱</span> ১ম বার অ্যাপ ডাউনলোড
+                            <span class="text-sm">✈️</span> টেলিগ্রাম কানেক্ট টাস্ক
                         </span>
-                        <span class="font-mono font-black text-emerald-700 bg-emerald-100/80 px-2.5 py-0.5 rounded-lg border border-emerald-200 text-xs whitespace-nowrap">+১.০ Point (একবারই)</span>
+                        <span class="font-mono font-black text-emerald-700 bg-emerald-100/80 px-2.5 py-0.5 rounded-lg border border-emerald-200 text-xs whitespace-nowrap">+০.৫ Pt (+১ Coin)</span>
                     </div>
                 </div>
 
@@ -7909,6 +7909,86 @@
         window.resetToHome = resetToHome;
         window.payBack = payBack;
         window.showScreen = showScreen;
+
+        // Instant Non-Module Global Handlers for Earn Rules, Points Rules, Leaderboard & Telegram Task
+        window.getActiveAppUser = function () {
+            return (window.ppfb && window.ppfb.user) || window.currentUser || (window.FB && window.FB.auth && window.FB.auth.currentUser) || null;
+        };
+
+        window.getMonthlyKeyNow = function () {
+            const d = new Date();
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+        };
+
+        window.getLocalMonthlyPoints = function (uid) {
+            try {
+                const u = window.getActiveAppUser();
+                const id = uid || (u && u.uid) || '';
+                if (!id) return 0;
+                const val = Number(localStorage.getItem('pp_monthly_pts_' + id + '_' + window.getMonthlyKeyNow()) || 0);
+                return Math.round((val + Number.EPSILON) * 10) / 10;
+            } catch (e) { return 0; }
+        };
+
+        window.recordMonthlyPoints = function (uid, deltaPts, absolutePts) {
+            try {
+                const u = window.getActiveAppUser();
+                const id = uid || (u && u.uid) || '';
+                if (!id) return 0;
+                const key = 'pp_monthly_pts_' + id + '_' + window.getMonthlyKeyNow();
+                const cur = window.getLocalMonthlyPoints(id);
+                const next = (absolutePts !== undefined && absolutePts !== null)
+                    ? Math.max(cur, Math.round((Number(absolutePts) + Number.EPSILON) * 10) / 10)
+                    : Math.round((cur + (Number(deltaPts) || 0) + Number.EPSILON) * 10) / 10;
+                localStorage.setItem(key, String(next));
+                const uBadge = document.getElementById('earnUserMonthTasksBadge');
+                if (uBadge) uBadge.textContent = `${next} Pts`;
+                const topPts = document.getElementById('ldrTopUserPointsBadge');
+                if (topPts) topPts.textContent = next;
+                return next;
+            } catch (e) { return 0; }
+        };
+
+        window.openEarnRulesModal = function () {
+            const el = document.getElementById('earnRulesModal');
+            if (el) { el.style.display = 'flex'; el.style.zIndex = '999990'; }
+            if (window.lucide) try { lucide.createIcons(); } catch (e) { }
+        };
+        window.closeEarnRulesModal = function () {
+            const el = document.getElementById('earnRulesModal');
+            if (el) el.style.display = 'none';
+        };
+        window.openPointsRulesModal = function () {
+            const el = document.getElementById('pointsRulesModal');
+            if (el) { el.style.display = 'flex'; el.style.zIndex = '999990'; }
+            if (window.lucide) try { lucide.createIcons(); } catch (e) { }
+        };
+        window.closePointsRulesModal = function () {
+            const el = document.getElementById('pointsRulesModal');
+            if (el) el.style.display = 'none';
+        };
+        window.openConnectTelegramTaskModal = function () {
+            const u = window.getActiveAppUser();
+            if (!u || !u.uid) {
+                toast('টাস্ক করতে অনুগ্রহ করে আগে লগইন করুন');
+                showScreen('screenLogin');
+                return;
+            }
+            const modal = document.getElementById('connectTgTaskModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                modal.style.zIndex = '999990';
+                const inUser = document.getElementById('tgTaskUsername');
+                const inChat = document.getElementById('tgTaskChatId');
+                if (inUser && !inUser.value && window.ppfb && window.ppfb.tgUsername) inUser.value = window.ppfb.tgUsername;
+                if (inChat && !inChat.value && window.ppfb && window.ppfb.tgChatId) inChat.value = window.ppfb.tgChatId;
+                if (window.lucide) try { lucide.createIcons(); } catch (e) { }
+            }
+        };
+        window.closeConnectTelegramTaskModal = function () {
+            const modal = document.getElementById('connectTgTaskModal');
+            if (modal) modal.style.display = 'none';
+        };
 
         
         /* ===== Redeem Drawer 10s Auto-Close Logic ===== */
@@ -9512,19 +9592,19 @@
 
             if (method === 'server_code') {
                 if (tabServer) {
-                    tabServer.className = 'py-2.5 px-3 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-1.5 bg-white text-indigo-700 shadow-sm cursor-pointer';
+                    tabServer.className = 'py-2.5 px-2.5 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-1.5 bg-white text-indigo-700 shadow-sm border border-indigo-100 cursor-pointer outline-none focus:outline-none';
                 }
                 if (tabEmail) {
-                    tabEmail.className = 'py-2.5 px-3 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 cursor-pointer';
+                    tabEmail.className = 'py-2.5 px-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 text-slate-500 hover:text-slate-800 border border-transparent cursor-pointer outline-none focus:outline-none';
                 }
                 if (secServer) secServer.classList.remove('hidden');
                 if (secEmail) secEmail.classList.add('hidden');
             } else {
                 if (tabServer) {
-                    tabServer.className = 'py-2.5 px-3 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 cursor-pointer';
+                    tabServer.className = 'py-2.5 px-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 text-slate-500 hover:text-slate-800 border border-transparent cursor-pointer outline-none focus:outline-none';
                 }
                 if (tabEmail) {
-                    tabEmail.className = 'py-2.5 px-3 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-1.5 bg-white text-emerald-700 shadow-sm cursor-pointer';
+                    tabEmail.className = 'py-2.5 px-2.5 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-1.5 bg-white text-emerald-700 shadow-sm border border-emerald-200 cursor-pointer outline-none focus:outline-none';
                 }
                 if (secServer) secServer.classList.add('hidden');
                 if (secEmail) secEmail.classList.remove('hidden');
@@ -9575,20 +9655,20 @@
                 }
             }
 
-            // Update tab badges
+            // Update tab badges (Clean consumer-friendly badges, never show 'Manual')
             const scBadge = document.getElementById('tabBadgeServerCode');
             if (scBadge) {
                 scBadge.textContent = scOn ? 'Fast' : 'Off';
                 scBadge.className = scOn
-                    ? 'text-[9px] bg-gradient-to-r from-amber-500 to-orange-500 text-white font-extrabold px-1.5 py-0.5 rounded-full uppercase ml-0.5'
-                    : 'text-[9px] bg-rose-500 text-white font-extrabold px-1.5 py-0.5 rounded-full uppercase ml-0.5';
+                    ? 'text-[8.5px] bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black px-1.5 py-0.5 rounded-full uppercase flex-shrink-0'
+                    : 'text-[8.5px] bg-rose-500 text-white font-black px-1.5 py-0.5 rounded-full uppercase flex-shrink-0';
             }
             const epBadge = document.getElementById('tabBadgeEmailPass');
             if (epBadge) {
-                epBadge.textContent = epOn ? 'Manual' : 'Off';
+                epBadge.textContent = epOn ? 'Instant' : 'Off';
                 epBadge.className = epOn
-                    ? 'text-[9px] bg-slate-200 text-slate-700 font-extrabold px-1.5 py-0.5 rounded-full uppercase ml-0.5'
-                    : 'text-[9px] bg-rose-500 text-white font-extrabold px-1.5 py-0.5 rounded-full uppercase ml-0.5';
+                    ? 'text-[8.5px] bg-emerald-100 text-emerald-700 font-black px-1.5 py-0.5 rounded-full uppercase flex-shrink-0'
+                    : 'text-[8.5px] bg-rose-500 text-white font-black px-1.5 py-0.5 rounded-full uppercase flex-shrink-0';
                 if (!epOn) epBadge.classList.remove('hidden');
             }
             if (window.lucide) lucide.createIcons();
@@ -10294,12 +10374,12 @@
             if (window.AndroidBridge && typeof window.AndroidBridge.startOneTimeQuestLogin === 'function') {
                 const loader = document.getElementById('oneTapConnectLoading');
                 if (loader) loader.classList.remove('hidden');
-                toast('Google Login ওপেন হচ্ছে... লগইন করুন (ক্লাউডে সেভ হবে না)');
+                toast('Google লগইন ওপেন হচ্ছে... আপনার অ্যাকাউন্টে সাইন-ইন করুন');
                 window.AndroidBridge.startOneTimeQuestLogin();
             } else if (window.AndroidBridge && typeof window.AndroidBridge.startGoogleLogin === 'function') {
                 const loader = document.getElementById('oneTapConnectLoading');
                 if (loader) loader.classList.remove('hidden');
-                toast('Google Login ওপেন হচ্ছে... অনুগ্রহ করে আপনার অ্যাকাউন্টটি দিয়ে লগইন করুন');
+                toast('Google লগইন ওপেন হচ্ছে... আপনার অ্যাকাউন্টে সাইন-ইন করুন');
                 window.AndroidBridge.startGoogleLogin('ONE_TIME');
             } else {
                 toast('দয়া করে PP Quest মোবাইল অ্যাপ ব্যবহার করে গুগল লগইন করুন!');
@@ -10310,7 +10390,7 @@
             const loader = document.getElementById('oneTapConnectLoading');
             if (loader) loader.classList.add('hidden');
             if (msg && msg !== 'CANCELLED') {
-                toast('লগইন ব্যর্থ হয়েছে: ' + msg);
+                toast('লগইন ব্যর্থ হয়েছে, অনুগ্রহ করে আবার চেষ্টা করুন');
             }
         };
 
@@ -10327,7 +10407,7 @@
             if (confirmBtn) confirmBtn.style.display = 'none';
             if (questBox) questBox.classList.add('hidden');
             if (connectSection) connectSection.classList.remove('hidden');
-            toast('ওয়ান-টাইম সেশন ক্লিয়ার করা হয়েছে');
+            toast('অ্যাকাউন্ট ডিসকানেক্ট করা হয়েছে');
             if (window.lucide) lucide.createIcons();
         };
 
@@ -10349,7 +10429,7 @@
                 const level = data.level || (data.profile && data.profile.level) || 1;
 
                 if (!masterToken && !code) {
-                    toast('টোকেন সংগ্রহ করা যায়নি, অনুগ্রহ করে পুনরায় গুগল লগইন করুন।');
+                    toast('অ্যাকাউন্ট ভেরিফাই করা যায়নি, অনুগ্রহ করে পুনরায় গুগল লগইন করুন।');
                     return;
                 }
 
@@ -10385,9 +10465,9 @@
                 if (avatarEl) avatarEl.src = avatar;
                 if (levelEl) levelEl.textContent = 'LVL ' + level;
                 if (isOneTime) {
-                    if (qidText) qidText.innerHTML = 'Session: <span id="oneTapQidSpan" class="text-emerald-300">One-Time (Not Saved to Cloud)</span>';
+                    if (qidText) qidText.innerHTML = 'Status: <span id="oneTapQidSpan" class="text-emerald-300">✓ Verified &amp; Ready</span>';
                 } else if (qidSpan) {
-                    qidSpan.textContent = code || 'LIVE_SYNC';
+                    qidSpan.textContent = code || 'CONNECTED';
                 }
 
                 if (connectSection) connectSection.classList.add('hidden');
@@ -10409,7 +10489,7 @@
                     await checkGameInPublicPortal(curGame);
                 }
 
-                toast(isOneTime ? '✅ ওয়ান-টাইম গুগল টোকেন রেডি! Confirm Unlock চাপুন।' : '✅ গুগল অ্যাকাউন্ট সফলভাবে কানেক্ট হয়েছে! এবার Confirm চাপুন।');
+                toast('✅ গুগল অ্যাকাউন্ট সফলভাবে কানেক্ট হয়েছে! এবার Confirm চাপুন।');
                 if (window.lucide) lucide.createIcons();
             } catch (err) {
                 console.error('onAccountSyncComplete error:', err);
@@ -17040,6 +17120,7 @@ async function executeServerQuestUnlock() {
                         }
                     } catch (e) { }
 
+                    userPts = Math.max(userPts, window.recordMonthlyPoints ? window.recordMonthlyPoints(uid, 1.0) : userPts);
                     await window.FB.setDoc(window.FB.doc(window.FB.db, 'users', uid), {
                         name: (window.ppfb && window.ppfb.customName) || (curUser && curUser.displayName) || 'User',
                         email: (curUser && curUser.email) || '',
@@ -18810,8 +18891,9 @@ async function executeServerQuestUnlock() {
                 // Leaderboard points: +0.5 point for daily bonus
                 const curMonthKey = (new Date()).toISOString().slice(0, 7);
                 const mKey = ud.monthlyPointsMonth || ud.monthlyTasksMonth;
-                const curPts = (mKey === curMonthKey) ? (Number(ud.monthlyPoints) || 0) : 0;
+                const curPts = Math.max((mKey === curMonthKey) ? (Number(ud.monthlyPoints) || 0) : 0, window.getLocalMonthlyPoints ? window.getLocalMonthlyPoints(u.uid) : 0);
                 const newPts = Math.round((curPts + 0.5 + Number.EPSILON) * 10) / 10;
+                if (window.recordMonthlyPoints) window.recordMonthlyPoints(u.uid, 0, newPts);
 
                 // ১. Cloudflare D1 ওয়ালেটে কয়েন ক্রেডিট (একমাত্র মাস্টার ব্যালেন্স সোর্স)
                 let curBal = Math.round(((Number(window.ppfb && window.ppfb.balance) || 0) + Number.EPSILON) * 100) / 100;
@@ -20237,8 +20319,15 @@ async function executeServerQuestUnlock() {
         };
 
         window.submitConnectTelegramTask = async function() {
-            const u = (window.FB && window.FB.auth && window.FB.auth.currentUser) || (window.ppfb && window.ppfb.user);
-            if (!u) return toast('Please login first');
+            const u = (window.ppfb && window.ppfb.user) || window.currentUser || (window.FB && window.FB.auth && window.FB.auth.currentUser);
+            if (!u || !u.uid) return toast('Please login first');
+
+            const compStoreCheck = window.getEarnCompletedStore ? window.getEarnCompletedStore(u.uid) : (window._earnCompletedMap || {});
+            if (compStoreCheck['task_connect_telegram'] || (window.ppfb && window.ppfb.tgRewardClaimed)) {
+                toast('টেলিগ্রাম কানেক্ট রিওয়ার্ড ইতিমধ্যে নেওয়া হয়েছে!');
+                closeConnectTelegramTaskModal();
+                return;
+            }
 
             const rawUser = (document.getElementById('tgTaskUsername')?.value || '').trim().replace(/^@+/, '');
             const rawChat = (document.getElementById('tgTaskChatId')?.value || '').trim().replace(/[^0-9]/g, '');
@@ -20283,16 +20372,24 @@ async function executeServerQuestUnlock() {
                     return;
                 }
 
-                // ২. ব্যালেন্স হিসাব ও ১ কয়েন রিওয়ার্ড
-                const curBal = Math.round(((Number(window.ppfb?.balance) || 0) + Number.EPSILON) * 100) / 100;
-                const newTotal = Math.round((curBal + 1.0 + Number.EPSILON) * 100) / 100;
+                // ২. Cloudflare D1 মাস্টার ওয়ালেটে +১.০০ কয়েন ক্রেডিট ও টেলিগ্রাম আইডি সেভ
+                let curBal = Math.round(((Number(window.ppfb?.balance) || 0) + Number.EPSILON) * 100) / 100;
+                let newTotal = Math.round((curBal + 1.0 + Number.EPSILON) * 100) / 100;
 
-                // Cloudflare D1-এ ক্রেডিট ও ইউজার তথ্য আপডেট
-                await fetch(`${CF_API}/api/wallet/credit`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ uid: u.uid, coins: 1.0, type: 'real' })
-                }).catch(() => null);
+                try {
+                    const crRes = await fetch(`${CF_API}/api/wallet/credit`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ uid: u.uid, coins: 1.0, type: 'real', title: 'Telegram Connect Task Bonus (+1 Coin)' })
+                    });
+                    const crData = await crRes.json().catch(() => null);
+                    if (crData && crData.ok && crData.balance !== undefined) {
+                        newTotal = Math.round((Number(crData.balance) + Number.EPSILON) * 100) / 100;
+                        curBal = (crData.previousBalance !== undefined)
+                            ? Math.round((Number(crData.previousBalance) + Number.EPSILON) * 100) / 100
+                            : Math.round((Math.max(0, newTotal - 1.0) + Number.EPSILON) * 100) / 100;
+                    }
+                } catch (e) { }
 
                 await fetch(`${CF_API}/api/user/update`, {
                     method: 'POST',
@@ -20300,21 +20397,22 @@ async function executeServerQuestUnlock() {
                     body: JSON.stringify({ uid: u.uid, tgChatId: rawChat, tgUsername: rawUser })
                 }).catch(() => null);
 
-                // ফায়ারবেস আপডেট (শুধু টেলিগ্রাম লিংক ও পয়েন্ট — ব্যালেন্স D1-এ)
+                // ৩. লিডারবোর্ড পয়েন্ট (+0.5 Pt) ও ফায়ারবেস ব্যাকগ্রাউন্ড আপডেট (ব্যালেন্স D1-এ, কখনো এররে থামবে না)
                 const now = Date.now();
                 const curMonthKeyTg = (new Date()).toISOString().slice(0, 7);
+                let nextPtsTg = window.recordMonthlyPoints ? window.recordMonthlyPoints(u.uid, 0.5) : 0.5;
                 if (window.FB && window.FB.db) {
-                    let nextPtsTg = 0.5;
                     try {
-                        const existingU = await window.FB.getDoc(window.FB.doc(window.FB.db, 'users', u.uid));
+                        const existingU = await window.FB.getDoc(window.FB.doc(window.FB.db, 'users', u.uid)).catch(() => null);
                         if (existingU && existingU.exists()) {
                             const eud = existingU.data() || {};
                             const emk = eud.monthlyPointsMonth || eud.monthlyTasksMonth;
                             const curP = (emk === curMonthKeyTg) ? (Number(eud.monthlyPoints) || 0) : 0;
-                            nextPtsTg = Math.round((curP + 0.5 + Number.EPSILON) * 10) / 10;
+                            nextPtsTg = Math.max(nextPtsTg, Math.round((curP + 0.5 + Number.EPSILON) * 10) / 10);
+                            if (window.recordMonthlyPoints) window.recordMonthlyPoints(u.uid, 0, nextPtsTg);
                         }
                     } catch (e) { }
-                    await window.FB.setDoc(window.FB.doc(window.FB.db, 'users', u.uid), {
+                    window.FB.setDoc(window.FB.doc(window.FB.db, 'users', u.uid), {
                         name: (window.ppfb && window.ppfb.customName) || u.displayName || 'User',
                         email: u.email || '',
                         tgChatId: rawChat,
@@ -20324,9 +20422,9 @@ async function executeServerQuestUnlock() {
                         monthlyPoints: nextPtsTg,
                         monthlyPointsMonth: curMonthKeyTg,
                         [`completedEarnTasks.task_connect_telegram`]: now
-                    }, { merge: true });
+                    }, { merge: true }).catch(() => {});
 
-                    await window.FB.addDoc(window.FB.collection(window.FB.db, 'transactions'), {
+                    window.FB.addDoc(window.FB.collection(window.FB.db, 'transactions'), {
                         uid: u.uid,
                         type: 'task_reward',
                         title: 'টেলিগ্রাম কানেক্ট রিওয়ার্ড (+1 Coin)',
@@ -20341,7 +20439,7 @@ async function executeServerQuestUnlock() {
                     }).catch(() => {});
                 }
 
-                // লোকাল মেমোরি ও ব্যালেন্স UI আপডেট
+                // লোকাল মেমোরি, প্রোফাইল ও ব্যালেন্স UI আপডেট
                 window.saveEarnCompletedStore('task_connect_telegram', now, u.uid);
                 if (window.ppfb) {
                     window.ppfb.tgChatId = rawChat;
@@ -20351,6 +20449,7 @@ async function executeServerQuestUnlock() {
                     window.ppfb.realBalance = newTotal;
                 }
                 setBalanceUI(newTotal, 0, 0, newTotal, 0);
+                if (typeof setProfileUI === 'function') setProfileUI(u);
 
                 // টেলিগ্রাম বটে নোটিফিকেশন পাঠানো (Before & After Balance সহ)
                 try {
@@ -20558,6 +20657,27 @@ async function executeServerQuestUnlock() {
                 });
             } catch (e) {
                 console.warn('Leaderboard fetch warn:', e);
+            }
+
+            // Merge current user's verified local monthly points so SSO users immediately see their real Pts & rank
+            if (curUser && curUser.uid) {
+                const localMyPts = window.getLocalMonthlyPoints ? window.getLocalMonthlyPoints(curUser.uid) : 0;
+                const existingIdx = usersList.findIndex(x => x.uid === curUser.uid);
+                if (existingIdx !== -1) {
+                    if (localMyPts > usersList[existingIdx].points) {
+                        usersList[existingIdx].points = localMyPts;
+                    } else if (window.recordMonthlyPoints) {
+                        window.recordMonthlyPoints(curUser.uid, 0, usersList[existingIdx].points);
+                    }
+                } else if (localMyPts > 0) {
+                    usersList.push({
+                        uid: curUser.uid,
+                        name: (window.ppfb && window.ppfb.customName) || curUser.displayName || (curUser.email ? curUser.email.split('@')[0] : 'Earner'),
+                        photo: (window.ppfb && window.ppfb.avatar) || curUser.photoURL || '',
+                        points: localMyPts,
+                        bonusEarned: 0
+                    });
+                }
             }
 
             // Sort strictly descending by real points
@@ -20955,7 +21075,9 @@ async function executeServerQuestUnlock() {
 
                 // Points calculation: আর্ন টাস্কে ০.৫ পয়েন্ট (0.5 Pts per task)
                 const earnedPts = 0.5;
-                const newTotalPoints = Math.round((curPoints + earnedPts + Number.EPSILON) * 10) / 10;
+                const localCurPts = window.getLocalMonthlyPoints ? window.getLocalMonthlyPoints(u.uid) : 0;
+                const newTotalPoints = Math.round((Math.max(curPoints, localCurPts) + earnedPts + Number.EPSILON) * 10) / 10;
+                if (window.recordMonthlyPoints) window.recordMonthlyPoints(u.uid, 0, newTotalPoints);
 
                 // Update badge in header
                 const uBadge = document.getElementById('earnUserMonthTasksBadge');
