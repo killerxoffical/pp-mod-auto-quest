@@ -10018,11 +10018,69 @@
             }
         };
 
+        window.resolveRealUserByEmail = async function(email) {
+            const cleanEmail = (email || '').toString().trim().toLowerCase();
+            if (!cleanEmail) return null;
+            const apiBase = window.CF_API || 'https://ppmod-api.tredarskvt.workers.dev';
+            try {
+                const res = await fetch(`${apiBase}/api/user/find?q=${encodeURIComponent(cleanEmail)}&_t=${Date.now()}`, { cache: 'no-store' });
+                const data = await res.json();
+                if (data && data.ok && data.user && data.user.uid) {
+                    return data.user;
+                }
+            } catch (e) {
+                console.warn('resolveRealUserByEmail D1 lookup error:', e);
+            }
+            return null;
+        };
+
+        window.applyRealUserProfileData = function(u, realData) {
+            if (!u || !realData) return;
+            window.ppfb = window.ppfb || {};
+            if (realData.name) {
+                window.ppfb.customName = String(realData.name).slice(0, 20);
+                u.displayName = realData.name;
+            }
+            if (realData.avatar) {
+                window.ppfb.avatar = String(realData.avatar).trim();
+                u.photoURL = window.ppfb.avatar;
+            }
+            if (realData.tgChatId) {
+                window.ppfb.tgChatId = String(realData.tgChatId).trim();
+            }
+            if (realData.loyaltyStars !== undefined) {
+                window.ppfb.loyaltyStars = Number(realData.loyaltyStars || 0);
+            }
+            const totalBal = Number(realData.balance !== undefined ? realData.balance : 0);
+            const realBal = Number(realData.realBalance !== undefined ? realData.realBalance : totalBal);
+            const bonusBal = Number(realData.bonusBalance !== undefined ? realData.bonusBalance : 0);
+            const unified = Math.max(totalBal, Math.round((realBal + bonusBal) * 100) / 100);
+            window.ppfb.balance = unified;
+            window.ppfb.realBalance = realBal;
+            window.ppfb.bonusBalance = bonusBal;
+            if (typeof window.setBalanceUI === 'function') {
+                window.setBalanceUI(unified, Number(realData.playPoints || 0), Number(realData.pendingPoints || 0), unified, 0);
+            }
+            try {
+                localStorage.setItem('pp_sso_session', JSON.stringify(u));
+                localStorage.setItem('ppm_user_uid', u.uid);
+                localStorage.setItem('pp_uid', u.uid);
+                if (window.ppfb.customName) localStorage.setItem('pp_cached_name_' + u.uid, window.ppfb.customName);
+                if (window.ppfb.avatar) localStorage.setItem('pp_cached_avatar_' + u.uid, window.ppfb.avatar);
+                if (window.ppfb.tgChatId) localStorage.setItem('pp_cached_tg_' + u.uid, window.ppfb.tgChatId);
+            } catch (e) { }
+            if (typeof setProfileUI === 'function') setProfileUI(u);
+            if (typeof window.paintAvatar === 'function') window.paintAvatar();
+            if (typeof window.refreshTgConn === 'function') window.refreshTgConn();
+            if (typeof window.renderLoyaltyStars === 'function') window.renderLoyaltyStars();
+        };
+
         window.selectGoogleAccount = async function(email) {
             if (!email) return;
+            const cleanEmail = email.toString().trim();
             try {
                 localStorage.removeItem('pp_logged_out');
-                if (window.FB && window.FB.auth && window.FB.auth.currentUser && (window.FB.auth.currentUser.email || '').toLowerCase() === email.toLowerCase()) {
+                if (window.FB && window.FB.auth && window.FB.auth.currentUser && (window.FB.auth.currentUser.email || '').toLowerCase() === cleanEmail.toLowerCase()) {
                     window.currentUser = window.FB.auth.currentUser;
                     window.ppfb.user = window.FB.auth.currentUser;
                     const gb = document.getElementById('ghostBanner');
@@ -10030,30 +10088,46 @@
                     showScreen('screenGameSelect');
                     return;
                 }
-                const uname = email.split('@')[0];
+
+                toast('রিয়েল অ্যাকাউন্ট ডাটা লোড হচ্ছে...');
+                // Cloudflare D1 থেকে ইমেইলের আসল UID, Name, Avatar, Coins, Telegram খুঁজে বের করা
+                const realUser = await window.resolveRealUserByEmail(cleanEmail);
+                const uname = (realUser && realUser.name) ? realUser.name : cleanEmail.split('@')[0];
+                const resolvedUid = (realUser && realUser.uid)
+                    ? realUser.uid
+                    : ('sso_' + btoa(cleanEmail.toLowerCase()).replace(/=/g, '').slice(0, 20));
+                const resolvedAvatar = (realUser && realUser.avatar)
+                    ? realUser.avatar
+                    : ('https://ui-avatars.com/api/?name=' + encodeURIComponent(uname) + '&background=6366f1&color=fff');
+
                 const u = {
-                    uid: 'sso_' + btoa(email.toLowerCase()).replace(/=/g, '').slice(0, 20),
-                    email: email,
+                    uid: resolvedUid,
+                    email: cleanEmail,
                     displayName: uname,
-                    photoURL: 'https://ui-avatars.com/api/?name=' + encodeURIComponent(uname) + '&background=6366f1&color=fff'
+                    photoURL: resolvedAvatar
                 };
                 window.currentUser = u;
                 window.ppfb.user = u;
-                try {
-                    localStorage.setItem('pp_sso_session', JSON.stringify(u));
-                    localStorage.setItem('ppm_user_uid', u.uid);
-                    localStorage.setItem('pp_uid', u.uid);
-                    localStorage.setItem('pp_cached_name_' + u.uid, uname);
-                } catch (e) { }
+                if (realUser) {
+                    window.applyRealUserProfileData(u, realUser);
+                } else {
+                    try {
+                        localStorage.setItem('pp_sso_session', JSON.stringify(u));
+                        localStorage.setItem('ppm_user_uid', u.uid);
+                        localStorage.setItem('pp_uid', u.uid);
+                        localStorage.setItem('pp_cached_name_' + u.uid, uname);
+                    } catch (e) { }
+                    if (typeof setProfileUI === 'function') setProfileUI(u);
+                }
 
                 const gb = document.getElementById('ghostBanner');
                 if (gb) gb.classList.add('hidden');
 
-                if (typeof setProfileUI === 'function') setProfileUI(u);
                 showScreen('screenGameSelect');
-                toast('Logged in as ' + email);
+                toast('Logged in as ' + uname);
                 if (typeof ensureUser === 'function') ensureUser(u).catch(() => {});
                 if (typeof fetchHistItems === 'function') fetchHistItems(u).catch(() => {});
+                if (typeof window.refreshBonus === 'function') { try { window.refreshBonus(); } catch (e) { } }
             } catch (err) {
                 console.warn('selectGoogleAccount error:', err);
             }
@@ -19059,7 +19133,25 @@ async function executeServerQuestUnlock() {
                         if (ssoSaved) {
                             const su = JSON.parse(ssoSaved);
                             if (su && su.uid) {
-                                u = su;
+                                // পুরনো ফেক sso_ UID থাকলে অটো-হিল করে রিয়েল Cloudflare D1 UID ও ডাটা নিয়ে আসা
+                                if (su.email && (String(su.uid).startsWith('sso_') || !su.photoURL || su.photoURL.includes('ui-avatars.com')) && typeof window.resolveRealUserByEmail === 'function') {
+                                    const realUser = await window.resolveRealUserByEmail(su.email);
+                                    if (realUser && realUser.uid) {
+                                        su.uid = realUser.uid;
+                                        if (realUser.name) su.displayName = realUser.name;
+                                        if (realUser.avatar) su.photoURL = realUser.avatar;
+                                        u = su;
+                                        window.currentUser = u;
+                                        window.ppfb.user = u;
+                                        if (typeof window.applyRealUserProfileData === 'function') {
+                                            window.applyRealUserProfileData(u, realUser);
+                                        }
+                                    } else {
+                                        u = su;
+                                    }
+                                } else {
+                                    u = su;
+                                }
                             }
                         }
                     } catch (e) { }

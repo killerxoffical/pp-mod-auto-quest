@@ -43,14 +43,14 @@ print("=" * 60)
 print(">>> BULLETPROOF BUILD STARTING: PPM CLOUD & PP QUEST HYBRID")
 print("=" * 60)
 
-# STEP 0: Prepare assets_quest directory
-print("\n>>> Step 0: Syncing web assets for PP QUEST...")
+# STEP 0: Prepare assets_quest directory (KEEP mobile assets_quest/www/index.html SEPARATE from web pp mod/index.html!)
+print("\n>>> Step 0: Syncing static image/script assets for PP QUEST (preserving standalone mobile index.html)...")
 assets_quest_www = os.path.join("assets_quest", "www")
 os.makedirs(assets_quest_www, exist_ok=True)
 
 pp_mod_dir = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "..", "pp mod"))
+# NOTE: index.html is intentionally NOT copied from pp mod/ so the Mobile App HTML stays completely independent from Web HTML.
 quest_files_to_copy = [
-    "index.html",
     "brand_logo.png",
     "fb.png",
     "hd.png",
@@ -69,6 +69,9 @@ for qf in quest_files_to_copy:
     dst_f = os.path.join(assets_quest_www, qf)
     if os.path.exists(src_f):
         shutil.copy2(src_f, dst_f)
+
+if not os.path.exists(os.path.join(assets_quest_www, "index.html")):
+    shutil.copy2(os.path.join(pp_mod_dir, "index.html"), os.path.join(assets_quest_www, "index.html"))
 
 if os.path.exists(os.path.join("assets", "logo_user.png")):
     shutil.copy2(os.path.join("assets", "logo_user.png"), os.path.join("assets_quest", "logo_user.png"))
