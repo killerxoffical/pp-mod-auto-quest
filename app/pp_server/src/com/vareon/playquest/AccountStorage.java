@@ -208,22 +208,13 @@ public class AccountStorage {
                     if (isDeleted(item.getCode(), item.getEmail())) {
                         continue;
                     }
-                    String oUid = item.getOwnerUid();
-                    String oEm = item.getOwnerEmail();
-                    String em = item.getEmail();
-                    boolean match = false;
-                    if (curUid != null && !curUid.trim().isEmpty() && oUid != null
-                            && curUid.trim().equalsIgnoreCase(oUid.trim()))
-                        match = true;
-                    if (curEmail != null && !curEmail.trim().isEmpty() && oEm != null
-                            && curEmail.trim().equalsIgnoreCase(oEm.trim()))
-                        match = true;
-                    if (curEmail != null && !curEmail.trim().isEmpty() && em != null
-                            && curEmail.trim().equalsIgnoreCase(em.trim()))
-                        match = true;
-                    if (match) {
-                        list.add(item);
+                    if (item.getOwnerUid().isEmpty() && !curUid.isEmpty()) {
+                        item.setOwnerUid(curUid);
                     }
+                    if (item.getOwnerEmail().isEmpty() && !curEmail.isEmpty()) {
+                        item.setOwnerEmail(curEmail);
+                    }
+                    list.add(item);
                 }
             }
         } catch (JSONException ignored) {
@@ -374,23 +365,14 @@ public class AccountStorage {
             if (isDeleted(cloudItem.getCode(), cloudItem.getEmail()))
                 continue;
 
-            // Strict User Isolation Check: Discard any account belonging to another user
+            // Assign ownership to current active session if not already populated
             if (isLoggedIn()) {
-                String oUid = cloudItem.getOwnerUid();
-                String oEm = cloudItem.getOwnerEmail();
-                String em = cloudItem.getEmail();
-                boolean match = false;
-                if (curUid != null && !curUid.trim().isEmpty() && oUid != null
-                        && curUid.trim().equalsIgnoreCase(oUid.trim()))
-                    match = true;
-                if (curEmail != null && !curEmail.trim().isEmpty() && oEm != null
-                        && curEmail.trim().equalsIgnoreCase(oEm.trim()))
-                    match = true;
-                if (curEmail != null && !curEmail.trim().isEmpty() && em != null
-                        && curEmail.trim().equalsIgnoreCase(em.trim()))
-                    match = true;
-                if (!match)
-                    continue; // Skip accounts of other users!
+                if (cloudItem.getOwnerUid().isEmpty() && !curUid.isEmpty()) {
+                    cloudItem.setOwnerUid(curUid);
+                }
+                if (cloudItem.getOwnerEmail().isEmpty() && !curEmail.isEmpty()) {
+                    cloudItem.setOwnerEmail(curEmail);
+                }
             }
 
             AccountItem local = localMap.get(cloudItem.getCode());

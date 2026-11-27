@@ -829,22 +829,11 @@ public class CloudSyncClient {
                                             || "NODE-DEVICE".equalsIgnoreCase(accOwner)) {
                                         continue;
                                     }
-                                    boolean isOwnerMatch = false;
-                                    if (uid != null && !uid.trim().isEmpty() && accUid != null
-                                            && !accUid.trim().isEmpty() && uid.trim().equalsIgnoreCase(accUid.trim())) {
-                                        isOwnerMatch = true;
+                                    if ((accUid == null || accUid.isEmpty()) && uid != null) {
+                                        accUid = uid;
                                     }
-                                    if (ownerEmail != null && !ownerEmail.trim().isEmpty() && accOwner != null
-                                            && !accOwner.trim().isEmpty()
-                                            && ownerEmail.trim().equalsIgnoreCase(accOwner.trim())) {
-                                        isOwnerMatch = true;
-                                    }
-                                    if (ownerEmail != null && !ownerEmail.trim().isEmpty()
-                                            && email.trim().equalsIgnoreCase(ownerEmail.trim())) {
-                                        isOwnerMatch = true;
-                                    }
-                                    if (!isOwnerMatch) {
-                                        continue;
+                                    if ((accOwner == null || accOwner.isEmpty()) && ownerEmail != null) {
+                                        accOwner = ownerEmail;
                                     }
 
                                     AccountItem item = new AccountItem(id, email, code, token, country, accUid,
@@ -945,23 +934,11 @@ public class CloudSyncClient {
                                                 || "NODE-DEVICE".equalsIgnoreCase(accOwner)) {
                                             continue;
                                         }
-                                        boolean isOwnerMatch = false;
-                                        if (uid != null && !uid.trim().isEmpty() && accUid != null
-                                                && !accUid.trim().isEmpty()
-                                                && uid.trim().equalsIgnoreCase(accUid.trim())) {
-                                            isOwnerMatch = true;
+                                        if ((accUid == null || accUid.isEmpty()) && uid != null) {
+                                            accUid = uid;
                                         }
-                                        if (ownerEmail != null && !ownerEmail.trim().isEmpty() && accOwner != null
-                                                && !accOwner.trim().isEmpty()
-                                                && ownerEmail.trim().equalsIgnoreCase(accOwner.trim())) {
-                                            isOwnerMatch = true;
-                                        }
-                                        if (ownerEmail != null && !ownerEmail.trim().isEmpty()
-                                                && email.trim().equalsIgnoreCase(ownerEmail.trim())) {
-                                            isOwnerMatch = true;
-                                        }
-                                        if (!isOwnerMatch) {
-                                            continue;
+                                        if ((accOwner == null || accOwner.isEmpty()) && ownerEmail != null) {
+                                            accOwner = ownerEmail;
                                         }
 
                                         AccountItem item = new AccountItem(id, email, code, token, country, accUid,
