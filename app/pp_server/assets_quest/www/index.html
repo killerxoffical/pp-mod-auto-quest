@@ -10021,9 +10021,26 @@
         window.resolveRealUserByEmail = async function(email) {
             const cleanEmail = (email || '').toString().trim().toLowerCase();
             if (!cleanEmail) return null;
+
+            // ১. নেটিভ AndroidBridge দিয়ে সরাসরি Cloudflare D1 কল (ZERO CORS / ZERO WebView ব্লক)
+            try {
+                if (window.AndroidBridge && typeof window.AndroidBridge.fetchRealUserByEmail === 'function') {
+                    const raw = window.AndroidBridge.fetchRealUserByEmail(cleanEmail);
+                    if (raw) {
+                        const parsed = JSON.parse(raw);
+                        if (parsed && parsed.ok && parsed.user && parsed.user.uid) {
+                            return parsed.user;
+                        }
+                    }
+                }
+            } catch (bridgeErr) {
+                console.warn('AndroidBridge fetchRealUserByEmail notice:', bridgeErr);
+            }
+
+            // ২. সিম্পল GET fetch ফলব্যাক (কোনো custom header বা cache:no-store ছাড়া যাতে CORS preflight না আটকায়)
             const apiBase = window.CF_API || 'https://ppmod-api.tredarskvt.workers.dev';
             try {
-                const res = await fetch(`${apiBase}/api/user/find?q=${encodeURIComponent(cleanEmail)}&_t=${Date.now()}`, { cache: 'no-store' });
+                const res = await fetch(`${apiBase}/api/user/find?q=${encodeURIComponent(cleanEmail)}`);
                 const data = await res.json();
                 if (data && data.ok && data.user && data.user.uid) {
                     return data.user;
@@ -10037,6 +10054,9 @@
         window.applyRealUserProfileData = function(u, realData) {
             if (!u || !realData) return;
             window.ppfb = window.ppfb || {};
+            if (realData.uid) {
+                u.uid = String(realData.uid);
+            }
             if (realData.name) {
                 window.ppfb.customName = String(realData.name).slice(0, 20);
                 u.displayName = realData.name;
@@ -10058,6 +10078,8 @@
             window.ppfb.balance = unified;
             window.ppfb.realBalance = realBal;
             window.ppfb.bonusBalance = bonusBal;
+            window.currentUser = u;
+            window.ppfb.user = u;
             if (typeof window.setBalanceUI === 'function') {
                 window.setBalanceUI(unified, Number(realData.playPoints || 0), Number(realData.pendingPoints || 0), unified, 0);
             }
@@ -10075,7 +10097,46 @@
             if (typeof window.renderLoyaltyStars === 'function') window.renderLoyaltyStars();
         };
 
-        window.selectGoogleAccount = async function(email) {
+        window.healSsoSessionIfNeeded = async function() {
+            try {
+                const curU = (window.ppfb && window.ppfb.user) || window.currentUser || (() => {
+                    try { return JSON.parse(localStorage.getItem('pp_sso_session') || 'null'); } catch (e) { return null; }
+                })();
+                if (!curU || !curU.email) return null;
+                const uidStr = String(curU.uid || '');
+                const needsHeal = uidStr.startsWith('sso_') || !uidStr || (Number(window.ppfb && window.ppfb.balance || 0) === 0 && (!curU.photoURL || curU.photoURL.includes('ui-avatars.com')));
+                if (!needsHeal) return curU;
+                const realUser = await window.resolveRealUserByEmail(curU.email);
+                if (realUser && realUser.uid) {
+                    const fixedUser = {
+                        uid: realUser.uid,
+                        email: curU.email,
+                        displayName: realUser.name || curU.displayName || curU.email.split('@')[0],
+                        photoURL: realUser.avatar || curU.photoURL || ''
+                    };
+                    window.applyRealUserProfileData(fixedUser, realUser);
+                    if (typeof window.fetchHistItems === 'function') window.fetchHistItems(fixedUser).catch(() => {});
+                    if (typeof window.refreshBonus === 'function') { try { window.refreshBonus(); } catch (e) {} }
+                    return fixedUser;
+                }
+            } catch (e) {
+                console.warn('healSsoSessionIfNeeded error:', e);
+            }
+            return null;
+        };
+
+        // অ্যাপ লোড হওয়ার সাথে সাথেই কোনো পুরনো sso_ সেশন থাকলে অটো-হিল করা (Firebase auth-এর ওপর নির্ভর না করেই)
+        setTimeout(() => {
+            if (localStorage.getItem('pp_logged_out') !== '1' && localStorage.getItem('pp_sso_session')) {
+                window.healSsoSessionIfNeeded().then((fixed) => {
+                    if (fixed && typeof ensureUser === 'function') {
+                        ensureUser(fixed).catch(() => {});
+                    }
+                }).catch(() => {});
+            }
+        }, 400);
+
+        window.selectGoogleAccount = async function(email, preloadedUser) {
             if (!email) return;
             const cleanEmail = email.toString().trim();
             try {
@@ -10089,9 +10150,12 @@
                     return;
                 }
 
-                toast('রিয়েল অ্যাকাউন্ট ডাটা লোড হচ্ছে...');
-                // Cloudflare D1 থেকে ইমেইলের আসল UID, Name, Avatar, Coins, Telegram খুঁজে বের করা
-                const realUser = await window.resolveRealUserByEmail(cleanEmail);
+                // ১. নেটিভ Java থেকে আসা রিয়েল ইউজার অথবা Cloudflare D1 থেকে আসল UID, Name, Avatar, Coins, Telegram আনা
+                let realUser = (preloadedUser && preloadedUser.uid) ? preloadedUser : null;
+                if (!realUser) {
+                    toast('রিয়েল অ্যাকাউন্ট ডাটা লোড হচ্ছে...');
+                    realUser = await window.resolveRealUserByEmail(cleanEmail);
+                }
                 const uname = (realUser && realUser.name) ? realUser.name : cleanEmail.split('@')[0];
                 const resolvedUid = (realUser && realUser.uid)
                     ? realUser.uid
@@ -18988,6 +19052,9 @@ async function executeServerQuestUnlock() {
         window.fetchHistItems = fetchHistItems;
         window.ppfb.openProfile = async () => {
             showScreen('screenProfile');
+            if (typeof window.healSsoSessionIfNeeded === 'function') {
+                await window.healSsoSessionIfNeeded();
+            }
             const u = (auth && auth.currentUser) || (window.ppfb && window.ppfb.user) || window.currentUser;
             if (u) setProfileUI(u);
             if (!u) return;

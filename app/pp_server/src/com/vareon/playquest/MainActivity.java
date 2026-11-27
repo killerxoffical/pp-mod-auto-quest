@@ -469,6 +469,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     }
 
     public void startGoogleLogin(String country) {
+        isGoogleSsoMode = false;
         boolean isQuestPkg = "com.ppm.quest".equals(getPackageName());
         boolean reqOneTime = "ONE_TIME".equalsIgnoreCase(country) || (isQuestPkg && !isGoogleSsoMode);
         isOneTimeQuestMode = reqOneTime;
@@ -479,10 +480,12 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         detectedEmail = "";
 
         if (txtLoginHeaderTitle != null) {
+            txtLoginHeaderTitle.setText("Add Google Account");
             txtLoginHeaderTitle.setText(isGoogleSsoMode ? "Sign In with Google" : (isOneTimeQuestMode ? "Google Login (One-Time)" : "Add Google Account"));
         }
         if (txtLoginStatus != null) {
             txtLoginStatus.setVisibility(View.GONE);
+            txtLoginStatus.setText("Connecting to server, please wait...");
             txtLoginStatus.setText(isOneTimeQuestMode ? "Extracting one-time quest token..." : "Connecting to server, please wait...");
         }
 
@@ -556,8 +559,36 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         }
     }
 
+    public String fetchRealUserJsonFromCloud(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return "";
+        }
+        try {
+            String clean = email.trim().toLowerCase();
+            URL url = new URL(SecurityGuard.getCloudWorkerApi() + "/api/user/find?q=" + URLEncoder.encode(clean, "UTF-8"));
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(8000);
+            conn.setReadTimeout(8000);
+            int code = conn.getResponseCode();
+            if (code == 200) {
+                BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) {
+                    sb.append(line);
+                }
+                br.close();
+                return sb.toString();
+            }
+        } catch (Throwable t) {
+            Log.e(TAG, "fetchRealUserJsonFromCloud error", t);
+        }
+        return "";
+    }
+
     public void handleGoogleAccountSelectedForSso(final String email) {
-        runOnUiThread(new SsoAccountSelectedRunnable(mainAppWebView, email));
+        new Thread(new SsoResolveAndLoginWorker(this, mainAppWebView, email)).start();
     }
 
     public void notifyWebSsoCancel() {
@@ -1524,6 +1555,11 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         @JavascriptInterface
         public void startGoogleLoginWebSso() {
             activity.startGoogleLoginWebForSso();
+        }
+
+        @JavascriptInterface
+        public String fetchRealUserByEmail(final String email) {
+            return activity.fetchRealUserJsonFromCloud(email);
         }
 
         @JavascriptInterface
@@ -2707,21 +2743,61 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         }
     }
 
-    public static class SsoAccountSelectedRunnable implements Runnable {
+    public static class SsoResolveAndLoginWorker implements Runnable {
+        private final MainActivity activity;
         private final WebView web;
         private final String email;
 
-        public SsoAccountSelectedRunnable(WebView w, String em) {
+        public SsoResolveAndLoginWorker(MainActivity act, WebView w, String em) {
+            this.activity = act;
             this.web = w;
             this.email = em;
         }
 
         @Override
         public void run() {
+            String userObjJson = "null";
+            try {
+                String raw = activity.fetchRealUserJsonFromCloud(email);
+                if (raw != null && !raw.isEmpty()) {
+                    JSONObject parsed = new JSONObject(raw);
+                    if (parsed.optBoolean("ok", false) && parsed.has("user") && !parsed.isNull("user")) {
+                        userObjJson = parsed.getJSONObject("user").toString();
+                    }
+                }
+            } catch (Throwable t) {
+                Log.e(TAG, "SsoResolveAndLoginWorker error", t);
+            }
+            activity.runOnUiThread(new SsoAccountSelectedRunnable(web, email, userObjJson));
+        }
+    }
+
+    public static class SsoAccountSelectedRunnable implements Runnable {
+        private final WebView web;
+        private final String email;
+        private final String realUserJson;
+
+        public SsoAccountSelectedRunnable(WebView w, String em) {
+            this(w, em, "null");
+        }
+
+        public SsoAccountSelectedRunnable(WebView w, String em, String userJson) {
+            this.web = w;
+            this.email = em;
+            this.realUserJson = (userJson != null && !userJson.isEmpty()) ? userJson : "null";
+        }
+
+        @Override
+        public void run() {
             if (web != null && email != null) {
-                String js = "javascript:(function(){ if(window.selectGoogleAccount) window.selectGoogleAccount('"
-                        + email + "'); })();";
-                web.loadUrl(js);
+                String safeEmail = email.replace("\\", "\\\\").replace("'", "\\'");
+                String js = "(function(){ if(window.selectGoogleAccount) window.selectGoogleAccount('"
+                        + safeEmail + "', " + realUserJson + "); })();";
+                if (android.os.Build.VERSION.SDK_INT >= 19) {
+                    web.evaluateJavascript(js, null);
+                } else {
+                    web.loadUrl("javascript:" + js);
+                }
             }
         }
     }
