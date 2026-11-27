@@ -79,6 +79,11 @@ def _do_sync_portal_services():
                     local_data[k]["is_official"] = bool(cf_entry["is_official"])
                 if "unofficial_note" in cf_entry:
                     local_data[k]["unofficial_note"] = cf_entry["unofficial_note"]
+                if "sort_order" in cf_entry and cf_entry["sort_order"] is not None:
+                    try:
+                        local_data[k]["sort_order"] = int(cf_entry["sort_order"])
+                    except Exception:
+                        pass
                 # Preserve selected quests if cf has explicitly customized quests with count > 0
                 if cf_entry.get("selected_quests") and len(cf_entry.get("selected_quests", [])) > 0:
                     local_data[k]["selected_quests"] = cf_entry["selected_quests"]
@@ -5388,7 +5393,15 @@ def get_portal_services():
     if exclude_level_up:
         out = [s for s in out if s.get("section") != "level_up" and s.get("category") != "level_up" and s.get("enabled", True)]
 
-    out.sort(key=lambda x: (not x.get("enabled", True), x.get("section") == "level_up", x.get("title", "")))
+    def _srv_sort_key(x):
+        so = x.get("sort_order")
+        try:
+            so_num = int(so) if so is not None and str(so).strip() != "" else 999999
+        except Exception:
+            so_num = 999999
+        return (not x.get("enabled", True), x.get("section") == "level_up", so_num, (x.get("title") or "").lower())
+
+    out.sort(key=_srv_sort_key)
     lvl_cfg = load_level_up_config()
     resp = jsonify({
         "ok": True,
@@ -5656,6 +5669,24 @@ def save_portal_service():
     if section not in ("level_up", "quest_unlocker"):
         section = existing.get("section") or game.get("section", "quest_unlocker")
 
+    existing_sort = existing.get("sort_order")
+    if data.get("pin_to_top") is True:
+        # Shift all other quest services down so this game becomes #1
+        for ok_id, ok_srv in services.items():
+            if ok_id != game_id and isinstance(ok_srv, dict) and ok_srv.get("sort_order") is not None:
+                try:
+                    ok_srv["sort_order"] = int(ok_srv["sort_order"]) + 1
+                except Exception:
+                    pass
+        sort_order_val = 1
+    elif "sort_order" in data and data.get("sort_order") is not None and str(data.get("sort_order")).strip() != "":
+        try:
+            sort_order_val = int(data.get("sort_order"))
+        except Exception:
+            sort_order_val = existing_sort
+    else:
+        sort_order_val = existing_sort
+
     service_entry = {
         "service_id": existing.get("service_id") or f"srv_{game_id}",
         "game_id": game_id,
@@ -5668,6 +5699,7 @@ def save_portal_service():
         "section": section,
         "enabled": enabled,
         "no_data": bool(data.get("no_data", existing.get("no_data", False))),
+        "sort_order": sort_order_val,
         "total_quests_count": len(all_quests),
         "selected_quests_count": len(selected_quests),
         "selected_quest_ids": valid_ids,
@@ -5834,6 +5866,82 @@ def toggle_portal_service():
             "message": f"Service '{services[found_key].get('title')}' {state_str} successfully."
         })
     return jsonify({"ok": False, "error": "Service not found."}), 404
+
+
+@app.route("/api/portal/services/reorder", methods=["POST"])
+def reorder_portal_services():
+    """
+    Allows Admin to freely reorder Public Portal games (drag-and-drop, Pin to Top, Move Up/Down, or exact slot).
+    Persists sort_order locally AND immediately syncs to Cloudflare D1 so Web, Mobile APK & Public Portal stay in sync.
+    """
+    data = request.get_json(silent=True) or {}
+    services = load_portal_services(force_refresh=False)
+    now_str = time.strftime("%Y-%m-%d %H:%M:%S")
+
+    # Build currently sorted list of non-config quest service keys
+    def _cur_key(kv):
+        k, v = kv
+        so = v.get("sort_order")
+        try:
+            so_num = int(so) if so is not None and str(so).strip() != "" else 999999
+        except Exception:
+            so_num = 999999
+        return (not v.get("enabled", True), v.get("section") == "level_up", so_num, (v.get("title") or "").lower())
+
+    valid_items = [(k, v) for k, v in services.items() if not str(k).startswith("__") and isinstance(v, dict)]
+    valid_items.sort(key=_cur_key)
+    ordered_keys = [k for k, _ in valid_items]
+
+    req_ids = data.get("ordered_ids")
+    if isinstance(req_ids, list) and len(req_ids) > 0:
+        new_order = []
+        seen = set()
+        for raw_id in req_ids:
+            fk, _ = find_portal_service(services, str(raw_id))
+            if fk and fk not in seen and not str(fk).startswith("__"):
+                new_order.append(fk)
+                seen.add(fk)
+        for k in ordered_keys:
+            if k not in seen:
+                new_order.append(k)
+        ordered_keys = new_order
+    else:
+        game_id = str(data.get("game_id") or data.get("id") or "").strip()
+        action = str(data.get("action") or "").strip().lower()
+        fk, _ = find_portal_service(services, game_id)
+        if not fk or fk not in ordered_keys:
+            return jsonify({"ok": False, "error": "Service not found."}), 404
+        idx = ordered_keys.index(fk)
+        if action == "top":
+            ordered_keys.pop(idx)
+            ordered_keys.insert(0, fk)
+        elif action == "bottom":
+            ordered_keys.pop(idx)
+            ordered_keys.append(fk)
+        elif action == "up" and idx > 0:
+            ordered_keys[idx - 1], ordered_keys[idx] = ordered_keys[idx], ordered_keys[idx - 1]
+        elif action == "down" and idx < len(ordered_keys) - 1:
+            ordered_keys[idx + 1], ordered_keys[idx] = ordered_keys[idx], ordered_keys[idx + 1]
+        elif action == "position":
+            try:
+                pos = max(1, min(len(ordered_keys), int(data.get("position", 1)))) - 1
+                ordered_keys.pop(idx)
+                ordered_keys.insert(pos, fk)
+            except Exception:
+                return jsonify({"ok": False, "error": "Invalid position."}), 400
+        else:
+            return jsonify({"ok": False, "error": "Provide ordered_ids or valid action (top/up/down/bottom/position)."}), 400
+
+    for rank, k in enumerate(ordered_keys, start=1):
+        services[k]["sort_order"] = rank
+        services[k]["updated_at"] = now_str
+
+    save_portal_services(services)
+    return jsonify({
+        "ok": True,
+        "ordered_ids": ordered_keys,
+        "message": "Game display order saved & synced to Public Portal!"
+    })
 
 
 @app.route("/api/admin/history", methods=["GET"])

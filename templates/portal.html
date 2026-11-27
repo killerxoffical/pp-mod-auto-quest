@@ -892,7 +892,12 @@
                         const cfData = await cfRes.json();
                         const cfObj = (cfData && cfData.data) ? cfData.data : cfData;
                         if (cfObj && typeof cfObj === "object") {
-                            services = Object.values(cfObj).filter(s => s && s.enabled !== false);
+                            services = Object.values(cfObj).filter(s => s && s.enabled !== false).sort((a, b) => {
+                                const sa = (a.sort_order !== undefined && a.sort_order !== null && a.sort_order !== "") ? Number(a.sort_order) : 999999;
+                                const sb = (b.sort_order !== undefined && b.sort_order !== null && b.sort_order !== "") ? Number(b.sort_order) : 999999;
+                                if (sa !== sb) return sa - sb;
+                                return String(a.title || "").localeCompare(String(b.title || ""));
+                            });
                         }
                     } catch(cfErr) {
                         console.error("Cloudflare portal services fallback failed:", cfErr);

@@ -3428,6 +3428,15 @@
                                 </div>
                             </label>
                         </div>
+                        <label
+                            style="display:flex; align-items:center; gap:9px; margin-top:10px; padding:8px 12px; border:1px dashed rgba(16,185,129,0.4); border-radius:var(--radius-sm); cursor:pointer; background:rgba(16,185,129,0.06);">
+                            <input type="checkbox" id="portalPinToTopCheckbox"
+                                style="accent-color:#10b981; width:16px; height:16px;">
+                            <div>
+                                <strong style="font-size:12px; display:block; color:#10b981;">📌 Pin to Top (#1 সবার উপরে রাখুন)</strong>
+                                <span style="font-size:10.5px; color:var(--text-muted);">New game বা Offer game সবার আগে দেখাতে টিক দিন</span>
+                            </div>
+                        </label>
                     </div>
 
                     <div>
@@ -6199,7 +6208,12 @@
                     const cfData = await cfRes.json();
                     const cfObj = (cfData && cfData.data) ? cfData.data : cfData;
                     if (cfObj && typeof cfObj === "object") {
-                        const cfServices = Object.values(cfObj).filter(s => s && s.enabled !== false);
+                        const cfServices = Object.values(cfObj).filter(s => s && typeof s === "object").sort((a, b) => {
+                            const sa = (a.sort_order !== undefined && a.sort_order !== null && a.sort_order !== "") ? Number(a.sort_order) : 999999;
+                            const sb = (b.sort_order !== undefined && b.sort_order !== null && b.sort_order !== "") ? Number(b.sort_order) : 999999;
+                            if (sa !== sb) return sa - sb;
+                            return String(a.title || "").localeCompare(String(b.title || ""));
+                        });
                         if (cfServices.length) {
                             portalAllServices = cfServices;
                             try { localStorage.setItem("pp_admin_portal_services_cache", JSON.stringify(portalAllServices)); } catch (e) { }
@@ -6293,8 +6307,16 @@
                 return;
             }
 
-            let html = `<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:20px;">`;
-            displayServices.forEach(s => {
+            let html = `
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:16px; padding:10px 14px; background:rgba(14,165,233,0.08); border:1px solid rgba(14,165,233,0.25); border-radius:var(--radius-md); font-size:12px; color:var(--text-secondary);">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:15px;">↕️</span>
+                    <span><strong style="color:var(--text-primary);">Custom Game Order:</strong> কার্ড ড্র্যাগ করুন অথবা <strong>⬆ Top / ↑ / ↓ / #Slot</strong> বাটন দিয়ে যেকোনো নতুন বা অফার গেম সবার উপরে সাজিয়ে দিন।</span>
+                </div>
+                <span id="portalOrderSyncStatus" style="font-size:11px; font-weight:700; color:#10b981; font-family:'JetBrains Mono';">✓ Live Order Synced</span>
+            </div>
+            <div id="portalServicesDraggableGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:20px;">`;
+            displayServices.forEach((s, dispIdx) => {
                 const serviceKey = s.id || s.game_id || s.service_id || s.package || s.title;
                 const isEnabled = s.enabled !== false;
                 const isNoData = s.no_data === true;
@@ -6304,6 +6326,7 @@
                 const isLevelUp = (s.section || "quest_unlocker") === "level_up";
                 const isOfficial = !isLevelUp && s.is_official !== false && !s.unofficial_note;
                 const isRandom = !isLevelUp && (s.is_official === false || !!s.unofficial_note);
+                const rankPos = dispIdx + 1;
 
                 // Status Badge
                 let statusBadgeHtml = '';
@@ -6361,8 +6384,39 @@
                 const cardBorderColor = curMode === 'active' ? 'rgba(16,185,129,0.35)' : (curMode === 'shadow' ? 'rgba(245,158,11,0.35)' : 'rgba(239,68,68,0.25)');
 
                 html += `
-                <div style="background:var(--bg-card); border:1px solid ${cardBorderColor}; border-radius:var(--radius-xl); padding:20px; box-shadow:var(--shadow-card); display:flex; flex-direction:column; justify-content:space-between; gap:16px; opacity:${curMode === 'hidden' ? '0.75' : '1'}; transition:all 0.25s ease;">
+                <div class="portal-order-card" draggable="true" data-service-key="${escapeHtml(String(serviceKey))}"
+                    ondragstart="handlePortalCardDragStart(event, '${escapeHtml(String(serviceKey))}')"
+                    ondragover="handlePortalCardDragOver(event)"
+                    ondragleave="handlePortalCardDragLeave(event)"
+                    ondrop="handlePortalCardDrop(event, '${escapeHtml(String(serviceKey))}')"
+                    ondragend="handlePortalCardDragEnd(event)"
+                    style="background:var(--bg-card); border:1px solid ${cardBorderColor}; border-radius:var(--radius-xl); padding:20px; box-shadow:var(--shadow-card); display:flex; flex-direction:column; justify-content:space-between; gap:16px; opacity:${curMode === 'hidden' ? '0.75' : '1'}; transition:all 0.2s ease; cursor:grab;">
                     <div>
+                        <!-- Top Order Control Bar -->
+                        <div style="display:flex; align-items:center; justify-content:space-between; gap:6px; margin-bottom:12px; padding:6px 10px; background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:var(--radius-sm);">
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <span title="Drag card to reorder" style="cursor:grab; font-size:13px; color:var(--text-muted); user-select:none;">⠿</span>
+                                <button type="button" onclick="promptPortalGamePosition('${serviceKey}', ${rankPos}, event)" title="Click to move to an exact position number"
+                                    style="background:rgba(14,165,233,0.14); color:#0ea5e9; border:1px solid rgba(14,165,233,0.3); font-family:'JetBrains Mono'; font-size:11px; font-weight:800; padding:2px 8px; border-radius:5px; cursor:pointer;">
+                                    #${rankPos}
+                                </button>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:4px;">
+                                <button type="button" onclick="reorderPortalService('${serviceKey}', 'top', event)" ${dispIdx === 0 ? 'disabled' : ''} title="Pin to #1 Top (সবার উপরে নিন)"
+                                    style="padding:3px 7px; font-size:10.5px; font-weight:800; border-radius:5px; border:1px solid rgba(16,185,129,0.35); background:rgba(16,185,129,0.12); color:#10b981; cursor:${dispIdx === 0 ? 'not-allowed' : 'pointer'}; opacity:${dispIdx === 0 ? '0.4' : '1'};">
+                                    ⬆ Top
+                                </button>
+                                <button type="button" onclick="reorderPortalService('${serviceKey}', 'up', event)" ${dispIdx === 0 ? 'disabled' : ''} title="Move Up (১ ধাপ উপরে)"
+                                    style="padding:3px 7px; font-size:11px; font-weight:800; border-radius:5px; border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-primary); cursor:${dispIdx === 0 ? 'not-allowed' : 'pointer'}; opacity:${dispIdx === 0 ? '0.4' : '1'};">
+                                    ↑
+                                </button>
+                                <button type="button" onclick="reorderPortalService('${serviceKey}', 'down', event)" ${dispIdx === displayServices.length - 1 ? 'disabled' : ''} title="Move Down (১ ধাপ নিচে)"
+                                    style="padding:3px 7px; font-size:11px; font-weight:800; border-radius:5px; border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-primary); cursor:${dispIdx === displayServices.length - 1 ? 'not-allowed' : 'pointer'}; opacity:${dispIdx === displayServices.length - 1 ? '0.4' : '1'};">
+                                    ↓
+                                </button>
+                            </div>
+                        </div>
+
                         <!-- Top Header -->
                         <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:12px;">
                             <div style="display:flex; align-items:center; gap:12px;">
@@ -7224,6 +7278,8 @@
 
             const secRadio = document.querySelector('input[name="portalServiceSection"]:checked');
             const selectedSection = secRadio ? secRadio.value : 'quest_unlocker';
+            const pinTopEl = document.getElementById("portalPinToTopCheckbox");
+            const pinToTop = pinTopEl ? !!pinTopEl.checked : false;
 
             try {
                 const res = await fetch(`${API_BASE}/api/portal/services/save`, {
@@ -7233,6 +7289,7 @@
                         game_id: gameId,
                         selected_quest_ids: selectedIds,
                         section: selectedSection,
+                        pin_to_top: pinToTop,
                         enabled: true
                     })
                 });
@@ -7297,6 +7354,166 @@
             }
         }
         window.setPortalServiceMode = setPortalServiceMode;
+
+        // ==================== ADMIN CUSTOM GAME ORDERING (DRAG & DROP + TOP/UP/DOWN/#SLOT) ====================
+        let _portalDraggedServiceKey = null;
+
+        function _getServiceKey(s) {
+            return String(s.id || s.game_id || s.service_id || s.package || s.title || "");
+        }
+
+        async function persistPortalCustomOrder(orderedIds, toastMsg) {
+            const statusEl = document.getElementById("portalOrderSyncStatus");
+            if (statusEl) {
+                statusEl.textContent = "⏳ Syncing order...";
+                statusEl.style.color = "#f59e0b";
+            }
+            // Re-sort local portalAllServices immediately for 0ms visual feedback
+            const rankMap = new Map();
+            orderedIds.forEach((id, i) => rankMap.set(String(id), i + 1));
+            portalAllServices.forEach(s => {
+                const k = _getServiceKey(s);
+                if (rankMap.has(k)) s.sort_order = rankMap.get(k);
+            });
+            portalAllServices.sort((a, b) => {
+                const sa = (a.sort_order !== undefined && a.sort_order !== null) ? Number(a.sort_order) : 999999;
+                const sb = (b.sort_order !== undefined && b.sort_order !== null) ? Number(b.sort_order) : 999999;
+                if (sa !== sb) return sa - sb;
+                return String(a.title || "").localeCompare(String(b.title || ""));
+            });
+            try { localStorage.setItem("pp_admin_portal_services_cache", JSON.stringify(portalAllServices)); } catch (e) { }
+            renderPortalServicesGrid();
+
+            try {
+                const res = await fetch(`${API_BASE}/api/portal/services/reorder`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ ordered_ids: orderedIds })
+                });
+                const data = await res.json();
+                const stEl = document.getElementById("portalOrderSyncStatus");
+                if (data && data.ok) {
+                    if (stEl) {
+                        stEl.textContent = "✓ Order Saved & Synced";
+                        stEl.style.color = "#10b981";
+                    }
+                    if (toastMsg) showToast(toastMsg, "success");
+                } else {
+                    if (stEl) {
+                        stEl.textContent = "⚠ Sync failed";
+                        stEl.style.color = "#ef4444";
+                    }
+                    showToast("Order save failed: " + ((data && data.error) || "Server error"), "error");
+                }
+            } catch (err) {
+                showToast("Connection error saving game order: " + err.message, "error");
+            }
+        }
+
+        function reorderPortalService(serviceKey, action, ev) {
+            if (ev) ev.stopPropagation();
+            const questList = portalAllServices.filter(s => (s.section || "quest_unlocker") !== "level_up");
+            const ids = questList.map(_getServiceKey);
+            const idx = ids.indexOf(String(serviceKey));
+            if (idx === -1) return;
+
+            const target = questList[idx];
+            if (action === "top") {
+                if (idx === 0) return;
+                ids.splice(idx, 1);
+                ids.unshift(String(serviceKey));
+                persistPortalCustomOrder(ids, `📌 '${target.title}' সবার উপরে (#1) সেট করা হয়েছে!`);
+            } else if (action === "up") {
+                if (idx <= 0) return;
+                [ids[idx - 1], ids[idx]] = [ids[idx], ids[idx - 1]];
+                persistPortalCustomOrder(ids, `↑ '${target.title}' #${idx} নম্বরে নেওয়া হয়েছে!`);
+            } else if (action === "down") {
+                if (idx >= ids.length - 1) return;
+                [ids[idx + 1], ids[idx]] = [ids[idx], ids[idx + 1]];
+                persistPortalCustomOrder(ids, `↓ '${target.title}' #${idx + 2} নম্বরে নেওয়া হয়েছে!`);
+            }
+        }
+        window.reorderPortalService = reorderPortalService;
+
+        function promptPortalGamePosition(serviceKey, currentPos, ev) {
+            if (ev) ev.stopPropagation();
+            const questList = portalAllServices.filter(s => (s.section || "quest_unlocker") !== "level_up");
+            const ids = questList.map(_getServiceKey);
+            const idx = ids.indexOf(String(serviceKey));
+            if (idx === -1) return;
+            const target = questList[idx];
+            const ans = prompt(`'${target.title}' কোন সিরিয়ালে রাখতে চান? (1 থেকে ${ids.length} এর মধ্যে নম্বর দিন):`, String(currentPos));
+            if (ans === null) return;
+            const num = parseInt(ans.trim(), 10);
+            if (isNaN(num) || num < 1 || num > ids.length) {
+                showToast(`১ থেকে ${ids.length} এর মধ্যে সঠিক নম্বর দিন।`, "error");
+                return;
+            }
+            if (num - 1 === idx) return;
+            ids.splice(idx, 1);
+            ids.splice(num - 1, 0, String(serviceKey));
+            persistPortalCustomOrder(ids, `✅ '${target.title}' #${num} নম্বরে সেট করা হয়েছে!`);
+        }
+        window.promptPortalGamePosition = promptPortalGamePosition;
+
+        function handlePortalCardDragStart(ev, key) {
+            _portalDraggedServiceKey = String(key);
+            if (ev.dataTransfer) {
+                ev.dataTransfer.effectAllowed = "move";
+                ev.dataTransfer.setData("text/plain", String(key));
+            }
+            if (ev.currentTarget) ev.currentTarget.style.opacity = "0.45";
+        }
+        window.handlePortalCardDragStart = handlePortalCardDragStart;
+
+        function handlePortalCardDragOver(ev) {
+            ev.preventDefault();
+            if (ev.dataTransfer) ev.dataTransfer.dropEffect = "move";
+            if (ev.currentTarget) {
+                ev.currentTarget.style.outline = "2px dashed #0ea5e9";
+                ev.currentTarget.style.transform = "scale(1.01)";
+            }
+        }
+        window.handlePortalCardDragOver = handlePortalCardDragOver;
+
+        function handlePortalCardDragLeave(ev) {
+            if (ev.currentTarget) {
+                ev.currentTarget.style.outline = "";
+                ev.currentTarget.style.transform = "";
+            }
+        }
+        window.handlePortalCardDragLeave = handlePortalCardDragLeave;
+
+        function handlePortalCardDrop(ev, targetKey) {
+            ev.preventDefault();
+            if (ev.currentTarget) {
+                ev.currentTarget.style.outline = "";
+                ev.currentTarget.style.transform = "";
+            }
+            const srcKey = _portalDraggedServiceKey || (ev.dataTransfer ? ev.dataTransfer.getData("text/plain") : "");
+            if (!srcKey || srcKey === String(targetKey)) return;
+
+            const questList = portalAllServices.filter(s => (s.section || "quest_unlocker") !== "level_up");
+            const ids = questList.map(_getServiceKey);
+            const fromIdx = ids.indexOf(String(srcKey));
+            const toIdx = ids.indexOf(String(targetKey));
+            if (fromIdx === -1 || toIdx === -1) return;
+
+            ids.splice(fromIdx, 1);
+            ids.splice(toIdx, 0, String(srcKey));
+            persistPortalCustomOrder(ids, `✅ গেমটি #${toIdx + 1} নম্বরে সরানো হয়েছে!`);
+        }
+        window.handlePortalCardDrop = handlePortalCardDrop;
+
+        function handlePortalCardDragEnd(ev) {
+            _portalDraggedServiceKey = null;
+            if (ev.currentTarget) {
+                ev.currentTarget.style.opacity = "";
+                ev.currentTarget.style.outline = "";
+                ev.currentTarget.style.transform = "";
+            }
+        }
+        window.handlePortalCardDragEnd = handlePortalCardDragEnd;
 
         async function togglePortalServiceNoData(gameId) {
             try {
