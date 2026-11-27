@@ -9,17 +9,17 @@ import hashlib
 import subprocess
 
 # ==============================================================================
-# PP QUEST (com.ppm.quest) - 5-LAYER FORTRESS STANDALONE APK BUILDER
+# PP QUEST (com.ppm.quest) - 8-LAYER FORTRESS STANDALONE APK BUILDER
 # ==============================================================================
-# Layer 1: Full Multi-Asset AES-256-CBC + HMAC-SHA256 Encrypted Vault (assets/v.dat)
-#          -> ZERO plaintext HTML, JS, JSON, SVG, or PNG files in assets/!
-# Layer 2: Automated Java String Literal Encryption across ALL .java files
-#          -> ZERO readable URLs, /api/ paths, Firebase keys, or anti-crack strings in classes.dex!
-# Layer 3: Full R8 Code Shrinking & Aggressive Obfuscation (com.android.tools.r8.R8)
-#          -> Repackages & renames SecurityGuard, CloudSyncClient, AccountStorage, etc. into p.a, p.b, p.c...
+# READ app/pp_quest/SECURITY_AND_BUILD_RULES.md BEFORE MAKING ANY CHANGES!
+# Layer 1: Multi-Asset AES-256-CBC + HMAC-SHA256 Encrypted Vault (assets/v.dat)
+# Layer 2: Automated Java String Literal Encryption (1100+ strings across all Java files)
+# Layer 3: Full R8 Code Shrinking & Aggressive Class/Method Obfuscation (p.A, p.B, ...)
 # Layer 4: Google AAPT2 Resource Confusion (--shorten-resource-paths --collapse-resource-names)
-#          -> Shortens res/ paths (res/A.png, res/B.xml) & collapses resource names in resources.arsc!
-# Layer 5: Dual-Layer Anti-Signature-Kill (PackageManager + Raw JarFile META-INF) + Cert-Bound Vault Key
+# Layer 5: Dual-Layer Anti-Signature-Kill (PackageManager + Raw Disk JarFile META-INF)
+# Layer 6: Triple-Bound AES-256/HMAC Key (Cert SHA-256 + AndroidManifest.xml SHA-256 + resources.arsc SHA-256)
+# Layer 7: Strict Application Class Lock ("android.app.Application" only — kills all Signature Killer hooks)
+# Layer 8: Anti-MITM Proxy + Anti-Frida/Xposed/LSPosed/SandHook/Clone Detection + Penetration Audit
 # ==============================================================================
 
 QUEST_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -34,7 +34,7 @@ D8_JAR = os.path.join(BUILD_TOOLS, "lib", "d8.jar")
 APKSIGNER_JAR = os.path.join(BUILD_TOOLS, "lib", "apksigner.jar")
 ZIPALIGN = os.path.join(BUILD_TOOLS, "zipalign.exe")
 
-# Prefer modern JDK (17/21/25) required by R8 8.2+
+
 def find_modern_java():
     candidates = [
         r"C:\Program Files\Eclipse Adoptium\jdk-25.0.4.101-hotspot\bin\java.exe",
@@ -48,6 +48,7 @@ def find_modern_java():
         if os.path.exists(c):
             return c
     return "java"
+
 
 JAVA_BIN = find_modern_java()
 JAVAC_BIN = shutil.which("javac") or os.path.join(os.path.dirname(JAVA_BIN), "javac.exe")
@@ -67,7 +68,7 @@ RES_DIR = os.path.join(QUEST_DIR, "res")
 MANIFEST_PATH = os.path.join(QUEST_DIR, "AndroidManifest.xml")
 OUT_BUILD_DIR = os.path.join(QUEST_DIR, "out_classes")
 
-# Pure Java helper for AES-256-CBC + HMAC-SHA256 multi-asset vault encryption & live APK verification
+# Pure Java helper for triple-bound AES-256-CBC + HMAC-SHA256 multi-asset vault & live APK verification
 VAULT_TOOL_JAVA = r'''
 import java.io.*;
 import java.security.*;
@@ -111,9 +112,13 @@ public class VaultTool {
                 || l.endsWith(".xml") || l.endsWith(".txt");
     }
 
-    private static byte[] deriveAesKey(byte[] certSha, String pkg, byte[] pepper) throws Exception {
+    private static byte[] deriveAesKey(byte[] certSha, byte[] manifestSha, byte[] arscSha, String pkg, byte[] pepper) throws Exception {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         md.update(certSha);
+        md.update((byte) '|');
+        md.update(manifestSha);
+        md.update((byte) '|');
+        md.update(arscSha);
         md.update((byte) '|');
         md.update(pkg.getBytes("UTF-8"));
         md.update((byte) '|');
@@ -121,10 +126,14 @@ public class VaultTool {
         return md.digest();
     }
 
-    private static byte[] deriveHmacKey(byte[] certSha, byte[] pepper) throws Exception {
+    private static byte[] deriveHmacKey(byte[] certSha, byte[] manifestSha, byte[] arscSha, byte[] pepper) throws Exception {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         md.update("MAC|".getBytes("UTF-8"));
         md.update(certSha);
+        md.update((byte) '|');
+        md.update(manifestSha);
+        md.update((byte) '|');
+        md.update(arscSha);
         md.update((byte) '|');
         md.update(pepper);
         return md.digest();
@@ -147,8 +156,10 @@ public class VaultTool {
             File srcDir = new File(args[1]);
             File outFile = new File(args[2]);
             byte[] certSha = hexToBytes(args[3]);
-            String pkg = args[4];
-            byte[] pepper = hexToBytes(args[5]);
+            byte[] manifestSha = hexToBytes(args[4]);
+            byte[] arscSha = hexToBytes(args[5]);
+            String pkg = args[6];
+            byte[] pepper = hexToBytes(args[7]);
 
             File[] files = srcDir.listFiles();
             if (files == null || files.length == 0) throw new RuntimeException("src_web is empty!");
@@ -194,8 +205,8 @@ public class VaultTool {
             byte[] iv = new byte[16];
             new SecureRandom().nextBytes(iv);
 
-            byte[] aesKey = deriveAesKey(certSha, pkg, pepper);
-            byte[] hmacKey = deriveHmacKey(certSha, pepper);
+            byte[] aesKey = deriveAesKey(certSha, manifestSha, arscSha, pkg, pepper);
+            byte[] hmacKey = deriveHmacKey(certSha, manifestSha, arscSha, pepper);
 
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
             cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(aesKey, "AES"), new IvParameterSpec(iv));
@@ -225,11 +236,20 @@ public class VaultTool {
 
             try (JarFile jf = new JarFile(apkPath, true)) {
                 JarEntry manifest = jf.getJarEntry("AndroidManifest.xml");
-                if (manifest == null) throw new RuntimeException("Missing AndroidManifest.xml");
-                try (InputStream is = jf.getInputStream(manifest)) { readAll(is); }
+                JarEntry arsc = jf.getJarEntry("resources.arsc");
+                if (manifest == null || arsc == null) throw new RuntimeException("Missing manifest/arsc");
+
+                byte[] manifestBytes;
+                try (InputStream is = jf.getInputStream(manifest)) { manifestBytes = readAll(is); }
+                byte[] liveManifestSha = MessageDigest.getInstance("SHA-256").digest(manifestBytes);
+
                 Certificate[] certs = manifest.getCertificates();
                 if (certs == null || certs.length == 0) throw new RuntimeException("No JarFile certificates!");
                 byte[] liveCertSha = MessageDigest.getInstance("SHA-256").digest(certs[0].getEncoded());
+
+                byte[] arscBytes;
+                try (InputStream is = jf.getInputStream(arsc)) { arscBytes = readAll(is); }
+                byte[] liveArscSha = MessageDigest.getInstance("SHA-256").digest(arscBytes);
 
                 JarEntry vaultEntry = jf.getJarEntry("assets/v.dat");
                 if (vaultEntry == null) throw new RuntimeException("Missing assets/v.dat!");
@@ -240,8 +260,8 @@ public class VaultTool {
                 byte[] storedMac = Arrays.copyOfRange(blob, 16, 48);
                 byte[] cipherBytes = Arrays.copyOfRange(blob, 48, blob.length);
 
-                byte[] aesKey = deriveAesKey(liveCertSha, pkg, pepper);
-                byte[] hmacKey = deriveHmacKey(liveCertSha, pepper);
+                byte[] aesKey = deriveAesKey(liveCertSha, liveManifestSha, liveArscSha, pkg, pepper);
+                byte[] hmacKey = deriveHmacKey(liveCertSha, liveManifestSha, liveArscSha, pepper);
 
                 Mac mac = Mac.getInstance("HmacSHA256");
                 mac.init(new SecretKeySpec(hmacKey, "HmacSHA256"));
@@ -276,7 +296,6 @@ public class VaultTool {
                     decrypted.put(name, payload);
                 }
 
-                // Verify EVERY single source file matches byte-for-byte
                 int checked = 0;
                 for (File f : srcDir.listFiles()) {
                     if (!f.isFile()) continue;
@@ -288,7 +307,10 @@ public class VaultTool {
                     }
                     checked++;
                 }
-                System.out.println("VERIFY_OK:cert=" + bytesToHex(liveCertSha).substring(0, 16) + "...:files_verified=" + checked);
+                System.out.println("VERIFY_OK:cert=" + bytesToHex(liveCertSha).substring(0, 12)
+                        + ":manifest=" + bytesToHex(liveManifestSha).substring(0, 12)
+                        + ":arsc=" + bytesToHex(liveArscSha).substring(0, 12)
+                        + ":files=" + checked);
             }
         }
     }
@@ -343,7 +365,6 @@ def xor_mask_bytes(raw_bytes, mask_byte):
 
 
 def decode_java_string_literal(raw_inner):
-    """Decodes Java escape sequences inside a double-quoted string literal."""
     out = []
     i = 0
     n = len(raw_inner)
@@ -351,22 +372,14 @@ def decode_java_string_literal(raw_inner):
         ch = raw_inner[i]
         if ch == '\\' and i + 1 < n:
             nxt = raw_inner[i + 1]
-            if nxt == 'n':
-                out.append('\n'); i += 2
-            elif nxt == 'r':
-                out.append('\r'); i += 2
-            elif nxt == 't':
-                out.append('\t'); i += 2
-            elif nxt == 'b':
-                out.append('\b'); i += 2
-            elif nxt == 'f':
-                out.append('\f'); i += 2
-            elif nxt == '"':
-                out.append('"'); i += 2
-            elif nxt == "'":
-                out.append("'"); i += 2
-            elif nxt == '\\':
-                out.append('\\'); i += 2
+            if nxt == 'n': out.append('\n'); i += 2
+            elif nxt == 'r': out.append('\r'); i += 2
+            elif nxt == 't': out.append('\t'); i += 2
+            elif nxt == 'b': out.append('\b'); i += 2
+            elif nxt == 'f': out.append('\f'); i += 2
+            elif nxt == '"': out.append('"'); i += 2
+            elif nxt == "'": out.append("'"); i += 2
+            elif nxt == '\\': out.append('\\'); i += 2
             elif nxt == 'u' and i + 5 < n:
                 try:
                     out.append(chr(int(raw_inner[i + 2:i + 6], 16)))
@@ -403,11 +416,6 @@ def encode_string_call(decoded_str):
 
 
 def encrypt_java_file_strings(src_text):
-    """
-    Java-lexer-aware string literal encryptor.
-    Encrypts all string literals (len >= 2) into runtime _S.d(...) calls while
-    safely preserving comments, char literals, annotations, and switch case labels.
-    """
     out = []
     i = 0
     n = len(src_text)
@@ -418,123 +426,66 @@ def encrypt_java_file_strings(src_text):
 
     while i < n:
         ch = src_text[i]
-
-        # Single-line comment
         if ch == '/' and i + 1 < n and src_text[i + 1] == '/':
             end = src_text.find('\n', i)
-            if end == -1:
-                out.append(src_text[i:])
-                break
-            out.append(src_text[i:end + 1])
-            i = end + 1
-            continue
-
-        # Multi-line comment
+            if end == -1: out.append(src_text[i:]); break
+            out.append(src_text[i:end + 1]); i = end + 1; continue
         if ch == '/' and i + 1 < n and src_text[i + 1] == '*':
             end = src_text.find('*/', i + 2)
-            if end == -1:
-                out.append(src_text[i:])
-                break
-            out.append(src_text[i:end + 2])
-            i = end + 2
-            continue
-
-        # Char literal
+            if end == -1: out.append(src_text[i:]); break
+            out.append(src_text[i:end + 2]); i = end + 2; continue
         if ch == "'":
             j = i + 1
             while j < n:
-                if src_text[j] == '\\':
-                    j += 2
-                    continue
-                if src_text[j] == "'":
-                    j += 1
-                    break
+                if src_text[j] == '\\': j += 2; continue
+                if src_text[j] == "'": j += 1; break
                 j += 1
-            out.append(src_text[i:j])
-            i = j
-            continue
-
-        # Annotation start (@SuppressWarnings, @JavascriptInterface, etc.)
+            out.append(src_text[i:j]); i = j; continue
         if ch == '@':
             j = i + 1
-            while j < n and (src_text[j].isalnum() or src_text[j] in '._'):
-                j += 1
-            out.append(src_text[i:j])
-            i = j
-            expect_annotation_parens = True
-            last_word = ""
-            continue
-
+            while j < n and (src_text[j].isalnum() or src_text[j] in '._'): j += 1
+            out.append(src_text[i:j]); i = j
+            expect_annotation_parens = True; last_word = ""; continue
         if expect_annotation_parens:
-            if ch in ' \t\r\n':
-                out.append(ch); i += 1; continue
-            elif ch == '(':
-                in_annotation_parens = 1
-                expect_annotation_parens = False
-                out.append(ch); i += 1; continue
-            else:
-                expect_annotation_parens = False
-
+            if ch in ' \t\r\n': out.append(ch); i += 1; continue
+            elif ch == '(': in_annotation_parens = 1; expect_annotation_parens = False; out.append(ch); i += 1; continue
+            else: expect_annotation_parens = False
         if in_annotation_parens > 0:
             if ch == '"':
                 j = i + 1
                 while j < n:
-                    if src_text[j] == '\\':
-                        j += 2; continue
-                    if src_text[j] == '"':
-                        j += 1; break
+                    if src_text[j] == '\\': j += 2; continue
+                    if src_text[j] == '"': j += 1; break
                     j += 1
-                out.append(src_text[i:j])
-                i = j
-                continue
-            if ch == '(':
-                in_annotation_parens += 1
-            elif ch == ')':
-                in_annotation_parens -= 1
+                out.append(src_text[i:j]); i = j; continue
+            if ch == '(': in_annotation_parens += 1
+            elif ch == ')': in_annotation_parens -= 1
             out.append(ch); i += 1; continue
-
-        # Track identifier keywords (e.g., 'case')
         if ch.isalpha() or ch == '_':
             j = i + 1
-            while j < n and (src_text[j].isalnum() or src_text[j] == '_'):
-                j += 1
-            last_word = src_text[i:j]
-            out.append(last_word)
-            i = j
-            continue
-
-        # Double-quoted string literal
+            while j < n and (src_text[j].isalnum() or src_text[j] == '_'): j += 1
+            last_word = src_text[i:j]; out.append(last_word); i = j; continue
         if ch == '"':
             j = i + 1
             while j < n:
-                if src_text[j] == '\\':
-                    j += 2
-                    continue
-                if src_text[j] == '"':
-                    break
+                if src_text[j] == '\\': j += 2; continue
+                if src_text[j] == '"': break
                 j += 1
             raw_inner = src_text[i + 1:j]
             decoded = decode_java_string_literal(raw_inner)
-
-            # Skip empty/1-char strings or switch case labels
             if len(decoded) >= 2 and last_word != "case":
                 out.append(encode_string_call(decoded))
                 encrypted_count += 1
             else:
                 out.append(src_text[i:j + 1])
-            i = j + 1
-            last_word = ""
-            continue
-
-        if not ch.isspace():
-            last_word = ""
-        out.append(ch)
-        i += 1
+            i = j + 1; last_word = ""; continue
+        if not ch.isspace(): last_word = ""
+        out.append(ch); i += 1
 
     return ''.join(out), encrypted_count
 
 
-def inject_security_guard_constants(sg_path, cert_sha_bytes, vault_sha_bytes, pepper_bytes):
+def inject_security_guard_constants(sg_path, cert_sha_bytes, manifest_sha_bytes, arsc_sha_bytes, vault_sha_bytes, pepper_bytes):
     with open(sg_path, "r", encoding="utf-8") as f:
         src = f.read()
 
@@ -544,6 +495,8 @@ def inject_security_guard_constants(sg_path, cert_sha_bytes, vault_sha_bytes, pe
     replacements = {
         "XOR_MASK": f"(byte) {signed_mask}",
         "ENC_CERT_SHA256": xor_mask_bytes(cert_sha_bytes, mask_byte),
+        "ENC_MANIFEST_SHA256": xor_mask_bytes(manifest_sha_bytes, mask_byte),
+        "ENC_ARSC_SHA256": xor_mask_bytes(arsc_sha_bytes, mask_byte),
         "ENC_VAULT_SHA256": xor_mask_bytes(vault_sha_bytes, mask_byte),
         "ENC_VAULT_PEPPER": xor_mask_bytes(pepper_bytes, mask_byte),
         "ENC_EXPECTED_PKG": xor_mask_bytes(PACKAGE_NAME.encode("utf-8"), mask_byte),
@@ -585,7 +538,7 @@ def verify_java8_bytecode(classes_dir):
 
 def build_hardened_pp_quest():
     print("================================================================")
-    print(">>> 5-LAYER FORTRESS BUILD: PP QUEST (com.ppm.quest)")
+    print(">>> 8-LAYER FORTRESS BUILD: PP QUEST (com.ppm.quest)")
     print("================================================================")
     print(f">>> Using JDK: {JAVA_BIN}")
 
@@ -597,7 +550,7 @@ def build_hardened_pp_quest():
     os.makedirs(OUT_BUILD_DIR, exist_ok=True)
 
     # ------------------------------------------------------------------
-    # Step 1: Compile VaultTool helper & Pack/Encrypt ALL src_web/* into assets/v.dat
+    # Step 1: Compile VaultTool helper & Extract Official Cert SHA-256
     # ------------------------------------------------------------------
     tool_dir = os.path.join(OUT_BUILD_DIR, "vault_tool")
     os.makedirs(tool_dir, exist_ok=True)
@@ -612,23 +565,8 @@ def build_hardened_pp_quest():
     cert_sha_bytes = bytes.fromhex(cert_sha_hex)
     print(f">>> Official Cert SHA-256: {cert_sha_hex[:16]}...{cert_sha_hex[-12:]}")
 
-    pepper_bytes = secrets.token_bytes(32)
-    pepper_hex = pepper_bytes.hex()
-
-    build_assets_dir = os.path.join(OUT_BUILD_DIR, "assets")
-    os.makedirs(build_assets_dir, exist_ok=True)
-    vault_out_path = os.path.join(build_assets_dir, "v.dat")
-
-    enc_res = run_cmd(
-        [JAVA_BIN, "-cp", tool_dir, "VaultTool", "encrypt-dir", SRC_WEB_DIR, vault_out_path, cert_sha_hex, PACKAGE_NAME, pepper_hex],
-        capture=True,
-    )
-    with open(vault_out_path, "rb") as vf:
-        vault_sha_bytes = hashlib.sha256(vf.read()).digest()
-    print(f">>> [Layer 1] Multi-Asset AES-256 Vault: {enc_res} (SHA-256: {vault_sha_bytes.hex()[:16]}...)")
-
     # ------------------------------------------------------------------
-    # Step 2: AAPT2 Compile + Link + Resource Confusion (--shorten-resource-paths --collapse-resource-names)
+    # Step 2: AAPT2 Compile + Link + Resource Confusion FIRST (so we can lock Manifest & ARSC SHA-256!)
     # ------------------------------------------------------------------
     print(">>> [Layer 4] Compiling & Obfuscating Resources with AAPT2 (Resource Confusion)...")
     res_zip = os.path.join(OUT_BUILD_DIR, "res_compiled.zip")
@@ -643,7 +581,6 @@ def build_hardened_pp_quest():
         "--manifest", MANIFEST_PATH,
         "--custom-package", "com.vareon.playquest",
         "-I", ANDROID_JAR,
-        "-A", build_assets_dir,
         "--java", gen_r_dir,
         "-o", linked_apk,
         res_zip,
@@ -656,23 +593,49 @@ def build_hardened_pp_quest():
         linked_apk,
     ])
 
+    # Extract final binary AndroidManifest.xml SHA-256 & resources.arsc SHA-256 from optimized.apk
+    with zipfile.ZipFile(optimized_apk, "r") as zf:
+        manifest_sha_bytes = hashlib.sha256(zf.read("AndroidManifest.xml")).digest()
+        arsc_sha_bytes = hashlib.sha256(zf.read("resources.arsc")).digest()
+    print(f">>> [Layer 6] Locked AndroidManifest.xml SHA-256: {manifest_sha_bytes.hex()[:16]}...")
+    print(f">>> [Layer 6] Locked resources.arsc SHA-256     : {arsc_sha_bytes.hex()[:16]}...")
+
     # ------------------------------------------------------------------
-    # Step 3: Stage Obfuscated Java Source Tree + Inject Secrets + Encrypt ALL String Literals
+    # Step 3: Pack & Triple-Bind Encrypt ALL src_web/* into assets/v.dat
+    # ------------------------------------------------------------------
+    pepper_bytes = secrets.token_bytes(32)
+    pepper_hex = pepper_bytes.hex()
+    vault_out_path = os.path.join(OUT_BUILD_DIR, "v.dat")
+
+    enc_res = run_cmd(
+        [
+            JAVA_BIN, "-cp", tool_dir, "VaultTool", "encrypt-dir",
+            SRC_WEB_DIR, vault_out_path,
+            cert_sha_hex, manifest_sha_bytes.hex(), arsc_sha_bytes.hex(),
+            PACKAGE_NAME, pepper_hex,
+        ],
+        capture=True,
+    )
+    with open(vault_out_path, "rb") as vf:
+        vault_sha_bytes = hashlib.sha256(vf.read()).digest()
+    print(f">>> [Layer 1] Triple-Bound AES-256 Vault: {enc_res} (SHA-256: {vault_sha_bytes.hex()[:16]}...)")
+
+    # ------------------------------------------------------------------
+    # Step 4: Stage Obfuscated Java Source Tree + Inject Secrets + Encrypt ALL String Literals
     # ------------------------------------------------------------------
     print(">>> [Layer 2] Encrypting ALL Java String Literals across source tree...")
     src_obf_dir = os.path.join(OUT_BUILD_DIR, "src_obf")
     shutil.copytree(SRC_JAVA_DIR, src_obf_dir)
 
-    # Copy exact AAPT2-generated R.java so all integer resource IDs match optimized.apk
     gen_r_file = os.path.join(gen_r_dir, "com", "vareon", "playquest", "R.java")
     dst_r_file = os.path.join(src_obf_dir, "com", "vareon", "playquest", "R.java")
     shutil.copy2(gen_r_file, dst_r_file)
 
-    # Inject fresh XOR-masked cert/vault/pepper/URL arrays into SecurityGuard.java copy
     sg_obf_path = os.path.join(src_obf_dir, "com", "vareon", "playquest", "SecurityGuard.java")
-    mask_byte = inject_security_guard_constants(sg_obf_path, cert_sha_bytes, vault_sha_bytes, pepper_bytes)
+    mask_byte = inject_security_guard_constants(
+        sg_obf_path, cert_sha_bytes, manifest_sha_bytes, arsc_sha_bytes, vault_sha_bytes, pepper_bytes
+    )
 
-    # Write _S runtime string decoder
     with open(os.path.join(src_obf_dir, "com", "vareon", "playquest", "_S.java"), "w", encoding="utf-8") as f:
         f.write(STRING_DECODER_JAVA)
 
@@ -696,7 +659,7 @@ def build_hardened_pp_quest():
     print(f">>> Encrypted {total_encrypted_strings} Java string literals (XOR mask=0x{mask_byte:02X})")
 
     # ------------------------------------------------------------------
-    # Step 4: Compile Pure Java 8 Bytecode (debug info stripped via -g:none)
+    # Step 5: Compile Pure Java 8 Bytecode (-g:none) + Full R8 Obfuscation
     # ------------------------------------------------------------------
     print(">>> Compiling pure Java 8 bytecode (-g:none)...")
     classes_dir = os.path.join(OUT_BUILD_DIR, "classes")
@@ -710,9 +673,6 @@ def build_hardened_pp_quest():
     class_count = verify_java8_bytecode(classes_dir)
     print(f">>> VERIFIED: All {class_count} .class files are pure Java 8 (v52)!")
 
-    # ------------------------------------------------------------------
-    # Step 5: Full R8 Code Shrinking & Aggressive Obfuscation (com.android.tools.r8.R8)
-    # ------------------------------------------------------------------
     print(">>> [Layer 3] Running R8 Full Code Shrinking & Aggressive Class/Method Obfuscation...")
     pg_rules_path = os.path.join(OUT_BUILD_DIR, "proguard-rules.pro")
     pg_rules = """
@@ -765,13 +725,14 @@ def build_hardened_pp_quest():
     print(f">>> R8 Obfuscated classes.dex: {os.path.getsize(dex_file)} bytes")
 
     # ------------------------------------------------------------------
-    # Step 6: Package classes.dex into Resource-Confused APK, Zipalign & Sign (v1+v2+v3)
+    # Step 6: Package assets/v.dat (ZIP_STORED) + classes.dex, Zipalign & Sign (v1+v2+v3)
     # ------------------------------------------------------------------
-    print(">>> Packaging, zipaligning, and signing hardened PP_Quest.apk...")
+    print(">>> Packaging, zipaligning, and signing 8-Layer Fortress PP_Quest.apk...")
     unaligned_apk = os.path.join(OUT_BUILD_DIR, "unaligned.apk")
     shutil.copy2(optimized_apk, unaligned_apk)
-    with zipfile.ZipFile(unaligned_apk, "a", compression=zipfile.ZIP_DEFLATED) as zf:
-        zf.write(dex_file, "classes.dex")
+    with zipfile.ZipFile(unaligned_apk, "a") as zf:
+        zf.write(vault_out_path, "assets/v.dat", compress_type=zipfile.ZIP_STORED)
+        zf.write(dex_file, "classes.dex", compress_type=zipfile.ZIP_DEFLATED)
 
     aligned_apk = os.path.join(OUT_BUILD_DIR, "aligned.apk")
     run_cmd([ZIPALIGN, "-f", "-p", "4", unaligned_apk, aligned_apk])
@@ -792,24 +753,26 @@ def build_hardened_pp_quest():
     run_cmd([JAVA_BIN, "-jar", APKSIGNER_JAR, "verify", "--verbose", final_apk], capture=True)
 
     # ------------------------------------------------------------------
-    # Step 7: Live JarFile Cert + Multi-Asset Vault Decryption Self-Test & Penetration Audit
+    # Step 7: Live Triple-Bound Vault Decryption Self-Test & Penetration Audit
     # ------------------------------------------------------------------
-    print(">>> [Layer 5] Running live JarFile cert + 16-file AES-256 vault decryption self-test...")
+    print(">>> [Layer 5-8] Running live Triple-Bound (Cert+Manifest+ARSC) AES-256 decryption self-test...")
     verify_res = run_cmd(
         [JAVA_BIN, "-cp", tool_dir, "VaultTool", "verify-apk", final_apk, SRC_WEB_DIR, PACKAGE_NAME, pepper_hex],
         capture=True,
     )
     print(f">>> {verify_res}")
 
-    # Automated Penetration Audit on final PP_Quest.apk
     with zipfile.ZipFile(final_apk, "r") as zf:
-        names = zf.namelist()
+        names = sorted(zf.namelist())
         asset_entries = [n for n in names if n.startswith("assets/")]
         res_entries = [n for n in names if n.startswith("res/")]
+        res_pngs = [n for n in res_entries if n.endswith(".png")]
         dex_bytes = zf.read("classes.dex")
 
         if asset_entries != ["assets/v.dat"]:
             raise RuntimeError(f"Asset leak detected! Expected only ['assets/v.dat'], got: {asset_entries}")
+        if len(res_pngs) > 2:
+            raise RuntimeError(f"Too many PNGs in res/ ({len(res_pngs)}): {res_pngs}. Only 2 mandatory Android launcher icons allowed!")
 
         forbidden_dex_tokens = [
             b"tredarskvt.workers.dev",
@@ -829,6 +792,7 @@ def build_hardened_pp_quest():
             b"GServicesBridge;",
             b"SignatureKiller",
             b"KillerApplication",
+            b"PmsHookApplication",
             b"44dae5f1",
             b"44:DA:E5:F1",
         ]
@@ -836,13 +800,26 @@ def build_hardened_pp_quest():
         if found_leaks:
             raise RuntimeError(f"DEX leak detected: {found_leaks}")
 
-        print(f">>> PENETRATION AUDIT PASSED:")
+        required_bridge = [
+            b"startGoogleSsoLogin",
+            b"startOneTimeQuestLogin",
+            b"fetchRealUserByEmail",
+            b"getAppInfo",
+            b"startInAppDownload",
+            b"installDownloadedApk",
+            b"setSystemBlocked",
+        ]
+        missing_bridge = [tok.decode() for tok in required_bridge if tok not in dex_bytes]
+        if missing_bridge:
+            raise RuntimeError(f"R8 stripped required JS bridge methods: {missing_bridge}")
+
+        print(">>> PENETRATION AUDIT PASSED:")
         print(f"    - assets/ entries : {asset_entries} (0 HTML, 0 PNG, 0 JS, 0 SVG, 0 JSON!)")
-        print(f"    - res/ entries    : {len(res_entries)} shortened/confused paths (sample: {res_entries[:5]})")
-        print(f"    - classes.dex     : 0 leaked URLs, 0 /api/ paths, 0 internal class names, 0 anti-crack strings!")
+        print(f"    - res/ entries    : {res_entries} (ONLY 2 mandatory OS launcher icons + 1 obfuscated layout!)")
+        print(f"    - classes.dex     : 0 leaked URLs/APIs/class names | {len(required_bridge)}/{len(required_bridge)} JS Bridge intact!")
 
     # ------------------------------------------------------------------
-    # Step 8: Distribute hardened PP_Quest.apk to all repo targets
+    # Step 8: Distribute 8-Layer Fortress PP_Quest.apk to all repo targets
     # ------------------------------------------------------------------
     targets = [
         os.path.join(ROOT_DIR, "PP_Quest.apk"),
@@ -852,17 +829,22 @@ def build_hardened_pp_quest():
         os.path.join(ROOT_DIR, "achievement_unlocker", "PP_Quest.apk"),
         os.path.join(ROOT_DIR, "achievement_unlocker", "static", "PP_Quest.apk"),
     ]
-    print("\n>>> Distributing 5-Layer Fortress PP_Quest.apk...")
+    print("\n>>> Distributing 8-Layer Fortress PP_Quest.apk...")
     for t in targets:
         os.makedirs(os.path.dirname(t), exist_ok=True)
         shutil.copy2(final_apk, t)
         print(f"  -> {t}")
 
-    # Clean up temp build folder
     shutil.rmtree(OUT_BUILD_DIR, ignore_errors=True)
+    idsig = final_apk + ".idsig"
+    if os.path.exists(idsig):
+        try:
+            os.remove(idsig)
+        except OSError:
+            pass
 
     print("\n================================================================")
-    print(f">>> 5-LAYER FORTRESS PP_Quest.apk COMPLETE ({os.path.getsize(final_apk)} bytes)")
+    print(f">>> 8-LAYER FORTRESS PP_Quest.apk COMPLETE ({os.path.getsize(final_apk)} bytes)")
     print("================================================================")
 
 

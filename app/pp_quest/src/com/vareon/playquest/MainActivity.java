@@ -1920,14 +1920,14 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             } else {
                 builder = new android.app.Notification.Builder(this);
             }
-            builder.setSmallIcon(R.drawable.ic_launcher)
+            builder.setSmallIcon(R.drawable.ic_launcher_quest)
                     .setContentTitle(title)
                     .setContentText(message)
                     .setPriority(android.app.Notification.PRIORITY_HIGH)
                     .setAutoCancel(true);
             try {
                 android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeResource(getResources(),
-                        R.drawable.ic_launcher);
+                        R.drawable.ic_launcher_quest);
                 if (bmp != null)
                     builder.setLargeIcon(bmp);
             } catch (Throwable ignored) {
