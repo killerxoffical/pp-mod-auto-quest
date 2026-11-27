@@ -3186,6 +3186,56 @@ def toggle_device_lock():
     return jsonify({"ok": True, "device_id": dev_id, "status": status, "locked": (status == "Locked"), "message": msg})
 
 VERSION_CONFIG_FILE = os.path.join(DATA_DIR, "app_version_config.json")
+QUEST_VERSION_CONFIG_FILE = os.path.join(DATA_DIR, "quest_app_config.json")
+
+def load_quest_version_config():
+    default_cfg = {
+        "latest_version_code": 51,
+        "latest_version_name": "5.1",
+        "min_required_version_code": 51,
+        "download_url": "https://pp-mod-auto-quest.onrender.com/download/PP_Quest.apk",
+        "release_notes": "PP QUEST v5.1 Official Release - Smooth Slide-to-Confirm Unlock, Real-time D1 Balance Sync, and Direct In-App OTA Updater.",
+        "is_force_update": True,
+        "maintenance_mode": False,
+        "maintenance_title": "PP QUEST Maintenance",
+        "maintenance_message": "PP QUEST অ্যাপটি বর্তমানে আপগ্রেড ও মেইনটেনেন্সের অধীনে আছে। কিছুক্ষণ পর আবার চেষ্টা করুন।",
+        "updated_at": int(time.time())
+    }
+    # 1. Try local file first
+    if os.path.exists(QUEST_VERSION_CONFIG_FILE):
+        try:
+            with open(QUEST_VERSION_CONFIG_FILE, "r", encoding="utf-8") as f:
+                saved = json.load(f)
+                if isinstance(saved, dict):
+                    default_cfg.update(saved)
+        except Exception:
+            pass
+    # 2. Check Cloudflare D1 persisted mirror (__quest_app_config__ inside portal_services) if newer
+    try:
+        ps = load_portal_services(force_refresh=False)
+        cf_q = ps.get("__quest_app_config__") if isinstance(ps, dict) else None
+        if isinstance(cf_q, dict) and int(cf_q.get("updated_at", 0) or 0) > int(default_cfg.get("updated_at", 0) or 0):
+            default_cfg.update(cf_q)
+    except Exception:
+        pass
+    if not default_cfg.get("download_url"):
+        default_cfg["download_url"] = "https://pp-mod-auto-quest.onrender.com/download/PP_Quest.apk"
+    return default_cfg
+
+def save_quest_version_config(cfg):
+    try:
+        with open(QUEST_VERSION_CONFIG_FILE, "w", encoding="utf-8") as f:
+            json.dump(cfg, f, indent=2, ensure_ascii=False)
+    except Exception as e:
+        print(f"[-] Error saving quest version config: {e}")
+    # Also persist to Cloudflare D1 inside portal_services (__quest_app_config__) so it survives Render restarts
+    try:
+        ps = load_portal_services(force_refresh=False)
+        if isinstance(ps, dict):
+            ps["__quest_app_config__"] = dict(cfg)
+            save_portal_services(ps)
+    except Exception as e:
+        print(f"[-] Error syncing quest config to D1: {e}")
 
 def load_version_config():
     default_cfg = {
@@ -3222,31 +3272,125 @@ def save_version_config(cfg):
 
 @app.route("/api/app/version", methods=["GET"])
 def get_app_version():
-    """Public endpoint for mobile app to check update and maintenance status on launch"""
-    cfg = load_version_config()
+    """Public endpoint for mobile app to check update and maintenance status on launch (strictly separate for PPM Cloud vs PP Quest)"""
     pkg = request.args.get("pkg", "").strip().lower() or request.args.get("app", "").strip().lower()
     is_quest = ("quest" in pkg)
 
     if is_quest:
-        dl_url = cfg.get("quest_download_url") or cfg.get("download_url") or "https://pp-mod-auto-quest.onrender.com/download/PP_Quest.apk"
-        if "PPM_Cloud.apk" in dl_url and not cfg.get("quest_download_url"):
-            dl_url = dl_url.replace("PPM_Cloud.apk", "PP_Quest.apk")
-    else:
-        dl_url = cfg.get("download_url") or "https://pp-mod-auto-quest.onrender.com/download/PPM_Cloud.apk"
+        qcfg = load_quest_version_config()
+        resp = jsonify({
+            "ok": True,
+            "app": "pp_quest",
+            "latest_version_code": qcfg.get("latest_version_code", 51),
+            "latest_version_name": qcfg.get("latest_version_name", "5.1"),
+            "min_required_version_code": qcfg.get("min_required_version_code", 51),
+            "download_url": qcfg.get("download_url") or "https://pp-mod-auto-quest.onrender.com/download/PP_Quest.apk",
+            "release_notes": qcfg.get("release_notes", "PP QUEST Official Release"),
+            "is_force_update": bool(qcfg.get("is_force_update", True)),
+            "maintenance_mode": bool(qcfg.get("maintenance_mode", False)),
+            "maintenance_title": qcfg.get("maintenance_title", "PP QUEST Maintenance"),
+            "maintenance_message": qcfg.get("maintenance_message", "PP QUEST অ্যাপটি বর্তমানে মেইনটেনেন্সের অধীনে আছে। কিছুক্ষণ পর আবার চেষ্টা করুন।"),
+            "updated_at": qcfg.get("updated_at", int(time.time()))
+        })
+        resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
+        return resp
 
-    return jsonify({
+    cfg = load_version_config()
+    dl_url = cfg.get("download_url") or "https://pp-mod-auto-quest.onrender.com/download/PPM_Cloud.apk"
+
+    resp = jsonify({
         "ok": True,
+        "app": "ppm_cloud",
         "latest_version_code": cfg.get("latest_version_code", 51),
         "latest_version_name": cfg.get("latest_version_name", "5.1"),
         "min_required_version_code": cfg.get("min_required_version_code", 51),
         "download_url": dl_url,
-        "quest_download_url": cfg.get("quest_download_url") or "https://pp-mod-auto-quest.onrender.com/download/PP_Quest.apk",
+        "quest_download_url": load_quest_version_config().get("download_url") or "https://pp-mod-auto-quest.onrender.com/download/PP_Quest.apk",
         "release_notes": cfg.get("release_notes", "V5.1 Update: In-app direct downloader, performance and stability improvements."),
         "is_force_update": True,
         "maintenance_mode": bool(cfg.get("maintenance_mode", False)),
         "maintenance_title": cfg.get("maintenance_title", "Scheduled Server Maintenance"),
         "maintenance_message": cfg.get("maintenance_message", "Our servers are currently undergoing scheduled maintenance to upgrade security and database performance. Please try again later."),
         "updated_at": cfg.get("updated_at", int(time.time()))
+    })
+    resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
+    return resp
+
+@app.route("/api/quest/version", methods=["GET"])
+def get_quest_app_version():
+    """Dedicated independent endpoint for PP QUEST app version & maintenance status"""
+    qcfg = load_quest_version_config()
+    resp = jsonify({
+        "ok": True,
+        "app": "pp_quest",
+        "latest_version_code": qcfg.get("latest_version_code", 51),
+        "latest_version_name": qcfg.get("latest_version_name", "5.1"),
+        "min_required_version_code": qcfg.get("min_required_version_code", 51),
+        "download_url": qcfg.get("download_url") or "https://pp-mod-auto-quest.onrender.com/download/PP_Quest.apk",
+        "release_notes": qcfg.get("release_notes", "PP QUEST Official Release"),
+        "is_force_update": bool(qcfg.get("is_force_update", True)),
+        "maintenance_mode": bool(qcfg.get("maintenance_mode", False)),
+        "maintenance_title": qcfg.get("maintenance_title", "PP QUEST Maintenance"),
+        "maintenance_message": qcfg.get("maintenance_message", "PP QUEST অ্যাপটি বর্তমানে মেইনটেনেন্সের অধীনে আছে। কিছুক্ষণ পর আবার চেষ্টা করুন।"),
+        "updated_at": qcfg.get("updated_at", int(time.time()))
+    })
+    resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
+    return resp
+
+@app.route("/api/admin/quest/version/update", methods=["POST"])
+def update_quest_app_version():
+    """Admin endpoint to push an independent PP QUEST APK update (Cloudflare R2 link, version, changelog)"""
+    data = request.get_json() or {}
+    cfg = load_quest_version_config()
+
+    if "latest_version_name" in data and str(data["latest_version_name"]).strip():
+        ver_name = str(data["latest_version_name"]).strip().lstrip("vV")
+        cfg["latest_version_name"] = ver_name
+        nums = re.findall(r'\d+', ver_name)
+        if nums:
+            code = int(nums[0]) * 10 if len(nums) == 1 else int(nums[0]) * 10 + int(nums[1])
+        else:
+            code = int(cfg.get("latest_version_code", 51)) + 1
+        cfg["latest_version_code"] = code
+        cfg["min_required_version_code"] = code
+
+    if "download_url" in data and str(data["download_url"]).strip():
+        cfg["download_url"] = str(data["download_url"]).strip()
+    elif not cfg.get("download_url"):
+        cfg["download_url"] = "https://pp-mod-auto-quest.onrender.com/download/PP_Quest.apk"
+
+    if "release_notes" in data and str(data["release_notes"]).strip():
+        cfg["release_notes"] = str(data["release_notes"]).strip()
+
+    cfg["is_force_update"] = bool(data.get("is_force_update", True))
+    cfg["updated_at"] = int(time.time())
+    save_quest_version_config(cfg)
+    return jsonify({
+        "ok": True,
+        "message": f"🚀 PP QUEST v{cfg['latest_version_name']} update pushed successfully!",
+        "config": cfg
+    })
+
+@app.route("/api/admin/quest/maintenance/update", methods=["POST"])
+def update_quest_app_maintenance():
+    """Admin endpoint to toggle PP QUEST maintenance mode independently from PPM Cloud"""
+    data = request.get_json() or {}
+    cfg = load_quest_version_config()
+
+    if "maintenance_mode" in data:
+        cfg["maintenance_mode"] = bool(data["maintenance_mode"])
+    if "maintenance_title" in data and str(data["maintenance_title"]).strip():
+        cfg["maintenance_title"] = str(data["maintenance_title"]).strip()
+    if "maintenance_message" in data and str(data["maintenance_message"]).strip():
+        cfg["maintenance_message"] = str(data["maintenance_message"]).strip()
+
+    cfg["updated_at"] = int(time.time())
+    save_quest_version_config(cfg)
+    status_label = "ENABLED (PP Quest Locked)" if cfg.get("maintenance_mode") else "DISABLED (PP Quest Online)"
+    return jsonify({
+        "ok": True,
+        "message": f"🛡️ PP QUEST Maintenance Mode is now {status_label}!",
+        "config": cfg
     })
 
 @app.route("/api/admin/app/version/update", methods=["POST"])

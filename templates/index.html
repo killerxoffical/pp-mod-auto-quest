@@ -2643,14 +2643,6 @@
                         </div>
                         <div>
                             <label
-                                style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:6px;">PP Quest APK Download URL (Direct/R2/Cloudflare) *</label>
-                            <input id="updQuestDownloadUrl" type="url" class="form-input-element"
-                                value="https://pp-mod-auto-quest.onrender.com/download/PP_Quest.apk"
-                                style="height:42px; font-family:'JetBrains Mono'; font-size:12.5px;">
-                            <span style="font-size:11px; color:var(--text-muted); display:block; margin-top:4px;">PP Quest ইউজার আপডেট বাটনে ক্লিক করলে সরাসরি এই লিংক থেকে ডাউনলোড হবে।</span>
-                        </div>
-                        <div>
-                            <label
                                 style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:6px;">Release
                                 Notes / What's New</label>
                             <textarea id="updReleaseNotes" class="form-input-element"
@@ -2719,7 +2711,125 @@
                         style="display:flex; justify-content:flex-end; margin-top:16px; padding-top:12px; border-top:1px solid rgba(239,68,68,0.2);">
                         <button type="button" class="btn-primary" onclick="saveAppMaintenanceMode()"
                             style="background:#dc2626; border-color:#b91c1c; padding:10px 24px; font-weight:800; font-size:13px;">
-                            🛡️ Save Maintenance Settings
+                            🛡️ Save PPM Cloud Maintenance
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ==================== 3. DEDICATED PP QUEST APP UPDATE MANAGER (100% SEPARATE) ==================== -->
+                <div class="card"
+                    style="margin-top: 28px; background: linear-gradient(135deg, rgba(16,185,129,0.05), rgba(6,182,212,0.04)); border: 1.5px solid rgba(16,185,129,0.4); border-radius: var(--radius-xl); padding: 24px; box-shadow: var(--shadow-md);">
+                    <div
+                        style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+                        <div>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <span style="font-size:24px;">⚡</span>
+                                <div>
+                                    <h4 style="font-size:17px; font-weight:800; color:var(--text-primary); margin:0;">
+                                        PP QUEST App • Independent OTA Update Manager
+                                    </h4>
+                                    <span style="font-size:12px; color:#10b981; font-weight:700;">Target:
+                                        PP_Quest.apk (com.ppm.quest) • সম্পূর্ণ আলাদা ভার্সন ও Cloudflare R2 OTA আপডেট</span>
+                                </div>
+                            </div>
+                            <p style="font-size:12.5px; color:var(--text-secondary); margin-top:6px; line-height:1.5;">
+                                এখান থেকে <strong>PP QUEST</strong> অ্যাপের আলাদা ভার্সন ও <strong>Cloudflare R2</strong> ডাইরেক্ট APK লিংক পুশ করুন। ইউজারের অ্যাপের ভেতরেই ০% → ১০০% ডাউনলোড হয়ে অটো-ইনস্টল পপআপ আসবে।
+                            </p>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span id="badgeQuestAppVer" class="badge-status active"
+                                style="background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.35); font-weight:800; font-size:12px; padding:6px 14px;">
+                                PP QUEST LIVE: v5.1
+                            </span>
+                        </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: 1fr; gap:16px;">
+                        <div>
+                            <label
+                                style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:6px;">PP QUEST Target Version (যেমন: 5.1 বা 5.2) *</label>
+                            <input id="questUpdVerName" type="text" class="form-input-element" value="5.1"
+                                style="height:42px; font-weight:800; font-size:13.5px;" placeholder="5.2">
+                            <span style="font-size:11px; color:var(--text-muted); display:block; margin-top:4px;">
+                                💡 বর্তমান PP_Quest.apk ভার্সন হলো 5.1। যখনই 5.2 লিখে সেভ করবেন, সব PP Quest ইউজারের অ্যাপে সাথে সাথে আপডেট পপআপ চলে আসবে।
+                            </span>
+                        </div>
+                        <div>
+                            <label
+                                style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:6px;">PP QUEST APK Download URL (Cloudflare R2 Direct Link) *</label>
+                            <input id="questUpdDownloadUrl" type="url" class="form-input-element"
+                                value="https://pp-mod-auto-quest.onrender.com/download/PP_Quest.apk"
+                                style="height:42px; font-family:'JetBrains Mono'; font-size:12.5px;"
+                                placeholder="https://pub-xxxx.r2.dev/PP_Quest_v5.2.apk">
+                            <span style="font-size:11px; color:var(--text-muted); display:block; margin-top:4px;">Cloudflare R2 এর ডাইরেক্ট .apk লিংক দিলে অ্যাপের ভেতরেই সুপার-ফাস্ট ০%–১০০% লোডিং হয়ে Install বাটন আসবে।</span>
+                        </div>
+                        <div>
+                            <label
+                                style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:6px;">PP QUEST Release Notes / What's New</label>
+                            <textarea id="questUpdReleaseNotes" class="form-input-element"
+                                style="height:70px; font-size:12.5px; resize:vertical;"
+                                placeholder="PP QUEST নতুন আপডেটে কী কী থাকছে..."></textarea>
+                        </div>
+                    </div>
+
+                    <div
+                        style="display:flex; justify-content:space-between; align-items:center; margin-top:18px; padding-top:14px; border-top:1px solid rgba(16,185,129,0.25); flex-wrap:wrap; gap:12px;">
+                        <label style="display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:800; color:#10b981; cursor:pointer;">
+                            <input id="chkQuestForceUpdate" type="checkbox" checked style="width:18px; height:18px; accent-color:#10b981;">
+                            <span>⚡ Force Update (বাধ্যতামূলক আপডেট লক)</span>
+                        </label>
+                        <button type="button" class="btn-primary" onclick="pushQuestAppForceUpdate()"
+                            style="background:linear-gradient(135deg,#059669,#0d9488); border-color:#059669; padding:10px 26px; font-weight:800; font-size:13px;">
+                            🚀 Save &amp; Push PP QUEST Update
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ==================== 4. DEDICATED PP QUEST MAINTENANCE MODE CARD ==================== -->
+                <div class="card"
+                    style="margin-top: 20px; background: linear-gradient(135deg, rgba(245,158,11,0.06), rgba(239,68,68,0.05)); border: 1.5px solid rgba(245,158,11,0.4); border-radius: var(--radius-xl); padding: 24px; box-shadow: var(--shadow-sm);">
+                    <div
+                        style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:12px;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="font-size:24px;">🛠️</span>
+                            <div>
+                                <h4 style="font-size:16px; font-weight:800; color:var(--text-primary); margin:0;">
+                                    PP QUEST App Maintenance Mode (সম্পূর্ণ আলাদা লক)
+                                </h4>
+                                <span style="font-size:11.5px; color:var(--text-secondary); margin-top:2px;">
+                                    শুধু <strong>PP QUEST</strong> অ্যাপ লক হবে — PPM Cloud চালু থাকবে। অন করলেই লাইভ ইউজারদের অ্যাপে মেইনটেনেন্স স্ক্রিন চলে আসবে।
+                                </span>
+                            </div>
+                        </div>
+                        <label
+                            style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:800; color:#d97706; cursor:pointer;">
+                            <input id="chkQuestMaintenanceMode" type="checkbox"
+                                style="width:20px; height:20px; accent-color:#d97706;">
+                            <span>Enable PP QUEST Maintenance</span>
+                        </label>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: 1fr 2fr; gap:14px;">
+                        <div>
+                            <label
+                                style="font-size:11.5px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">PP QUEST Maintenance Title</label>
+                            <input id="questUpdMaintTitle" type="text" class="form-input-element"
+                                value="PP QUEST Maintenance" style="height:38px; font-size:12.5px;">
+                        </div>
+                        <div>
+                            <label
+                                style="font-size:11.5px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">PP QUEST Maintenance Message</label>
+                            <input id="questUpdMaintMsg" type="text" class="form-input-element"
+                                value="PP QUEST অ্যাপটি বর্তমানে আপগ্রেড ও মেইনটেনেন্সের অধীনে আছে। কিছুক্ষণ পর আবার চেষ্টা করুন।"
+                                style="height:38px; font-size:12px;">
+                        </div>
+                    </div>
+
+                    <div
+                        style="display:flex; justify-content:flex-end; margin-top:16px; padding-top:12px; border-top:1px solid rgba(245,158,11,0.25);">
+                        <button type="button" class="btn-primary" onclick="saveQuestAppMaintenanceMode()"
+                            style="background:#d97706; border-color:#b45309; padding:10px 24px; font-weight:800; font-size:13px;">
+                            🛠️ Save PP QUEST Maintenance
                         </button>
                     </div>
                 </div>
@@ -5117,22 +5227,42 @@
 
         async function loadAppVersionConfig() {
             try {
-                const res = await fetch(`${API_BASE}/api/app/version`);
-                const data = await res.json();
-                if (data.ok) {
-                    const dl = data.download_url || "https://pp-mod-auto-quest.onrender.com/download/PPM_Cloud.apk";
-                    const qdl = data.quest_download_url || "https://pp-mod-auto-quest.onrender.com/download/PP_Quest.apk";
-                    if (document.getElementById("updVerName")) document.getElementById("updVerName").value = data.latest_version_name || "5.1";
-                    if (document.getElementById("updDownloadUrl")) document.getElementById("updDownloadUrl").value = dl;
-                    if (document.getElementById("updQuestDownloadUrl")) document.getElementById("updQuestDownloadUrl").value = qdl;
-                    if (document.getElementById("portalApkDownloadUrl")) document.getElementById("portalApkDownloadUrl").value = dl;
-                    if (document.getElementById("updReleaseNotes")) document.getElementById("updReleaseNotes").value = data.release_notes || "";
-                    if (document.getElementById("chkMaintenanceMode")) document.getElementById("chkMaintenanceMode").checked = !!data.maintenance_mode;
-                    if (document.getElementById("updMaintTitle")) document.getElementById("updMaintTitle").value = data.maintenance_title || "System Under Maintenance";
-                    if (document.getElementById("updMaintMsg")) document.getElementById("updMaintMsg").value = data.maintenance_message || "Our servers are currently undergoing scheduled maintenance to upgrade security and performance. Please try again later.";
-                    if (document.getElementById("badgeCurrentAppVer")) {
-                        const maintBadge = data.maintenance_mode ? ' <span style="background:#ef4444; color:#fff; padding:2px 8px; border-radius:4px; font-size:10px; margin-left:6px;">MAINTENANCE ON</span>' : '';
-                        document.getElementById("badgeCurrentAppVer").innerHTML = `LIVE: ${data.latest_version_name || '4.5'}${maintBadge}`;
+                const [cloudRes, questRes] = await Promise.allSettled([
+                    fetch(`${API_BASE}/api/app/version?pkg=com.ppm.cloud&_t=${Date.now()}`),
+                    fetch(`${API_BASE}/api/quest/version?_t=${Date.now()}`)
+                ]);
+                if (cloudRes.status === "fulfilled") {
+                    const data = await cloudRes.value.json();
+                    if (data && data.ok) {
+                        const dl = data.download_url || "https://pp-mod-auto-quest.onrender.com/download/PPM_Cloud.apk";
+                        if (document.getElementById("updVerName")) document.getElementById("updVerName").value = data.latest_version_name || "5.1";
+                        if (document.getElementById("updDownloadUrl")) document.getElementById("updDownloadUrl").value = dl;
+                        if (document.getElementById("portalApkDownloadUrl")) document.getElementById("portalApkDownloadUrl").value = dl;
+                        if (document.getElementById("updReleaseNotes")) document.getElementById("updReleaseNotes").value = data.release_notes || "";
+                        if (document.getElementById("chkMaintenanceMode")) document.getElementById("chkMaintenanceMode").checked = !!data.maintenance_mode;
+                        if (document.getElementById("updMaintTitle")) document.getElementById("updMaintTitle").value = data.maintenance_title || "System Under Maintenance";
+                        if (document.getElementById("updMaintMsg")) document.getElementById("updMaintMsg").value = data.maintenance_message || "Our servers are currently undergoing scheduled maintenance to upgrade security and performance. Please try again later.";
+                        if (document.getElementById("badgeCurrentAppVer")) {
+                            const maintBadge = data.maintenance_mode ? ' <span style="background:#ef4444; color:#fff; padding:2px 8px; border-radius:4px; font-size:10px; margin-left:6px;">MAINTENANCE ON</span>' : '';
+                            document.getElementById("badgeCurrentAppVer").innerHTML = `LIVE: v${data.latest_version_name || '5.1'}${maintBadge}`;
+                        }
+                    }
+                }
+                if (questRes.status === "fulfilled") {
+                    const qdata = await questRes.value.json();
+                    if (qdata && qdata.ok) {
+                        const qdl = qdata.download_url || "https://pp-mod-auto-quest.onrender.com/download/PP_Quest.apk";
+                        if (document.getElementById("questUpdVerName")) document.getElementById("questUpdVerName").value = qdata.latest_version_name || "5.1";
+                        if (document.getElementById("questUpdDownloadUrl")) document.getElementById("questUpdDownloadUrl").value = qdl;
+                        if (document.getElementById("questUpdReleaseNotes")) document.getElementById("questUpdReleaseNotes").value = qdata.release_notes || "";
+                        if (document.getElementById("chkQuestForceUpdate")) document.getElementById("chkQuestForceUpdate").checked = (qdata.is_force_update !== false);
+                        if (document.getElementById("chkQuestMaintenanceMode")) document.getElementById("chkQuestMaintenanceMode").checked = !!qdata.maintenance_mode;
+                        if (document.getElementById("questUpdMaintTitle")) document.getElementById("questUpdMaintTitle").value = qdata.maintenance_title || "PP QUEST Maintenance";
+                        if (document.getElementById("questUpdMaintMsg")) document.getElementById("questUpdMaintMsg").value = qdata.maintenance_message || "PP QUEST অ্যাপটি বর্তমানে আপগ্রেড ও মেইনটেনেন্সের অধীনে আছে। কিছুক্ষণ পর আবার চেষ্টা করুন।";
+                        if (document.getElementById("badgeQuestAppVer")) {
+                            const qMaintBadge = qdata.maintenance_mode ? ' <span style="background:#d97706; color:#fff; padding:2px 8px; border-radius:4px; font-size:10px; margin-left:6px;">MAINTENANCE ON</span>' : '';
+                            document.getElementById("badgeQuestAppVer").innerHTML = `PP QUEST LIVE: v${qdata.latest_version_name || '5.1'}${qMaintBadge}`;
+                        }
                     }
                 }
             } catch (e) { }
@@ -5141,12 +5271,11 @@
         async function pushAppForceUpdate() {
             const verName = (document.getElementById("updVerName")?.value || "").trim();
             const dlUrl = (document.getElementById("updDownloadUrl")?.value || "").trim() || "https://pp-mod-auto-quest.onrender.com/download/PPM_Cloud.apk";
-            const qdlUrl = (document.getElementById("updQuestDownloadUrl")?.value || "").trim() || "https://pp-mod-auto-quest.onrender.com/download/PP_Quest.apk";
             if (document.getElementById("portalApkDownloadUrl")) document.getElementById("portalApkDownloadUrl").value = dlUrl;
             const notes = (document.getElementById("updReleaseNotes")?.value || "").trim();
 
             if (!verName) {
-                showToast("দয়া করে Version Name লিখুন (যেমন: v5.1)", "error");
+                showToast("দয়া করে Version Name লিখুন (যেমন: 5.1)", "error");
                 return;
             }
 
@@ -5157,14 +5286,13 @@
                     body: JSON.stringify({
                         latest_version_name: verName,
                         download_url: dlUrl,
-                        quest_download_url: qdlUrl,
                         release_notes: notes,
                         is_force_update: true
                     })
                 });
                 const data = await res.json();
                 if (data.ok) {
-                    showToast("🚀 APK Update সফলভাবে পুশ হয়েছে! সকল ডিভাইসে ফোর্স আপডেট সক্রিয়।", "success");
+                    showToast("🚀 PPM CLOUD APK Update সফলভাবে পুশ হয়েছে!", "success");
                     await loadAppVersionConfig();
                 } else {
                     showToast(data.error || "Failed to update version.", "error");
@@ -5174,6 +5302,69 @@
             }
         }
         window.pushAppForceUpdate = pushAppForceUpdate;
+
+        async function pushQuestAppForceUpdate() {
+            const verName = (document.getElementById("questUpdVerName")?.value || "").trim();
+            const dlUrl = (document.getElementById("questUpdDownloadUrl")?.value || "").trim() || "https://pp-mod-auto-quest.onrender.com/download/PP_Quest.apk";
+            const notes = (document.getElementById("questUpdReleaseNotes")?.value || "").trim();
+            const forceUpd = document.getElementById("chkQuestForceUpdate")?.checked ?? true;
+
+            if (!verName) {
+                showToast("দয়া করে PP QUEST Version Name লিখুন (যেমন: 5.2)", "error");
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/quest/version/update`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        latest_version_name: verName,
+                        download_url: dlUrl,
+                        release_notes: notes,
+                        is_force_update: forceUpd
+                    })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    showToast(`🚀 PP QUEST v${verName} আপডেট সফলভাবে পুশ হয়েছে!`, "success");
+                    await loadAppVersionConfig();
+                } else {
+                    showToast(data.error || "Failed to update PP Quest version.", "error");
+                }
+            } catch (e) {
+                showToast("Connection error pushing PP Quest update: " + e.message, "error");
+            }
+        }
+        window.pushQuestAppForceUpdate = pushQuestAppForceUpdate;
+
+        async function saveQuestAppMaintenanceMode() {
+            const maint = document.getElementById("chkQuestMaintenanceMode")?.checked ?? false;
+            const maintTitle = (document.getElementById("questUpdMaintTitle")?.value || "PP QUEST Maintenance").trim();
+            const maintMsg = (document.getElementById("questUpdMaintMsg")?.value || "").trim();
+
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/quest/maintenance/update`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        maintenance_mode: maint,
+                        maintenance_title: maintTitle,
+                        maintenance_message: maintMsg
+                    })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    showToast(maint ? "🛠️ PP QUEST Maintenance Mode ON করা হয়েছে!" : "✅ PP QUEST Maintenance Mode OFF করা হয়েছে!", "success");
+                    await loadAppVersionConfig();
+                } else {
+                    showToast(data.error || "Failed to update PP Quest maintenance.", "error");
+                }
+            } catch (e) {
+                showToast("Connection error saving PP Quest maintenance: " + e.message, "error");
+            }
+        }
+        window.saveQuestAppMaintenanceMode = saveQuestAppMaintenanceMode;
 
         async function saveAppMaintenanceMode() {
             const maint = document.getElementById("chkMaintenanceMode")?.checked ?? false;

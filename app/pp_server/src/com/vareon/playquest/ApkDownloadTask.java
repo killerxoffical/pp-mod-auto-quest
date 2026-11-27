@@ -94,19 +94,21 @@ public class ApkDownloadTask {
             HttpURLConnection conn = null;
             try {
                 URL url = new URL(apkUrl);
-                for (int redirectCount = 0; redirectCount < 5; redirectCount++) {
+                int status = 0;
+                for (int redirectCount = 0; redirectCount < 6; redirectCount++) {
                     conn = (HttpURLConnection) url.openConnection();
                     conn.setInstanceFollowRedirects(true);
                     conn.setConnectTimeout(15000);
                     conn.setReadTimeout(30000);
-                    conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android " + Build.VERSION.RELEASE + ") PPM_Cloud/5.1");
+                    conn.setRequestProperty("Accept-Encoding", "identity");
+                    conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android " + Build.VERSION.RELEASE + ") PP_Quest/5.1");
                     conn.connect();
 
-                    int status = conn.getResponseCode();
+                    status = conn.getResponseCode();
                     if (status == HttpURLConnection.HTTP_MOVED_PERM || status == HttpURLConnection.HTTP_MOVED_TEMP || status == 307 || status == 308) {
                         String newUrl = conn.getHeaderField("Location");
                         if (newUrl != null && !newUrl.isEmpty()) {
-                            url = new URL(newUrl);
+                            url = new URL(url, newUrl);
                             conn.disconnect();
                             continue;
                         }
@@ -114,7 +116,11 @@ public class ApkDownloadTask {
                     break;
                 }
 
-                int totalLength = conn.getContentLength();
+                if (status < 200 || status >= 400) {
+                    throw new Exception("Server returned HTTP " + status);
+                }
+
+                long totalLength = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) ? conn.getContentLengthLong() : (long) conn.getContentLength();
                 in = conn.getInputStream();
 
                 File outDir = activity.getExternalFilesDir(null);
@@ -126,24 +132,35 @@ public class ApkDownloadTask {
                 }
 
                 out = new FileOutputStream(apkFile);
-                byte[] buffer = new byte[8192];
+                byte[] buffer = new byte[16384];
                 long downloaded = 0;
                 int bytesRead;
                 long lastUpdateTime = 0;
+                boolean checkedMagic = false;
 
                 while ((bytesRead = in.read(buffer)) != -1) {
+                    if (!checkedMagic && bytesRead >= 2) {
+                        checkedMagic = true;
+                        if (buffer[0] != 0x50 || buffer[1] != 0x4B) {
+                            throw new Exception("Invalid APK file from download URL (not a valid .apk package)");
+                        }
+                    }
                     out.write(buffer, 0, bytesRead);
                     downloaded += bytesRead;
 
                     long now = System.currentTimeMillis();
-                    if (now - lastUpdateTime > 150) {
+                    if (now - lastUpdateTime > 120) {
                         lastUpdateTime = now;
-                        int percent = (totalLength > 0) ? (int) ((downloaded * 100) / totalLength) : -1;
+                        int percent = (totalLength > 0) ? (int) Math.min(99, (downloaded * 100L) / totalLength) : -1;
                         activity.runOnUiThread(new ProgressRunnable(activity, percent, downloaded, totalLength));
                     }
                 }
 
                 out.flush();
+                if (downloaded < 200000) {
+                    apkFile.delete();
+                    throw new Exception("Downloaded APK file is incomplete (" + downloaded + " bytes)");
+                }
                 downloadedFile = apkFile;
                 isDownloading = false;
 

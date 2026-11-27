@@ -3733,28 +3733,36 @@
                         <p class="text-xs font-bold text-indigo-800 animate-pulse">সার্ভারে কানেক্ট ও প্রোফাইল যাচাই করা হচ্ছে...</p>
                     </div>
 
-                    <!-- CONNECTED PROFILE CARD (Matching PP Mod • Quest Portal) -->
-                    <div id="serverProfileBox" class="hidden p-3.5 bg-slate-900 border-2 border-emerald-500/50 rounded-2xl text-white shadow space-y-2.5">
-                        <div class="flex items-center justify-between border-b border-white/10 pb-2">
-                            <span class="text-[10px] font-black uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
-                                <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-ping"></span>
-                                Google Account Connected
+                    <!-- CONNECTED PROFILE CARD (Premium Verified Gamer UI) -->
+                    <div id="serverProfileBox" class="hidden relative overflow-hidden p-4 rounded-2xl text-white shadow-lg border border-emerald-400/40 space-y-3"
+                        style="background: linear-gradient(135deg, #0f172a 0%, #064e3b 55%, #022c22 100%);">
+                        <div class="absolute -right-8 -top-8 w-28 h-28 rounded-full bg-emerald-400/15 blur-2xl pointer-events-none"></div>
+                        <div class="flex items-center justify-between border-b border-white/10 pb-2.5 relative z-10">
+                            <span class="text-[10.5px] font-black uppercase tracking-wider text-emerald-300 flex items-center gap-2">
+                                <span class="relative flex h-2.5 w-2.5">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400"></span>
+                                </span>
+                                Play Games Profile Connected
                             </span>
                             <button type="button" onclick="disconnectServerCode()"
-                                class="text-[10px] font-bold text-rose-300 hover:text-rose-200 flex items-center gap-1 bg-white/10 px-2 py-0.5 rounded-md cursor-pointer transition-all">
-                                <i data-lucide="x" class="w-3 h-3"></i> Disconnect
+                                class="text-[10px] font-bold text-rose-200 hover:text-white flex items-center gap-1 bg-rose-500/20 hover:bg-rose-500/35 border border-rose-400/30 px-2.5 py-1 rounded-lg cursor-pointer transition-all">
+                                <i data-lucide="x" class="w-3 h-3"></i> Change
                             </button>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <img id="serverAvatar" src="https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512"
-                                class="w-12 h-12 rounded-full border-2 border-emerald-400 object-cover bg-white/10 flex-shrink-0 shadow-sm" alt="Avatar">
+                        <div class="flex items-center gap-3.5 relative z-10">
+                            <div class="relative flex-shrink-0">
+                                <img id="serverAvatar" src="https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512"
+                                    class="w-14 h-14 rounded-2xl border-2 border-emerald-400 object-cover bg-white/10 shadow-md" alt="Avatar">
+                                <span class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-slate-900 flex items-center justify-center text-[9px] font-black text-white shadow">✓</span>
+                            </div>
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center gap-1.5 flex-wrap">
-                                    <strong id="serverDisplayName" class="text-sm font-black text-white truncate">Connected Gamer</strong>
-                                    <span id="serverLevelBadge" class="bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[10px] font-black px-1.5 py-0.5 rounded">LVL 1</span>
+                                    <strong id="serverDisplayName" class="text-[15px] font-black text-white truncate tracking-tight">Connected Gamer</strong>
+                                    <span id="serverLevelBadge" class="bg-emerald-400/20 border border-emerald-300/40 text-emerald-200 text-[10px] font-black px-2 py-0.5 rounded-md">LVL 1</span>
                                 </div>
-                                <p id="serverEmail" class="text-xs font-mono text-slate-300 truncate mt-0.5">user@gmail.com</p>
-                                <p id="serverXpText" class="text-[10px] font-mono font-bold text-cyan-300 mt-0.5">Ready for Quest Sync</p>
+                                <p id="serverEmail" class="text-[11.5px] font-mono text-emerald-100/80 truncate mt-0.5">user@gmail.com</p>
+                                <p id="serverXpText" class="text-[10.5px] font-bold text-cyan-300 mt-1 flex items-center gap-1">⚡ প্রোফাইল ঠিক থাকলে নিচের Confirm চাপুন</p>
                             </div>
                         </div>
                     </div>
@@ -3786,11 +3794,11 @@
                     <!-- GAME STATUS / REFUND NOTICE (Dynamic) -->
                     <div id="serverGameQuestBox" class="hidden"></div>
 
-                    <!-- Confirm Button -->
-                    <button type="button" id="btnConfirmServerUnlock" onclick="executeServerQuestUnlock()" style="display:none;"
-                        class="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold rounded-xl shadow-md transition-all text-sm cursor-pointer flex items-center justify-center gap-2 active:scale-98">
-                        <i data-lucide="check" class="w-4 h-4"></i>
-                        <span>Confirm</span>
+                    <!-- Confirm Button (Opens Slide-to-Confirm Popup) -->
+                    <button type="button" id="btnConfirmServerUnlock" onclick="openQuestSlideConfirmModal()" style="display:none;"
+                        class="w-full py-3.5 bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-extrabold rounded-xl shadow-lg shadow-emerald-500/25 transition-all text-sm cursor-pointer flex items-center justify-center gap-2 active:scale-98">
+                        <i data-lucide="shield-check" class="w-4 h-4"></i>
+                        <span>প্রোফাইল ঠিক আছে • Confirm Unlock</span>
                     </button>
                 </div>
                 </div>
@@ -3845,39 +3853,47 @@
                             <p class="text-xs font-bold text-indigo-800 animate-pulse">গুগল অ্যাকাউন্ট ভেরিফাই ও কানেক্ট করা হচ্ছে...</p>
                         </div>
 
-                        <!-- CONNECTED PROFILE CARD -->
-                        <div id="oneTapProfileBox" class="hidden p-3.5 bg-slate-900 border-2 border-emerald-500/50 rounded-2xl text-white shadow space-y-2.5">
-                            <div class="flex items-center justify-between border-b border-white/10 pb-2">
-                                <span class="text-[10px] font-black uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
-                                    <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-ping"></span>
-                                    Google Account Connected
+                        <!-- CONNECTED PROFILE CARD (Premium Verified Gamer UI) -->
+                        <div id="oneTapProfileBox" class="hidden relative overflow-hidden p-4 rounded-2xl text-white shadow-lg border border-emerald-400/40 space-y-3"
+                            style="background: linear-gradient(135deg, #0f172a 0%, #064e3b 55%, #022c22 100%);">
+                            <div class="absolute -right-8 -top-8 w-28 h-28 rounded-full bg-emerald-400/15 blur-2xl pointer-events-none"></div>
+                            <div class="flex items-center justify-between border-b border-white/10 pb-2.5 relative z-10">
+                                <span class="text-[10.5px] font-black uppercase tracking-wider text-emerald-300 flex items-center gap-2">
+                                    <span class="relative flex h-2.5 w-2.5">
+                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400"></span>
+                                    </span>
+                                    Play Games Profile Connected
                                 </span>
                                 <button type="button" onclick="disconnectOneTapAccount()"
-                                    class="text-[10px] font-bold text-rose-300 hover:text-rose-200 flex items-center gap-1 bg-white/10 px-2 py-0.5 rounded-md cursor-pointer transition-all">
-                                    <i data-lucide="x" class="w-3 h-3"></i> Disconnect
+                                    class="text-[10px] font-bold text-rose-200 hover:text-white flex items-center gap-1 bg-rose-500/20 hover:bg-rose-500/35 border border-rose-400/30 px-2.5 py-1 rounded-lg cursor-pointer transition-all">
+                                    <i data-lucide="x" class="w-3 h-3"></i> Change
                                 </button>
                             </div>
-                            <div class="flex items-center gap-3">
-                                <img id="oneTapAvatar" src="https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512"
-                                    class="w-12 h-12 rounded-full border-2 border-emerald-400 object-cover bg-white/10 flex-shrink-0 shadow-sm" alt="Avatar">
+                            <div class="flex items-center gap-3.5 relative z-10">
+                                <div class="relative flex-shrink-0">
+                                    <img id="oneTapAvatar" src="https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512"
+                                        class="w-14 h-14 rounded-2xl border-2 border-emerald-400 object-cover bg-white/10 shadow-md" alt="Avatar">
+                                    <span class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-slate-900 flex items-center justify-center text-[9px] font-black text-white shadow">✓</span>
+                                </div>
                                 <div class="flex-1 min-w-0">
                                     <div class="flex items-center gap-1.5 flex-wrap">
-                                        <strong id="oneTapDisplayName" class="text-sm font-black text-white truncate">Connected Gamer</strong>
-                                        <span id="oneTapLevelBadge" class="bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[10px] font-black px-1.5 py-0.5 rounded">LVL 1</span>
+                                        <strong id="oneTapDisplayName" class="text-[15px] font-black text-white truncate tracking-tight">Connected Gamer</strong>
+                                        <span id="oneTapLevelBadge" class="bg-emerald-400/20 border border-emerald-300/40 text-emerald-200 text-[10px] font-black px-2 py-0.5 rounded-md">LVL 1</span>
                                     </div>
-                                    <p id="oneTapEmail" class="text-xs font-mono text-slate-300 truncate mt-0.5">user@gmail.com</p>
-                                    <p id="oneTapQidText" class="text-[10px] font-mono font-bold text-cyan-300 mt-0.5">Sync QID: <span id="oneTapQidSpan">—</span></p>
+                                    <p id="oneTapEmail" class="text-[11.5px] font-mono text-emerald-100/80 truncate mt-0.5">user@gmail.com</p>
+                                    <p id="oneTapQidText" class="text-[10.5px] font-bold text-cyan-300 mt-1">Session: <span id="oneTapQidSpan">—</span></p>
                                 </div>
                             </div>
                         </div>
 
                         <div id="oneTapQuestBox" class="hidden"></div>
 
-                        <!-- Confirm Button for One-Tap Connect -->
-                        <button type="button" id="btnConfirmOneTapUnlock" onclick="executeServerQuestUnlock()" style="display:none;"
-                            class="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold rounded-xl shadow-md transition-all text-sm cursor-pointer flex items-center justify-center gap-2 active:scale-98">
-                            <i data-lucide="check" class="w-4 h-4"></i>
-                            <span>Confirm Unlock</span>
+                        <!-- Confirm Button for One-Tap Connect (Opens Slide-to-Confirm Popup) -->
+                        <button type="button" id="btnConfirmOneTapUnlock" onclick="openQuestSlideConfirmModal()" style="display:none;"
+                            class="w-full py-3.5 bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-extrabold rounded-xl shadow-lg shadow-emerald-500/25 transition-all text-sm cursor-pointer flex items-center justify-center gap-2 active:scale-98">
+                            <i data-lucide="shield-check" class="w-4 h-4"></i>
+                            <span>প্রোফাইল ঠিক আছে • Confirm Unlock</span>
                         </button>
                     </div>
                 </div>
@@ -6339,6 +6355,93 @@
     </div>
 
     <!-- Premium Slide-To-Confirm Cancel & Refund Modal -->
+    <!-- QUEST SLIDE-TO-CONFIRM POPUP MODAL -->
+    <div id="questSlideConfirmModal" class="pop-overlay" style="display:none; z-index:999995; transition: opacity 0.22s ease;" onclick="if(event.target===this)closeQuestSlideConfirmModal()">
+        <div id="questSlideConfirmCard" class="pop-card space-y-4 text-center max-w-sm w-full p-5 bg-white rounded-3xl shadow-2xl border border-emerald-200/80 transition-all duration-200">
+            <div class="flex items-center justify-between">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[10px] font-black uppercase tracking-wider text-emerald-700">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Final Confirmation
+                </span>
+                <button type="button" onclick="closeQuestSlideConfirmModal()" class="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center cursor-pointer">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- Connected Profile Preview inside Popup -->
+            <div class="p-3.5 rounded-2xl text-left text-white relative overflow-hidden"
+                style="background: linear-gradient(135deg, #0f172a 0%, #064e3b 65%, #022c22 100%);">
+                <div class="flex items-center gap-3">
+                    <img id="qscAvatar" src="brand_logo.png" class="w-12 h-12 rounded-2xl border-2 border-emerald-400 object-cover bg-white/10 flex-shrink-0" alt="Profile">
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-1.5">
+                            <p id="qscGamerName" class="text-sm font-black text-white truncate">Play Gamer</p>
+                            <span id="qscLevel" class="px-1.5 py-0.5 rounded bg-emerald-400/20 border border-emerald-300/40 text-emerald-200 text-[9.5px] font-black flex-shrink-0">LVL 1</span>
+                        </div>
+                        <p id="qscEmail" class="text-[11px] font-mono text-emerald-100/80 truncate mt-0.5">user@gmail.com</p>
+                    </div>
+                </div>
+                <div class="mt-2.5 pt-2.5 border-t border-white/10 flex items-center justify-between gap-2 text-[11px]">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <img id="qscGameLogo" src="brand_logo.png" class="w-6 h-6 rounded-lg object-cover bg-white/15 flex-shrink-0" alt="Game">
+                        <span id="qscGameName" class="font-extrabold text-amber-300 truncate">Game Quest</span>
+                    </div>
+                    <span class="px-2 py-0.5 rounded-md bg-white/10 text-emerald-300 font-bold text-[10px] flex-shrink-0">⚡ Instant</span>
+                </div>
+            </div>
+
+            <p class="text-[11.5px] text-slate-600 font-semibold leading-relaxed">
+                উপরের প্রোফাইলটি আপনার সঠিক গুগল প্লে গেমস অ্যাকাউন্ট হলে নিচের স্লাইডারটি ডানে টেনে কোয়েস্ট আনলক শুরু করুন।
+            </p>
+
+            <!-- Sleek Slide To Confirm Track -->
+            <div class="pt-1">
+                <div id="questSlideTrack" class="relative w-full h-14 bg-emerald-50 border-2 border-emerald-200 rounded-2xl flex items-center p-1 select-none overflow-hidden shadow-inner">
+                    <div id="questSlideFill" class="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-emerald-500/30 to-teal-500/40 rounded-xl pointer-events-none" style="width: 0px;"></div>
+                    <div id="questSlideLabel" class="absolute inset-0 flex items-center justify-center pointer-events-none text-xs font-black text-emerald-700 tracking-wide transition-opacity pl-8">
+                        <span>স্লাইড করে আনলক করুন ❯❯❯</span>
+                    </div>
+                    <div id="questSlideThumb" class="relative w-12 h-12 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/30 cursor-grab active:cursor-grabbing touch-none z-10 select-none">
+                        <i id="questSlideThumbIcon" data-lucide="chevrons-right" class="w-5 h-5 pointer-events-none"></i>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" onclick="closeQuestSlideConfirmModal()"
+                class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl text-xs transition-all cursor-pointer">
+                বাতিল করুন
+            </button>
+        </div>
+    </div>
+
+    <!-- FULLSCREEN UNLOCK LOADING ANIMATION OVERLAY (Shadow-Mode Fade Out on Success) -->
+    <div id="questUnlockAnimOverlay"
+        style="display:none; position:fixed; inset:0; z-index:999998; background: radial-gradient(circle at 50% 42%, rgba(6,78,59,0.96) 0%, rgba(2,6,23,0.98) 72%); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); align-items:center; justify-content:center; padding:24px; opacity:0; transition: opacity 0.45s cubic-bezier(0.16,1,0.3,1), filter 0.55s ease, transform 0.55s cubic-bezier(0.16,1,0.3,1);">
+        <div class="w-full max-w-xs text-center space-y-5">
+            <!-- Animated Glowing Orbit Emblem -->
+            <div class="relative w-28 h-28 mx-auto flex items-center justify-center">
+                <div id="questAnimRingOuter" class="absolute inset-0 rounded-full border-2 border-emerald-400/25 border-t-emerald-400 border-r-teal-300 animate-spin" style="animation-duration:1.4s;"></div>
+                <div id="questAnimRingInner" class="absolute inset-2.5 rounded-full border-2 border-cyan-400/20 border-b-cyan-300 animate-spin" style="animation-duration:2.1s; animation-direction:reverse;"></div>
+                <div id="questAnimGlow" class="absolute inset-4 rounded-full bg-emerald-500/20 blur-xl animate-pulse"></div>
+                <div id="questAnimCore" class="relative w-16 h-16 rounded-2xl bg-slate-900/90 border border-emerald-400/50 shadow-2xl flex items-center justify-center overflow-hidden">
+                    <img id="questAnimGameIcon" src="brand_logo.png" class="w-12 h-12 rounded-xl object-cover" alt="">
+                </div>
+            </div>
+
+            <div class="space-y-1.5">
+                <span id="questAnimPill" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/35 text-[10px] font-black uppercase tracking-widest text-emerald-300">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> Live Cloud Unlock
+                </span>
+                <h3 id="questAnimTitle" class="text-lg font-black text-white tracking-tight">কোয়েস্ট আনলক হচ্ছে...</h3>
+                <p id="questAnimSub" class="text-xs font-semibold text-emerald-100/80 leading-relaxed">গুগল প্লে গেমস সার্ভারে নিরাপদভাবে কানেক্ট হচ্ছে</p>
+            </div>
+
+            <!-- Smooth Shimmer Progress Bar -->
+            <div class="w-full bg-white/10 rounded-full h-2 overflow-hidden border border-white/10">
+                <div id="questAnimBar" class="h-full bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 rounded-full transition-all duration-500" style="width: 18%;"></div>
+            </div>
+        </div>
+    </div>
+
     <div id="cancelRefundModal" class="pop-overlay" style="display:none; z-index:99999;" onclick="if(event.target===this)closeCancelRefundModal()">
         <div class="pop-card space-y-4 text-center max-w-sm w-full p-6 bg-white rounded-3xl shadow-2xl border border-slate-100">
             <!-- Icon -->
@@ -10851,6 +10954,242 @@
         window.autoRefundServerFailure = autoRefundServerFailure;
 
         /* cancelAndRefundActiveOrder removed - admin only refund */
+        // ==================== QUEST SLIDE-TO-CONFIRM POPUP & SHADOW-FADE LOADING ENGINE ====================
+        window._questSlideDone = false;
+        window._questAnimStepTimers = [];
+
+        function resetQuestSlideConfirm() {
+            const thumb = document.getElementById('questSlideThumb');
+            const fill = document.getElementById('questSlideFill');
+            const label = document.getElementById('questSlideLabel');
+            if (thumb) {
+                thumb.style.transition = 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
+                thumb.style.transform = 'translateX(0px)';
+                thumb.innerHTML = '<i id="questSlideThumbIcon" data-lucide="chevrons-right" class="w-5 h-5 pointer-events-none"></i>';
+                setTimeout(() => { if (thumb) thumb.style.transition = ''; }, 260);
+            }
+            if (fill) {
+                fill.style.transition = 'width 0.25s ease';
+                fill.style.width = '0px';
+                setTimeout(() => { if (fill) fill.style.transition = ''; }, 260);
+            }
+            if (label) {
+                label.style.opacity = '1';
+                label.innerHTML = '<span>স্লাইড করে আনলক করুন ❯❯❯</span>';
+            }
+            window._questSlideDone = false;
+            if (window.lucide) try { lucide.createIcons(); } catch (e) {}
+        }
+
+        function setupQuestSlideEvents() {
+            const track = document.getElementById('questSlideTrack');
+            const thumb = document.getElementById('questSlideThumb');
+            const fill = document.getElementById('questSlideFill');
+            const label = document.getElementById('questSlideLabel');
+            if (!track || !thumb || track._questSlideReady) return;
+            track._questSlideReady = true;
+
+            let dragging = false;
+            let startX = 0;
+            let curX = 0;
+
+            const onStart = (e) => {
+                if (window._questSlideDone) return;
+                dragging = true;
+                startX = e.touches ? e.touches[0].clientX : e.clientX;
+                thumb.style.transition = 'none';
+                if (fill) fill.style.transition = 'none';
+            };
+
+            const onMove = (e) => {
+                if (!dragging || window._questSlideDone) return;
+                const cx = e.touches ? e.touches[0].clientX : e.clientX;
+                const maxSlide = Math.max(0, track.offsetWidth - thumb.offsetWidth - 8);
+                const diff = Math.max(0, Math.min(cx - startX, maxSlide));
+                curX = diff;
+                thumb.style.transform = `translateX(${diff}px)`;
+                if (fill) fill.style.width = `${diff + thumb.offsetWidth + 4}px`;
+                if (label && maxSlide > 0) {
+                    label.style.opacity = String(Math.max(0, 1 - (diff / (maxSlide * 0.65))));
+                }
+            };
+
+            const onEnd = () => {
+                if (!dragging || window._questSlideDone) return;
+                dragging = false;
+                const maxSlide = Math.max(0, track.offsetWidth - thumb.offsetWidth - 8);
+                if (maxSlide > 0 && curX >= maxSlide * 0.76) {
+                    window._questSlideDone = true;
+                    thumb.style.transition = 'transform 0.16s ease';
+                    thumb.style.transform = `translateX(${maxSlide}px)`;
+                    thumb.innerHTML = '<i data-lucide="check" class="w-5 h-5 pointer-events-none"></i>';
+                    if (fill) {
+                        fill.style.transition = 'width 0.16s ease';
+                        fill.style.width = '100%';
+                    }
+                    if (label) {
+                        label.style.opacity = '1';
+                        label.innerHTML = '<span class="text-emerald-800 font-black">✓ Confirmed!</span>';
+                    }
+                    if (window.lucide) try { lucide.createIcons(); } catch (e) {}
+                    setTimeout(() => {
+                        closeQuestSlideConfirmModal(true);
+                        executeServerQuestUnlock();
+                    }, 180);
+                } else {
+                    resetQuestSlideConfirm();
+                }
+                curX = 0;
+            };
+
+            thumb.addEventListener('mousedown', onStart);
+            window.addEventListener('mousemove', onMove);
+            window.addEventListener('mouseup', onEnd);
+            thumb.addEventListener('touchstart', onStart, { passive: true });
+            window.addEventListener('touchmove', onMove, { passive: true });
+            window.addEventListener('touchend', onEnd);
+        }
+
+        function openQuestSlideConfirmModal() {
+            if (window._isOrderExecuting) return;
+            const acc = window._serverConnectedAccount;
+            const srv = window._matchedPortalService;
+            if (!acc || (!acc.master_token && !acc.code)) {
+                toast('দয়া করে প্রথমে অ্যাকাউন্ট কানেক্ট করুন!');
+                return;
+            }
+            if (!srv) {
+                toast('সার্ভারে এই গেমটি সক্রিয় নেই!');
+                return;
+            }
+
+            const gName = (acc.profile && acc.profile.display_name) || acc.gamerName || (acc.email ? acc.email.split('@')[0] : 'Play Gamer');
+            const gAvatar = (acc.profile && acc.profile.avatar_url) || acc.avatar || 'brand_logo.png';
+            const gLevel = (acc.profile && acc.profile.level) || acc.level || 1;
+            const curGame = srv.title || window._payGame || (document.getElementById('credGameTitle') ? document.getElementById('credGameTitle').textContent : 'Game Quest');
+            const curLogo = window._payGameLogo || srv.icon || srv.icon_url || (document.getElementById('credGameLogo') ? document.getElementById('credGameLogo').src : 'brand_logo.png');
+
+            const avEl = document.getElementById('qscAvatar');
+            const nmEl = document.getElementById('qscGamerName');
+            const lvEl = document.getElementById('qscLevel');
+            const emEl = document.getElementById('qscEmail');
+            const glEl = document.getElementById('qscGameLogo');
+            const gnEl = document.getElementById('qscGameName');
+            if (avEl) avEl.src = gAvatar;
+            if (nmEl) nmEl.textContent = gName;
+            if (lvEl) lvEl.textContent = 'LVL ' + gLevel;
+            if (emEl) emEl.textContent = acc.email || 'Google Account';
+            if (glEl) glEl.src = curLogo;
+            if (gnEl) gnEl.textContent = curGame;
+
+            resetQuestSlideConfirm();
+            setupQuestSlideEvents();
+
+            const m = document.getElementById('questSlideConfirmModal');
+            const card = document.getElementById('questSlideConfirmCard');
+            if (m) {
+                m.style.display = 'flex';
+                m.style.opacity = '0';
+                if (card) card.style.transform = 'scale(0.95) translateY(8px)';
+                requestAnimationFrame(() => {
+                    m.style.opacity = '1';
+                    if (card) card.style.transform = 'scale(1) translateY(0)';
+                });
+            }
+            if (window.lucide) try { lucide.createIcons(); } catch (e) {}
+        }
+        window.openQuestSlideConfirmModal = openQuestSlideConfirmModal;
+
+        function closeQuestSlideConfirmModal(silent) {
+            const m = document.getElementById('questSlideConfirmModal');
+            const card = document.getElementById('questSlideConfirmCard');
+            if (!m) return;
+            m.style.opacity = '0';
+            if (card) card.style.transform = 'scale(0.94) translateY(8px)';
+            setTimeout(() => {
+                m.style.display = 'none';
+                if (!silent) resetQuestSlideConfirm();
+            }, 200);
+        }
+        window.closeQuestSlideConfirmModal = closeQuestSlideConfirmModal;
+
+        function showQuestUnlockLoadingAnim(gameTitle, gameLogo) {
+            (window._questAnimStepTimers || []).forEach(t => clearTimeout(t));
+            window._questAnimStepTimers = [];
+            const ov = document.getElementById('questUnlockAnimOverlay');
+            if (!ov) return;
+            const iconEl = document.getElementById('questAnimGameIcon');
+            const coreEl = document.getElementById('questAnimCore');
+            const titleEl = document.getElementById('questAnimTitle');
+            const subEl = document.getElementById('questAnimSub');
+            const barEl = document.getElementById('questAnimBar');
+            const pillEl = document.getElementById('questAnimPill');
+            if (coreEl) coreEl.innerHTML = `<img id="questAnimGameIcon" src="${gameLogo || 'brand_logo.png'}" class="w-12 h-12 rounded-xl object-cover" alt="">`;
+            if (titleEl) titleEl.textContent = `${gameTitle || 'Quest'} আনলক হচ্ছে...`;
+            if (subEl) subEl.textContent = 'গুগল প্লে গেমস সার্ভারে নিরাপদভাবে কানেক্ট হচ্ছে...';
+            if (pillEl) pillEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> Live Cloud Unlock';
+            if (barEl) barEl.style.width = '22%';
+
+            ov.style.display = 'flex';
+            ov.style.filter = 'blur(0px)';
+            ov.style.transform = 'scale(1)';
+            ov.style.opacity = '0';
+            requestAnimationFrame(() => { ov.style.opacity = '1'; });
+
+            window._questAnimStepTimers.push(setTimeout(() => {
+                if (subEl) subEl.textContent = 'প্রোফাইল ভেরিফাই ও অ্যাচিভমেন্ট সিঙ্ক হচ্ছে...';
+                if (barEl) barEl.style.width = '58%';
+            }, 850));
+            window._questAnimStepTimers.push(setTimeout(() => {
+                if (subEl) subEl.textContent = 'কোয়েস্ট আনলক কনফার্মেশন সম্পন্ন হচ্ছে...';
+                if (barEl) barEl.style.width = '84%';
+            }, 1900));
+        }
+
+        function finishQuestUnlockAnimWithShadowFade(isSuccess, onDone) {
+            (window._questAnimStepTimers || []).forEach(t => clearTimeout(t));
+            window._questAnimStepTimers = [];
+            const ov = document.getElementById('questUnlockAnimOverlay');
+            if (!ov || ov.style.display === 'none') {
+                if (onDone) onDone();
+                return;
+            }
+            if (isSuccess) {
+                const coreEl = document.getElementById('questAnimCore');
+                const titleEl = document.getElementById('questAnimTitle');
+                const subEl = document.getElementById('questAnimSub');
+                const barEl = document.getElementById('questAnimBar');
+                const pillEl = document.getElementById('questAnimPill');
+                if (coreEl) coreEl.innerHTML = '<div class="w-full h-full bg-emerald-500 flex items-center justify-center text-white text-3xl font-black">✓</div>';
+                if (pillEl) pillEl.innerHTML = '✓ UNLOCK CONFIRMED';
+                if (titleEl) titleEl.textContent = 'কোয়েস্ট আনলক সফল হয়েছে! 🎉';
+                if (subEl) subEl.textContent = 'কনফার্মেশন পেজ ওপেন হচ্ছে...';
+                if (barEl) barEl.style.width = '100%';
+
+                // Smoothly enter shadow-fade out and transition straight into Confirmation/Success screen
+                setTimeout(() => {
+                    if (onDone) onDone();
+                    ov.style.opacity = '0';
+                    ov.style.filter = 'blur(12px)';
+                    ov.style.transform = 'scale(1.06)';
+                    setTimeout(() => {
+                        ov.style.display = 'none';
+                        ov.style.filter = 'blur(0px)';
+                        ov.style.transform = 'scale(1)';
+                    }, 520);
+                }, 620);
+            } else {
+                ov.style.opacity = '0';
+                ov.style.filter = 'blur(8px)';
+                setTimeout(() => {
+                    ov.style.display = 'none';
+                    ov.style.filter = 'blur(0px)';
+                    ov.style.transform = 'scale(1)';
+                    if (onDone) onDone();
+                }, 320);
+            }
+        }
+
 async function executeServerQuestUnlock() {
             if (window._isOrderExecuting) {
                 console.warn('[UnlockLock] আনলক প্রসেস অলরেডি রানিং আছে। ডুপ্লিকেট ক্লিক অগ্রাহ্য করা হয়েছে।');
@@ -10886,6 +11225,7 @@ async function executeServerQuestUnlock() {
             // ১. গ্লোবাল ও অ্যাকাউন্ট কনকারেন্সি লক সক্রিয় করা — একই সময়ে এক অ্যাকাউন্টে কখনো ২টি রিকোয়েস্ট হতে পারবে না
             window._isOrderExecuting = true;
             window._activeAccountLock = accLockKey;
+            showQuestUnlockLoadingAnim(srv.title || curGame || 'Quest', window._payGameLogo || srv.icon || srv.icon_url || '');
 
             // ২. বাটনে সাথে সাথে স্পিনার লোডিং অ্যানিমেশন ও টাচ/ক্লিক কমপ্লিটলি লক করা (যতক্ষণ না আনলক শেষ হয়)
             const btn = document.getElementById('btnConfirmServerUnlock');
@@ -11008,6 +11348,7 @@ async function executeServerQuestUnlock() {
                 }
 
                 if (!data || !data.ok || data.status === 'PARTIAL') {
+                    finishQuestUnlockAnimWithShadowFade(false);
                     const errMsg = errMsgRaw;
                     let cleanErrMsg = typeof errMsg === 'string' ? errMsg : 'গুগল প্লে গেমসে কোয়েস্ট আনলক করা যায়নি।';
                     if (cleanErrMsg.includes('fetch') || cleanErrMsg.includes('http') || cleanErrMsg.includes('{') || cleanErrMsg.includes('Server error')) {
@@ -11223,14 +11564,15 @@ async function executeServerQuestUnlock() {
                     timeElapsed: 1
                 });
 
-                if (window.fireConfetti) {
-                    try { window.fireConfetti(); } catch (e) {}
-                }
-                if (window.playChime) {
-                    try { window.playChime(); } catch (e) {}
-                }
-
-                showScreen('screenSuccess');
+                finishQuestUnlockAnimWithShadowFade(true, () => {
+                    if (window.fireConfetti) {
+                        try { window.fireConfetti(); } catch (e) {}
+                    }
+                    if (window.playChime) {
+                        try { window.playChime(); } catch (e) {}
+                    }
+                    showScreen('screenSuccess');
+                });
 
                 window._currentOrderId = null;
                 window._currentOrderMeta = null;
@@ -11248,6 +11590,7 @@ async function executeServerQuestUnlock() {
                     if (cSec) cSec.classList.remove('hidden');
                 }
             } catch (err) {
+                finishQuestUnlockAnimWithShadowFade(false);
                 console.error('Server unlock error:', err);
                 toast(`আনলক প্রক্রিয়ায় ত্রুটি ঘটেছে: ${err.message}`);
                 if (btn) {
@@ -13039,39 +13382,52 @@ async function executeServerQuestUnlock() {
                     } catch (e) { }
                 }
 
+                const applyPortalVerData = (data) => {
+                    if (!data) return;
+                    if (data.download_url && data.download_url.trim().length > 0) {
+                        window._liveDownloadUrl = data.download_url.trim();
+                    }
+
+                    // 1. Maintenance Mode (PP Quest independent)
+                    if (data.maintenance_mode) {
+                        showPortalMaintenance(data.maintenance_title, data.maintenance_message);
+                        return;
+                    } else {
+                        hidePortalMaintenance();
+                    }
+
+                    // 2. Mandatory / OTA Force Update
+                    const latestVerName = (data.latest_version_name || '5.1').replace(/^v/i, '');
+                    const minCode = parseInt(data.min_required_version_code || data.latest_version_code, 10) || 51;
+
+                    if (curVerCode < minCode || isVersionOutdated(curVerName, latestVerName)) {
+                        showPortalForceUpdate(data.latest_version_name, data.latest_version_code, data.download_url, data.release_notes, curVerName);
+                    } else {
+                        hidePortalForceUpdate();
+                    }
+                };
+
                 const url = window.PORTAL_BASE_URL + '/api/app/version?pkg=' + encodeURIComponent(pkg) + '&_t=' + Date.now();
                 fetch(url)
                     .then(res => res.json())
                     .then(data => {
-                        if (!data || !data.ok) { if (cb) cb(); return; }
-
-                        if (data.download_url && data.download_url.trim().length > 0) {
-                            window._liveDownloadUrl = data.download_url.trim();
-                        }
-
-                        // 1. Maintenance Mode
-                        if (data.maintenance_mode) {
-                            showPortalMaintenance(data.maintenance_title, data.maintenance_message);
-                            if (cb) cb();
-                            return;
-                        } else {
-                            hidePortalMaintenance();
-                        }
-
-                        // 2. Mandatory Force Update
-                        const latestVerName = (data.latest_version_name || '5.1').replace(/^v/i, '');
-                        const minCode = parseInt(data.min_required_version_code || data.latest_version_code, 10) || 51;
-
-                        if (curVerCode < minCode || isVersionOutdated(curVerName, latestVerName)) {
-                            showPortalForceUpdate(data.latest_version_name, data.latest_version_code, data.download_url, data.release_notes, curVerName);
-                        } else {
-                            hidePortalForceUpdate();
+                        if (data && data.ok) {
+                            applyPortalVerData(data);
                         }
                         if (cb) cb();
                     })
                     .catch(err => {
-                        console.warn('[PortalStatus] Check error:', err);
-                        if (cb) cb();
+                        console.warn('[PortalStatus] Render check error, trying Cloudflare D1 mirror:', err);
+                        fetch('https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services?_t=' + Date.now())
+                            .then(r => r.json())
+                            .then(cf => {
+                                const rootObj = (cf && cf.data) ? cf.data : cf;
+                                if (rootObj && rootObj.__quest_app_config__) {
+                                    applyPortalVerData(rootObj.__quest_app_config__);
+                                }
+                                if (cb) cb();
+                            })
+                            .catch(() => { if (cb) cb(); });
                     });
             } catch (err) {
                 if (cb) cb();
@@ -13266,11 +13622,37 @@ async function executeServerQuestUnlock() {
             }
         };
 
-        // Auto-run status check on launch and interval
+        window.onApkDownloadError = function (errMsg) {
+            window._isUpdateDownloading = false;
+            window._isUpdateDownloaded = false;
+            const stEl = document.getElementById('labelDownloadStatus');
+            if (stEl) stEl.innerHTML = '⚠️ <span class="text-rose-600 font-extrabold">Download Failed</span>';
+            const btEl = document.getElementById('labelDownloadBytes');
+            if (btEl) btEl.textContent = errMsg || 'নেটওয়ার্ক সমস্যা, আবার চেষ্টা করুন';
+            const btn = document.getElementById('btnDownloadUpdate');
+            const btnTxt = document.getElementById('btnDownloadUpdateText');
+            if (btn) {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            }
+            if (btnTxt) btnTxt.textContent = 'Retry Download (আবার চেষ্টা করুন)';
+            toast('আপডেট ডাউনলোড ব্যর্থ: ' + (errMsg || 'আবার চেষ্টা করুন'));
+        };
+
+        // Auto-run status check on launch, resume, and real-time 15s interval
         setTimeout(() => {
             checkPortalSystemStatus();
-            setInterval(checkPortalSystemStatus, 60000);
-        }, 1200);
+            setInterval(() => {
+                if (document.visibilityState === 'visible' && !window._isUpdateDownloading) {
+                    checkPortalSystemStatus();
+                }
+            }, 15000);
+        }, 900);
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && !window._isUpdateDownloading) {
+                checkPortalSystemStatus();
+            }
+        });
         function closeBroadcast() {
             const m = document.getElementById('bcModal');
             if (m) m.style.display = 'none';
@@ -16498,16 +16880,60 @@ async function executeServerQuestUnlock() {
             return null;
         }
         window.syncD1Wallet = syncD1Wallet;
-        window.refreshBalanceFromD1 = async function () {
+        window.refreshBalanceFromD1 = async function (silent = true) {
+            if (window._paying || window._isOrderExecuting) return null;
             const u = (window.ppfb && window.ppfb.user) || (window.FB && window.FB.auth && window.FB.auth.currentUser);
             if (!u || !u.uid || u.uid === 'guest') return null;
-            return await syncD1Wallet(u, null);
+            try {
+                const res = await fetch(`${CF_API}/api/wallet?uid=${encodeURIComponent(u.uid)}&_t=${Date.now()}`);
+                const data = await res.json();
+                if (data && data.ok && data.wallet) {
+                    const w = data.wallet;
+                    const newBal = Math.round(((Number(w.balance || 0)) + (Number(w.bonusBalance || 0)) + Number.EPSILON) * 100) / 100;
+                    const prevBal = Math.round(((Number(window.ppfb && window.ppfb.balance) || 0) + Number.EPSILON) * 100) / 100;
+                    const newStars = Number(w.loyaltyStars || 0);
+                    const prevStars = Number(window.ppfb && window.ppfb.loyaltyStars || 0);
+                    if (newBal !== prevBal || !window._balDataReady) {
+                        setBalanceUI(newBal, 0, 0, newBal, 0);
+                        if (silent && window._d1LiveSyncedOnce && Math.abs(newBal - prevBal) >= 0.01) {
+                            const diff = Math.round(((newBal - prevBal) + Number.EPSILON) * 100) / 100;
+                            toast(diff > 0 ? `💰 ওয়ালেটে +${diff} Coins যোগ হয়েছে! (মোট: ${newBal})` : `💰 ব্যালেন্স আপডেট হয়েছে: ${newBal} Coins`);
+                        }
+                    }
+                    if (newStars !== prevStars) {
+                        window.ppfb.loyaltyStars = newStars;
+                        if (window.renderLoyaltyStars) window.renderLoyaltyStars();
+                    }
+                    if (w.banned === 1 || w.banned === true) {
+                        window.ppfb.banned = true;
+                        setBannedUI(true, w.banReason);
+                    }
+                    if (w.tgChatId && !window.ppfb.tgChatId) {
+                        window.ppfb.tgChatId = w.tgChatId;
+                        if (typeof setProfileUI === 'function') setProfileUI(u);
+                    }
+                    window._d1LiveSyncedOnce = true;
+                    return w;
+                }
+            } catch (e) { }
+            return null;
         };
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible') {
-                window.refreshBalanceFromD1().catch(() => { });
+                window.refreshBalanceFromD1(true).catch(() => { });
             }
         });
+        window.addEventListener('focus', () => {
+            window.refreshBalanceFromD1(true).catch(() => { });
+        });
+        // Real-time 6s zero-flicker D1 balance sync (admin balance updates appear live without reopening app)
+        if (!window._d1RealtimeBalInterval) {
+            window._d1RealtimeBalInterval = setInterval(() => {
+                if (document.visibilityState === 'visible') {
+                    window.refreshBalanceFromD1(true).catch(() => { });
+                }
+            }, 6000);
+        }
 
         const FB = {
             apiKey: "AIzaSyAQmiWD9fP0nFpl7ShPjE51udtyFWo6jpA",
