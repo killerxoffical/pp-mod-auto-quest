@@ -331,6 +331,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             settings.setAllowUniversalAccessFromFileURLs(true);
             settings.setSupportZoom(false);
             settings.setBuiltInZoomControls(false);
+            settings.setUseWideViewPort(true);
+            settings.setLoadWithOverviewMode(true);
             if (android.os.Build.VERSION.SDK_INT >= 21) {
                 settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
             }
@@ -367,6 +369,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             settings.setAllowUniversalAccessFromFileURLs(true);
             settings.setSupportZoom(false);
             settings.setBuiltInZoomControls(false);
+            settings.setUseWideViewPort(true);
+            settings.setLoadWithOverviewMode(true);
 
             String userAgent = "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36";
             settings.setUserAgentString(userAgent);
@@ -484,12 +488,16 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         runOnUiThread(new LaunchAccountChooserRunnable(this));
     }
 
+    public void startGoogleLoginWebForSso() {
+        runOnUiThread(new StartGoogleLoginWebSsoRunnable(this));
+    }
+
     public void startGoogleSsoLogin() {
         launchSystemAccountChooser();
     }
 
     public void fallbackGoogleLoginForEmulator() {
-        runOnUiThread(new FallbackEmulatorPromptRunnable(mainAppWebView));
+        startGoogleLoginWebForSso();
     }
 
     @Override
@@ -505,7 +513,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             }
             List<String> emails = getDeviceGoogleEmails();
             if (emails.isEmpty()) {
-                fallbackGoogleLoginForEmulator();
+                startGoogleLoginWebForSso();
             } else {
                 notifyWebSsoCancel();
             }
@@ -627,11 +635,10 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             isGoogleSsoMode = false;
             closeGoogleLogin();
             if (txtLoginStatus != null) {
-                txtLoginStatus.setVisibility(View.VISIBLE);
-                txtLoginStatus.setText("Connecting to server, please wait...");
+                txtLoginStatus.setVisibility(View.GONE);
             }
             if (!finalEmail.isEmpty()) {
-                doLogin(finalEmail, "GOOGLE_SSO");
+                handleGoogleAccountSelectedForSso(finalEmail);
             } else {
                 Toast.makeText(this, "Could not detect Google account email.", Toast.LENGTH_SHORT).show();
             }
@@ -1387,6 +1394,11 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         @JavascriptInterface
         public void startGoogleSsoLogin() {
             activity.runOnUiThread(new StartGoogleSsoLoginRunnable(activity));
+        }
+
+        @JavascriptInterface
+        public void startGoogleLoginWebSso() {
+            activity.startGoogleLoginWebForSso();
         }
 
         @JavascriptInterface
@@ -2300,6 +2312,22 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         }
     }
 
+    public static class StartGoogleLoginWebSsoRunnable implements Runnable {
+        private final MainActivity act;
+
+        public StartGoogleLoginWebSsoRunnable(MainActivity a) {
+            this.act = a;
+        }
+
+        @Override
+        public void run() {
+            if (act != null) {
+                act.isGoogleSsoMode = true;
+                act.startGoogleLogin("GLOBAL");
+            }
+        }
+    }
+
     public static class CloseGoogleLoginRunnable implements Runnable {
         private final MainActivity act;
 
@@ -2507,6 +2535,11 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             if (activity == null)
                 return;
             try {
+                List<String> emails = activity.getDeviceGoogleEmails();
+                if (emails.isEmpty()) {
+                    activity.startGoogleLoginWebForSso();
+                    return;
+                }
                 Intent intent;
                 if (Build.VERSION.SDK_INT >= 23) {
                     intent = AccountManager.newChooseAccountIntent(null, null, new String[] { "com.google" }, null,
@@ -2522,7 +2555,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 if (!emails.isEmpty()) {
                     activity.handleGoogleAccountSelectedForSso(emails.get(0));
                 } else {
-                    activity.fallbackGoogleLoginForEmulator();
+                    activity.startGoogleLoginWebForSso();
                 }
             }
         }
