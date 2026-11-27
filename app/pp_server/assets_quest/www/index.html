@@ -324,6 +324,19 @@
             width: 100%;
             max-width: 100%;
             overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: contain;
+        }
+        .screen:not(.hidden) {
+            animation: ppScreenSmoothIn 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes ppScreenSmoothIn {
+            0% { opacity: 0.25; transform: translateY(4px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        button, a {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .fit-home {
@@ -5069,20 +5082,50 @@
                 </div>
             </section>
 
-            <!-- SUB-VIEW 1: PP SERVICE MAIN HUB (Clickable Image Banners for Quest Complete & Level Up) -->
+            <!-- SUB-VIEW 1: PP SERVICE MAIN HUB (Sleek Compact Professional Service Cards) -->
             <div id="ppServiceHubView" class="space-y-3 flex-1 overflow-y-auto pb-4 pr-0.5 scrollbar-none">
-                <!-- Banner 1: Quest Complete (quest.png) -->
+                <!-- Card 1: Auto Quest Complete (quest.png) -->
                 <button type="button" onclick="openAutoQuestView()" aria-label="Auto Quest Complete"
-                    class="w-full block text-left group relative overflow-hidden rounded-2xl bg-slate-900 border-2 border-emerald-400/70 shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-[0.98] p-0">
-                    <img src="quest.png" alt="Auto Quest Complete" loading="eager" decoding="sync"
-                        class="w-full h-auto block object-cover select-none pointer-events-none">
+                    class="w-full block text-left group relative overflow-hidden rounded-2xl bg-white border border-slate-200/90 hover:border-emerald-400 shadow-sm hover:shadow-md transition-all duration-150 cursor-pointer active:scale-[0.985] p-0">
+                    <div class="relative w-full h-[106px] sm:h-[116px] bg-emerald-950 overflow-hidden">
+                        <img src="quest.png" alt="Auto Quest Complete" loading="eager" decoding="async"
+                            class="w-full h-full object-cover object-center select-none pointer-events-none group-hover:scale-[1.02] transition-transform duration-300">
+                        <div class="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-black/45 to-transparent pointer-events-none"></div>
+                    </div>
+                    <div class="px-3.5 py-2.5 bg-white flex items-center justify-between gap-2">
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-1.5">
+                                <h3 class="text-xs sm:text-[13px] font-black text-slate-900 truncate">Auto Quest Complete</h3>
+                                <span class="px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 font-extrabold text-[9px] uppercase flex-shrink-0">⚡ 1–3s</span>
+                            </div>
+                            <p class="text-[10.5px] text-slate-500 font-semibold truncate mt-0.5">যেকোনো গেমের কোয়েস্ট ১ ক্লিকে সম্পন্ন করুন</p>
+                        </div>
+                        <span class="w-7 h-7 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </span>
+                    </div>
                 </button>
 
-                <!-- Banner 2: Level Up Booster (level.png) -->
+                <!-- Card 2: Play Games Level Up (level.png) -->
                 <button type="button" onclick="openLevelUpView()" aria-label="Play Games Level Up"
-                    class="w-full block text-left group relative overflow-hidden rounded-2xl bg-slate-900 border-2 border-amber-400/70 shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-[0.98] p-0">
-                    <img src="level.png" alt="Play Games Level Up" loading="eager" decoding="sync"
-                        class="w-full h-auto block object-cover select-none pointer-events-none">
+                    class="w-full block text-left group relative overflow-hidden rounded-2xl bg-white border border-slate-200/90 hover:border-amber-400 shadow-sm hover:shadow-md transition-all duration-150 cursor-pointer active:scale-[0.985] p-0">
+                    <div class="relative w-full h-[106px] sm:h-[116px] bg-amber-950 overflow-hidden">
+                        <img src="level.png" alt="Play Games Level Up" loading="eager" decoding="async"
+                            class="w-full h-full object-cover object-center select-none pointer-events-none group-hover:scale-[1.02] transition-transform duration-300">
+                        <div class="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-black/45 to-transparent pointer-events-none"></div>
+                    </div>
+                    <div class="px-3.5 py-2.5 bg-white flex items-center justify-between gap-2">
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-1.5">
+                                <h3 class="text-xs sm:text-[13px] font-black text-slate-900 truncate">Play Games Level Up</h3>
+                                <span class="px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200 font-extrabold text-[9px] uppercase flex-shrink-0">🚀 Boost</span>
+                            </div>
+                            <p class="text-[10.5px] text-slate-500 font-semibold truncate mt-0.5">দ্রুত গুগল প্লে গেমস প্রোফাইল লেভেল আপ করুন</p>
+                        </div>
+                        <span class="w-7 h-7 rounded-xl bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center flex-shrink-0 group-hover:bg-amber-500 group-hover:text-white transition-colors">
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </span>
+                    </div>
                 </button>
             </div>
 
@@ -8040,8 +8083,14 @@
                 const tx = document.getElementById('appLoaderTxt');
                 if (tx) tx.textContent = t || 'Loading...';
             }
+            if (window._appLoaderGuardTimer) clearTimeout(window._appLoaderGuardTimer);
+            window._appLoaderGuardTimer = setTimeout(() => { hideAppLoader(); }, 12000);
         }
         function hideAppLoader() {
+            if (window._appLoaderGuardTimer) {
+                clearTimeout(window._appLoaderGuardTimer);
+                window._appLoaderGuardTimer = null;
+            }
             const l = document.getElementById('appLoader');
             if (l) l.style.display = 'none';
         }
@@ -9266,7 +9315,7 @@
 
                 // Server Admin এপিআই থেকে সেন্ট্রাল ডাউনলোড লিংক ও ভার্সন ফেচ
                 try {
-                    const res = await fetch('https://pp-mod-auto-quest.onrender.com/api/app/version', { cache: 'no-store' });
+                    const res = await fetch('https://pp-mod-auto-quest.onrender.com/api/app/version?_t=' + Date.now());
                     const verData = await res.json();
                     if (verData && verData.ok) {
                         if (verData.download_url) {
@@ -9353,26 +9402,28 @@
                     return;
                 }
 
-                // Strictly 1 time reward per account lifetime: +1 PP Coin
+                // Strictly 1 time reward per account lifetime: +1 PP Coin (Cloudflare D1 Master Only)
                 if (window.ppfb) window.ppfb.appDownloadRewarded = true;
-                const curBal = Number(ud.balance !== undefined ? ud.balance : (ud.realBalance || 0)) + Number(ud.bonusBalance || 0);
-                const newTotal = Math.round((curBal + 1.0 + Number.EPSILON) * 100) / 100;
+                let newTotal = Math.round((((window.ppfb && window.ppfb.balance) || 0) + 1.0 + Number.EPSILON) * 100) / 100;
 
-                // 1. Credit Cloudflare D1 wallet
-                const cfApi = window.CF_API || 'https://pp-mod-auto-quest.onrender.com';
-                await fetch(`${cfApi}/api/wallet/credit`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ uid: u.uid, coins: 1, type: 'real' })
-                }).catch(() => { });
+                // 1. Credit Cloudflare D1 wallet (Master Balance Source)
+                const cfApi = (typeof CF_API !== 'undefined' && CF_API) || window.CF_API || 'https://ppmod-api.tredarskvt.workers.dev';
+                try {
+                    const crRes = await fetch(`${cfApi}/api/wallet/credit`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ uid: u.uid, coins: 1, type: 'real', title: 'PPM SERVER App Download Bonus' })
+                    });
+                    const crData = await crRes.json().catch(() => null);
+                    if (crData && crData.ok && crData.balance !== undefined) {
+                        newTotal = Number(crData.balance);
+                    }
+                } catch (e) { }
 
-                // 2. Update Firestore user balance
+                // 2. Save ONLY reward claim flag in Firestore (NO balance fields)
                 await window.FB.updateDoc(uRef, {
                     appDownloadRewarded: true,
-                    appDownloadRewardedAt: new Date(),
-                    balance: newTotal,
-                    realBalance: newTotal,
-                    bonusBalance: 0
+                    appDownloadRewardedAt: new Date()
                 }).catch(() => {});
 
                 // 3. Save History / Redemption record
@@ -9388,12 +9439,9 @@
                     expiresAt: new Date(Date.now() + 60 * 86400000)
                 }).catch(() => { });
 
-                // 4. Update UI
-                if (window.ppfb && window.ppfb.wallet) {
-                    window.ppfb.wallet.balance = newTotal;
-                }
+                // 4. Update UI from Cloudflare D1 balance
                 if (typeof setBalanceUI === 'function') {
-                    setBalanceUI(newTotal, window.ppfb ? (window.ppfb.playPoints || 0) : 0, window.ppfb ? (window.ppfb.pendingPoints || 0) : 0, curReal, newBonus);
+                    setBalanceUI(newTotal, 0, 0, newTotal, 0);
                 }
                 updateAppDownloadUI(true);
                 toast('🎉 অভিনন্দন! PPM SERVER অ্যাপ ডাউনলোডের জন্য ১ কয়েন ওয়ালেটে যোগ হয়েছে!');
@@ -10349,24 +10397,21 @@
             }
 
             try {
-                // ১. Cloudflare D1 ওয়ালেটে কয়েন ফেরত
+                // ১. Cloudflare D1 ওয়ালেটে কয়েন ফেরত (D1 Master Only)
                 if (curUid && curUid !== 'guest' && refundCoins > 0) {
-                    await fetch(`${CF_API}/api/wallet/credit`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ uid: curUid, coins: refundCoins, type: 'real' })
-                    }).catch(e => console.warn('Refund credit error:', e));
-
-                    if (window.FB && window.FB.db) {
-                        try {
-                            const newTotal = Math.round((((window.ppfb && window.ppfb.balance) || 0) + refundCoins + Number.EPSILON) * 100) / 100;
-                            const newReal = Math.round((((window.ppfb && window.ppfb.realBalance) || 0) + refundCoins + Number.EPSILON) * 100) / 100;
-                            if (window.setBalanceUI) window.setBalanceUI(newTotal, 0, 0, newTotal, 0);
-                            window.FB.setDoc(window.FB.doc(window.FB.db, 'users', curUid), {
-                                balance: newTotal,
-                                realBalance: newReal
-                            }, { merge: true }).catch(() => {});
-                        } catch(e) {}
+                    try {
+                        const rRes = await fetch(`${CF_API}/api/wallet/credit`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ uid: curUid, coins: refundCoins, type: 'real', title: `Refund: ${gameName || 'Order'}` })
+                        });
+                        const rData = await rRes.json().catch(() => null);
+                        const newTotal = (rData && rData.ok && rData.balance !== undefined)
+                            ? Number(rData.balance)
+                            : Math.round((((window.ppfb && window.ppfb.balance) || 0) + refundCoins + Number.EPSILON) * 100) / 100;
+                        if (window.setBalanceUI) window.setBalanceUI(newTotal, 0, 0, newTotal, 0);
+                    } catch (e) {
+                        console.warn('Refund credit error:', e);
                     }
                 }
 
@@ -10651,23 +10696,21 @@
             const curUid = (window.ppfb && window.ppfb.user && window.ppfb.user.uid) || (window.FB && window.FB.auth && window.FB.auth.currentUser && window.FB.auth.currentUser.uid) || '';
 
             try {
-                // ১. Cloudflare D1 ওয়ালেটে সাথে সাথে ক্রেডিট
+                // ১. Cloudflare D1 ওয়ালেটে সাথে সাথে ক্রেডিট (D1 Master Only)
                 if (curUid && curUid !== 'guest' && refundCoins > 0) {
-                    await fetch(`${CF_API}/api/wallet/credit`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ uid: curUid, coins: refundCoins, type: 'real' })
-                    }).catch(e => console.warn('Auto refund credit error:', e));
-
-                    if (window.FB && window.FB.db) {
-                        try {
-                            const newTotal = ((window.ppfb && window.ppfb.balance) || 0) + refundCoins;
-                            const newReal = ((window.ppfb && window.ppfb.realBalance) || 0) + refundCoins;
-                            window.FB.setDoc(window.FB.doc(window.FB.db, 'users', curUid), {
-                                balance: newTotal,
-                                realBalance: newReal
-                            }, { merge: true }).catch(() => {});
-                        } catch(e) {}
+                    try {
+                        const rRes = await fetch(`${CF_API}/api/wallet/credit`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ uid: curUid, coins: refundCoins, type: 'real', title: `Auto-Refund: ${gameName || 'Server Error'}` })
+                        });
+                        const rData = await rRes.json().catch(() => null);
+                        const newTotal = (rData && rData.ok && rData.balance !== undefined)
+                            ? Number(rData.balance)
+                            : Math.round((((window.ppfb && window.ppfb.balance) || 0) + refundCoins + Number.EPSILON) * 100) / 100;
+                        if (window.setBalanceUI) window.setBalanceUI(newTotal, 0, 0, newTotal, 0);
+                    } catch (e) {
+                        console.warn('Auto refund credit error:', e);
                     }
                 }
 
@@ -13509,12 +13552,16 @@ async function executeServerQuestUnlock() {
 
                 const u = window.ppfb.user;
                 try {
-                    const newBal = Math.max(0, Math.round((curBal - cost) * 100) / 100);
-                    await window.FB.setDoc(doc(db, 'users', u.uid), {
-                        realBalance: newBal,
-                        bonusBalance: 0,
-                        balance: newBal
-                    }, { merge: true });
+                    const cfRes = await fetch(`${CF_API}/api/wallet/pay-task`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ uid: u.uid, feeCoins: cost, isFree: false, email: u.email || '', name: u.displayName || 'User' })
+                    });
+                    const cfData = await cfRes.json().catch(() => ({}));
+                    if (!cfRes.ok || !cfData.ok) {
+                        throw new Error(cfData.error === 'insufficient' ? 'পর্যাপ্ত কয়েন ব্যালেন্স নেই!' : (cfData.error || 'Payment failed'));
+                    }
+                    if (window.setBalanceUI) window.setBalanceUI(Number(cfData.balance || 0), 0, 0, Number(cfData.balance || 0), 0);
 
                     await addDoc(collection(db, 'account_orders'), {
                         uid: u.uid,
@@ -14570,42 +14617,38 @@ async function executeServerQuestUnlock() {
                 btn.innerHTML = `<span class="animate-spin">⏳</span> Publishing Ad...`;
 
                 try {
-                    // Escrow Transaction: deduct total from buyer's unified balance
-                    await runTransaction(db, async (t) => {
-                        const uRef = doc(db, 'users', u.uid);
-                        const uSnap = await t.get(uRef);
-                        const ud = uSnap.data() || {};
-                        const uBal = Number(ud.balance !== undefined ? ud.balance : (ud.realBalance || 0)) + Number(ud.bonusBalance || 0);
-                        if (uBal < total) throw new Error('insufficient');
+                    // Escrow Deduction exclusively from Cloudflare D1 Master Wallet
+                    const cfRes = await fetch(`${CF_API}/api/wallet/pay-task`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ uid: u.uid, feeCoins: total, isFree: false, email: u.email || '', name: u.displayName || 'User' })
+                    });
+                    const cfData = await cfRes.json().catch(() => ({}));
+                    if (!cfRes.ok || !cfData.ok) {
+                        throw new Error(cfData.error === 'insufficient' ? 'insufficient' : (cfData.error || 'Payment failed'));
+                    }
+                    if (window.setBalanceUI) window.setBalanceUI(Number(cfData.balance || 0), 0, 0, Number(cfData.balance || 0), 0);
 
-                        const newBal = Math.max(0, Math.round((uBal - total) * 100) / 100);
-                        t.update(uRef, {
-                            realBalance: newBal,
-                            bonusBalance: 0,
-                            balance: newBal
-                        });
+                    const dealRef = doc(collection(db, 'p2p_deals'));
+                    const expireAt = new Date(Date.now() + (23 * 3600 * 1000)); // 23 Hours Expiry
 
-                        const dealRef = doc(collection(db, 'p2p_deals'));
-                        const expireAt = new Date(Date.now() + (23 * 3600 * 1000)); // 23 Hours Expiry
-
-                        t.set(dealRef, {
-                            title,
-                            link,
-                            dealEmail: dealEmail || '',
-                            coins,
-                            feeCoins: fee,
-                            escrowCoins: total,
-                            buyerUid: u.uid,
-                            buyerName: u.displayName || 'User',
-                            buyerEmail: u.email || '',
-                            buyerTg: tg.startsWith('@') ? tg : '@' + tg,
-                            sellerUid: null,
-                            sellerName: null,
-                            sellerTg: null,
-                            status: 'open',
-                            createdAt: serverTimestamp(),
-                            expiresAt: expireAt
-                        });
+                    await window.FB.setDoc(dealRef, {
+                        title,
+                        link,
+                        dealEmail: dealEmail || '',
+                        coins,
+                        feeCoins: fee,
+                        escrowCoins: total,
+                        buyerUid: u.uid,
+                        buyerName: u.displayName || 'User',
+                        buyerEmail: u.email || '',
+                        buyerTg: tg.startsWith('@') ? tg : '@' + tg,
+                        sellerUid: null,
+                        sellerName: null,
+                        sellerTg: null,
+                        status: 'open',
+                        createdAt: serverTimestamp(),
+                        expiresAt: expireAt
                     });
 
                     toast('🎉 P2P ডিল পোস্ট হয়েছে এবং ২৩ ঘণ্টার জন্য চালু আছে!');
@@ -14817,41 +14860,37 @@ async function executeServerQuestUnlock() {
                 btn.textContent = 'Creating Room...';
 
                 try {
+                    // Escrow Deduction exclusively from Cloudflare D1 Master Wallet
+                    const cfRes = await fetch(`${CF_API}/api/wallet/pay-task`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ uid: u.uid, feeCoins: total, isFree: false, email: u.email || '', name: u.displayName || 'User' })
+                    });
+                    const cfData = await cfRes.json().catch(() => ({}));
+                    if (!cfRes.ok || !cfData.ok) {
+                        throw new Error(cfData.error === 'insufficient' ? 'low_balance' : (cfData.error || 'Payment failed'));
+                    }
+                    if (window.setBalanceUI) window.setBalanceUI(Number(cfData.balance || 0), 0, 0, Number(cfData.balance || 0), 0);
+
                     const roomRef = doc(collection(db, 'adell_rooms'));
                     const expireAt = new Date(Date.now() + 6 * 3600 * 1000); // 6 Hours Expiry
 
-                    await runTransaction(db, async (t) => {
-                        const uRef = doc(db, 'users', u.uid);
-                        const uSnap = await t.get(uRef);
-                        const ud = uSnap.data() || {};
-                        const uBal = Number(ud.balance !== undefined ? ud.balance : (ud.realBalance || 0)) + Number(ud.bonusBalance || 0);
-                        if (uBal < total) throw new Error('low_balance');
-
-                        const newBal = Math.max(0, Math.round((uBal - total) * 100) / 100);
-                        t.update(uRef, {
-                            realBalance: newBal,
-                            bonusBalance: 0,
-                            balance: newBal,
-                            dealsCreated: (Number(ud.dealsCreated) || 0) + 1
-                        });
-
-                        t.set(roomRef, {
-                            title,
-                            coins,
-                            feeCoins,
-                            escrowCoins: total,
-                            buyerUid: u.uid,
-                            buyerName: u.displayName || 'Buyer',
-                            buyerAvatar: (window.ppfb && window.ppfb.avatar) || u.photoURL || '',
-                            sellerUid: _adellFoundPeer.uid,
-                            sellerName: _adellFoundPeer.name || 'Seller',
-                            sellerAvatar: _adellFoundPeer.avatar || _adellFoundPeer.photo || '',
-                            status: 'inviting', // inviting -> active -> completed / disputed
-                            buyerConfirmed: false,
-                            sellerConfirmed: false,
-                            createdAt: serverTimestamp(),
-                            expiresAt: expireAt
-                        });
+                    await window.FB.setDoc(roomRef, {
+                        title,
+                        coins,
+                        feeCoins,
+                        escrowCoins: total,
+                        buyerUid: u.uid,
+                        buyerName: u.displayName || 'Buyer',
+                        buyerAvatar: (window.ppfb && window.ppfb.avatar) || u.photoURL || '',
+                        sellerUid: _adellFoundPeer.uid,
+                        sellerName: _adellFoundPeer.name || 'Seller',
+                        sellerAvatar: _adellFoundPeer.avatar || _adellFoundPeer.photo || '',
+                        status: 'inviting', // inviting -> active -> completed / disputed
+                        buyerConfirmed: false,
+                        sellerConfirmed: false,
+                        createdAt: serverTimestamp(),
+                        expiresAt: expireAt
                     });
 
                     toast('🎉 ADELL রুম তৈরি হয়েছে এবং ইনভাইটেশন পাঠানো হয়েছে!');
@@ -15910,7 +15949,7 @@ async function executeServerQuestUnlock() {
 
         async function fetchPPPortalServices() {
             try {
-                const res = await fetch('https://pp-mod-auto-quest.onrender.com/api/portal/services?_t=' + Date.now(), { cache: 'no-store' });
+                const res = await fetch('https://pp-mod-auto-quest.onrender.com/api/portal/services?_t=' + Date.now());
                 const data = await res.json();
                 if (data && data.ok && Array.isArray(data.services) && data.services.length) {
                     const questOnly = data.services.filter(s => {
@@ -16418,7 +16457,7 @@ async function executeServerQuestUnlock() {
             window._completedOrders = new Set();
         }
 
-        // Cloudflare D1 Edge Wallet & Auto-Migration Helper
+        // Cloudflare D1 Edge Wallet (100% Single Source of Truth — Zero Firestore Balance Mixing)
         async function syncD1Wallet(u, fbData = null) {
             if (!u || !u.uid) return null;
             try {
@@ -16428,20 +16467,6 @@ async function executeServerQuestUnlock() {
                     email: u.email || (fbData && fbData.email) || '',
                     photo: ((window.ppfb && window.ppfb.avatar) || u.photoURL || (fbData && fbData.avatar) || '').trim()
                 };
-                // যদি ফায়ারবেসে পুরনো ব্যালেন্স থাকে তবে তা Cloudflare D1-এ ট্রান্সফারের জন্য পাঠানো
-                if (fbData) {
-                    const fbBal = Number(fbData.balance !== undefined ? fbData.balance : 0);
-                    const fbReal = Number(fbData.realBalance !== undefined ? fbData.realBalance : fbBal);
-                    const fbBonus = Number(fbData.bonusBalance || 0);
-                    const unifiedTotal = (fbReal + fbBonus > fbBal) ? (fbReal + fbBonus) : Math.max(fbBal, fbReal + fbBonus);
-                    payload.fbBalance = unifiedTotal;
-                    payload.fbReal = unifiedTotal;
-                    payload.fbBonus = 0;
-                    payload.fbPlayPoints = 0;
-                    payload.fbPendingPoints = 0;
-                    payload.fbStars = Number(fbData.loyaltyStars || 0);
-                    payload.fbTgChatId = (fbData.tgChatId || '').toString().trim();
-                }
 
                 const res = await fetch(`${CF_API}/api/wallet/sync`, {
                     method: 'POST',
@@ -16451,7 +16476,7 @@ async function executeServerQuestUnlock() {
                 const data = await res.json();
                 if (data && data.ok && data.wallet) {
                     const w = data.wallet;
-                    const wBal = (Number(w.balance || 0)) + (Number(w.bonusBalance || 0));
+                    const wBal = Math.round(((Number(w.balance || 0)) + (Number(w.bonusBalance || 0)) + Number.EPSILON) * 100) / 100;
                     setBalanceUI(wBal, 0, 0, wBal, 0);
                     window.ppfb.loyaltyStars = Number(w.loyaltyStars || 0);
                     if (w.banned === 1 || w.banned === true) {
@@ -16468,6 +16493,16 @@ async function executeServerQuestUnlock() {
             return null;
         }
         window.syncD1Wallet = syncD1Wallet;
+        window.refreshBalanceFromD1 = async function () {
+            const u = (window.ppfb && window.ppfb.user) || (window.FB && window.FB.auth && window.FB.auth.currentUser);
+            if (!u || !u.uid || u.uid === 'guest') return null;
+            return await syncD1Wallet(u, null);
+        };
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                window.refreshBalanceFromD1().catch(() => { });
+            }
+        });
 
         const FB = {
             apiKey: "AIzaSyAQmiWD9fP0nFpl7ShPjE51udtyFWo6jpA",
@@ -16616,7 +16651,6 @@ async function executeServerQuestUnlock() {
                     } catch (e) { }
 
                     await window.FB.setDoc(window.FB.doc(window.FB.db, 'users', uid), {
-                        loyaltyStars: nextStars,
                         monthlyPoints: userPts,
                         monthlyPointsMonth: curMonthKey
                     }, { merge: true }).catch(() => { });
@@ -16832,8 +16866,8 @@ async function executeServerQuestUnlock() {
                 console.warn('Firebase read quota protected, switching to Cloudflare D1:', err);
             }
 
-            // ফায়ারবেসের ব্যালেন্স ও প্রোফাইল সরাসরি Cloudflare D1-এ অটো-মাইগ্রেট ও সিঙ্ক (Master Truth)
-            const d1Wallet = await syncD1Wallet(u, fbUserData);
+            // Cloudflare D1 একমাত্র মাস্টার ব্যালেন্স সোর্স (Firestore ব্যালেন্স আর কখনো ওভাররাইট করবে না)
+            const d1Wallet = await syncD1Wallet(u, null);
             window._d1MasterUpdatedAt = d1Wallet ? Number(d1Wallet.updatedAt || Date.now()) : 0;
 
             const isBanned = (fbUserData && (fbUserData.banned === true || fbUserData.banned === 1 || fbUserData.banned === "1")) ||
@@ -16850,47 +16884,31 @@ async function executeServerQuestUnlock() {
             window.ppfb.banned = false;
             setBannedUI(false);
             if (unsubBalance) unsubBalance();
+            // Firestore লিসেনার শুধু ব্যান ও প্রোফাইল মেটাডাটার জন্য — ব্যালেন্স বা loyaltyStars কখনোই Firestore থেকে নেবে না!
             unsubBalance = _snap(ref, s => {
                 if (s.exists()) {
-                    if (s.data().banned === true || s.data().banned === 1 || s.data().banned === "1") {
+                    const d = s.data();
+                    if (d.banned === true || d.banned === 1 || d.banned === "1") {
                         window.ppfb.banned = true;
-                        setBannedUI(true, s.data().banReason || 'নিয়ম ভঙ্গের কারণে আপনার অ্যাকাউন্টটি সাময়িকভাবে স্থগিত করা হয়েছে।');
+                        setBannedUI(true, d.banReason || 'নিয়ম ভঙ্গের কারণে আপনার অ্যাকাউন্টটি সাময়িকভাবে স্থগিত করা হয়েছে।');
                         return;
                     }
                     window.ppfb.banned = false;
                     setBannedUI(false);
-                    const d = s.data();
-                    const bonusC = Number(d.bonusBalance || 0);
-                    const totalBal = Number(d.balance !== undefined ? d.balance : 0);
-                    const realC = Number(d.realBalance !== undefined ? d.realBalance : totalBal);
-                    const unifiedTotal = (realC + bonusC > totalBal) ? (realC + bonusC) : Math.max(totalBal, realC + bonusC);
-                    // Always display unified single Coin balance
-                    setBalanceUI(unifiedTotal, 0, 0, unifiedTotal, 0);
-
-                    // D1-এ যদি ব্যালেন্স অ্যাডমিনের মাধ্যমে আপডেট হয়ে থাকে
-                    fetch(`${CF_API}/api/wallet?uid=${encodeURIComponent(u.uid)}`).then(r => r.json()).then(res => {
-                        if (res && res.ok && res.wallet) {
-                            const w = res.wallet;
-                            const wTotal = (Number(w.balance || 0)) + (Number(w.bonusBalance || 0));
-                            if (wTotal > 0 || unifiedTotal === 0) {
-                                setBalanceUI(wTotal, 0, 0, wTotal, 0);
-                            }
-                        }
-                    }).catch(() => { });
-                    window.ppfb.loyaltyStars = Number(s.data().loyaltyStars || 0);
-                    if (window.renderLoyaltyStars) window.renderLoyaltyStars();
-                    window.ppfb.appDownloadRewarded = !!(s.data().appDownloadRewarded);
+                    window.ppfb.appDownloadRewarded = !!(d.appDownloadRewarded);
                     if (typeof updateAppDownloadUI === 'function') updateAppDownloadUI(window.ppfb.appDownloadRewarded);
-                    window.ppfb.tgChatId = (s.data().tgChatId || '').toString().trim();
-                    if (window.ppfb.tgChatId) {
+                    if (d.tgChatId) {
+                        window.ppfb.tgChatId = (d.tgChatId || '').toString().trim();
                         try { localStorage.setItem('pp_cached_tg_' + u.uid, window.ppfb.tgChatId); } catch (e) { }
                     }
-                    window.ppfb.avatar = (s.data().avatar || '').toString().trim();
+                    if (d.avatar) {
+                        window.ppfb.avatar = (d.avatar || '').toString().trim();
+                    }
                     if (window.paintAvatar) paintAvatar();
                     if (window.refreshTgConn) refreshTgConn();
-                    setProfileUI(u); // ফায়ারস্টোরে আইডি পাওয়া মাত্র সাথে সাথে প্রোফাইল রিফ্রেশ ও বাটন হাইড
+                    setProfileUI(u);
                 }
-            }, e => console.warn('balance listener:', e));
+            }, e => console.warn('profile listener:', e));
             setProfileUI(u);
         }
 
@@ -17268,22 +17286,17 @@ async function executeServerQuestUnlock() {
                 newBalData = payData;
 
                 window.ppfb.loyaltyStars = Number(newBalData.loyaltyStars || 0);
-                const afterBal = Number(newBalData.balance !== undefined ? newBalData.balance : newBalData.coins) || 0;
+                const afterBal = Math.round(((Number(newBalData.balance !== undefined ? newBalData.balance : newBalData.coins) || 0) + Number.EPSILON) * 100) / 100;
+                const exactBeforeBal = (newBalData.previousBalance !== undefined && newBalData.previousBalance !== null)
+                    ? Math.round((Number(newBalData.previousBalance) + Number.EPSILON) * 100) / 100
+                    : Math.round((afterBal + (isFree ? 0 : feeCoins) + Number.EPSILON) * 100) / 100;
                 setBalanceUI(afterBal, 0, 0, afterBal, 0);
                 if (window.renderLoyaltyStars) window.renderLoyaltyStars();
 
-                // ব্যাকগ্রাউন্ডে ফায়ারবেসে ব্যাকআপ রাইট
-                _doc && db && _setDoc(_doc(db, 'users', u.uid), {
-                    balance: afterBal,
-                    realBalance: afterBal,
-                    bonusBalance: 0,
-                    loyaltyStars: newBalData.loyaltyStars
-                }, { merge: true }).catch(() => { });
-
-                // Step B: Create pending order in Cloudflare D1 (Zero Firebase write/read cost with Previous Balance)
+                // Step B: Create pending order in Cloudflare D1 (100% D1 Balance Source — Zero Firestore Balance Write)
                 let ordId = 'ORD-' + Date.now();
                 const payMethodLabel = isFree ? 'Free 10th Task' : 'PP Coins';
-                const beforeOrderBalance = curBalNow;
+                const beforeOrderBalance = exactBeforeBal;
                 try {
                     const cfRes = await fetch(`${CF_API}/api/orders/create`, {
                         method: 'POST',
@@ -18363,27 +18376,33 @@ async function executeServerQuestUnlock() {
                 }
                 const curStreak = (ud.lastBonusDay === yesterday) ? (Number(ud.lastBonusStreak) || 0) + 1 : 1;
 
-                const curBal = Number(ud.balance !== undefined ? ud.balance : (ud.realBalance || 0)) + Number(ud.bonusBalance || 0);
-                const newTotal = Math.round((curBal + awardedAmt + Number.EPSILON) * 100) / 100;
-
                 // Leaderboard points: +0.5 point for daily ad
                 const curMonthKey = (new Date()).toISOString().slice(0, 7);
                 const mKey = ud.monthlyPointsMonth || ud.monthlyTasksMonth;
                 const curPts = (mKey === curMonthKey) ? (Number(ud.monthlyPoints) || 0) : 0;
                 const newPts = Math.round((curPts + 0.5 + Number.EPSILON) * 10) / 10;
 
-                // ১. Cloudflare D1 ওয়ালেটেও সাথে সাথে কয়েন সিঙ্ক
-                await fetch(`${CF_API}/api/wallet/credit`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ uid: u.uid, coins: awardedAmt, type: 'daily' })
-                }).catch(() => { });
+                // ১. Cloudflare D1 ওয়ালেটে কয়েন ক্রেডিট (একমাত্র মাস্টার ব্যালেন্স সোর্স)
+                let curBal = Math.round(((Number(window.ppfb && window.ppfb.balance) || 0) + Number.EPSILON) * 100) / 100;
+                let newTotal = Math.round((curBal + awardedAmt + Number.EPSILON) * 100) / 100;
+                try {
+                    const crRes = await fetch(`${CF_API}/api/wallet/credit`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ uid: u.uid, coins: awardedAmt, type: 'daily', title: `Daily Bonus Day ${curStreak}` })
+                    });
+                    const crData = await crRes.json().catch(() => null);
+                    if (crData && crData.ok && crData.balance !== undefined) {
+                        newTotal = Math.round((Number(crData.balance) + Number.EPSILON) * 100) / 100;
+                        curBal = (crData.previousBalance !== undefined)
+                            ? Math.round((Number(crData.previousBalance) + Number.EPSILON) * 100) / 100
+                            : Math.round((Math.max(0, newTotal - awardedAmt) + Number.EPSILON) * 100) / 100;
+                    }
+                } catch (e) { }
+                if (typeof setBalanceUI === 'function') setBalanceUI(newTotal, 0, 0, newTotal, 0);
 
-                // ২. ফায়ারবেসে ব্যবহারকারীর ব্যালেন্স ও পয়েন্ট আপডেট
+                // ২. ফায়ারবেসে শুধু ডেইলি স্ট্রিক ও লিডারবোর্ড পয়েন্ট আপডেট (ব্যালেন্স নয়)
                 await _setDoc(uref, {
-                    bonusBalance: 0,
-                    realBalance: newTotal,
-                    balance: newTotal,
                     lastBonusDay: today,
                     lastBonusStreak: curStreak,
                     monthlyPoints: newPts,
@@ -19961,19 +19980,11 @@ async function executeServerQuestUnlock() {
                 });
 
                 if (topWinner && topWinner.uid) {
-                    // Award 10 Coins to Top 1 Winner
+                    // Award 10 Coins to Top 1 Winner strictly in Cloudflare D1 Master Wallet
                     await fetch(`${CF_API}/api/wallet/credit`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ uid: topWinner.uid, coins: 10, type: 'real' })
-                    }).catch(() => {});
-
-                    const curTot = Number(topWinner.balance || 0) + Number(topWinner.bonusBalance || 0);
-                    const newTotal = Math.round((curTot + 10 + Number.EPSILON) * 100) / 100;
-                    await window.FB.updateDoc(window.FB.doc(window.FB.db, 'users', topWinner.uid), {
-                        bonusBalance: 0,
-                        realBalance: newTotal,
-                        balance: newTotal
+                        body: JSON.stringify({ uid: topWinner.uid, coins: 10, type: 'real', title: 'Leaderboard #1 Prize (10 Coins)' })
                     }).catch(() => {});
 
                     await window.FB.addDoc(window.FB.collection(window.FB.db, 'transactions'), {
@@ -20429,12 +20440,25 @@ async function executeServerQuestUnlock() {
             }
 
             const reward = Math.max(0.01, parseFloat(rewardCoins) || 0.10);
-            const curBal = Number(window.ppfb?.balance || 0);
-            const newTotal = Number((curBal + reward).toFixed(2));
+            let curBal = Math.round((Number(window.ppfb?.balance || 0) + Number.EPSILON) * 100) / 100;
+            let newTotal = Number((curBal + reward).toFixed(2));
 
-            window.ppfb.bonusBalance = 0;
-            window.ppfb.realBalance = newTotal;
-            window.ppfb.balance = newTotal;
+            // Credit Cloudflare D1 Master Wallet FIRST
+            try {
+                const crRes = await fetch(`${CF_API}/api/wallet/credit`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ uid: u.uid, coins: reward, type: 'earn', title: `Earn Task: ${taskTitle}` })
+                });
+                const crData = await crRes.json().catch(() => null);
+                if (crData && crData.ok && crData.balance !== undefined) {
+                    newTotal = Math.round((Number(crData.balance) + Number.EPSILON) * 100) / 100;
+                    curBal = (crData.previousBalance !== undefined)
+                        ? Math.round((Number(crData.previousBalance) + Number.EPSILON) * 100) / 100
+                        : Math.round((Math.max(0, newTotal - reward) + Number.EPSILON) * 100) / 100;
+                }
+            } catch (e) { }
+
             setBalanceUI(newTotal, 0, 0, newTotal, 0);
 
             // Update user completed store locally immediately (0ms sync to memory & localStorage)
@@ -20449,7 +20473,7 @@ async function executeServerQuestUnlock() {
             // Open 3D Celebration Modal & chime
             window.openClaim3DModal(reward, taskTitle);
 
-            // Persist to Cloudflare D1 & Firestore (with monthly points & task tracker)
+            // Persist task completion & leaderboard points to Firestore (NO balance fields)
             try {
                 const curMonthKey = getCurrentMonthKey();
                 const uDocRef = _doc(db, 'users', u.uid);
@@ -20476,11 +20500,8 @@ async function executeServerQuestUnlock() {
                 const uBadge = document.getElementById('earnUserMonthTasksBadge');
                 if (uBadge) uBadge.textContent = `${newTotalPoints} Pts`;
 
-                // Background update in Firestore with BOTH nested map and dotted key for 100% compatibility
+                // Background update in Firestore (NO balance fields — D1 is master)
                 _setDoc(uDocRef, {
-                    bonusBalance: 0,
-                    realBalance: newTotal,
-                    balance: newTotal,
                     monthlyTasksCount: newMonthCount,
                     monthlyPoints: newTotalPoints,
                     monthlyPointsMonth: curMonthKey,

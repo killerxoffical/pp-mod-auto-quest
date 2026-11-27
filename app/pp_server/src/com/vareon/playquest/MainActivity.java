@@ -2709,13 +2709,16 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                     || low.contains("firebase") || low.contains("api.telegram.org")) {
                 return false;
             }
-            // Permanently cache game icons, user avatars, banners, splash animation & UI static libs
+            // Permanently cache game icons, user avatars, banners, splash animation & UI static libs (zero FOUC/flicker)
             if (low.contains("play-lh.googleusercontent.com")
                     || low.contains("lh3.googleusercontent.com")
                     || low.contains(".r2.dev/")
                     || low.contains("ui-avatars.com")
                     || low.contains("lottie.host")
                     || low.contains("unpkg.com/@lottiefiles")
+                    || low.contains("unpkg.com/lucide")
+                    || low.contains("cdn.tailwindcss.com")
+                    || low.contains("fonts.googleapis.com")
                     || low.contains("fonts.gstatic.com")) {
                 return true;
             }
