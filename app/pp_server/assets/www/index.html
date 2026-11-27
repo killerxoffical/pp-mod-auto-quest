@@ -4575,7 +4575,7 @@
                 }
             } catch(e) {}
 
-            // 2. Clear any accidental failed state & keep Permanent G-Token Active
+            // 2. Clear any accidental failed state & keep Account Active
             if (acc) {
                 delete acc.status;
                 delete acc.failedTime;
@@ -4584,7 +4584,7 @@
             if (pill) {
                 pill.className = 'acc-stat-pill';
                 pill.style.cssText = 'background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.25); color:#10b981; font-weight:800; font-size:11.5px; display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:20px;';
-                pill.innerHTML = '<span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#10b981; box-shadow:0 0 6px #10b981;"></span><span>Permanent G-Token Active</span>';
+                pill.innerHTML = '<span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#10b981; box-shadow:0 0 6px #10b981;"></span><span>Account Active</span>';
             }
             var reloginBtn = document.getElementById('btn_relogin_' + code);
             if (reloginBtn) {
@@ -4605,7 +4605,7 @@
                 }, 2000);
             }
 
-            showToast("QID " + clean + " copied! (Permanent G-Token Active ✅)");
+            showToast("QID " + clean + " copied! (Account Active ✅)");
         }
 
         window.onTokenVerifyResult = function(code, isValid, errorMsg, failedTime) {
@@ -4632,7 +4632,7 @@
                     }
                 }, 2000);
             }
-            showToast("QID " + clean + " copied! (Permanent G-Token Active ✅)");
+            showToast("QID " + clean + " copied! (Account Active ✅)");
         };
 
         function reloginAccount(code, email, country) {
@@ -4853,17 +4853,17 @@
                         (() => {
                     var isFailed = (a.status === 'failed' || a.is_revoked === true || Boolean(a.failedTime));
                     var statBadge = isFailed
-                        ? ('<div class="acc-stat-pill acc-stat-pill-failed" id="stat_pill_' + a.code + '">' +
+                        ? ('<div class="acc-stat-pill acc-stat-pill-failed" id="stat_pill_' + a.code + '" title="Account expired! অনুগ্রহ করে ডিলিট করে আবার লগইন করুন">' +
                              '<span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#ef4444; box-shadow:0 0 6px #ef4444;"></span>' +
-                             '<span>⚠️ Session Expired (' + (a.failedTime || 'Signed out') + ')</span>' +
+                             '<span>⚠️ Account Expired</span>' +
                            '</div>')
                         : ('<div class="acc-stat-pill" id="stat_pill_' + a.code + '" style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.25); color:#10b981; font-weight:800; font-size:11.5px; display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:20px;">' +
                              '<span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#10b981; box-shadow:0 0 6px #10b981;"></span>' +
-                             '<span>Permanent G-Token Active</span>' +
+                             '<span>Account Active</span>' +
                            '</div>');
 
                     var reloginBtn = isFailed
-                        ? ('<button class="btn-relogin" id="btn_relogin_' + a.code + '" title="Re-authenticate Google Account" onclick="reloginAccount(\'' + a.code + '\', \'' + escapeHtml(rawEmail) + '\', \'' + (a.country || 'AUTO') + '\')">' +
+                        ? ('<button class="btn-relogin" id="btn_relogin_' + a.code + '" title="Account expired! Re-login or Delete" onclick="reloginAccount(\'' + a.code + '\', \'' + escapeHtml(rawEmail) + '\', \'' + (a.country || 'AUTO') + '\')">' +
                              '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>' +
                              '<span>Re-login</span>' +
                            '</button>')
