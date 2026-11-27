@@ -1560,115 +1560,118 @@ public class CloudSyncClient {
         }
     }
 
-    public static void updateAccountCountryOnCloud(final String code, final String country) {
-        if (code == null || country == null)
-            return;
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
+    public static class UpdateCountryCloudRunnable implements Runnable {
+        private final String code;
+        private final String country;
+        public UpdateCountryCloudRunnable(String code, String country) {
+            this.code = code;
+            this.country = country;
+        }
+        @Override
+        public void run() {
+            try {
+                JSONObject body = new JSONObject();
+                body.put("code", code);
+                body.put("country", country);
+                byte[] data = body.toString().getBytes("UTF-8");
                 try {
-                    JSONObject body = new JSONObject();
-                    body.put("code", code);
-                    body.put("country", country);
-                    byte[] data = body.toString().getBytes("UTF-8");
-
-                    // 1. Post to Cloudflare D1 Worker
-                    try {
-                        URL cfUrl = new URL(SecurityGuard.getCloudWorkerApi() + "/api/sync/update_country");
-                        HttpURLConnection cfConn = (HttpURLConnection) cfUrl.openConnection();
-                        cfConn.setRequestMethod("POST");
-                        cfConn.setConnectTimeout(8000);
-                        cfConn.setReadTimeout(8000);
-                        cfConn.setDoOutput(true);
-                        cfConn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-                        OutputStream os = cfConn.getOutputStream();
-                        os.write(data);
-                        os.flush();
-                        os.close();
-                        cfConn.getResponseCode();
-                        cfConn.disconnect();
-                    } catch (Throwable ignored) {
-                    }
-
-                    // 2. Post to Render
-                    try {
-                        URL url = new URL(SecurityGuard.getRenderApi() + "/api/sync/update_country");
-                        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                        conn.setRequestMethod("POST");
-                        conn.setConnectTimeout(8000);
-                        conn.setReadTimeout(8000);
-                        conn.setDoOutput(true);
-                        conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-                        OutputStream os = conn.getOutputStream();
-                        os.write(data);
-                        os.flush();
-                        os.close();
-                        conn.getResponseCode();
-                        conn.disconnect();
-                    } catch (Throwable ignored) {
-                    }
-                } catch (Throwable ignored) {
-                }
-            }
-        }).start();
+                    URL cfUrl = new URL(SecurityGuard.getCloudWorkerApi() + "/api/sync/update_country");
+                    HttpURLConnection cfConn = (HttpURLConnection) cfUrl.openConnection();
+                    cfConn.setRequestMethod("POST");
+                    cfConn.setConnectTimeout(8000);
+                    cfConn.setReadTimeout(8000);
+                    cfConn.setDoOutput(true);
+                    cfConn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                    OutputStream os = cfConn.getOutputStream();
+                    os.write(data);
+                    os.flush();
+                    os.close();
+                    cfConn.getResponseCode();
+                    cfConn.disconnect();
+                } catch (Throwable ignored) {}
+                try {
+                    URL url = new URL(SecurityGuard.getRenderApi() + "/api/sync/update_country");
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("POST");
+                    conn.setConnectTimeout(8000);
+                    conn.setReadTimeout(8000);
+                    conn.setDoOutput(true);
+                    conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                    OutputStream os = conn.getOutputStream();
+                    os.write(data);
+                    os.flush();
+                    os.close();
+                    conn.getResponseCode();
+                    conn.disconnect();
+                } catch (Throwable ignored) {}
+            } catch (Throwable ignored) {}
+        }
     }
 
-    public static void updateAccountPerkClaimOnCloud(final String code, final int points, final String tier,
-            final int bonus) {
-        if (code == null)
-            return;
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
+    public static void updateAccountCountryOnCloud(final String code, final String country) {
+        if (code == null || country == null) return;
+        new Thread(new UpdateCountryCloudRunnable(code, country)).start();
+    }
+
+    public static class UpdatePerkClaimCloudRunnable implements Runnable {
+        private final String code;
+        private final int points;
+        private final String tier;
+        private final int bonus;
+        public UpdatePerkClaimCloudRunnable(String code, int points, String tier, int bonus) {
+            this.code = code;
+            this.points = points;
+            this.tier = tier;
+            this.bonus = bonus;
+        }
+        @Override
+        public void run() {
+            try {
+                JSONObject body = new JSONObject();
+                body.put("code", code);
+                body.put("points", points);
+                body.put("tier", tier);
+                body.put("claimed", true);
+                body.put("has_perk", false);
+                body.put("bonus", bonus);
+                byte[] data = body.toString().getBytes("UTF-8");
                 try {
-                    JSONObject body = new JSONObject();
-                    body.put("code", code);
-                    body.put("points", points);
-                    body.put("tier", tier);
-                    body.put("claimed", true);
-                    body.put("has_perk", false);
-                    body.put("bonus", bonus);
-                    byte[] data = body.toString().getBytes("UTF-8");
+                    URL cfUrl = new URL(SecurityGuard.getCloudWorkerApi() + "/api/perk/claim");
+                    HttpURLConnection cfConn = (HttpURLConnection) cfUrl.openConnection();
+                    cfConn.setRequestMethod("POST");
+                    cfConn.setConnectTimeout(8000);
+                    cfConn.setReadTimeout(8000);
+                    cfConn.setDoOutput(true);
+                    cfConn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                    OutputStream os = cfConn.getOutputStream();
+                    os.write(data);
+                    os.flush();
+                    os.close();
+                    cfConn.getResponseCode();
+                    cfConn.disconnect();
+                } catch (Throwable ignored) {}
+                try {
+                    URL url = new URL(SecurityGuard.getRenderApi() + "/api/perk/claim");
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("POST");
+                    conn.setConnectTimeout(8000);
+                    conn.setReadTimeout(8000);
+                    conn.setDoOutput(true);
+                    conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                    OutputStream os = conn.getOutputStream();
+                    os.write(data);
+                    os.flush();
+                    os.close();
+                    conn.getResponseCode();
+                    conn.disconnect();
+                } catch (Throwable ignored) {}
+            } catch (Throwable ignored) {}
+        }
+    }
 
-                    // 1. Post to Cloudflare D1 Worker
-                    try {
-                        URL cfUrl = new URL(SecurityGuard.getCloudWorkerApi() + "/api/perk/claim");
-                        HttpURLConnection cfConn = (HttpURLConnection) cfUrl.openConnection();
-                        cfConn.setRequestMethod("POST");
-                        cfConn.setConnectTimeout(8000);
-                        cfConn.setReadTimeout(8000);
-                        cfConn.setDoOutput(true);
-                        cfConn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-                        OutputStream os = cfConn.getOutputStream();
-                        os.write(data);
-                        os.flush();
-                        os.close();
-                        cfConn.getResponseCode();
-                        cfConn.disconnect();
-                    } catch (Throwable ignored) {
-                    }
-
-                    // 2. Post to Render
-                    try {
-                        URL url = new URL(SecurityGuard.getRenderApi() + "/api/perk/claim");
-                        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                        conn.setRequestMethod("POST");
-                        conn.setConnectTimeout(8000);
-                        conn.setReadTimeout(8000);
-                        conn.setDoOutput(true);
-                        conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-                        OutputStream os = conn.getOutputStream();
-                        os.write(data);
-                        os.flush();
-                        os.close();
-                        conn.getResponseCode();
-                        conn.disconnect();
-                    } catch (Throwable ignored) {
-                    }
-                } catch (Throwable ignored) {
-                }
-            }
-        }).start();
+    public static void updateAccountPerkClaimOnCloud(final String code, final int points, final String tier, final int bonus) {
+        if (code == null) return;
+        new Thread(new UpdatePerkClaimCloudRunnable(code, points, tier, bonus)).start();
     }
 
     public static void updateAccountDataOnCloud(final String code, final int points, final String tier, final boolean hasPlayPoints, final String status) {

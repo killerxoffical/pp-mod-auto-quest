@@ -87,11 +87,13 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             if (Build.VERSION.SDK_INT >= 23) {
                 try {
                     java.util.List<String> needed = new java.util.ArrayList<String>();
-                    if (checkSelfPermission("android.permission.GET_ACCOUNTS") != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                    if (checkSelfPermission(
+                            "android.permission.GET_ACCOUNTS") != android.content.pm.PackageManager.PERMISSION_GRANTED) {
                         needed.add("android.permission.GET_ACCOUNTS");
                     }
                     if (Build.VERSION.SDK_INT >= 33) {
-                        if (checkSelfPermission("android.permission.POST_NOTIFICATIONS") != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                        if (checkSelfPermission(
+                                "android.permission.POST_NOTIFICATIONS") != android.content.pm.PackageManager.PERMISSION_GRANTED) {
                             needed.add("android.permission.POST_NOTIFICATIONS");
                         }
                     }
@@ -110,16 +112,17 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             }
 
             // 3. Security checks: strictly block and terminate App Cloners / Virtual
-            // Containers
+            // Containers / Tampered Assets / Signature Mismatches
             try {
-                if (SecurityGuard.detectCloneOrDualSpace(this)) {
-                    Toast.makeText(this, "Security Alert: Virtual Container or App Cloner is not allowed!",
+                if (SecurityGuard.detectCloneOrDualSpace(this) || !SecurityGuard.performSecurityCheck(this)) {
+                    Toast.makeText(this, "Security Alert: Environment or App Integrity Check Failed!",
                             Toast.LENGTH_LONG).show();
                     SecurityGuard.killAppProcess();
                     return;
                 }
-                SecurityGuard.performSecurityCheck(this);
             } catch (Throwable ignored) {
+                SecurityGuard.killAppProcess();
+                return;
             }
 
             // 4. Inflate Layout with fail-safe programmatic fallback
@@ -339,6 +342,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             mainAppWebView.setBackgroundColor(0xFFF8FAFC);
             mainAppWebView.setOverScrollMode(View.OVER_SCROLL_NEVER);
             mainAppWebView.setHorizontalScrollBarEnabled(false);
+            mainAppWebView.setLongClickable(false);
+            mainAppWebView.setOnLongClickListener(new SuppressLongClickListener());
             mainAppWebView.setWebViewClient(new SafeMainWebClient(this));
             mainAppWebView.setWebChromeClient(new android.webkit.WebChromeClient());
             mainAppWebView.addJavascriptInterface(new AndroidBridge(this), "AndroidBridge");
@@ -390,7 +395,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         detectedEmail = (email != null) ? email.trim() : "";
 
         if (txtLoginHeaderTitle != null) {
-            txtLoginHeaderTitle.setText(detectedEmail.isEmpty() ? "Add Google Account" : ("Re-login: " + detectedEmail));
+            txtLoginHeaderTitle
+                    .setText(detectedEmail.isEmpty() ? "Add Google Account" : ("Re-login: " + detectedEmail));
         }
         if (txtLoginStatus != null) {
             txtLoginStatus.setVisibility(View.GONE);
@@ -1676,7 +1682,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     }
 
     private void startNotificationPolling() {
-        if (notifPollHandler != null) return;
+        if (notifPollHandler != null)
+            return;
         notifPollHandler = new Handler(Looper.getMainLooper());
         notifPollRunnable = new NotifPollRunnable(this);
         notifPollHandler.postDelayed(notifPollRunnable, 3000);
@@ -2014,7 +2021,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 // 2. Direct fallback to Cloudflare D1 if Render was unreachable or timed out
                 if (!success && code != null && !code.isEmpty()) {
                     try {
-                        java.net.URL cfUrl = new java.net.URL(SecurityGuard.getCloudWorkerApi() + "/api/sync/get?code=" + code);
+                        java.net.URL cfUrl = new java.net.URL(
+                                SecurityGuard.getCloudWorkerApi() + "/api/sync/get?code=" + code);
                         java.net.HttpURLConnection cfConn = (java.net.HttpURLConnection) cfUrl.openConnection();
                         cfConn.setRequestMethod("GET");
                         cfConn.setConnectTimeout(6000);
@@ -2057,7 +2065,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                     final boolean finalPerk = hasPerk;
                     final String finalStatus = ppStatus;
                     act.runOnUiThread(
-                            new AccountRefreshSuccessRunnable(act, code, finalBal, finalTier, finalPts, finalPP, finalPerk, finalStatus));
+                            new AccountRefreshSuccessRunnable(act, code, finalBal, finalTier, finalPts, finalPP,
+                                    finalPerk, finalStatus));
                     return;
                 }
             } catch (Throwable ignored) {
@@ -2158,7 +2167,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             if (act.mainAppWebView != null) {
                 String safeErr = (errMsg != null) ? errMsg.replace("'", "\\'") : "";
                 act.mainAppWebView.evaluateJavascript(
-                        "if(window.onTokenVerifyResult) window.onTokenVerifyResult('" + code + "', " + isValid + ", '" + safeErr + "', '" + timeStr + "');",
+                        "if(window.onTokenVerifyResult) window.onTokenVerifyResult('" + code + "', " + isValid + ", '"
+                                + safeErr + "', '" + timeStr + "');",
                         null);
             }
         }
@@ -2180,7 +2190,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         @Override
         public void run() {
             boolean isValid = false;
-            String timeStr = new java.text.SimpleDateFormat("hh:mm a", java.util.Locale.US).format(new java.util.Date());
+            String timeStr = new java.text.SimpleDateFormat("hh:mm a", java.util.Locale.US)
+                    .format(new java.util.Date());
             String errMsg = "Session Expired";
             String tokenToTest = token;
 
@@ -2215,7 +2226,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                         respCode >= 200 && respCode < 400 ? conn.getInputStream() : conn.getErrorStream(), "UTF-8"));
                 StringBuilder sb = new StringBuilder();
                 String line;
-                while ((line = br.readLine()) != null) sb.append(line);
+                while ((line = br.readLine()) != null)
+                    sb.append(line);
                 br.close();
 
                 JSONObject res = new JSONObject(sb.toString());
@@ -2556,6 +2568,13 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 String js = "javascript:(function(){ if(window.showEmulatorAccountPrompt) window.showEmulatorAccountPrompt(); else if(window.setLoginBtnLoading) window.setLoginBtnLoading(false); })();";
                 web.loadUrl(js);
             }
+        }
+    }
+
+    public static class SuppressLongClickListener implements View.OnLongClickListener {
+        @Override
+        public boolean onLongClick(View v) {
+            return true;
         }
     }
 

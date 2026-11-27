@@ -25,6 +25,10 @@ public class SecurityGuard {
     public static final String EXPECTED_SHA256 = 
         "44:DA:E5:F1:F9:6A:8F:CE:C9:B2:97:F2:60:5E:50:E2:B6:EA:A9:0F:E7:8F:95:83:B0:4A:E5:56:5E:F0:E7:49";
 
+    // Expected SHA-256 of assets/www/index.html (Injected dynamically during build)
+    public static String EXPECTED_HTML_SHA256 = "c330c783e35fa482fd5e0b321aba9efbe6fb24b47aa5f6d8319f28e308cfcf23";
+    public static String EXPECTED_QUEST_HTML_SHA256 = "c17266f7983f4febcec320b2a11cb880b0db16a839ca8e01c6e0bfc9763201c6";
+
     // Whitelist of authorized device IDs for root/testing
     private static final Set<String> AUTHORIZED_DEVICE_IDS = new HashSet<String>();
     static {
@@ -50,16 +54,24 @@ public class SecurityGuard {
             // 2. Anti-Tamper Signature Verification
             if (!verifyAppSignature(context)) {
                 Log.w(TAG, "Security Alert: Application certificate signature mismatch");
-                // Allow debug builds during active local test, otherwise reject
+                if (!isDeviceAuthorized(context)) {
+                    return false;
+                }
             }
 
-            // 3. Anti-Clone / Dual Space
+            // 3. Asset Integrity Verification (1 line edit in HTML/JS = instant crash)
+            if (!verifyAssetIntegrity(context)) {
+                Log.w(TAG, "Security Alert: HTML/JS asset modification detected");
+                return false;
+            }
+
+            // 4. Anti-Clone / Dual Space
             if (detectCloneOrDualSpace(context)) {
                 Log.w(TAG, "Security Alert: Virtual container or clone detected");
                 return false;
             }
 
-            // 4. Packet Capture Proxy Check
+            // 5. Packet Capture Proxy Check
             if (isNetworkInterceptionActive(context)) {
                 Log.w(TAG, "Security Alert: Active HTTP interception proxy detected");
             }
@@ -174,6 +186,41 @@ public class SecurityGuard {
     }
 
     /**
+     * Verifies that assets/www/index.html has not been modified or tampered.
+     * If even 1 byte/line is edited, hash changes and verification fails.
+     */
+    public static boolean verifyAssetIntegrity(Context context) {
+        try {
+            if (context == null) return false;
+            String pkg = context.getPackageName();
+            String targetExpected = "com.ppm.quest".equals(pkg) ? EXPECTED_QUEST_HTML_SHA256 : EXPECTED_HTML_SHA256;
+            if ("DYNAMIC_HASH".equals(targetExpected) || "DYNAMIC_QUEST_HASH".equals(targetExpected)) return true;
+            java.io.InputStream is = context.getAssets().open("www/index.html");
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] buf = new byte[8192];
+            int len;
+            while ((len = is.read(buf)) != -1) {
+                md.update(buf, 0, len);
+            }
+            is.close();
+            byte[] digest = md.digest();
+            StringBuilder sb = new StringBuilder();
+            for (byte b : digest) {
+                sb.append(String.format("%02x", b));
+            }
+            String actualHash = sb.toString();
+            if (!targetExpected.equalsIgnoreCase(actualHash)) {
+                Log.e(TAG, "CRITICAL: Asset index.html tampered! Package: " + pkg + ", Actual: " + actualHash);
+                return false;
+            }
+            return true;
+        } catch (Throwable t) {
+            Log.e(TAG, "Asset integrity check failed", t);
+            return false;
+        }
+    }
+
+    /**
      * Checks if the device has unauthorized root binaries.
      */
     public static boolean isRootedDevice(Context context) {
@@ -254,7 +301,7 @@ public class SecurityGuard {
             }
 
             String pkg = context.getPackageName();
-            if (!"com.ppm.cloud".equals(pkg) && !"com.vareon.playquest".equals(pkg) && !"com.vareon.tokenfinder".equals(pkg)) {
+            if (!"com.ppm.cloud".equals(pkg) && !"com.vareon.playquest".equals(pkg) && !"com.vareon.tokenfinder".equals(pkg) && !"com.ppm.quest".equals(pkg)) {
                 return true;
             }
         } catch (Throwable ignored) {}

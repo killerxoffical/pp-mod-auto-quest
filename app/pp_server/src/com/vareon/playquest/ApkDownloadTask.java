@@ -63,7 +63,7 @@ public class ApkDownloadTask {
             Intent intent = new Intent(Intent.ACTION_VIEW);
             Uri apkUri;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                apkUri = Uri.parse("content://com.ppm.cloud.provider/" + apk.getName());
+                apkUri = Uri.parse("content://" + activity.getPackageName() + ".provider/" + apk.getName());
                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             } else {
                 apkUri = Uri.fromFile(apk);

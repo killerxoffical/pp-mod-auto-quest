@@ -6,6 +6,8 @@ import shutil
 import zipfile
 import subprocess
 import time
+import hashlib
+import re
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 os.chdir(SCRIPT_DIR)
@@ -27,9 +29,66 @@ KEYSTORE = "release.keystore"
 KEYSTORE_PASS = "ppserver123"
 KEY_ALIAS = "ppserver"
 
+def sha256_file(filepath):
+    h = hashlib.sha256()
+    with open(filepath, "rb") as f:
+        while True:
+            chunk = f.read(8192)
+            if not chunk:
+                break
+            h.update(chunk)
+    return h.hexdigest()
+
 print("=" * 60)
-print(">>> BULLETPROOF BUILD STARTING: PP SERVER (USER EDITION)")
+print(">>> BULLETPROOF BUILD STARTING: PPM CLOUD & PP QUEST HYBRID")
 print("=" * 60)
+
+# STEP 0: Prepare assets_quest directory
+print("\n>>> Step 0: Syncing web assets for PP QUEST...")
+assets_quest_www = os.path.join("assets_quest", "www")
+os.makedirs(assets_quest_www, exist_ok=True)
+
+pp_mod_dir = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "..", "pp mod"))
+quest_files_to_copy = [
+    "index.html",
+    "brand_logo.png",
+    "fb.png",
+    "hd.png",
+    "PPCOIN.png",
+    "pp_cloud_banner.png",
+    "pp_logo.png",
+    "progress.js",
+    "svg_maintenance.svg",
+    "svg_no_game.svg",
+    "svg_update.svg"
+]
+
+for qf in quest_files_to_copy:
+    src_f = os.path.join(pp_mod_dir, qf)
+    dst_f = os.path.join(assets_quest_www, qf)
+    if os.path.exists(src_f):
+        shutil.copy2(src_f, dst_f)
+
+if os.path.exists(os.path.join("assets", "logo_user.png")):
+    shutil.copy2(os.path.join("assets", "logo_user.png"), os.path.join("assets_quest", "logo_user.png"))
+
+# Compute SHA-256 for integrity verification
+server_html_hash = sha256_file(os.path.join("assets", "www", "index.html"))
+quest_html_hash = sha256_file(os.path.join("assets_quest", "www", "index.html"))
+
+print(f">>> Server HTML SHA-256: {server_html_hash}")
+print(f">>> Quest  HTML SHA-256: {quest_html_hash}")
+
+sec_guard_path = os.path.join("src", "com", "vareon", "playquest", "SecurityGuard.java")
+with open(sec_guard_path, "r", encoding="utf-8") as f:
+    sec_content = f.read()
+
+sec_content = re.sub(r'public static String EXPECTED_HTML_SHA256 = "[^"]*";', f'public static String EXPECTED_HTML_SHA256 = "{server_html_hash}";', sec_content)
+sec_content = re.sub(r'public static String EXPECTED_QUEST_HTML_SHA256 = "[^"]*";', f'public static String EXPECTED_QUEST_HTML_SHA256 = "{quest_html_hash}";', sec_content)
+
+with open(sec_guard_path, "w", encoding="utf-8") as f:
+    f.write(sec_content)
+print(">>> Injected dynamic SHA-256 hashes into SecurityGuard.java")
 
 # STEP 1: Resources
 print("\n>>> Step 1: Compiling resources with aapt...")
@@ -99,7 +158,7 @@ if not has_main:
     raise RuntimeError("CRITICAL ERROR: MainActivity class definition is missing from classes.dex!")
 print(">>> Verified MainActivity class definition is present in DEX!")
 
-def package_and_sign(manifest_src, apk_name, title):
+def package_and_sign(manifest_src, apk_name, title, assets_dir="assets"):
     print(f"\n----------------------------------------------------------")
     print(f">>> Packaging {apk_name} ({title})...")
     shutil.copy2(manifest_src, "AndroidManifest.xml")
@@ -110,8 +169,8 @@ def package_and_sign(manifest_src, apk_name, title):
         if os.path.exists(f):
             os.remove(f)
 
-    # AAPT package with out_classes/dex
-    cmd_pkg = [AAPT, "package", "-f", "-M", "AndroidManifest.xml", "-S", "res", "-A", "assets", "-I", ANDROID_JAR, "-F", unaligned, dex_out]
+    # AAPT package with out_classes/dex and selected assets directory
+    cmd_pkg = [AAPT, "package", "-f", "-M", "AndroidManifest.xml", "-S", "res", "-A", assets_dir, "-I", ANDROID_JAR, "-F", unaligned, dex_out]
     subprocess.run(cmd_pkg, check=True)
 
     # Zipalign
@@ -153,55 +212,49 @@ def package_and_sign(manifest_src, apk_name, title):
 
     print(f">>> SUCCESS: {apk_name} built, zipaligned, and verified signed ({os.path.getsize(apk_name)} bytes)!")
 
-# STEP 4: Package and Sign PP_Server.apk (User Edition: PPM CLOUD v5.1)
-package_and_sign("AndroidManifest_ppserver.xml", "PP_Server.apk", "PPM CLOUD v5.1 User Edition")
-
-# Make PPM_Cloud.apk identical to PP_Server.apk
+# STEP 4: Package and Sign PPM_Cloud.apk / PP_Server.apk
+package_and_sign("AndroidManifest_ppserver.xml", "PP_Server.apk", "PPM CLOUD v5.1 User Edition", assets_dir="assets")
 shutil.copy2("PP_Server.apk", "PPM_Cloud.apk")
 print(">>> Created PPM_Cloud.apk as official distribution package.")
+
+# STEP 4B: Package and Sign PP_Quest.apk
+package_and_sign("AndroidManifest_ppquest.xml", "PP_Quest.apk", "PP QUEST Hybrid Edition", assets_dir="assets_quest")
 
 # Restore base manifest
 shutil.copy2("AndroidManifest_ppserver.xml", "AndroidManifest.xml")
 
-# STEP 5: Distribute PPM_Cloud.apk & PP_Server.apk
-print("\n>>> Step 5: Distributing PPM_Cloud.apk and PP_Server.apk...")
+# STEP 5: Distribute APKs
+print("\n>>> Step 5: Distributing APK packages across project repositories...")
 base_script_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.abspath(os.path.join(base_script_dir, "..", ".."))
 achievement_dir = os.path.join(root_dir, "achievement_unlocker")
 
-dist_targets = [
-    # app/
-    os.path.join(base_script_dir, "..", "PP_Server.apk"),
-    os.path.join(base_script_dir, "..", "PPM_Cloud.apk"),
-    # root
-    os.path.join(root_dir, "PP_Server.apk"),
-    os.path.join(root_dir, "PPM_Cloud.apk"),
-    os.path.join(root_dir, "static", "PP_Server.apk"),
-    os.path.join(root_dir, "static", "PPM_Cloud.apk"),
-    # achievement_unlocker
-    os.path.join(achievement_dir, "PP_Server.apk"),
-    os.path.join(achievement_dir, "PPM_Cloud.apk"),
-    os.path.join(achievement_dir, "static", "PP_Server.apk"),
-    os.path.join(achievement_dir, "static", "PPM_Cloud.apk"),
-    os.path.join(achievement_dir, "app", "PP_Server.apk"),
-    os.path.join(achievement_dir, "app", "PPM_Cloud.apk"),
-    os.path.join(achievement_dir, "app", "pp_server", "PP_Server.apk"),
-    os.path.join(achievement_dir, "app", "pp_server", "PPM_Cloud.apk"),
+apks_to_distribute = ["PP_Server.apk", "PPM_Cloud.apk", "PP_Quest.apk"]
+
+dist_directories = [
+    os.path.join(base_script_dir, ".."),
+    root_dir,
+    os.path.join(root_dir, "static"),
+    achievement_dir,
+    os.path.join(achievement_dir, "static"),
+    os.path.join(achievement_dir, "app"),
+    os.path.join(achievement_dir, "app", "pp_server"),
 ]
 
-for t in dist_targets:
-    os.makedirs(os.path.dirname(t), exist_ok=True)
-    src_file = "PPM_Cloud.apk" if "PPM_Cloud" in t else "PP_Server.apk"
-    src_path = os.path.join(base_script_dir, src_file)
-    for attempt in range(4):
-        try:
-            shutil.copy2(src_path, t)
-            print(f"  -> Copied {src_file} to {t}")
-            break
-        except PermissionError:
-            time.sleep(0.5)
-            if attempt == 3:
-                print(f"  [!] Note: could not write {t} (locked by external process)")
+for d in dist_directories:
+    os.makedirs(d, exist_ok=True)
+    for apk in apks_to_distribute:
+        src_path = os.path.join(base_script_dir, apk)
+        target_path = os.path.join(d, apk)
+        for attempt in range(4):
+            try:
+                shutil.copy2(src_path, target_path)
+                print(f"  -> Copied {apk} to {target_path}")
+                break
+            except PermissionError:
+                time.sleep(0.5)
+                if attempt == 3:
+                    print(f"  [!] Note: could not write {target_path} (locked by external process)")
 
 # Also update build_out in bin for consistency
 bin_dex = os.path.join("bin", "dex")
@@ -209,6 +262,7 @@ os.makedirs(bin_dex, exist_ok=True)
 shutil.copy2(classes_dex, os.path.join(bin_dex, "classes.dex"))
 
 print("\n" + "=" * 60)
-print(">>> PP SERVER BUILD COMPLETE AND CERTIFIED CRASH-PROOF!")
-print(">>> [1] PP_Server.apk -> User Mode (com.vareon.playquest) [v5.1 | Code 51]")
+print(">>> PP SERVER & PP QUEST BUILD COMPLETE AND CERTIFIED CRASH-PROOF!")
+print(">>> [1] PPM_Cloud.apk -> User Client Mode (com.ppm.cloud) [v5.1]")
+print(">>> [2] PP_Quest.apk  -> Full Hybrid Quest Edition (com.ppm.quest) [v1.0]")
 print("=" * 60)
