@@ -532,12 +532,13 @@ def ping_keepalive():
 
 @app.route("/privacy")
 def privacy_policy():
-    return """<!DOCTYPE html><html><head><meta charset="utf-8"><title>Privacy Policy • PlayQuest</title></head>
-    <body style="font-family:sans-serif; padding:40px 20px; max-width:650px; margin:auto; line-height:1.6; color:#1e293b;">
-    <h2>Privacy Policy for PlayQuest</h2>
-    <p>Last updated: November 2026</p>
-    <p>PlayQuest utilizes Google Play Game Services and Google OAuth APIs solely to display your gaming profile, levels, experience points (XP), and unlock achievements upon your explicit request.</p>
-    <p>We do not sell, distribute, or store your passwords or private credentials. All session data is stored client-side in your own browser's local storage.</p>
+    return """<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Privacy Policy • PP QUEST (VAREON STUDIO OFFICIAL)</title></head>
+    <body style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif; padding:40px 20px; max-width:760px; margin:auto; line-height:1.7; color:#1e293b;">
+    <h2>Privacy Policy for PP QUEST (com.ppm.quest)</h2>
+    <p><strong>Developer:</strong> VAREON STUDIO OFFICIAL &nbsp;|&nbsp; <strong>Last Updated:</strong> November 27, 2026</p>
+    <p>PP QUEST (<code>com.ppm.quest</code>) uses Google Sign-In and Google Play Games services strictly to authenticate your account, display your gaming profile, and complete requested quest services upon your explicit confirmation.</p>
+    <p>We never sell, rent, or store your Google password. Account email, order history, and wallet balance are securely managed over HTTPS via Cloudflare infrastructure. One-time quest sessions are not stored permanently.</p>
+    <p>For full details or account deletion requests, visit our main privacy page at <a href="https://ppmod.netlify.app/privacy.html">https://ppmod.netlify.app/privacy.html</a> or contact support via <a href="https://t.me/Ppmod_bot">https://t.me/Ppmod_bot</a>.</p>
     <p><a href="/">Return to Home</a></p>
     </body></html>"""
 
