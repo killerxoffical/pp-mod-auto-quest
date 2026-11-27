@@ -2635,14 +2635,19 @@
                         </div>
                         <div>
                             <label
-                                style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:6px;">Direct
-                                APK Download URL *</label>
+                                style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:6px;">PPM Cloud APK Download URL (Direct/R2/Cloudflare) *</label>
                             <input id="updDownloadUrl" type="url" class="form-input-element"
                                 value="https://pp-mod-auto-quest.onrender.com/download/PPM_Cloud.apk"
                                 style="height:42px; font-family:'JetBrains Mono'; font-size:12.5px;">
-                            <span style="font-size:11px; color:var(--text-muted); display:block; margin-top:4px;">ইউজার
-                                আপডেট বাটনে ক্লিক করলে সরাসরি এই লিংক থেকে লেটেস্ট APK ডাউনলোড শুরু হবে (সেভ করলে লিংক
-                                আর কখনোই উধাও হবে না)।</span>
+                            <span style="font-size:11px; color:var(--text-muted); display:block; margin-top:4px;">PPM Cloud ইউজার আপডেট বাটনে ক্লিক করলে সরাসরি এই লিংক থেকে ডাউনলোড হবে।</span>
+                        </div>
+                        <div>
+                            <label
+                                style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:6px;">PP Quest APK Download URL (Direct/R2/Cloudflare) *</label>
+                            <input id="updQuestDownloadUrl" type="url" class="form-input-element"
+                                value="https://pp-mod-auto-quest.onrender.com/download/PP_Quest.apk"
+                                style="height:42px; font-family:'JetBrains Mono'; font-size:12.5px;">
+                            <span style="font-size:11px; color:var(--text-muted); display:block; margin-top:4px;">PP Quest ইউজার আপডেট বাটনে ক্লিক করলে সরাসরি এই লিংক থেকে ডাউনলোড হবে।</span>
                         </div>
                         <div>
                             <label
@@ -5107,8 +5112,10 @@
                 const data = await res.json();
                 if (data.ok) {
                     const dl = data.download_url || "https://pp-mod-auto-quest.onrender.com/download/PPM_Cloud.apk";
-                    if (document.getElementById("updVerName")) document.getElementById("updVerName").value = data.latest_version_name || "4.5";
+                    const qdl = data.quest_download_url || "https://pp-mod-auto-quest.onrender.com/download/PP_Quest.apk";
+                    if (document.getElementById("updVerName")) document.getElementById("updVerName").value = data.latest_version_name || "5.1";
                     if (document.getElementById("updDownloadUrl")) document.getElementById("updDownloadUrl").value = dl;
+                    if (document.getElementById("updQuestDownloadUrl")) document.getElementById("updQuestDownloadUrl").value = qdl;
                     if (document.getElementById("portalApkDownloadUrl")) document.getElementById("portalApkDownloadUrl").value = dl;
                     if (document.getElementById("updReleaseNotes")) document.getElementById("updReleaseNotes").value = data.release_notes || "";
                     if (document.getElementById("chkMaintenanceMode")) document.getElementById("chkMaintenanceMode").checked = !!data.maintenance_mode;
@@ -5125,11 +5132,12 @@
         async function pushAppForceUpdate() {
             const verName = (document.getElementById("updVerName")?.value || "").trim();
             const dlUrl = (document.getElementById("updDownloadUrl")?.value || "").trim() || "https://pp-mod-auto-quest.onrender.com/download/PPM_Cloud.apk";
+            const qdlUrl = (document.getElementById("updQuestDownloadUrl")?.value || "").trim() || "https://pp-mod-auto-quest.onrender.com/download/PP_Quest.apk";
             if (document.getElementById("portalApkDownloadUrl")) document.getElementById("portalApkDownloadUrl").value = dlUrl;
             const notes = (document.getElementById("updReleaseNotes")?.value || "").trim();
 
             if (!verName) {
-                showToast("দয়া করে Version Name লিখুন (যেমন: v4.5 Build 7)", "error");
+                showToast("দয়া করে Version Name লিখুন (যেমন: v5.1)", "error");
                 return;
             }
 
@@ -5140,6 +5148,7 @@
                     body: JSON.stringify({
                         latest_version_name: verName,
                         download_url: dlUrl,
+                        quest_download_url: qdlUrl,
                         release_notes: notes,
                         is_force_update: true
                     })

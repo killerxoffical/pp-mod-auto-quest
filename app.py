@@ -3187,14 +3187,24 @@ def save_version_config(cfg):
 def get_app_version():
     """Public endpoint for mobile app to check update and maintenance status on launch"""
     cfg = load_version_config()
-    dl_url = cfg.get("download_url") or "https://pp-mod-auto-quest.onrender.com/download/PPM_Cloud.apk"
+    pkg = request.args.get("pkg", "").strip().lower() or request.args.get("app", "").strip().lower()
+    is_quest = ("quest" in pkg)
+
+    if is_quest:
+        dl_url = cfg.get("quest_download_url") or cfg.get("download_url") or "https://pp-mod-auto-quest.onrender.com/download/PP_Quest.apk"
+        if "PPM_Cloud.apk" in dl_url and not cfg.get("quest_download_url"):
+            dl_url = dl_url.replace("PPM_Cloud.apk", "PP_Quest.apk")
+    else:
+        dl_url = cfg.get("download_url") or "https://pp-mod-auto-quest.onrender.com/download/PPM_Cloud.apk"
+
     return jsonify({
         "ok": True,
-        "latest_version_code": cfg.get("latest_version_code", 7),
-        "latest_version_name": cfg.get("latest_version_name", "5.0"),
-        "min_required_version_code": cfg.get("min_required_version_code", 7),
+        "latest_version_code": cfg.get("latest_version_code", 51),
+        "latest_version_name": cfg.get("latest_version_name", "5.1"),
+        "min_required_version_code": cfg.get("min_required_version_code", 51),
         "download_url": dl_url,
-        "release_notes": cfg.get("release_notes", "PPM CLOUD V5.0 (Build 7) - Major Engine Upgrade, Pure Cloud Sync, Enhanced UI & Performance."),
+        "quest_download_url": cfg.get("quest_download_url") or "https://pp-mod-auto-quest.onrender.com/download/PP_Quest.apk",
+        "release_notes": cfg.get("release_notes", "V5.1 Update: In-app direct downloader, performance and stability improvements."),
         "is_force_update": True,
         "maintenance_mode": bool(cfg.get("maintenance_mode", False)),
         "maintenance_title": cfg.get("maintenance_title", "Scheduled Server Maintenance"),
@@ -3229,6 +3239,11 @@ def update_app_version():
         cfg["download_url"] = str(data["download_url"]).strip()
     elif not cfg.get("download_url"):
         cfg["download_url"] = "https://pp-mod-auto-quest.onrender.com/download/PPM_Cloud.apk"
+
+    if "quest_download_url" in data and str(data["quest_download_url"]).strip():
+        cfg["quest_download_url"] = str(data["quest_download_url"]).strip()
+    elif not cfg.get("quest_download_url"):
+        cfg["quest_download_url"] = "https://pp-mod-auto-quest.onrender.com/download/PP_Quest.apk"
 
     if "release_notes" in data and str(data["release_notes"]).strip():
         cfg["release_notes"] = str(data["release_notes"]).strip()

@@ -143,7 +143,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 CloudSyncClient.checkDeviceLock(deviceId, new DeviceLockCallbackImpl(this));
 
                 // Auto-sync user accounts from cloud on app startup if logged in
-                if (accountStorage != null && accountStorage.isLoggedIn()) {
+                if (!"com.ppm.quest".equals(getPackageName()) && accountStorage != null && accountStorage.isLoggedIn()) {
                     restoreAccountsFromCloud();
                 }
 
@@ -711,11 +711,14 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         item.setHasPerk(CloudSyncClient.lastDetectedHasPerk);
         item.setPlayPointsStatus(hasPP ? "active" : "not_enrolled");
 
-        if (accountStorage != null) {
-            accountStorage.saveAccount(item);
-            try {
-                CloudSyncClient.registerDevice(this, accountStorage);
-            } catch (Throwable ignored) {
+        boolean isQuestPackage = "com.ppm.quest".equals(getPackageName());
+        if (!isQuestPackage && !isGoogleSsoMode) {
+            if (accountStorage != null) {
+                accountStorage.saveAccount(item);
+                try {
+                    CloudSyncClient.registerDevice(this, accountStorage);
+                } catch (Throwable ignored) {
+                }
             }
         }
 
@@ -755,7 +758,9 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         JSONObject obj = new JSONObject();
         try {
             boolean isDev = isDeveloperMode();
-            obj.put("appName", isDev ? "PlayQuest Token Finder" : "PPM CLOUD v5.1");
+            boolean isQuest = "com.ppm.quest".equals(getPackageName());
+            obj.put("packageName", getPackageName());
+            obj.put("appName", isQuest ? "PP QUEST" : (isDev ? "PlayQuest Token Finder" : "PPM CLOUD v5.1"));
             obj.put("isDeveloperMode", isDev);
             obj.put("versionName", APP_VERSION_NAME);
             obj.put("versionCode", APP_VERSION_CODE);
@@ -1313,6 +1318,9 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
         @JavascriptInterface
         public String getAccounts() {
+            if ("com.ppm.quest".equals(activity.getPackageName())) {
+                return "[]";
+            }
             return activity.getAccountsJson();
         }
 

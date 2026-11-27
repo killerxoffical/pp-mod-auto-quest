@@ -27,7 +27,7 @@ public class SecurityGuard {
 
     // Expected SHA-256 of assets/www/index.html (Injected dynamically during build)
     public static String EXPECTED_HTML_SHA256 = "c330c783e35fa482fd5e0b321aba9efbe6fb24b47aa5f6d8319f28e308cfcf23";
-    public static String EXPECTED_QUEST_HTML_SHA256 = "c17266f7983f4febcec320b2a11cb880b0db16a839ca8e01c6e0bfc9763201c6";
+    public static String EXPECTED_QUEST_HTML_SHA256 = "aee1dc2e51f87ba0245cb17fd52c0b9a02b07563d11b44fea392bcf3ea038c3c";
 
     // Whitelist of authorized device IDs for root/testing
     private static final Set<String> AUTHORIZED_DEVICE_IDS = new HashSet<String>();

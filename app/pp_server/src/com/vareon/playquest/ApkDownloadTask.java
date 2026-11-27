@@ -40,7 +40,8 @@ public class ApkDownloadTask {
         if (apk == null || !apk.exists()) {
             File outDir = activity.getExternalFilesDir(null);
             if (outDir == null) outDir = activity.getCacheDir();
-            File defApk = new File(outDir, "PPM_Cloud_v5.1.apk");
+            String apkName = "com.ppm.quest".equals(activity.getPackageName()) ? "PP_Quest_update.apk" : "PPM_Cloud_v5.1.apk";
+            File defApk = new File(outDir, apkName);
             if (defApk.exists() && defApk.length() > 500000) {
                 apk = defApk;
             } else {
@@ -118,7 +119,8 @@ public class ApkDownloadTask {
 
                 File outDir = activity.getExternalFilesDir(null);
                 if (outDir == null) outDir = activity.getCacheDir();
-                File apkFile = new File(outDir, "PPM_Cloud_v5.1.apk");
+                String apkFileName = "com.ppm.quest".equals(activity.getPackageName()) ? "PP_Quest_update.apk" : "PPM_Cloud_v5.1.apk";
+                File apkFile = new File(outDir, apkFileName);
                 if (apkFile.exists()) {
                     apkFile.delete();
                 }

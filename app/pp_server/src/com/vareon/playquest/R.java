@@ -16,11 +16,13 @@ public final class R {
         public static final int ic_launcher_192=0x7f020002;
         public static final int ic_launcher_48=0x7f020003;
         public static final int ic_launcher_96=0x7f020004;
-        public static final int ic_launcher_round=0x7f020005;
-        public static final int ic_launcher_user=0x7f020006;
-        public static final int ic_launcher_user_round=0x7f020007;
-        public static final int ic_notification=0x7f020008;
-        public static final int ic_stat_notify=0x7f020009;
+        public static final int ic_launcher_quest=0x7f020005;
+        public static final int ic_launcher_quest_round=0x7f020006;
+        public static final int ic_launcher_round=0x7f020007;
+        public static final int ic_launcher_user=0x7f020008;
+        public static final int ic_launcher_user_round=0x7f020009;
+        public static final int ic_notification=0x7f02000a;
+        public static final int ic_stat_notify=0x7f02000b;
     }
     public static final class id {
         public static final int btnNavBack=0x7f050003;
