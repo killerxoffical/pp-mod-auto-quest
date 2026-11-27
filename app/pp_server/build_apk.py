@@ -59,6 +59,8 @@ quest_files_to_copy = [
     "pp_logo.png",
     "progress.js",
     "pp_quest_logo.png",
+    "quest.png",
+    "level.png",
     "svg_maintenance.svg",
     "svg_no_game.svg",
     "svg_update.svg"

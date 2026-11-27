@@ -326,6 +326,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             settings.setJavaScriptEnabled(true);
             settings.setDomStorageEnabled(true);
             settings.setDatabaseEnabled(true);
+            settings.setCacheMode(WebSettings.LOAD_DEFAULT);
             settings.setAllowFileAccess(true);
             settings.setAllowContentAccess(true);
             settings.setAllowFileAccessFromFileURLs(true);
@@ -364,6 +365,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             settings.setJavaScriptEnabled(true);
             settings.setDomStorageEnabled(true);
             settings.setDatabaseEnabled(true);
+            settings.setCacheMode(WebSettings.LOAD_DEFAULT);
             settings.setAllowFileAccess(true);
             settings.setAllowContentAccess(true);
             settings.setAllowFileAccessFromFileURLs(true);
@@ -2680,9 +2682,192 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
     public static class SafeMainWebClient extends android.webkit.WebViewClient {
         private final MainActivity activity;
+        private final File cacheDir;
 
         public SafeMainWebClient(MainActivity act) {
             this.activity = act;
+            File dir = null;
+            try {
+                if (act != null) {
+                    dir = new File(act.getFilesDir(), "pp_asset_cache");
+                    if (!dir.exists()) {
+                        dir.mkdirs();
+                    }
+                }
+            } catch (Throwable ignored) {
+            }
+            this.cacheDir = dir;
+        }
+
+        private boolean isCacheableAssetUrl(String url) {
+            if (url == null) return false;
+            String low = url.toLowerCase();
+            if (!low.startsWith("http://") && !low.startsWith("https://")) return false;
+            // Never cache dynamic API endpoints
+            if (low.contains("workers.dev") || low.contains("onrender.com")
+                    || low.contains("firestore.googleapis.com") || low.contains("identitytoolkit.googleapis.com")
+                    || low.contains("firebase") || low.contains("api.telegram.org")) {
+                return false;
+            }
+            // Permanently cache game icons, user avatars, banners, splash animation & UI static libs
+            if (low.contains("play-lh.googleusercontent.com")
+                    || low.contains("lh3.googleusercontent.com")
+                    || low.contains(".r2.dev/")
+                    || low.contains("ui-avatars.com")
+                    || low.contains("lottie.host")
+                    || low.contains("unpkg.com/@lottiefiles")
+                    || low.contains("fonts.gstatic.com")) {
+                return true;
+            }
+            int q = low.indexOf('?');
+            String path = (q >= 0) ? low.substring(0, q) : low;
+            return path.endsWith(".png") || path.endsWith(".jpg") || path.endsWith(".jpeg")
+                    || path.endsWith(".webp") || path.endsWith(".gif") || path.endsWith(".svg")
+                    || path.endsWith(".ico") || path.endsWith(".woff2");
+        }
+
+        private String guessMime(String url, String serverMime) {
+            if (serverMime != null && !serverMime.trim().isEmpty()) {
+                int semi = serverMime.indexOf(';');
+                String clean = (semi >= 0) ? serverMime.substring(0, semi).trim() : serverMime.trim();
+                if (!clean.isEmpty() && !clean.equalsIgnoreCase("application/octet-stream")) {
+                    return clean;
+                }
+            }
+            String low = url.toLowerCase();
+            int q = low.indexOf('?');
+            String path = (q >= 0) ? low.substring(0, q) : low;
+            if (path.endsWith(".png")) return "image/png";
+            if (path.endsWith(".jpg") || path.endsWith(".jpeg")) return "image/jpeg";
+            if (path.endsWith(".webp")) return "image/webp";
+            if (path.endsWith(".gif")) return "image/gif";
+            if (path.endsWith(".svg")) return "image/svg+xml";
+            if (path.endsWith(".json")) return "application/json";
+            if (path.endsWith(".js")) return "application/javascript";
+            if (path.endsWith(".woff2")) return "font/woff2";
+            return "image/png";
+        }
+
+        private String sha256Hex(String input) {
+            try {
+                java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+                byte[] digest = md.digest(input.getBytes("UTF-8"));
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < digest.length; i++) {
+                    sb.append(String.format("%02x", digest[i] & 0xff));
+                }
+                return sb.toString();
+            } catch (Throwable t) {
+                return String.valueOf(Math.abs(input.hashCode()));
+            }
+        }
+
+        private android.webkit.WebResourceResponse serveCachedAsset(String url) {
+            if (cacheDir == null || !isCacheableAssetUrl(url)) {
+                return null;
+            }
+            try {
+                String key = sha256Hex(url);
+                File dataFile = new File(cacheDir, key + ".bin");
+                File mimeFile = new File(cacheDir, key + ".mime");
+
+                java.util.Map<String, String> headers = new java.util.HashMap<String, String>();
+                headers.put("Access-Control-Allow-Origin", "*");
+                headers.put("Cache-Control", "public, max-age=31536000, immutable");
+
+                // 1. Instant Disk Cache HIT (<1ms, zero network reload!)
+                if (dataFile.exists() && dataFile.length() > 0) {
+                    String cachedMime = guessMime(url, null);
+                    if (mimeFile.exists()) {
+                        try {
+                            BufferedReader mbr = new BufferedReader(new InputStreamReader(new java.io.FileInputStream(mimeFile), "UTF-8"));
+                            String ml = mbr.readLine();
+                            mbr.close();
+                            if (ml != null && !ml.trim().isEmpty()) {
+                                cachedMime = ml.trim();
+                            }
+                        } catch (Throwable ignored) {
+                        }
+                    }
+                    if (Build.VERSION.SDK_INT >= 21) {
+                        return new android.webkit.WebResourceResponse(cachedMime, "UTF-8", 200, "OK", headers,
+                                new java.io.FileInputStream(dataFile));
+                    }
+                    return new android.webkit.WebResourceResponse(cachedMime, "UTF-8",
+                            new java.io.FileInputStream(dataFile));
+                }
+
+                // 2. Cache MISS: Download once, persist permanently to disk, and serve immediately
+                URL u = new URL(url);
+                HttpURLConnection conn = (HttpURLConnection) u.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setInstanceFollowRedirects(true);
+                conn.setConnectTimeout(8000);
+                conn.setReadTimeout(10000);
+                conn.setRequestProperty("User-Agent",
+                        "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36");
+                int code = conn.getResponseCode();
+                if (code >= 200 && code < 300) {
+                    String mime = guessMime(url, conn.getContentType());
+                    File tmpFile = new File(cacheDir, key + ".tmp");
+                    InputStream is = conn.getInputStream();
+                    FileOutputStream fos = new FileOutputStream(tmpFile);
+                    byte[] buf = new byte[8192];
+                    int n;
+                    long total = 0;
+                    while ((n = is.read(buf)) != -1) {
+                        fos.write(buf, 0, n);
+                        total += n;
+                    }
+                    fos.close();
+                    is.close();
+                    if (total > 0) {
+                        tmpFile.renameTo(dataFile);
+                        try {
+                            FileOutputStream mfos = new FileOutputStream(mimeFile);
+                            mfos.write(mime.getBytes("UTF-8"));
+                            mfos.close();
+                        } catch (Throwable ignored) {
+                        }
+                        if (Build.VERSION.SDK_INT >= 21) {
+                            return new android.webkit.WebResourceResponse(mime, "UTF-8", 200, "OK", headers,
+                                    new java.io.FileInputStream(dataFile));
+                        }
+                        return new android.webkit.WebResourceResponse(mime, "UTF-8",
+                                new java.io.FileInputStream(dataFile));
+                    } else {
+                        tmpFile.delete();
+                    }
+                }
+            } catch (Throwable ignored) {
+            }
+            return null;
+        }
+
+        @Override
+        public android.webkit.WebResourceResponse shouldInterceptRequest(WebView view,
+                android.webkit.WebResourceRequest request) {
+            try {
+                if (Build.VERSION.SDK_INT >= 21 && request != null && request.getUrl() != null) {
+                    if ("GET".equalsIgnoreCase(request.getMethod())) {
+                        android.webkit.WebResourceResponse cached = serveCachedAsset(request.getUrl().toString());
+                        if (cached != null) return cached;
+                    }
+                }
+            } catch (Throwable ignored) {
+            }
+            return super.shouldInterceptRequest(view, request);
+        }
+
+        @Override
+        @SuppressWarnings("deprecation")
+        public android.webkit.WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+            try {
+                android.webkit.WebResourceResponse cached = serveCachedAsset(url);
+                if (cached != null) return cached;
+            } catch (Throwable ignored) {
+            }
+            return super.shouldInterceptRequest(view, url);
         }
 
         @Override
