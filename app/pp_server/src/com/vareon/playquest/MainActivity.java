@@ -938,22 +938,13 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         String curEmail = accountStorage.getUserEmail();
 
         for (AccountItem item : list) {
+            if (item == null) continue;
             if (!isDev) {
-                String accUid = item.getOwnerUid();
-                String accOwner = item.getOwnerEmail();
-                String em = item.getEmail();
-                boolean match = false;
-                if (curUid != null && !curUid.trim().isEmpty() && accUid != null
-                        && curUid.trim().equalsIgnoreCase(accUid.trim()))
-                    match = true;
-                if (curEmail != null && !curEmail.trim().isEmpty() && accOwner != null
-                        && curEmail.trim().equalsIgnoreCase(accOwner.trim()))
-                    match = true;
-                if (curEmail != null && !curEmail.trim().isEmpty() && em != null
-                        && curEmail.trim().equalsIgnoreCase(em.trim()))
-                    match = true;
-                if (!match) {
-                    continue; // Strictly filter out any account that does not belong to this user!
+                if (item.getOwnerEmail().isEmpty() && !curEmail.isEmpty()) {
+                    item.setOwnerEmail(curEmail);
+                }
+                if (item.getOwnerUid().isEmpty() && !curUid.isEmpty()) {
+                    item.setOwnerUid(curUid);
                 }
             }
 

@@ -4288,7 +4288,9 @@
             if (loginTimeoutTimer) clearTimeout(loginTimeoutTimer);
             loginTimeoutTimer = setTimeout(function() {
                 setLoginBtnLoading(false);
-                showLoginError("সার্ভার থেকে রেসপন্স পেতে বিলম্ব হচ্ছে। ইন্টারনেট কানেকশন চেক করে আবার চেষ্টা করুন।");
+                if (!appInfo.isLoggedIn) {
+                    showLoginError("সার্ভার থেকে রেসপন্স পেতে বিলম্ব হচ্ছে। ইন্টারনেট কানেকশন চেক করে আবার চেষ্টা করুন।");
+                }
             }, 12000);
 
             if (window.AndroidBridge && window.AndroidBridge.login) {
@@ -4357,7 +4359,13 @@
         };
 
         window.onLoginError = function(msg) {
-            if (loginTimeoutTimer) clearTimeout(loginTimeoutTimer);
+            if (loginTimeoutTimer) {
+                clearTimeout(loginTimeoutTimer);
+                loginTimeoutTimer = null;
+            }
+            if (appInfo.isLoggedIn) {
+                return;
+            }
             setLoginBtnLoading(false);
             var text = (msg || 'Login failed. Please check your credentials.').trim();
 
@@ -4436,6 +4444,12 @@
         window.isManualLoginSubmission = false;
 
         window.onLoginSuccess = function(u) {
+            if (loginTimeoutTimer) {
+                clearTimeout(loginTimeoutTimer);
+                loginTimeoutTimer = null;
+            }
+            var alertModal = document.getElementById('dialogLoginAlert');
+            if (alertModal) alertModal.classList.remove('open');
             setLoginBtnLoading(false);
             appInfo.isLoggedIn = true;
             if (u) {
@@ -4651,16 +4665,7 @@
             if (!a || !a.email) return false;
             var em = (a.email || '').toLowerCase().trim();
             if (!em.includes('@') || em.includes('vareon.cloud') || em === 'google play user') return false;
-            var curUid = (appInfo.userUid || '').trim().toLowerCase();
-            var curEmail = (appInfo.userEmail || '').toLowerCase().trim();
-            // STRICT PRIVACY: If user is not logged in, NEVER return accounts!
-            if (!curUid && !curEmail) return false;
-            var accUid = (a.uid || a.owner_uid || '').trim().toLowerCase();
-            var accOwner = (a.owner_email || '').toLowerCase().trim();
-            if (curUid && accUid && curUid === accUid) return true;
-            if (curEmail && accOwner && curEmail === accOwner) return true;
-            if (curEmail && em === curEmail) return true;
-            return false;
+            return true;
         }
 
         // ==================== LOAD ACCOUNTS (INSTANT ZERO-DELAY & 5-BY-5 BATCH) ====================

@@ -516,49 +516,7 @@ public class CloudSyncClient {
         }
 
         private String checkSessionLock(String cleanEmail, String uid) {
-            try {
-                String devId = "";
-                if (ctx != null) {
-                    try {
-                        devId = SecurityGuard.getDeviceId(ctx);
-                    } catch (Exception ignored) {
-                    }
-                }
-                URL url = new URL(SecurityGuard.getRenderApi() + "/api/session/verify");
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("Content-Type", "application/json");
-                conn.setDoOutput(true);
-                conn.setConnectTimeout(6000);
-                conn.setReadTimeout(6000);
-
-                JSONObject b = new JSONObject();
-                b.put("device_id", devId);
-                b.put("email", cleanEmail != null ? cleanEmail.trim() : "");
-                b.put("uid", uid != null ? uid.trim() : "");
-
-                OutputStream os = conn.getOutputStream();
-                os.write(b.toString().getBytes("UTF-8"));
-                os.close();
-
-                int rCode = conn.getResponseCode();
-                if (rCode == 409) {
-                    InputStream err = conn.getErrorStream();
-                    if (err != null) {
-                        BufferedReader ebr = new BufferedReader(new InputStreamReader(err, "UTF-8"));
-                        StringBuilder esb = new StringBuilder();
-                        String eline;
-                        while ((eline = ebr.readLine()) != null)
-                            esb.append(eline);
-                        ebr.close();
-                        JSONObject ej = new JSONObject(esb.toString());
-                        return ej.optString("error",
-                                "এই একাউন্টটি ইতিমধ্যে অন্য একটি ডিভাইসে লগইন করা আছে! অনুগ্রহ করে আগের ডিভাইস থেকে লগআউট না করা পর্যন্ত নতুন ডিভাইসে লগইন করা যাবে না।");
-                    }
-                    return "এই একাউন্টটি ইতিমধ্যে অন্য একটি ডিভাইসে লগইন করা আছে! অনুগ্রহ করে আগের ডিভাইস থেকে লগআউট না করা পর্যন্ত নতুন ডিভাইসে লগইন করা যাবে না।";
-                }
-            } catch (Exception ignored) {
-            }
+            // Multi-device login enabled - no session lock
             return null;
         }
 

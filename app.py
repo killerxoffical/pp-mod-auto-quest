@@ -4287,31 +4287,9 @@ def device_logout():
 @app.route("/api/session/verify", methods=["POST"])
 def verify_session():
     """
-    Verifies if a user (by uid or email) is currently active on another device.
-    Used by PPM Cloud Android app before allowing login.
-    Returns 409 Conflict if locked by another device.
+    Multi-device login allowed: session lock removed.
+    Always returns locked: False so user can log in freely.
     """
-    data = request.get_json(silent=True) or {}
-    device_id = str(data.get("device_id", "")).strip()
-    uid = str(data.get("uid", "")).strip()
-    email = str(data.get("email", "")).strip().lower()
-
-    if not uid and not email:
-        return jsonify({"ok": True, "locked": False})
-
-    devices = load_registered_devices(force_refresh=True)
-    for did, dev in devices.items():
-        if did != device_id and dev.get("is_logged_in"):
-            d_uid = str(dev.get("ppmod_uid", "")).strip()
-            d_email = str(dev.get("ppmod_email", "")).strip().lower()
-            if (uid and d_uid and d_uid == uid) or (email and d_email and d_email == email):
-                return jsonify({
-                    "ok": False,
-                    "locked": True,
-                    "active_device": dev.get("model", "Another Device"),
-                    "error": "এই একাউন্টটি ইতিমধ্যে অন্য একটি ডিভাইসে লগইন করা আছে! অনুগ্রহ করে আগের ডিভাইস থেকে লগআউট না করা পর্যন্ত নতুন ডিভাইসে লগইন করা যাবে না।"
-                }), 409
-
     return jsonify({"ok": True, "locked": False})
 
 @app.route("/api/admin/device/reset_session", methods=["POST"])
