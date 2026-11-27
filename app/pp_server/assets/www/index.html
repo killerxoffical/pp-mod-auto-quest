@@ -5164,7 +5164,16 @@
                         if (raw) {
                             var parsed = JSON.parse(raw);
                             if (Array.isArray(parsed)) {
-                                accounts = parsed.filter(isUserAccountOwner);
+                                var filtered = parsed.filter(isUserAccountOwner);
+                                var seenEmails = {};
+                                accounts = [];
+                                for (var i = 0; i < filtered.length; i++) {
+                                    var emKey = (filtered[i].email || '').toLowerCase().trim();
+                                    if (!emKey || !seenEmails[emKey]) {
+                                        if (emKey) seenEmails[emKey] = true;
+                                        accounts.push(filtered[i]);
+                                    }
+                                }
                             }
                         }
                     }
@@ -5172,11 +5181,6 @@
                     console.error("loadAccounts error", e);
                 }
                 renderAccounts();
-
-                // Start batch loading 5 accounts at a time
-                if (accounts && accounts.length > 0) {
-                    startBatchAccountRefresh(accounts);
-                }
             }, 80);
         }
 
@@ -5487,7 +5491,6 @@
                 }
                 if (found) {
                     renderAccounts();
-                    showToast("✅ Updated: " + (data.has_play_points ? (data.tier + " • " + data.points + " PP") : "No Play Points"));
                 }
             }
         };
@@ -5848,15 +5851,6 @@
                 }
             }
 
-            // Also refresh live balance & Play Points for all connected accounts
-            if (accounts && accounts.length > 0) {
-                for (var i = 0; i < accounts.length; i++) {
-                    var item = accounts[i];
-                    if (item && item.code) {
-                        refreshAccountPoints(item.code);
-                    }
-                }
-            }
             return;
         }
 

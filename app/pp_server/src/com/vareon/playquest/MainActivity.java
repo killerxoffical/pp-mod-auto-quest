@@ -1195,10 +1195,11 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                     CloudSyncClient.registerDevice(activity, storage);
                 } catch (Throwable ignored) {
                 }
-                Toast.makeText(activity, "Synced " + list.size() + " accounts from cloud.", Toast.LENGTH_SHORT)
+                int syncedCount = storage.getAccounts().size();
+                Toast.makeText(activity, "Synced " + syncedCount + (syncedCount == 1 ? " account from cloud." : " accounts from cloud."), Toast.LENGTH_SHORT)
                         .show();
                 activity.showSystemNotification("Cloud Accounts Synced",
-                        "Synced " + list.size() + " accounts to your device.");
+                        "Synced " + syncedCount + (syncedCount == 1 ? " account to your device." : " accounts to your device."));
             } else {
                 // Cloud returned empty or null; NEVER wipe local accounts!
                 // Instead, backup existing local accounts to cloud:
@@ -2138,8 +2139,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                             null);
                 }
             }
-            String msg = (hasPlayPoints ? (tier + " • " + points + " PP") : "⚠️ No Play Points Account");
-            android.widget.Toast.makeText(act, msg, android.widget.Toast.LENGTH_SHORT).show();
+            // Silent background update - do not spam 'No Play Points Account' toast
         }
     }
 

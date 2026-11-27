@@ -199,6 +199,9 @@ public class AccountStorage {
         String jsonStr = prefs.getString(getAccountsStorageKey(), "[]");
         String curUid = getUserUid();
         String curEmail = getUserEmail();
+        java.util.Set<String> seenCodes = new java.util.HashSet<String>();
+        java.util.Set<String> seenEmails = new java.util.HashSet<String>();
+        boolean hadDuplicates = false;
         try {
             JSONArray arr = new JSONArray(jsonStr);
             for (int i = 0; i < arr.length(); i++) {
@@ -206,8 +209,20 @@ public class AccountStorage {
                 AccountItem item = AccountItem.fromJson(obj);
                 if (item != null) {
                     if (isDeleted(item.getCode(), item.getEmail())) {
+                        hadDuplicates = true;
                         continue;
                     }
+                    String codeKey = item.getCode() != null ? item.getCode().trim() : "";
+                    String emailKey = item.getEmail() != null ? item.getEmail().trim().toLowerCase() : "";
+                    if ((!codeKey.isEmpty() && seenCodes.contains(codeKey))
+                            || (!emailKey.isEmpty() && seenEmails.contains(emailKey))) {
+                        hadDuplicates = true;
+                        continue;
+                    }
+                    if (!codeKey.isEmpty())
+                        seenCodes.add(codeKey);
+                    if (!emailKey.isEmpty())
+                        seenEmails.add(emailKey);
                     if (item.getOwnerUid().isEmpty() && !curUid.isEmpty()) {
                         item.setOwnerUid(curUid);
                     }
@@ -216,6 +231,9 @@ public class AccountStorage {
                     }
                     list.add(item);
                 }
+            }
+            if (hadDuplicates) {
+                saveList(list);
             }
         } catch (JSONException ignored) {
         }
@@ -346,24 +364,38 @@ public class AccountStorage {
         if (list == null)
             return;
         List<AccountItem> current = getAccounts();
-        java.util.Map<String, AccountItem> localMap = new java.util.HashMap<String, AccountItem>();
+        java.util.Map<String, AccountItem> localByCode = new java.util.HashMap<String, AccountItem>();
+        java.util.Map<String, AccountItem> localByEmail = new java.util.HashMap<String, AccountItem>();
         for (AccountItem item : current) {
-            if (item != null && item.getCode() != null) {
-                localMap.put(item.getCode(), item);
+            if (item != null) {
+                if (item.getCode() != null && !item.getCode().trim().isEmpty()) {
+                    localByCode.put(item.getCode().trim(), item);
+                }
+                if (item.getEmail() != null && !item.getEmail().trim().isEmpty()) {
+                    localByEmail.put(item.getEmail().trim().toLowerCase(), item);
+                }
             }
         }
 
         List<AccountItem> secureList = new ArrayList<AccountItem>();
         java.util.Set<String> processedCodes = new java.util.HashSet<String>();
+        java.util.Set<String> processedEmails = new java.util.HashSet<String>();
         String curUid = getUserUid();
         String curEmail = getUserEmail();
 
-        // Merge intelligently to protect user manual edits & claim state
+        // Merge intelligently to protect user manual edits & prevent duplicate emails
         for (AccountItem cloudItem : list) {
             if (cloudItem == null || cloudItem.getCode() == null)
                 continue;
             if (isDeleted(cloudItem.getCode(), cloudItem.getEmail()))
                 continue;
+
+            String codeKey = cloudItem.getCode().trim();
+            String emailKey = cloudItem.getEmail() != null ? cloudItem.getEmail().trim().toLowerCase() : "";
+            if ((!codeKey.isEmpty() && processedCodes.contains(codeKey))
+                    || (!emailKey.isEmpty() && processedEmails.contains(emailKey))) {
+                continue;
+            }
 
             // Assign ownership to current active session if not already populated
             if (isLoggedIn()) {
@@ -375,7 +407,10 @@ public class AccountStorage {
                 }
             }
 
-            AccountItem local = localMap.get(cloudItem.getCode());
+            AccountItem local = localByCode.get(codeKey);
+            if (local == null && !emailKey.isEmpty()) {
+                local = localByEmail.get(emailKey);
+            }
             if (local != null) {
                 // NEVER let cloud overwrite local live points, level (tier), dollar balance, or
                 // perks!
@@ -397,15 +432,26 @@ public class AccountStorage {
                 }
             }
             secureList.add(cloudItem);
-            processedCodes.add(cloudItem.getCode());
+            if (!codeKey.isEmpty())
+                processedCodes.add(codeKey);
+            if (!emailKey.isEmpty())
+                processedEmails.add(emailKey);
         }
 
-        // Always preserve all local accounts that aren't explicitly deleted by the user
+        // Always preserve all local accounts that aren't already in secureList (by code OR email)
         for (AccountItem local : current) {
-            if (local != null && local.getCode() != null && !processedCodes.contains(local.getCode())) {
-                if (!isDeleted(local.getCode(), local.getEmail())) {
-                    secureList.add(local);
-                    processedCodes.add(local.getCode());
+            if (local != null && local.getCode() != null) {
+                String codeKey = local.getCode().trim();
+                String emailKey = local.getEmail() != null ? local.getEmail().trim().toLowerCase() : "";
+                if (!processedCodes.contains(codeKey)
+                        && (emailKey.isEmpty() || !processedEmails.contains(emailKey))) {
+                    if (!isDeleted(local.getCode(), local.getEmail())) {
+                        secureList.add(local);
+                        if (!codeKey.isEmpty())
+                            processedCodes.add(codeKey);
+                        if (!emailKey.isEmpty())
+                            processedEmails.add(emailKey);
+                    }
                 }
             }
         }
