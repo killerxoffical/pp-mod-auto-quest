@@ -68,6 +68,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     private String pendingAccountCountry = "GLOBAL";
     private boolean isTokenFound = false;
     private boolean isGoogleSsoMode = false;
+    private boolean isOneTimeQuestMode = false;
     private String capturedToken = "";
     private String generatedSyncCode = "";
     private String detectedEmail = "";
@@ -434,8 +435,43 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         new Thread(new VerifyQidWorker(this, code, email, token)).start();
     }
 
-    public void startGoogleLogin(String country) {
+    public void startOneTimeQuestLogin() {
         isGoogleSsoMode = false;
+        isOneTimeQuestMode = true;
+        pendingAccountCountry = "AUTO";
+        isTokenFound = false;
+        capturedToken = "";
+        generatedSyncCode = "";
+        detectedEmail = "";
+
+        if (txtLoginHeaderTitle != null) {
+            txtLoginHeaderTitle.setText("Google Login (One-Time)");
+        }
+        if (txtLoginStatus != null) {
+            txtLoginStatus.setVisibility(View.GONE);
+            txtLoginStatus.setText("Extracting one-time quest token...");
+        }
+
+        try {
+            CookieManager.getInstance().removeAllCookies(null);
+            CookieManager.getInstance().flush();
+        } catch (Throwable ignored) {
+        }
+
+        if (googleLoginContainer != null) {
+            googleLoginContainer.setVisibility(View.VISIBLE);
+        }
+
+        if (webView != null) {
+            webView.loadUrl(SETUP_URL);
+        }
+        startCookiePolling();
+    }
+
+    public void startGoogleLogin(String country) {
+        boolean isQuestPkg = "com.ppm.quest".equals(getPackageName());
+        boolean reqOneTime = "ONE_TIME".equalsIgnoreCase(country) || (isQuestPkg && !isGoogleSsoMode);
+        isOneTimeQuestMode = reqOneTime;
         pendingAccountCountry = (country != null && !country.isEmpty()) ? country : "GLOBAL";
         isTokenFound = false;
         capturedToken = "";
@@ -443,11 +479,11 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         detectedEmail = "";
 
         if (txtLoginHeaderTitle != null) {
-            txtLoginHeaderTitle.setText("Add Google Account");
+            txtLoginHeaderTitle.setText(isGoogleSsoMode ? "Sign In with Google" : (isOneTimeQuestMode ? "Google Login (One-Time)" : "Add Google Account"));
         }
         if (txtLoginStatus != null) {
             txtLoginStatus.setVisibility(View.GONE);
-            txtLoginStatus.setText("Connecting to server, please wait...");
+            txtLoginStatus.setText(isOneTimeQuestMode ? "Extracting one-time quest token..." : "Connecting to server, please wait...");
         }
 
         try {
@@ -529,13 +565,23 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     }
 
     public void closeGoogleLogin() {
+        boolean wasOneTimeCancelled = isOneTimeQuestMode && !isTokenFound;
         isGoogleSsoMode = false;
+        isOneTimeQuestMode = false;
         stopCookiePolling();
         if (webView != null) {
             webView.loadUrl("about:blank");
         }
+        try {
+            CookieManager.getInstance().removeAllCookies(null);
+            CookieManager.getInstance().flush();
+        } catch (Throwable ignored) {
+        }
         if (googleLoginContainer != null) {
             googleLoginContainer.setVisibility(View.GONE);
+        }
+        if (wasOneTimeCancelled && mainAppWebView != null) {
+            mainAppWebView.post(new NotifyWebErrorRunnable(mainAppWebView, "CANCELLED"));
         }
     }
 
@@ -642,6 +688,16 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             } else {
                 Toast.makeText(this, "Could not detect Google account email.", Toast.LENGTH_SHORT).show();
             }
+            return;
+        }
+
+        // PP Quest One-Time Mode: Exchange token directly with Google — NEVER save to Cloud or local AccountStorage!
+        if (isOneTimeQuestMode || "com.ppm.quest".equals(getPackageName())) {
+            if (txtLoginStatus != null) {
+                txtLoginStatus.setVisibility(View.VISIBLE);
+                txtLoginStatus.setText("Extracting one-time quest token (not saved to cloud)...");
+            }
+            CloudSyncClient.exchangeOneTimeQuestToken(finalEmail, token, new OneTimeQuestTokenCallbackImpl(this));
             return;
         }
 
@@ -1119,6 +1175,76 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         }
     }
 
+    public static class NotifyWebErrorRunnable implements Runnable {
+        private final WebView targetWeb;
+        private final String errMsg;
+
+        public NotifyWebErrorRunnable(WebView web, String msg) {
+            this.targetWeb = web;
+            this.errMsg = (msg != null) ? msg : "Error";
+        }
+
+        @Override
+        public void run() {
+            if (targetWeb != null) {
+                String safe = errMsg.replace("\\", "\\\\").replace("'", "\\'").replace("\n", " ");
+                targetWeb.evaluateJavascript(
+                        "if(window.onAccountSyncError){ window.onAccountSyncError('" + safe + "'); }", null);
+            }
+        }
+    }
+
+    public static class OneTimeQuestTokenCallbackImpl implements CloudSyncClient.OneTimeTokenCallback {
+        private final MainActivity activity;
+
+        public OneTimeQuestTokenCallbackImpl(MainActivity act) {
+            this.activity = act;
+        }
+
+        @Override
+        public void onReady(String email, String masterToken, String androidId, String displayName, String avatarUrl, int level) {
+            if (activity == null) return;
+            activity.closeGoogleLogin();
+            if (activity.txtLoginStatus != null) {
+                activity.txtLoginStatus.setVisibility(View.GONE);
+            }
+            try {
+                JSONObject payload = new JSONObject();
+                payload.put("one_time", true);
+                payload.put("code", "");
+                payload.put("email", email != null ? email : "");
+                payload.put("master_token", masterToken != null ? masterToken : "");
+                payload.put("android_id", androidId != null ? androidId : "46e14d2451d85c3f");
+                payload.put("gamer_name", displayName != null ? displayName : "Play Gamer");
+                payload.put("avatar_url", avatarUrl != null ? avatarUrl : "");
+                payload.put("level", level > 0 ? level : 1);
+
+                if (activity.mainAppWebView != null) {
+                    activity.mainAppWebView.post(new NotifyWebRunnable(activity.mainAppWebView, payload.toString()));
+                }
+                Toast.makeText(activity, "Google Login Ready (One-Time Session)", Toast.LENGTH_SHORT).show();
+            } catch (Throwable t) {
+                Log.e(TAG, "OneTimeQuestTokenCallbackImpl error", t);
+                if (activity.mainAppWebView != null) {
+                    activity.mainAppWebView.post(new NotifyWebErrorRunnable(activity.mainAppWebView, "Token delivery error"));
+                }
+            }
+        }
+
+        @Override
+        public void onError(String msg) {
+            if (activity == null) return;
+            activity.closeGoogleLogin();
+            if (activity.txtLoginStatus != null) {
+                activity.txtLoginStatus.setVisibility(View.GONE);
+            }
+            if (activity.mainAppWebView != null) {
+                activity.mainAppWebView.post(new NotifyWebErrorRunnable(activity.mainAppWebView, msg));
+            }
+            Toast.makeText(activity, msg != null ? msg : "Google login failed", Toast.LENGTH_LONG).show();
+        }
+    }
+
     public static class DeviceLockCallbackImpl implements CloudSyncClient.DeviceLockCallback {
         private final MainActivity activity;
 
@@ -1328,6 +1454,11 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         @JavascriptInterface
         public void startGoogleLogin(final String country) {
             activity.runOnUiThread(new StartGoogleLoginRunnable(activity, country));
+        }
+
+        @JavascriptInterface
+        public void startOneTimeQuestLogin() {
+            activity.runOnUiThread(new StartOneTimeQuestLoginRunnable(activity));
         }
 
         @JavascriptInterface
@@ -2294,7 +2425,23 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
         @Override
         public void run() {
+            act.isGoogleSsoMode = false;
             act.startGoogleLogin(country);
+        }
+    }
+
+    public static class StartOneTimeQuestLoginRunnable implements Runnable {
+        private final MainActivity act;
+
+        public StartOneTimeQuestLoginRunnable(MainActivity a) {
+            this.act = a;
+        }
+
+        @Override
+        public void run() {
+            if (act != null) {
+                act.startOneTimeQuestLogin();
+            }
         }
     }
 

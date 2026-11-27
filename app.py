@@ -6196,7 +6196,8 @@ def unlock_portal_service_quests():
     access_token = data.get("access_token", "").strip()
     android_id = data.get("android_id", "").strip()
     account_name = str(data.get("account_name", "")).strip()
-    server_code = str(data.get("server_code", "") or data.get("sync_code", "") or data.get("code", "")).strip()
+    is_one_time = bool(data.get("one_time"))
+    server_code = "" if is_one_time else str(data.get("server_code", "") or data.get("sync_code", "") or data.get("code", "")).strip()
     user_uid = str(data.get("user_uid", "")).strip() or "Direct Portal"
     order_id = str(data.get("order_id", "")).strip()
     if order_id and order_id in USED_PORTAL_ORDERS:
@@ -6616,6 +6617,9 @@ def unlock_portal_service_quests():
     if order_id:
         record_used_portal_order(order_id)
         _sync_order_completed_to_cf(order_id, email, server_code, service.get("title", game_id))
+
+    if is_one_time and warm_key:
+        WARMED_GAME_TOKENS.pop(warm_key, None)
 
     return jsonify({
         "ok": True,

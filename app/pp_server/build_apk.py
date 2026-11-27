@@ -213,37 +213,44 @@ def package_and_sign(manifest_src, apk_name, title, assets_dir="assets"):
 
     print(f">>> SUCCESS: {apk_name} built, zipaligned, and verified signed ({os.path.getsize(apk_name)} bytes)!")
 
-# STEP 4: Package and Sign PPM_Cloud.apk
+# STEP 4: Package and Sign PPM_Cloud.apk and PP_Quest.apk
 package_and_sign("AndroidManifest_ppserver.xml", "PPM_Cloud.apk", "PPM CLOUD v5.1 User Edition", assets_dir="assets")
-print(">>> Created PPM_Cloud.apk as official distribution package.")
+print(">>> Created PPM_Cloud.apk as official PPM Cloud distribution package.")
+
+package_and_sign("AndroidManifest_ppquest.xml", "PP_Quest.apk", "PP QUEST v5.1 Official Hybrid App", assets_dir="assets_quest")
+print(">>> Created PP_Quest.apk as official PP Quest distribution package.")
 
 # Restore base manifest
 shutil.copy2("AndroidManifest_ppserver.xml", "AndroidManifest.xml")
 
-# STEP 5: Distribute PPM_Cloud.apk only
-print("\n>>> Step 5: Distributing PPM_Cloud.apk to root and static folders...")
+# STEP 5: Distribute PPM_Cloud.apk and PP_Quest.apk to root, app, and static folders
+print("\n>>> Step 5: Distributing PPM_Cloud.apk and PP_Quest.apk...")
 base_script_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.abspath(os.path.join(base_script_dir, "..", ".."))
+app_dir = os.path.abspath(os.path.join(base_script_dir, ".."))
 
 dist_directories = [
     root_dir,
+    app_dir,
     os.path.join(root_dir, "static"),
+    os.path.join(root_dir, "achievement_unlocker"),
     os.path.join(root_dir, "achievement_unlocker", "static"),
 ]
 
-src_path = os.path.join(base_script_dir, "PPM_Cloud.apk")
-for d in dist_directories:
-    os.makedirs(d, exist_ok=True)
-    target_path = os.path.join(d, "PPM_Cloud.apk")
-    for attempt in range(4):
-        try:
-            shutil.copy2(src_path, target_path)
-            print(f"  -> Copied PPM_Cloud.apk to {target_path}")
-            break
-        except PermissionError:
-            time.sleep(0.5)
-            if attempt == 3:
-                print(f"  [!] Note: could not write {target_path} (locked by external process)")
+for apk_file in ["PPM_Cloud.apk", "PP_Quest.apk"]:
+    src_path = os.path.join(base_script_dir, apk_file)
+    for d in dist_directories:
+        os.makedirs(d, exist_ok=True)
+        target_path = os.path.join(d, apk_file)
+        for attempt in range(4):
+            try:
+                shutil.copy2(src_path, target_path)
+                print(f"  -> Copied {apk_file} to {target_path}")
+                break
+            except PermissionError:
+                time.sleep(0.5)
+                if attempt == 3:
+                    print(f"  [!] Note: could not write {target_path} (locked by external process)")
 
 # Also update build_out in bin for consistency
 bin_dex = os.path.join("bin", "dex")
@@ -251,6 +258,7 @@ os.makedirs(bin_dex, exist_ok=True)
 shutil.copy2(classes_dex, os.path.join(bin_dex, "classes.dex"))
 
 print("\n" + "=" * 60)
-print(">>> PPM CLOUD BUILD COMPLETE!")
+print(">>> DUAL HYBRID BUILD COMPLETE!")
 print(">>> [1] PPM_Cloud.apk -> User Client Mode (com.ppm.cloud) [v5.1]")
+print(">>> [2] PP_Quest.apk  -> Quest Hybrid App (com.ppm.quest) [v5.1]")
 print("=" * 60)

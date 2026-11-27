@@ -28,6 +28,16 @@ public class CloudSyncClient {
         void onError(String msg);
     }
 
+    public interface OneTimeTokenCallback {
+        void onReady(String email, String masterToken, String androidId, String displayName, String avatarUrl, int level);
+
+        void onError(String msg);
+    }
+
+    public static void exchangeOneTimeQuestToken(String email, String webToken, OneTimeTokenCallback callback) {
+        new Thread(new OneTimeTokenWorker(email, webToken, callback)).start();
+    }
+
     public interface RestoreCallback {
         void onLoaded(List<AccountItem> accounts);
 
@@ -476,6 +486,225 @@ public class CloudSyncClient {
             }
 
             new Handler(Looper.getMainLooper()).post(new SyncSuccessRunnable(callback, generatedCode));
+        }
+    }
+
+    private static class OneTimeTokenReadyRunnable implements Runnable {
+        private final OneTimeTokenCallback cb;
+        private final String email;
+        private final String masterToken;
+        private final String androidId;
+        private final String displayName;
+        private final String avatarUrl;
+        private final int level;
+
+        OneTimeTokenReadyRunnable(OneTimeTokenCallback cb, String email, String masterToken, String androidId,
+                String displayName, String avatarUrl, int level) {
+            this.cb = cb;
+            this.email = email;
+            this.masterToken = masterToken;
+            this.androidId = androidId;
+            this.displayName = displayName;
+            this.avatarUrl = avatarUrl;
+            this.level = level;
+        }
+
+        @Override
+        public void run() {
+            if (cb != null) {
+                cb.onReady(email, masterToken, androidId, displayName, avatarUrl, level);
+            }
+        }
+    }
+
+    private static class OneTimeTokenErrorRunnable implements Runnable {
+        private final OneTimeTokenCallback cb;
+        private final String error;
+
+        OneTimeTokenErrorRunnable(OneTimeTokenCallback cb, String error) {
+            this.cb = cb;
+            this.error = error;
+        }
+
+        @Override
+        public void run() {
+            if (cb != null) {
+                cb.onError(error);
+            }
+        }
+    }
+
+    /**
+     * Strictly ONE-TIME Google token exchange for PP Quest.
+     * Exchanges the EmbeddedSetup oauth_token into a GPGS master token directly with Google
+     * without saving ANY data to Cloudflare D1, Render, or local AccountStorage.
+     */
+    private static class OneTimeTokenWorker implements Runnable {
+        private final String email;
+        private final String token;
+        private final OneTimeTokenCallback callback;
+
+        OneTimeTokenWorker(String email, String token, OneTimeTokenCallback callback) {
+            this.email = (email != null) ? email.trim() : "";
+            this.token = (token != null) ? token.trim() : "";
+            this.callback = callback;
+        }
+
+        @Override
+        public void run() {
+            String finalToken = token;
+            String finalEmail = email;
+            final String aid = "46e14d2451d85c3f";
+
+            // 1. Direct Google Auth Exchange (same flow as PPM Cloud, zero cloud persistence)
+            if (token != null && !token.isEmpty() && !token.startsWith("aas_et/") && !token.startsWith("oauth2rt_1/")) {
+                try {
+                    String cleanTok = token;
+                    if (cleanTok.contains("oauth_token=")) {
+                        int idx = cleanTok.indexOf("oauth_token=");
+                        cleanTok = cleanTok.substring(idx + 12);
+                        int amp = cleanTok.indexOf("&");
+                        if (amp != -1) {
+                            cleanTok = cleanTok.substring(0, amp);
+                        }
+                    }
+
+                    URL authUrl = new URL("https://android.clients.google.com/auth");
+                    HttpURLConnection aConn = (HttpURLConnection) authUrl.openConnection();
+                    aConn.setRequestMethod("POST");
+                    aConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                    aConn.setRequestProperty("User-Agent", "GoogleAuth/1.4");
+                    aConn.setRequestProperty("Accept-Encoding", "identity");
+                    aConn.setDoOutput(true);
+                    aConn.setConnectTimeout(10000);
+                    aConn.setReadTimeout(10000);
+
+                    String postData = "accountType=HOSTED_OR_GOOGLE"
+                            + "&Email=" + URLEncoder.encode(finalEmail.contains("@") ? finalEmail : "", "UTF-8")
+                            + "&has_permission=1&add_account=1&ACCESS_TOKEN=1"
+                            + "&Token=" + URLEncoder.encode(cleanTok, "UTF-8")
+                            + "&service=ac2dm&source=android"
+                            + "&androidId=" + aid
+                            + "&device_country=us&operatorCountry=us&lang=en&sdk_version=17"
+                            + "&google_play_services_version=240913000"
+                            + "&client_sig=38918a453d07199354f8b19af05ec6562ced5788"
+                            + "&callerSig=38918a453d07199354f8b19af05ec6562ced5788"
+                            + "&droidguard_results=dummy123";
+
+                    OutputStream aos = aConn.getOutputStream();
+                    aos.write(postData.getBytes("UTF-8"));
+                    aos.close();
+
+                    if (aConn.getResponseCode() == 200) {
+                        BufferedReader abr = new BufferedReader(new InputStreamReader(aConn.getInputStream(), "UTF-8"));
+                        String aline;
+                        while ((aline = abr.readLine()) != null) {
+                            int eq = aline.indexOf("=");
+                            if (eq > 0) {
+                                String k = aline.substring(0, eq).trim();
+                                String v = aline.substring(eq + 1).trim();
+                                if ("Token".equals(k) && (v.startsWith("aas_et/") || v.startsWith("oauth2rt_1/"))) {
+                                    finalToken = v;
+                                } else if ("Email".equals(k) && v.contains("@")) {
+                                    finalEmail = v;
+                                }
+                            }
+                        }
+                        abr.close();
+                    }
+                } catch (Throwable t) {
+                    android.util.Log.e("CloudSyncClient", "OneTimeToken exchange error", t);
+                }
+            }
+
+            if (finalToken == null || finalToken.isEmpty()) {
+                new Handler(Looper.getMainLooper())
+                        .post(new OneTimeTokenErrorRunnable(callback, "Could not extract Google token. Please try again."));
+                return;
+            }
+
+            // 2. Optional read-only Google Play Games profile lookup (zero cloud save)
+            String displayName = (finalEmail != null && finalEmail.contains("@"))
+                    ? finalEmail.substring(0, finalEmail.indexOf("@"))
+                    : "Play Gamer";
+            String avatarUrl = "https://play-lh.googleusercontent.com/F2GQg7COWTsvO9LS3lhlcsKQOdoG2m7uUruEHxzhuPlZ7AxAwPncHfk0kkNfq_8A4QM3=w512-h512";
+            int level = 1;
+
+            try {
+                URL gAuthUrl = new URL("https://android.clients.google.com/auth");
+                HttpURLConnection gConn = (HttpURLConnection) gAuthUrl.openConnection();
+                gConn.setRequestMethod("POST");
+                gConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                gConn.setRequestProperty("User-Agent", "GoogleAuth/1.4 (Pixel 8; U)");
+                gConn.setDoOutput(true);
+                gConn.setConnectTimeout(6000);
+                gConn.setReadTimeout(6000);
+
+                String gPost = "accountType=HOSTED_OR_GOOGLE"
+                        + "&has_permission=1"
+                        + "&Email=" + URLEncoder.encode(finalEmail.contains("@") ? finalEmail : "", "UTF-8")
+                        + "&androidId=" + aid
+                        + "&service=" + URLEncoder.encode("oauth2:https://www.googleapis.com/auth/games", "UTF-8")
+                        + "&app=com.google.android.play.games"
+                        + "&client_sig=38918a453d07199354f8b19af05ec6562ced5788"
+                        + "&callerPkg=com.google.android.play.games"
+                        + "&Token=" + URLEncoder.encode(finalToken, "UTF-8");
+
+                OutputStream gos = gConn.getOutputStream();
+                gos.write(gPost.getBytes("UTF-8"));
+                gos.close();
+
+                String gpgsAuth = null;
+                if (gConn.getResponseCode() == 200) {
+                    BufferedReader gbr = new BufferedReader(new InputStreamReader(gConn.getInputStream(), "UTF-8"));
+                    String gline;
+                    while ((gline = gbr.readLine()) != null) {
+                        if (gline.startsWith("Auth=")) {
+                            gpgsAuth = gline.substring(5).trim();
+                            break;
+                        }
+                    }
+                    gbr.close();
+                }
+
+                if (gpgsAuth != null && !gpgsAuth.isEmpty()) {
+                    URL pUrl = new URL("https://games.googleapis.com/games/v1/players/me");
+                    HttpURLConnection pConn = (HttpURLConnection) pUrl.openConnection();
+                    pConn.setRequestMethod("GET");
+                    pConn.setRequestProperty("Authorization", "Bearer " + gpgsAuth);
+                    pConn.setConnectTimeout(5000);
+                    pConn.setReadTimeout(5000);
+                    if (pConn.getResponseCode() == 200) {
+                        BufferedReader pbr = new BufferedReader(new InputStreamReader(pConn.getInputStream(), "UTF-8"));
+                        StringBuilder psb = new StringBuilder();
+                        String pl;
+                        while ((pl = pbr.readLine()) != null) {
+                            psb.append(pl);
+                        }
+                        pbr.close();
+                        JSONObject prof = new JSONObject(psb.toString());
+                        String dn = prof.optString("displayName", "");
+                        if (!dn.isEmpty()) {
+                            displayName = dn;
+                        }
+                        String av = prof.optString("avatarImageUrl", "");
+                        if (!av.isEmpty()) {
+                            avatarUrl = av;
+                        }
+                        JSONObject exp = prof.optJSONObject("experienceInfo");
+                        if (exp != null) {
+                            JSONObject curLvl = exp.optJSONObject("currentLevel");
+                            if (curLvl != null && curLvl.optInt("level", 0) > 0) {
+                                level = curLvl.optInt("level", 1);
+                            }
+                        }
+                    }
+                }
+            } catch (Throwable ignored) {
+            }
+
+            new Handler(Looper.getMainLooper()).post(new OneTimeTokenReadyRunnable(
+                    callback, finalEmail, finalToken, aid, displayName, avatarUrl, level));
         }
     }
 
