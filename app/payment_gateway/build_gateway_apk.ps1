@@ -28,12 +28,12 @@ New-Item -ItemType Directory -Path "bin" -Force | Out-Null
 New-Item -ItemType Directory -Path "bin\dex" -Force | Out-Null
 
 $javaFiles = Get-ChildItem -Path "src\com\vareon\gateway\*.java" | ForEach-Object { $_.FullName }
-& $javac --release 8 -XDstringConcat=inline -d "bin" -cp "$androidJar" $javaFiles
+& $javac -g:none -source 8 -target 8 -encoding UTF-8 -Xlint:-options -d "bin" -cp "$androidJar" $javaFiles
 if ($LASTEXITCODE -ne 0) { throw "javac compilation failed!" }
 
 Write-Host ">>> Step 3: Generating DEX with d8..."
-& $jar cf bin\gateway.jar -C bin com
-& $java -cp "$d8Jar" com.android.tools.r8.D8 --min-api 21 --lib "$androidJar" --output "bin\dex" bin\gateway.jar
+$classFiles = Get-ChildItem -Path "bin\com" -Recurse -Filter "*.class" | ForEach-Object { $_.FullName }
+& $java -cp "$d8Jar" com.android.tools.r8.D8 --release --min-api 21 --lib "$androidJar" --output "bin\dex" $classFiles
 if ($LASTEXITCODE -ne 0) { throw "d8 failed!" }
 
 Write-Host ">>> Step 4: Packaging APK..."

@@ -8,6 +8,10 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+/**
+ * Direct Cloudflare Worker D1 HTTP Forwarder with 3x Automatic Retry & Honest Status Reporting.
+ * Zero Firebase writes, zero slow Render hops, zero false "SAVED" status on network failures.
+ */
 public class GatewayHttp {
 
     public interface GatewayCallback {
@@ -16,6 +20,10 @@ public class GatewayHttp {
 
     public static void forwardSms(GatewayStorage storage, SmsRecord record, GatewayCallback callback) {
         new Thread(new ForwardTask(storage, record, callback)).start();
+    }
+
+    public static void forwardSmsSync(GatewayStorage storage, SmsRecord record, GatewayCallback callback) {
+        new ForwardTask(storage, record, callback).run();
     }
 
     private static class ForwardTask implements Runnable {
@@ -31,16 +39,17 @@ public class GatewayHttp {
 
         @Override
         public void run() {
-            String resultingStatus = "SAVED";
-            String serverMsg = "Saved to Cloud";
+            String resultingStatus = "RETRY";
+            String serverMsg = "Network error - queued for auto retry";
+            boolean syncedOk = false;
             boolean isAutoApproved = false;
 
-            String primaryUrl = storage.getServerUrl() + "/api/gateway/sms";
             String cfUrl = storage.getCloudflareUrl() + "/api/gateway/sms";
+            String secret = storage.getSecretKey();
 
             JSONObject payload = new JSONObject();
             try {
-                payload.put("secret", storage.getSecretKey());
+                payload.put("secret", secret);
                 payload.put("sender", record.getSender());
                 payload.put("message", record.getRawMessage());
                 payload.put("trxId", record.getTrxId());
@@ -50,39 +59,53 @@ public class GatewayHttp {
                 payload.put("timestamp", record.getTimestamp());
             } catch (Exception ignored) {}
 
-            // Send to Cloudflare D1 first (0ms cold start)
-            try {
-                JSONObject cfResp = postJson(cfUrl, payload, storage.getSecretKey());
-                if (cfResp != null) {
-                    if (cfResp.optBoolean("autoApproved", false)) {
-                        resultingStatus = "AUTO_APPROVED";
-                        isAutoApproved = true;
-                        serverMsg = "Auto Approved on Cloudflare D1!";
-                    } else if (cfResp.optBoolean("duplicate", false)) {
-                        resultingStatus = "DUPLICATE";
-                        serverMsg = "Duplicate TrxID Blocked";
-                    }
+            // 3x Automatic Retry with short backoff (0ms -> 1200ms -> 3000ms)
+            int[] waits = new int[] { 0, 1200, 3000 };
+            JSONObject resp = null;
+            for (int attempt = 0; attempt < waits.length; attempt++) {
+                if (waits[attempt] > 0) {
+                    try { Thread.sleep(waits[attempt]); } catch (InterruptedException ignored) {}
                 }
-            } catch (Exception ignored) {}
+                resp = postJson(cfUrl, payload, secret);
+                if (resp != null) break;
+            }
 
-            // Send to Render Server
-            try {
-                JSONObject renderResp = postJson(primaryUrl, payload, storage.getSecretKey());
-                if (renderResp != null) {
-                    if (renderResp.optBoolean("autoApproved", false)) {
-                        resultingStatus = "AUTO_APPROVED";
-                        isAutoApproved = true;
-                        serverMsg = "Auto Approved on Render!";
-                    } else if (renderResp.optBoolean("duplicate", false) || renderResp.optString("error", "").contains("ইতিমধ্যে")) {
-                        resultingStatus = "DUPLICATE";
-                        serverMsg = "Duplicate TrxID Blocked";
-                    }
+            if (resp != null) {
+                if (resp.optBoolean("autoApproved", false)) {
+                    resultingStatus = "AUTO_APPROVED";
+                    syncedOk = true;
+                    isAutoApproved = true;
+                    serverMsg = "Auto Approved & Credited in D1!";
+                } else if (resp.optBoolean("locked", false)) {
+                    resultingStatus = "LOCKED";
+                    syncedOk = true;
+                    serverMsg = "Admin Personal Locked";
+                } else if (resp.optBoolean("duplicate", false)) {
+                    resultingStatus = "DUPLICATE";
+                    syncedOk = true;
+                    serverMsg = "Already Claimed / Used";
+                } else if (resp.optBoolean("expired", false)) {
+                    resultingStatus = "EXPIRED";
+                    syncedOk = true;
+                    serverMsg = "Expired (>30m)";
+                } else if (resp.optBoolean("ok", false)) {
+                    resultingStatus = "SYNCED";
+                    syncedOk = true;
+                    serverMsg = "Synced to Cloudflare D1";
+                } else {
+                    resultingStatus = "FAILED";
+                    serverMsg = resp.optString("error", "Rejected by server");
                 }
-            } catch (Exception ignored) {}
+            }
 
-            // Update local storage & stats
+            boolean wasAlreadySynced = storage.isTrxSynced(record.getTrxId());
+            if (syncedOk) {
+                storage.markTrxSynced(record.getTrxId());
+                if (!wasAlreadySynced) {
+                    storage.recordStats(true, isAutoApproved, record.getAmount());
+                }
+            }
             storage.updateRecordStatus(record.getTrxId(), resultingStatus);
-            storage.recordStats(isAutoApproved, record.getAmount());
 
             if (callback != null) {
                 callback.onComplete(record.getTrxId(), resultingStatus, serverMsg);
@@ -98,12 +121,14 @@ public class GatewayHttp {
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setRequestProperty("x-gateway-secret", secret);
+            conn.setRequestProperty("User-Agent", "PPAutoGateway/2.0");
             conn.setDoOutput(true);
-            conn.setConnectTimeout(7000);
-            conn.setReadTimeout(7000);
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(10000);
 
             OutputStream os = conn.getOutputStream();
             os.write(body.toString().getBytes("UTF-8"));
+            os.flush();
             os.close();
 
             int code = conn.getResponseCode();
@@ -123,6 +148,7 @@ public class GatewayHttp {
             }
             br.close();
 
+            if (sb.length() == 0) return null;
             return new JSONObject(sb.toString());
         } catch (Exception e) {
             return null;
