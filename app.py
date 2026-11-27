@@ -6686,23 +6686,38 @@ def unlock_portal_service_quests():
     # ULTRA-FAST CONCURRENT EXECUTION: Unlock all targets simultaneously (1-2s total!)
     def _do_unlock_single(quest):
         ach_id = quest["id"]
-        xp = int(quest.get("experiencePoints", 5000) or 5000)
-        steps_val = int(quest.get("totalSteps") or 1)
+        meta_q = quest_map.get(ach_id) or {}
+        xp = int(quest.get("experiencePoints") or meta_q.get("experiencePoints") or meta_q.get("xp") or 5000)
+        ach_type = str(quest.get("achievementType") or quest.get("type") or meta_q.get("achievementType") or meta_q.get("type") or "STANDARD").upper()
+        raw_steps = quest.get("totalSteps") or meta_q.get("totalSteps")
+        steps_val = int(raw_steps) if (raw_steps and int(raw_steps) > 0) else (1000 if ach_type == "INCREMENTAL" else 1)
 
         try:
             reveal_achievement(game_token, ach_id)
         except Exception:
             pass
 
-        res = unlock_achievement(game_token, ach_id)
-        if not (res and res.get("ok")):
-            res_steps = set_achievement_steps(game_token, ach_id, steps_val)
-            if res_steps and res_steps.get("ok"):
-                res = res_steps
-            else:
+        if ach_type == "INCREMENTAL" or steps_val > 1:
+            res = set_achievement_steps(game_token, ach_id, steps_val)
+            if not (res and res.get("ok")):
                 res_inc = increment_achievement(game_token, ach_id, steps_val)
                 if res_inc and res_inc.get("ok"):
                     res = res_inc
+            if not (res and res.get("ok")):
+                res_unl = unlock_achievement(game_token, ach_id)
+                if res_unl and res_unl.get("ok"):
+                    res = res_unl
+        else:
+            res = unlock_achievement(game_token, ach_id)
+            if not (res and res.get("ok")):
+                fallback_steps = max(steps_val, 1000)
+                res_steps = set_achievement_steps(game_token, ach_id, fallback_steps)
+                if res_steps and res_steps.get("ok"):
+                    res = res_steps
+                else:
+                    res_inc = increment_achievement(game_token, ach_id, fallback_steps)
+                    if res_inc and res_inc.get("ok"):
+                        res = res_inc
 
         ok = bool(res and res.get("ok"))
         err = str(res.get("error", "")) if (res and not ok) else ""

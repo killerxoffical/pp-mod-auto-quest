@@ -10786,37 +10786,34 @@
     "total_quests_count": 114,
     "selected_quests_count": 3,
     "selected_quest_ids": [
-      "CgkIzvLA59wVEAIQWg",
-      "CgkIzvLA59wVEAIQcQ",
+      "CgkIzvLA59wVEAIQbQ",
+      "CgkIzvLA59wVEAIQZw",
       "CgkIzvLA59wVEAIQTQ"
     ],
     "selected_quests": [
       {
-        "id": "CgkIzvLA59wVEAIQWg",
-        "name": "Acorn Collector I",
-        "description": "Remove 300 Acorns",
+        "id": "CgkIzvLA59wVEAIQbQ",
+        "name": "Designer I",
+        "description": "Change your decor 3 times",
         "experiencePoints": 500,
-        "achievementType": "INCREMENTAL",
-        "totalSteps": null,
-        "unlockedIconUrl": "https://lh3.googleusercontent.com/-y2eNOb6e6CCuU_TJ_Xg584gEelmqtnF_s_qDdDxnOaG6sBzahWYKiyifMHU6moatiY"
+        "type": "INCREMENTAL",
+        "totalSteps": 100
       },
       {
-        "id": "CgkIzvLA59wVEAIQcQ",
-        "name": "Highly Dangerous I",
-        "description": "Set off 75 Bombs",
+        "id": "CgkIzvLA59wVEAIQZw",
+        "name": "What's Inside I",
+        "description": "Remove 300 Boxes",
         "experiencePoints": 500,
-        "achievementType": "INCREMENTAL",
-        "totalSteps": null,
-        "unlockedIconUrl": "https://lh3.googleusercontent.com/b_BHBPLI3fNLuxh2kG6R7czluaa2z8LqZUIR1ySEr48Z14VTPwwgt5Reqi2bym1VMHA"
+        "type": "INCREMENTAL",
+        "totalSteps": 100
       },
       {
         "id": "CgkIzvLA59wVEAIQTQ",
         "name": "Smart Move",
         "description": "Beat the level on the last move",
         "experiencePoints": 1500,
-        "achievementType": "STANDARD",
-        "totalSteps": null,
-        "unlockedIconUrl": "https://lh3.googleusercontent.com/alJ7JTBuqVWGK0i3GtZmVdZRRcgxVoV73FOoShETASArmruVb_XeqYLXq9Xaour4hMOV"
+        "type": "STANDARD",
+        "totalSteps": null
       }
     ],
     "all_quests": [
