@@ -6270,12 +6270,12 @@ def sanitize_gpgs_error(raw_err: str, game_title: str = "Game") -> str:
             if reason == "UnauthorizedThirdPartyApiAccess" or "not authorized to call third party API" in msg:
                 return (
                     f"এই Google একাউন্টটিতে Google Play Games-এর Third-Party এক্সেস পারমিশন রেস্ট্রিক্টেড আছে। "
-                    f"প্লে স্টোরে একাউন্টটি সচল করুন বা PPM Server অ্যাপ থেকে অন্য একাউন্ট সিলেক্ট করুন।"
+                    f"প্লে স্টোরে একাউন্টটি সচল করুন বা PP QUEST অ্যাপ থেকে অন্য একাউন্ট সিলেক্ট করুন।"
                 )
             if reason == "ApplicationRequestNotAllowed" or "Attempt to access application" in msg:
                 return (
                     f"Google Play Games এই গেমটির রিমোট রিকোয়েস্ট এক্সেপ্ট করেনি। "
-                    f"দয়া করে PPM Server অ্যাপ থেকে গেমটি একবার ওপেন করুন অথবা নতুন কোড দিন।"
+                    f"দয়া করে কিছুক্ষণ পর আবার চেষ্টা করুন অথবা অন্য গেম ট্রাই করুন।"
                 )
             if msg:
                 return f"{game_title}: {msg}"
@@ -6285,24 +6285,24 @@ def sanitize_gpgs_error(raw_err: str, game_title: str = "Game") -> str:
     if "UnauthorizedThirdPartyApiAccess" in err_str or "not authorized to call third party API" in err_str:
         return (
             f"এই Google একাউন্টটিতে Google Play Games-এর Third-Party এক্সেস পারমিশন রেস্ট্রিক্টেড আছে। "
-            f"প্লে স্টোরে একাউন্টটি সচল করুন বা PPM Server অ্যাপ থেকে অন্য একাউন্ট সিলেক্ট করুন।"
+            f"প্লে স্টোরে একাউন্টটি সচল করুন বা PP QUEST অ্যাপ থেকে অন্য একাউন্ট সিলেক্ট করুন।"
         )
     if "ApplicationRequestNotAllowed" in err_str or "Attempt to access application" in err_str:
         return (
             f"Google Play Games এই গেমটির রিমোট রিকোয়েস্ট এক্সেপ্ট করেনি। "
-            f"দয়া করে PPM Server অ্যাপ থেকে গেমটি একবার ওপেন করুন অথবা নতুন কোড দিন।"
+            f"দয়া করে কিছুক্ষণ পর আবার চেষ্টা করুন অথবা অন্য গেম ট্রাই করুন।"
         )
     if "BadAuthentication" in err_str:
-        return "গুগল সেশনের মেয়াদ শেষ হয়েছে। দয়া করে PPM Server অ্যাপ খুলে নতুন QID রিফ্রেশ করুন।"
+        return "গুগল সেশনের মেয়াদ শেষ হয়েছে। দয়া করে PP QUEST অ্যাপ থেকে পুনরায় Google লগইন করুন।"
 
     # কড়া প্রাইভেসি ও সিকিউরিটি শিল্ড: টোকেন, সার্ভার URL, ইন্টারনাল ফাইল পাথ বা ব্যাকএন্ড তথ্য ইউজারকে দেখানো সম্পূর্ণ নিষিদ্ধ
     sensitive_markers = ["aas_et", "oauth2rt", "ya29.", "token", "http://", "https://", "Traceback", "Exception", "File \"", "NoneType", "KeyError", "401", "403", "500"]
     for sm in sensitive_markers:
         if sm.lower() in err_str.lower():
-            return "গুগল প্লে গেমসে কোয়েস্ট আনলক করতে সমস্যা হয়েছে। দয়া করে PPM Server অ্যাপ থেকে নতুন QID দিন অথবা অন্য গেম ট্রাই করুন।"
+            return "গুগল প্লে গেমসে কোয়েস্ট আনলক করতে সমস্যা হয়েছে। দয়া করে পুনরায় লগইন করুন অথবা অন্য গেম ট্রাই করুন।"
 
     if "{" in err_str or "}" in err_str or len(err_str) > 100:
-        return "গুগল প্লে গেমসে কোয়েস্ট আনলক করতে সমস্যা হয়েছে। দয়া করে PPM Server অ্যাপ থেকে নতুন QID দিন অথবা অন্য গেম ট্রাই করুন।"
+        return "গুগল প্লে গেমসে কোয়েস্ট আনলক করতে সমস্যা হয়েছে। দয়া করে পুনরায় লগইন করুন অথবা অন্য গেম ট্রাই করুন।"
 
     return err_str
 
