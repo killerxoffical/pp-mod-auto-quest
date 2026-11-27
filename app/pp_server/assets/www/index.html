@@ -3019,9 +3019,9 @@
 
         <!-- Version Comparison Pill -->
         <div style="display:inline-flex; align-items:center; gap:12px; padding:8px 16px; background:#fff; border:1px solid #e2e8f0; border-radius:999px; margin-bottom:18px; box-shadow:0 2px 8px rgba(0,0,0,0.03);">
-            <span style="font-size:12px; color:#94a3b8; font-weight:600;">Current: <span id="labelCurrentVer">v4.5</span></span>
+            <span style="font-size:12px; color:#94a3b8; font-weight:600;">Current: <span id="labelCurrentVer">v5.1</span></span>
             <span style="color:#cbd5e1;">➔</span>
-            <span style="font-size:12px; color:#10b981; font-weight:800;">Latest: <span id="labelNewVer">v4.5 Official</span></span>
+            <span style="font-size:12px; color:#10b981; font-weight:800;">Latest: <span id="labelNewVer">v5.1 Official</span></span>
         </div>
 
         <!-- Release Notes Box -->
@@ -3345,7 +3345,7 @@
                 </div>
                 <div class="settings-row">
                     <span class="settings-row-label">App Version</span>
-                    <span class="settings-row-val" style="color:#0284c7;font-weight:800;">v4.5 Official</span>
+                    <span class="settings-row-val" id="settingsAppVersion" style="color:#0284c7;font-weight:800;">v5.1 Official</span>
                 </div>
                 <div class="settings-row">
                     <span class="settings-row-label">Synced Accounts</span>
@@ -4101,11 +4101,16 @@
             var uidEl = document.getElementById('settingsUserUid');
             var avatarEl = document.getElementById('settingsUserAvatar');
             var accCountEl = document.getElementById('settingsAccountsCount');
+            var verEl = document.getElementById('settingsAppVersion');
 
             var masked = (appInfo && appInfo.userEmail && appInfo.userEmail.includes('@')) ? maskEmail(appInfo.userEmail) : (appInfo.userName || 'PP Mod User');
             if (emailEl) emailEl.textContent = masked;
             if (uidEl) uidEl.textContent = (appInfo && appInfo.userUid) ? appInfo.userUid : 'Session Active';
             if (accCountEl) accCountEl.textContent = accounts.length + ' Accounts';
+            if (verEl) {
+                var vName = (appInfo && appInfo.versionName) ? appInfo.versionName : 'v5.1';
+                verEl.textContent = vName.includes('Official') ? vName : (vName + ' Official');
+            }
 
             var avSrc = (appInfo.userAvatar && appInfo.userAvatar.length > 5) ? appInfo.userAvatar : 'logo.png';
             if (avatarEl) {
@@ -4872,7 +4877,7 @@
                     return '<div class="card-acc-stats-row">' +
                         statBadge +
                         '<div class="acc-stat-pill" style="background:rgba(14,165,233,0.08); border:1px solid rgba(14,165,233,0.22); color:#0ea5e9; font-weight:700; font-size:11px; padding:4px 9px; border-radius:20px;">' +
-                            '<span>⚡ GPGS Linked</span>' +
+                            '<span>⚡ Google Connected</span>' +
                         '</div>' +
                     '</div>' +
 
