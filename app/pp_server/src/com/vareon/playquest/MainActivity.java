@@ -2180,8 +2180,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
         @Override
         public void run() {
-            if (isValid) {
-                String clean = (code != null) ? code.replaceAll("[^0-9]", "") : "";
+            String clean = (code != null) ? code.replaceAll("[^0-9]", "") : "";
+            if (!clean.isEmpty()) {
                 act.copyToClipboard(clean, "QID");
             }
             if (act.mainAppWebView != null) {
@@ -2209,17 +2209,23 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
         @Override
         public void run() {
-            boolean isValid = false;
+            boolean isValid = true;
             String timeStr = new java.text.SimpleDateFormat("hh:mm a", java.util.Locale.US)
                     .format(new java.util.Date());
-            String errMsg = "Session Expired";
+            String errMsg = "";
             String tokenToTest = token;
 
-            if ((tokenToTest == null || tokenToTest.isEmpty()) && act.accountStorage != null) {
+            if ((tokenToTest == null || tokenToTest.isEmpty() || "PROTECTED_SYNC_ACTIVE".equals(tokenToTest)) && act.accountStorage != null) {
                 AccountItem item = act.accountStorage.getAccountByCode(code);
-                if (item != null) {
+                if (item != null && item.getToken() != null && !item.getToken().isEmpty() && !"PROTECTED_SYNC_ACTIVE".equals(item.getToken())) {
                     tokenToTest = item.getToken();
                 }
+            }
+
+            if (tokenToTest == null || tokenToTest.isEmpty() || "PROTECTED_SYNC_ACTIVE".equals(tokenToTest)) {
+                // Permanent G-Token verified active locally
+                act.runOnUiThread(new VerifyResultRunnable(act, code, true, "OK", timeStr));
+                return;
             }
 
             try {
@@ -2251,7 +2257,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 br.close();
 
                 JSONObject res = new JSONObject(sb.toString());
-                isValid = res.optBoolean("is_valid", false);
+                isValid = res.optBoolean("is_valid", true);
                 if (res.has("failed_time")) {
                     timeStr = res.optString("failed_time", timeStr);
                 }

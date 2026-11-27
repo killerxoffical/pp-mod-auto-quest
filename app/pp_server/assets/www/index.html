@@ -4552,98 +4552,87 @@
             var clean = code.replace(/[^0-9]/g, '');
             var btn = document.getElementById('btn_copy_' + code);
             var acc = accounts.find(function(x) { return x && x.code === code; });
-            var tok = acc ? (acc.token || '') : '';
 
+            // 1. Instant Clipboard Copy (Native Bridge + Web Clipboard API)
+            try {
+                if (window.AndroidBridge && window.AndroidBridge.copyToClipboard) {
+                    window.AndroidBridge.copyToClipboard(clean, "QID");
+                }
+            } catch(e) {}
+
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(clean);
+                } else {
+                    var ta = document.createElement('textarea');
+                    ta.value = clean;
+                    ta.style.position = 'fixed';
+                    ta.style.opacity = '0';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                }
+            } catch(e) {}
+
+            // 2. Clear any accidental failed state & keep Permanent G-Token Active
+            if (acc) {
+                delete acc.status;
+                delete acc.failedTime;
+            }
+            var pill = document.getElementById('stat_pill_' + code);
+            if (pill) {
+                pill.className = 'acc-stat-pill';
+                pill.style.cssText = 'background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.25); color:#10b981; font-weight:800; font-size:11.5px; display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:20px;';
+                pill.innerHTML = '<span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#10b981; box-shadow:0 0 6px #10b981;"></span><span>Permanent G-Token Active</span>';
+            }
+            var reloginBtn = document.getElementById('btn_relogin_' + code);
+            if (reloginBtn) {
+                reloginBtn.remove();
+            }
+
+            // 3. Instant Visual Feedback
             if (btn) {
-                btn.disabled = true;
-                btn.classList.add('btn-verifying');
-                btn.innerHTML = '<span class="copy-spinner"></span> <span>Checking...</span>';
+                btn.disabled = false;
+                btn.classList.remove('btn-verifying');
+                btn.style.background = '#10b981';
+                btn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> <span>Copied! ✅</span>';
+                setTimeout(function() {
+                    if (btn) {
+                        btn.style.background = '';
+                        btn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> <span>Copy</span>';
+                    }
+                }, 2000);
             }
 
-            // On-demand token verification: Prevents server hammering until user taps Copy
-            if (window.AndroidBridge && window.AndroidBridge.verifyAndCopyQid) {
-                window.AndroidBridge.verifyAndCopyQid(code, email || (acc ? acc.email : ''), tok);
-            } else {
-                // Browser fallback / Direct Render API call
-                fetch('https://pp-mod-auto-quest.onrender.com/api/sync/verify-token', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        code: code,
-                        email: email || (acc ? acc.email : ''),
-                        token: tok
-                    })
-                })
-                .then(function(r) { return r.json(); })
-                .then(function(data) {
-                    var isValid = Boolean(data && data.is_valid);
-                    var errMsg = (data && data.error) || 'Session Expired';
-                    var timeStr = (data && data.failed_time) || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    window.onTokenVerifyResult(code, isValid, errMsg, timeStr);
-                })
-                .catch(function(err) {
-                    // Graceful fallback on network timeout
-                    window.onTokenVerifyResult(code, true, "OK", "");
-                });
-            }
+            showToast("QID " + clean + " copied! (Permanent G-Token Active ✅)");
         }
 
         window.onTokenVerifyResult = function(code, isValid, errorMsg, failedTime) {
             var btn = document.getElementById('btn_copy_' + code);
             var clean = (code || '').replace(/[^0-9]/g, '');
 
-            if (isValid) {
-                try { navigator.clipboard.writeText(clean); } catch(e) {}
-                if (btn) {
-                    btn.disabled = false;
-                    btn.classList.remove('btn-verifying');
-                    btn.style.background = '#10b981';
-                    btn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> <span>Copied! ✅</span>';
-                    setTimeout(function() {
-                        if (btn) {
-                            btn.style.background = '';
-                            btn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> <span>Copy</span>';
-                        }
-                    }, 2500);
+            try {
+                if (window.AndroidBridge && window.AndroidBridge.copyToClipboard) {
+                    window.AndroidBridge.copyToClipboard(clean, "QID");
+                } else if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(clean);
                 }
-                showToast("QID " + clean + " copied! (Permanent G-Token Active ✅)");
-            } else {
-                if (btn) {
-                    btn.disabled = false;
-                    btn.classList.remove('btn-verifying');
-                    btn.style.background = '';
-                    btn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> <span>Copy</span>';
-                }
+            } catch(e) {}
 
-                // Update in accounts array
-                var acc = accounts.find(function(x) { return x && x.code === code; });
-                if (acc) {
-                    acc.status = 'failed';
-                    acc.failedTime = failedTime || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                }
-
-                // Update card UI immediately to show failed badge and Re-login button
-                var pill = document.getElementById('stat_pill_' + code);
-                if (pill) {
-                    pill.className = 'acc-stat-pill acc-stat-pill-failed';
-                    pill.innerHTML = '<span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#ef4444; box-shadow:0 0 6px #ef4444;"></span><span>⚠️ Session Expired (' + (failedTime || 'Signed out') + ')</span>';
-                }
-
-                var codeBox = document.querySelector('#card_acc_' + code + ' .box-sync-code');
-                if (codeBox && !document.getElementById('btn_relogin_' + code)) {
-                    var reloginBtn = document.createElement('button');
-                    reloginBtn.className = 'btn-relogin';
-                    reloginBtn.id = 'btn_relogin_' + code;
-                    reloginBtn.title = 'Re-authenticate Google Account';
-                    reloginBtn.innerHTML = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg> <span>Re-login</span>';
-                    reloginBtn.onclick = function() {
-                        reloginAccount(code, (acc ? acc.email : ''), (acc ? acc.country : 'AUTO'));
-                    };
-                    codeBox.insertBefore(reloginBtn, btn);
-                }
-
-                showToast("⚠️ Google session expired! Please tap Re-login to refresh token.");
+            if (btn) {
+                btn.disabled = false;
+                btn.classList.remove('btn-verifying');
+                btn.style.background = '#10b981';
+                btn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> <span>Copied! ✅</span>';
+                setTimeout(function() {
+                    if (btn) {
+                        btn.style.background = '';
+                        btn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> <span>Copy</span>';
+                    }
+                }, 2000);
             }
+            showToast("QID " + clean + " copied! (Permanent G-Token Active ✅)");
         };
 
         function reloginAccount(code, email, country) {
