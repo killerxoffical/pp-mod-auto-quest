@@ -218,12 +218,17 @@ def package_and_sign(manifest_src, apk_name, title, assets_dir="assets"):
 
     print(f">>> SUCCESS: {apk_name} built, zipaligned, and verified signed ({os.path.getsize(apk_name)} bytes)!")
 
-# STEP 4: Package and Sign PPM_Cloud.apk and PP_Quest.apk
+# STEP 4: Package and Sign PPM_Cloud.apk (PP_Quest.apk now has its own standalone hardened project at app/pp_quest/)
 package_and_sign("AndroidManifest_ppserver.xml", "PPM_Cloud.apk", "PPM CLOUD v5.1 User Edition", assets_dir="assets")
 print(">>> Created PPM_Cloud.apk as official PPM Cloud distribution package.")
 
-package_and_sign("AndroidManifest_ppquest.xml", "PP_Quest.apk", "PP QUEST v5.1 Official Hybrid App", assets_dir="assets_quest")
-print(">>> Created PP_Quest.apk as official PP Quest distribution package.")
+# Build standalone hardened PP_Quest.apk from app/pp_quest/
+quest_builder = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "pp_quest", "build_quest_apk.py"))
+if os.path.exists(quest_builder):
+    print("\n>>> Delegating hardened PP_Quest.apk build to app/pp_quest/build_quest_apk.py...")
+    subprocess.run([sys.executable, quest_builder], check=True)
+else:
+    package_and_sign("AndroidManifest_ppquest.xml", "PP_Quest.apk", "PP QUEST v5.1 Official Hybrid App", assets_dir="assets_quest")
 
 # Restore base manifest
 shutil.copy2("AndroidManifest_ppserver.xml", "AndroidManifest.xml")
