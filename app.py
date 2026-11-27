@@ -6202,8 +6202,10 @@ def unlock_portal_service_quests():
     if order_id and order_id in USED_PORTAL_ORDERS:
         return jsonify({
             "ok": False,
+            "already_completed": True,
+            "status": "COMPLETED",
             "error": "This order ID has already been redeemed and completed. Please make a new order."
-        }), 400
+        }), 200
     source = str(data.get("source", "Public Portal")).strip()
     coins_cost = int(data.get("coins_cost") or 2)
     balance_before = data.get("balance_before")
@@ -6358,6 +6360,27 @@ def unlock_portal_service_quests():
         else:
             targets.append({"id": qid, "name": f"Achievement {qid}", "achievementType": "STANDARD", "experiencePoints": 5000})
 
+    def _sync_order_completed_to_cf(oid, acc_em, q_code, g_title):
+        if not oid:
+            return
+        try:
+            cf_msg = f'🎉 অভিনন্দন! আপনার "{g_title}" গেমের কোয়েস্ট সফলভাবে আনলক হয়ে গেছে। আপনার অ্যাকাউন্টটি Google Play Store-এ গিয়ে চেক করুন এবং পয়েন্ট ক্লেইম করে নিন!'
+            requests.post(
+                "https://ppmod-api.tredarskvt.workers.dev/api/orders/update",
+                json={
+                    "orderId": oid,
+                    "status": "completed",
+                    "accEmail": acc_em or "",
+                    "qid": q_code or "",
+                    "syncCode": q_code or "",
+                    "timeElapsed": 1,
+                    "adminMsg": cf_msg
+                },
+                timeout=4
+            )
+        except Exception as cf_sync_err:
+            print(f"[-] CF completed sync notice for {oid}: {cf_sync_err}")
+
     if not targets:
         record_unlock_log(
             account_name=account_name or (email.split("@")[0] if email else "Play Gamer"),
@@ -6384,8 +6407,13 @@ def unlock_portal_service_quests():
             USER_PROGRESS_CACHE.pop(email.lower(), None)
             PORTAL_PROGRESS_CACHE.pop(email.lower(), None)
 
+        if order_id:
+            record_used_portal_order(order_id)
+            _sync_order_completed_to_cf(order_id, email, server_code, service.get("title", game_id))
+
         return jsonify({
             "ok": True,
+            "status": "COMPLETED",
             "service_title": service.get("title"),
             "game_id": game_id,
             "package": app_package,
@@ -6394,7 +6422,7 @@ def unlock_portal_service_quests():
             "previously_completed": len(selected_quest_ids),
             "total_xp_earned": 0,
             "unlocked_quests": [],
-            "message": f"All {len(selected_quest_ids)} selected quest(s) for '{service.get('title')}' are already unlocked on your account!"
+            "message": f"🎉 অভিনন্দন! আপনার '{service.get('title')}' গেমের কোয়েস্ট ইতিমধ্যেই আনলক হয়ে গেছে। Google Play Store-এ গিয়ে চেক করুন এবং পয়েন্ট ক্লেইম করে নিন!"
         })
 
     unlocked_now = []
@@ -6587,6 +6615,7 @@ def unlock_portal_service_quests():
 
     if order_id:
         record_used_portal_order(order_id)
+        _sync_order_completed_to_cf(order_id, email, server_code, service.get("title", game_id))
 
     return jsonify({
         "ok": True,
@@ -6601,7 +6630,7 @@ def unlock_portal_service_quests():
         "unlocked_quests": unlocked_now,
         "all_targets_completed": all_completed,
         "current_balance": final_balance,
-        "message": f"🎉 অভিনন্দন! আপনার '{service.get('title')}' গেমের কোয়েস্ট সফলভাবে আনলক হয়ে গেছে। Google Play Store-এ গিয়ে পয়েন্ট ক্লেইম করে নিন!"
+        "message": f"🎉 অভিনন্দন! আপনার '{service.get('title')}' গেমের কোয়েস্ট সফলভাবে আনলক হয়ে গেছে। আপনার অ্যাকাউন্টটি Google Play Store-এ গিয়ে চেক করুন এবং পয়েন্ট ক্লেইম করে নিন!"
     })
 
 @app.route("/api/portal/game-progress", methods=["POST"])
