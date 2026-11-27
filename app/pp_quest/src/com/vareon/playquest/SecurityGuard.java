@@ -42,24 +42,24 @@ public class SecurityGuard {
 
     // ==================== BUILD-INJECTED XOR-OBFUSCATED CONSTANTS ====================
     // Every build generates fresh XOR masks so NO plain cert SHA-256, hash, pepper, or API URL appears in classes.dex!
-    private static final byte XOR_MASK = (byte) -16;
+    private static final byte XOR_MASK = (byte) 75;
 
     // Official release certificate SHA-256 (32 raw bytes, XOR-masked)
-    private static final byte[] ENC_CERT_SHA256 = new byte[] { (byte)-76, (byte)53, (byte)43, (byte)92, (byte)117, (byte)1, (byte)-59, (byte)-25, (byte)-63, (byte)85, (byte)81, (byte)87, (byte)-28, (byte)61, (byte)18, (byte)-61, (byte)-74, (byte)21, (byte)119, (byte)-78, (byte)123, (byte)-12, (byte)-49, (byte)-70, (byte)-88, (byte)-67, (byte)51, (byte)-29, (byte)-54, (byte)-125, (byte)-75, (byte)120 };
+    private static final byte[] ENC_CERT_SHA256 = new byte[] { (byte)15, (byte)-114, (byte)-112, (byte)-25, (byte)-50, (byte)-70, (byte)126, (byte)92, (byte)122, (byte)-18, (byte)-22, (byte)-20, (byte)95, (byte)-122, (byte)-87, (byte)120, (byte)13, (byte)-82, (byte)-52, (byte)9, (byte)-64, (byte)79, (byte)116, (byte)1, (byte)19, (byte)6, (byte)-120, (byte)88, (byte)113, (byte)56, (byte)14, (byte)-61 };
 
     // Expected SHA-256 of assets/vault/core.bin (32 raw bytes, XOR-masked)
-    private static final byte[] ENC_VAULT_SHA256 = new byte[] { (byte)15, (byte)-35, (byte)-88, (byte)-50, (byte)-68, (byte)-49, (byte)91, (byte)-99, (byte)-109, (byte)-4, (byte)66, (byte)-56, (byte)-17, (byte)-7, (byte)122, (byte)66, (byte)127, (byte)37, (byte)-36, (byte)-38, (byte)-117, (byte)-114, (byte)-20, (byte)-46, (byte)-31, (byte)25, (byte)102, (byte)-67, (byte)113, (byte)17, (byte)-67, (byte)65 };
+    private static final byte[] ENC_VAULT_SHA256 = new byte[] { (byte)-102, (byte)-93, (byte)-103, (byte)103, (byte)-27, (byte)-41, (byte)24, (byte)-76, (byte)37, (byte)-1, (byte)-40, (byte)-41, (byte)-16, (byte)25, (byte)62, (byte)-107, (byte)53, (byte)-69, (byte)16, (byte)-24, (byte)92, (byte)-49, (byte)-18, (byte)119, (byte)-113, (byte)55, (byte)-103, (byte)-74, (byte)78, (byte)127, (byte)-125, (byte)123 };
 
     // Build-specific 32-byte key derivation pepper (XOR-masked)
-    private static final byte[] ENC_VAULT_PEPPER = new byte[] { (byte)-15, (byte)-104, (byte)-51, (byte)-97, (byte)43, (byte)-128, (byte)115, (byte)107, (byte)-11, (byte)10, (byte)15, (byte)-11, (byte)16, (byte)-46, (byte)-71, (byte)-50, (byte)45, (byte)-15, (byte)-57, (byte)113, (byte)-39, (byte)-50, (byte)71, (byte)-43, (byte)-64, (byte)125, (byte)31, (byte)-25, (byte)-66, (byte)83, (byte)84, (byte)-72 };
+    private static final byte[] ENC_VAULT_PEPPER = new byte[] { (byte)3, (byte)-26, (byte)25, (byte)-2, (byte)-104, (byte)51, (byte)36, (byte)69, (byte)2, (byte)52, (byte)-86, (byte)29, (byte)82, (byte)-29, (byte)-19, (byte)83, (byte)-104, (byte)-88, (byte)127, (byte)21, (byte)29, (byte)100, (byte)101, (byte)47, (byte)-73, (byte)-2, (byte)-127, (byte)-117, (byte)75, (byte)-59, (byte)-117, (byte)46 };
 
     // Obfuscated package name ("com.ppm.quest")
-    private static final byte[] ENC_EXPECTED_PKG = new byte[] { (byte)-109, (byte)-128, (byte)-93, (byte)-125, (byte)-4, (byte)27, (byte)39, (byte)7, (byte)121, (byte)-110, (byte)-93, (byte)-42, (byte)-16 };
+    private static final byte[] ENC_EXPECTED_PKG = new byte[] { (byte)40, (byte)59, (byte)24, (byte)56, (byte)71, (byte)-96, (byte)-100, (byte)-68, (byte)-62, (byte)41, (byte)24, (byte)109, (byte)75 };
 
     // Obfuscated API endpoints
-    private static final byte[] ENC_WORKER_BASE = new byte[] { (byte)-104, (byte)-101, (byte)-70, (byte)-35, (byte)-1, (byte)81, (byte)101, (byte)6, (byte)120, (byte)-105, (byte)-85, (byte)-54, (byte)-32, (byte)78, (byte)35, (byte)81, (byte)105, (byte)-47, (byte)-86, (byte)-49, (byte)-7, (byte)31, (byte)59, (byte)75, (byte)107, (byte)-100, (byte)-96, (byte)-63, (byte)-70, (byte)4, (byte)61, (byte)67, (byte)123, (byte)106, (byte)-100, (byte)-66, (byte)-126, (byte)-17, (byte)15, (byte)63 };
-    private static final byte[] ENC_PPMOD_PORTAL = new byte[] { (byte)-104, (byte)-101, (byte)-70, (byte)-35, (byte)-1, (byte)81, (byte)101, (byte)6, (byte)120, (byte)-105, (byte)-85, (byte)-54, (byte)-32, (byte)16, (byte)108, (byte)79, (byte)101, (byte)-117, (byte)-78, (byte)-44, (byte)-6, (byte)2, (byte)116, (byte)88, (byte)104, (byte)-121, (byte)-7 };
-    private static final byte[] ENC_RENDER_BASE = new byte[] { (byte)-104, (byte)-101, (byte)-70, (byte)-35, (byte)-1, (byte)81, (byte)101, (byte)6, (byte)120, (byte)-105, (byte)-21, (byte)-56, (byte)-21, (byte)7, (byte)111, (byte)64, (byte)117, (byte)-117, (byte)-79, (byte)-112, (byte)-19, (byte)14, (byte)63, (byte)74, (byte)108, (byte)-39, (byte)-71, (byte)-37, (byte)-26, (byte)22, (byte)60, (byte)85, (byte)117, (byte)125, (byte)-64, (byte)-82, (byte)-61, (byte)-26 };
+    private static final byte[] ENC_WORKER_BASE = new byte[] { (byte)35, (byte)32, (byte)1, (byte)102, (byte)68, (byte)-22, (byte)-34, (byte)-67, (byte)-61, (byte)44, (byte)16, (byte)113, (byte)91, (byte)-11, (byte)-104, (byte)-22, (byte)-46, (byte)106, (byte)17, (byte)116, (byte)66, (byte)-92, (byte)-128, (byte)-16, (byte)-48, (byte)39, (byte)27, (byte)122, (byte)1, (byte)-65, (byte)-122, (byte)-8, (byte)-64, (byte)-47, (byte)39, (byte)5, (byte)57, (byte)84, (byte)-76, (byte)-124 };
+    private static final byte[] ENC_PPMOD_PORTAL = new byte[] { (byte)35, (byte)32, (byte)1, (byte)102, (byte)68, (byte)-22, (byte)-34, (byte)-67, (byte)-61, (byte)44, (byte)16, (byte)113, (byte)91, (byte)-85, (byte)-41, (byte)-12, (byte)-34, (byte)48, (byte)9, (byte)111, (byte)65, (byte)-71, (byte)-49, (byte)-29, (byte)-45, (byte)60, (byte)66 };
+    private static final byte[] ENC_RENDER_BASE = new byte[] { (byte)35, (byte)32, (byte)1, (byte)102, (byte)68, (byte)-22, (byte)-34, (byte)-67, (byte)-61, (byte)44, (byte)80, (byte)115, (byte)80, (byte)-68, (byte)-44, (byte)-5, (byte)-50, (byte)48, (byte)10, (byte)43, (byte)86, (byte)-75, (byte)-124, (byte)-15, (byte)-41, (byte)98, (byte)2, (byte)96, (byte)93, (byte)-83, (byte)-121, (byte)-18, (byte)-50, (byte)-58, (byte)123, (byte)21, (byte)120, (byte)93 };
 
     // Cached verified raw cert SHA-256 bytes (computed directly from APK on disk)
     private static volatile byte[] sVerifiedCertSha256 = null;

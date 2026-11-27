@@ -552,12 +552,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                     return;
                 }
             }
-            List<String> emails = getDeviceGoogleEmails();
-            if (emails.isEmpty()) {
-                startGoogleLoginWebForSso();
-            } else {
-                notifyWebSsoCancel();
-            }
+            notifyWebSsoCancel();
         }
     }
 
@@ -2905,27 +2900,38 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             if (activity == null)
                 return;
             try {
-                List<String> emails = activity.getDeviceGoogleEmails();
-                if (emails.isEmpty()) {
-                    activity.startGoogleLoginWebForSso();
-                    return;
-                }
                 Intent intent;
                 if (Build.VERSION.SDK_INT >= 23) {
-                    intent = AccountManager.newChooseAccountIntent(null, null, new String[] { "com.google" }, null,
-                            null, null, null);
+                    intent = AccountManager.newChooseAccountIntent(
+                            null,
+                            null,
+                            new String[] { "com.google" },
+                            null,
+                            null,
+                            null,
+                            null);
                 } else {
-                    intent = AccountManager.newChooseAccountIntent(null, null, new String[] { "com.google" }, false,
-                            null, null, null, null);
+                    intent = AccountManager.newChooseAccountIntent(
+                            null,
+                            null,
+                            new String[] { "com.google" },
+                            true,
+                            null,
+                            null,
+                            null,
+                            null);
                 }
                 activity.startActivityForResult(intent, REQUEST_CODE_PICK_ACCOUNT);
             } catch (Throwable t) {
-                Log.e(TAG, "System account chooser error, falling back", t);
+                Log.e(TAG, "System account chooser error", t);
                 List<String> emails = activity.getDeviceGoogleEmails();
                 if (!emails.isEmpty()) {
                     activity.handleGoogleAccountSelectedForSso(emails.get(0));
                 } else {
-                    activity.startGoogleLoginWebForSso();
+                    Toast.makeText(activity,
+                            "এই ডিভাইসে Google Account Picker পাওয়া যায়নি। ফোনের Settings থেকে Google অ্যাকাউন্ট যোগ করুন।",
+                            Toast.LENGTH_LONG).show();
+                    activity.notifyWebSsoCancel();
                 }
             }
         }
