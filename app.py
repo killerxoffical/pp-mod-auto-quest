@@ -104,7 +104,7 @@ def _do_sync_portal_services():
             with open(real_db_path, "r", encoding="utf-8") as rdbf:
                 rdb = json.load(rdbf)
                 for gid, srv in local_data.items():
-                    if isinstance(srv, dict) and not srv.get("client_sig"):
+                    if isinstance(srv, dict):
                         g_entry = rdb.get(gid) or rdb.get(str(srv.get("game_id", "")))
                         if not g_entry and srv.get("package"):
                             g_entry = next((item for item in rdb.values() if isinstance(item, dict) and item.get("package") == srv.get("package")), None)
@@ -6524,29 +6524,29 @@ def unlock_portal_service_quests():
     app_package = game.get("package") or service.get("package")
     client_sig = game.get("client_sig") or service.get("client_sig")
 
-    if not client_sig:
-        try:
-            real_db_path = os.path.join(DATA_DIR, "real_achievements_db.json")
-            if os.path.exists(real_db_path):
-                with open(real_db_path, "r", encoding="utf-8") as rdbf:
-                    rdb = json.load(rdbf)
-                    g_entry = rdb.get(found_key) or rdb.get(str(service.get("game_id", "")))
-                    if not g_entry and app_package:
-                        g_entry = next((item for item in rdb.values() if item.get("package") == app_package), None)
-                    if g_entry and g_entry.get("client_sig"):
-                        client_sig = g_entry["client_sig"]
-        except Exception:
-            pass
+    # Always prefer authoritative verified client_sig from real_achievements_db.json
+    try:
+        real_db_path = os.path.join(DATA_DIR, "real_achievements_db.json")
+        if os.path.exists(real_db_path):
+            with open(real_db_path, "r", encoding="utf-8") as rdbf:
+                rdb = json.load(rdbf)
+                g_entry = rdb.get(found_key) or rdb.get(str(service.get("game_id", "")))
+                if not g_entry and app_package:
+                    g_entry = next((item for item in rdb.values() if isinstance(item, dict) and item.get("package") == app_package), None)
+                if g_entry and g_entry.get("client_sig"):
+                    client_sig = g_entry["client_sig"]
+    except Exception:
+        pass
 
     if not client_sig and app_package == PLAY_GAMES_PACKAGE:
         client_sig = "58e71785c961e7328ea9c76de647f8f6c4403b39"
 
-    # Authenticate with Google Play Games (Check pre-warmed token first for 0ms latency!)
+    # Authenticate with Google Play Games (Check pre-warmed token first, matching exact client_sig!)
     game_token = None
     warm_key = (email.lower(), app_package) if email else None
     if warm_key and warm_key in WARMED_GAME_TOKENS:
         w_entry = WARMED_GAME_TOKENS[warm_key]
-        if time.time() - w_entry.get("ts", 0) < 300: # 5 min freshness
+        if time.time() - w_entry.get("ts", 0) < 300 and w_entry.get("client_sig") == client_sig:
             game_token = w_entry.get("token")
 
     if not game_token:
@@ -6575,7 +6575,7 @@ def unlock_portal_service_quests():
                     tok_res = retry_res
 
             game_token = tok_res.get("access_token")
-            if warm_key:
+            if warm_key and game_token and not tok_res.get("is_fallback"):
                 WARMED_GAME_TOKENS[warm_key] = {"token": game_token, "ts": time.time(), "client_sig": client_sig, "android_id": android_id}
         else:
             game_token = access_token
