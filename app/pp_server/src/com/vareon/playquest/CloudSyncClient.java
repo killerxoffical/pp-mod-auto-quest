@@ -1424,15 +1424,7 @@ public class CloudSyncClient {
                 os.close();
 
                 int rCode = conn.getResponseCode();
-                if (rCode == 409) {
-                    if (storage != null && storage.isLoggedIn()) {
-                        storage.clearUserSession();
-                        storage.clearAccounts();
-                        if (ctx != null) {
-                            new Handler(Looper.getMainLooper()).post(new SessionLockedToastRunnable(ctx));
-                        }
-                    }
-                }
+                // 409 session lock removed - multi-device login supported without clearing accounts
                 if (rCode == 200 && storage != null) {
                     BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
                     StringBuilder sb = new StringBuilder();

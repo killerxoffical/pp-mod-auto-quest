@@ -418,16 +418,12 @@ public class AccountStorage {
             processedCodes.add(cloudItem.getCode());
         }
 
-        // Protect freshly added local accounts (< 3 minutes old) that haven't synced to
-        // cloud yet
-        long now = System.currentTimeMillis();
+        // Always preserve all local accounts that aren't explicitly deleted by the user
         for (AccountItem local : current) {
             if (local != null && local.getCode() != null && !processedCodes.contains(local.getCode())) {
                 if (!isDeleted(local.getCode(), local.getEmail())) {
-                    if (now - local.getTimestamp() < 180000) { // 3 minutes grace period
-                        secureList.add(local);
-                        processedCodes.add(local.getCode());
-                    }
+                    secureList.add(local);
+                    processedCodes.add(local.getCode());
                 }
             }
         }

@@ -1193,26 +1193,28 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
         @Override
         public void run() {
-            if (list != null) {
+            if (list != null && !list.isEmpty()) {
                 storage.replaceAllAccounts(list);
                 if (webView != null) {
                     webView.evaluateJavascript(
                             "if(window.refreshAccounts){ window.refreshAccounts(); } else if(window.loadAccounts){ window.loadAccounts(); }",
                             null);
                 }
-                if (!list.isEmpty()) {
-                    try {
-                        CloudSyncClient.registerDevice(activity, storage);
-                    } catch (Throwable ignored) {
-                    }
-                    Toast.makeText(activity, "Synced " + list.size() + " accounts from cloud.", Toast.LENGTH_SHORT)
-                            .show();
-                    activity.showSystemNotification("Cloud Accounts Synced",
-                            "Synced " + list.size() + " accounts to your device.");
-                } else {
-                    Toast.makeText(activity, "Cloud reset: accounts cleared.", Toast.LENGTH_SHORT).show();
+                try {
+                    CloudSyncClient.registerDevice(activity, storage);
+                } catch (Throwable ignored) {
                 }
+                Toast.makeText(activity, "Synced " + list.size() + " accounts from cloud.", Toast.LENGTH_SHORT)
+                        .show();
+                activity.showSystemNotification("Cloud Accounts Synced",
+                        "Synced " + list.size() + " accounts to your device.");
             } else {
+                // Cloud returned empty or null; NEVER wipe local accounts!
+                // Instead, backup existing local accounts to cloud:
+                try {
+                    CloudSyncClient.registerDevice(activity, storage);
+                } catch (Throwable ignored) {
+                }
                 Toast.makeText(activity, "Accounts are up to date.", Toast.LENGTH_SHORT).show();
             }
         }

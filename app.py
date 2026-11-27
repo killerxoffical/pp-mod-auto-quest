@@ -3371,20 +3371,8 @@ def register_device():
         except Exception:
             pass
 
-    # Enforce strictly 1 active device per user account (Single Device Session Lock)
-    if is_logged_in and (ppmod_email or ppmod_uid):
-        for other_dev_id, other_dev in devices.items():
-            if other_dev_id != device_id and other_dev.get("is_logged_in"):
-                o_email = str(other_dev.get("ppmod_email", "")).strip().lower()
-                o_uid = str(other_dev.get("ppmod_uid", "")).strip()
-                if (ppmod_email and o_email and o_email == ppmod_email) or (ppmod_uid and o_uid and o_uid == ppmod_uid):
-                    if device_id in devices:
-                        devices[device_id]["is_logged_in"] = False
-                        save_registered_devices(devices)
-                    return jsonify({
-                        "ok": False,
-                        "error": "এই একাউন্টটি ইতিমধ্যে অন্য একটি ডিভাইসে লগইন করা আছে! অনুগ্রহ করে আগের ডিভাইস থেকে লগআউট না করা পর্যন্ত নতুন ডিভাইসে লগইন করা যাবে না।"
-                    }), 409
+    # Multi-device login allowed (No session lock)
+    # Incoming device is registered and accounts are merged seamlessly
 
     # MULTI-DEVICE ACCOUNT MERGE:
     # Pull any existing accounts belonging to this user across all registered devices & SYNC_CODES
