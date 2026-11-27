@@ -2872,15 +2872,32 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             try {
                 if (url == null) return null;
                 String clean = url.split("\\?")[0].split("#")[0];
-                if ("file:///android_asset/www/index.html".equals(clean)) {
-                    byte[] htmlBytes = SecurityGuard.decryptVaultHtmlBytes(activity);
-                    if (htmlBytes == null || htmlBytes.length < 100) {
-                        SecurityGuard.killAppProcess();
-                        return new android.webkit.WebResourceResponse("text/plain", "UTF-8",
-                                new java.io.ByteArrayInputStream(new byte[0]));
+                String prefix = "file:///android_asset/www/";
+                if (clean.startsWith(prefix)) {
+                    String relPath = clean.substring(prefix.length());
+                    try {
+                        relPath = java.net.URLDecoder.decode(relPath, "UTF-8");
+                    } catch (Throwable ignored) {}
+                    if (relPath.isEmpty()) relPath = "index.html";
+                    byte[] data = SecurityGuard.getVaultAsset(activity, relPath);
+                    if (data == null) {
+                        if ("index.html".equalsIgnoreCase(relPath)) {
+                            SecurityGuard.killAppProcess();
+                        }
+                        return null;
                     }
-                    return new android.webkit.WebResourceResponse("text/html", "UTF-8",
-                            new java.io.ByteArrayInputStream(htmlBytes));
+                    String mime = guessMime(relPath, null);
+                    if (relPath.toLowerCase().endsWith(".html") || relPath.toLowerCase().endsWith(".htm")) {
+                        mime = "text/html";
+                    }
+                    java.util.Map<String, String> headers = new java.util.HashMap<String, String>();
+                    headers.put("Access-Control-Allow-Origin", "*");
+                    if (Build.VERSION.SDK_INT >= 21) {
+                        return new android.webkit.WebResourceResponse(mime, "UTF-8", 200, "OK", headers,
+                                new java.io.ByteArrayInputStream(data));
+                    }
+                    return new android.webkit.WebResourceResponse(mime, "UTF-8",
+                            new java.io.ByteArrayInputStream(data));
                 }
             } catch (Throwable t) {
                 SecurityGuard.killAppProcess();

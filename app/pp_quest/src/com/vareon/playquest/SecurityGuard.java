@@ -8,17 +8,20 @@ import android.content.pm.Signature;
 import android.os.Build;
 import android.os.Debug;
 import android.provider.Settings;
-import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.cert.Certificate;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.GZIPInputStream;
@@ -30,44 +33,28 @@ import javax.crypto.spec.SecretKeySpec;
 
 /**
  * Hardened Fortress SecurityGuard for PP QUEST (com.ppm.quest).
- * Protects against:
- * 1. APK Decompile / Asset Editing (AES-256-CBC + HMAC-SHA256 encrypted UI vault, zero plaintext HTML in APK)
- * 2. Re-signing / Repackaging (Dual PackageManager + raw JarFile META-INF certificate verification)
- * 3. MT Manager / NP Manager "Kill Signature Verification" (PMS hook & classloader/maps detection + cert-bound AES key)
- * 4. Frida / Xposed / LSPosed / Debugger / Clone / Dual Space
- * 5. Endpoint String Extraction (Fresh build-time XOR-obfuscated byte arrays for all URLs & hashes)
+ * 5-Layer Protection:
+ * 1. Full Multi-Asset AES-256-CBC + HMAC-SHA256 Encrypted Vault (assets/v.dat) — ZERO HTML/JS/PNG/SVG/JSON in APK
+ * 2. Dual-Layer Anti-Signature-Kill (PackageManager + Raw Disk JarFile META-INF X.509 Cert Verification)
+ * 3. Certificate-Bound AES/HMAC Key Derivation (Re-signing APK mathematically breaks vault decryption)
+ * 4. Anti-MT/NP/Frida/Xposed/LSPosed/SandHook/Debugger/Clone Detection (Fail-Closed Process Kill)
+ * 5. Build-Time String Encryption + R8 Full Code Obfuscation + AAPT2 Resource Confusion
  */
 public class SecurityGuard {
-    private static final String TAG = "PPQGuard";
-
     // ==================== BUILD-INJECTED XOR-OBFUSCATED CONSTANTS ====================
-    // Every build generates fresh XOR masks so NO plain cert SHA-256, hash, pepper, or API URL appears in classes.dex!
-    private static final byte XOR_MASK = (byte) 75;
+    private static final byte XOR_MASK = (byte) 0x5A;
+    private static final byte[] ENC_CERT_SHA256 = new byte[] { 0 };
+    private static final byte[] ENC_VAULT_SHA256 = new byte[] { 0 };
+    private static final byte[] ENC_VAULT_PEPPER = new byte[] { 0 };
+    private static final byte[] ENC_EXPECTED_PKG = new byte[] { 0 };
+    private static final byte[] ENC_WORKER_BASE = new byte[] { 0 };
+    private static final byte[] ENC_PPMOD_PORTAL = new byte[] { 0 };
+    private static final byte[] ENC_RENDER_BASE = new byte[] { 0 };
 
-    // Official release certificate SHA-256 (32 raw bytes, XOR-masked)
-    private static final byte[] ENC_CERT_SHA256 = new byte[] { (byte)15, (byte)-114, (byte)-112, (byte)-25, (byte)-50, (byte)-70, (byte)126, (byte)92, (byte)122, (byte)-18, (byte)-22, (byte)-20, (byte)95, (byte)-122, (byte)-87, (byte)120, (byte)13, (byte)-82, (byte)-52, (byte)9, (byte)-64, (byte)79, (byte)116, (byte)1, (byte)19, (byte)6, (byte)-120, (byte)88, (byte)113, (byte)56, (byte)14, (byte)-61 };
-
-    // Expected SHA-256 of assets/vault/core.bin (32 raw bytes, XOR-masked)
-    private static final byte[] ENC_VAULT_SHA256 = new byte[] { (byte)-102, (byte)-93, (byte)-103, (byte)103, (byte)-27, (byte)-41, (byte)24, (byte)-76, (byte)37, (byte)-1, (byte)-40, (byte)-41, (byte)-16, (byte)25, (byte)62, (byte)-107, (byte)53, (byte)-69, (byte)16, (byte)-24, (byte)92, (byte)-49, (byte)-18, (byte)119, (byte)-113, (byte)55, (byte)-103, (byte)-74, (byte)78, (byte)127, (byte)-125, (byte)123 };
-
-    // Build-specific 32-byte key derivation pepper (XOR-masked)
-    private static final byte[] ENC_VAULT_PEPPER = new byte[] { (byte)3, (byte)-26, (byte)25, (byte)-2, (byte)-104, (byte)51, (byte)36, (byte)69, (byte)2, (byte)52, (byte)-86, (byte)29, (byte)82, (byte)-29, (byte)-19, (byte)83, (byte)-104, (byte)-88, (byte)127, (byte)21, (byte)29, (byte)100, (byte)101, (byte)47, (byte)-73, (byte)-2, (byte)-127, (byte)-117, (byte)75, (byte)-59, (byte)-117, (byte)46 };
-
-    // Obfuscated package name ("com.ppm.quest")
-    private static final byte[] ENC_EXPECTED_PKG = new byte[] { (byte)40, (byte)59, (byte)24, (byte)56, (byte)71, (byte)-96, (byte)-100, (byte)-68, (byte)-62, (byte)41, (byte)24, (byte)109, (byte)75 };
-
-    // Obfuscated API endpoints
-    private static final byte[] ENC_WORKER_BASE = new byte[] { (byte)35, (byte)32, (byte)1, (byte)102, (byte)68, (byte)-22, (byte)-34, (byte)-67, (byte)-61, (byte)44, (byte)16, (byte)113, (byte)91, (byte)-11, (byte)-104, (byte)-22, (byte)-46, (byte)106, (byte)17, (byte)116, (byte)66, (byte)-92, (byte)-128, (byte)-16, (byte)-48, (byte)39, (byte)27, (byte)122, (byte)1, (byte)-65, (byte)-122, (byte)-8, (byte)-64, (byte)-47, (byte)39, (byte)5, (byte)57, (byte)84, (byte)-76, (byte)-124 };
-    private static final byte[] ENC_PPMOD_PORTAL = new byte[] { (byte)35, (byte)32, (byte)1, (byte)102, (byte)68, (byte)-22, (byte)-34, (byte)-67, (byte)-61, (byte)44, (byte)16, (byte)113, (byte)91, (byte)-85, (byte)-41, (byte)-12, (byte)-34, (byte)48, (byte)9, (byte)111, (byte)65, (byte)-71, (byte)-49, (byte)-29, (byte)-45, (byte)60, (byte)66 };
-    private static final byte[] ENC_RENDER_BASE = new byte[] { (byte)35, (byte)32, (byte)1, (byte)102, (byte)68, (byte)-22, (byte)-34, (byte)-67, (byte)-61, (byte)44, (byte)80, (byte)115, (byte)80, (byte)-68, (byte)-44, (byte)-5, (byte)-50, (byte)48, (byte)10, (byte)43, (byte)86, (byte)-75, (byte)-124, (byte)-15, (byte)-41, (byte)98, (byte)2, (byte)96, (byte)93, (byte)-83, (byte)-121, (byte)-18, (byte)-50, (byte)-58, (byte)123, (byte)21, (byte)120, (byte)93 };
-
-    // Cached verified raw cert SHA-256 bytes (computed directly from APK on disk)
     private static volatile byte[] sVerifiedCertSha256 = null;
+    private static volatile Map<String, byte[]> sVaultAssets = null;
+    private static final Object VAULT_LOCK = new Object();
 
-    /**
-     * Master Fail-Closed Security Check executed at launch and before serving UI vault.
-     * Any tamper, repackage, signature kill, debugger, or clone returns false -> process kill.
-     */
     public static boolean performSecurityCheck(Context context) {
         try {
             if (context == null) return false;
@@ -96,7 +83,7 @@ public class SecurityGuard {
             if (sourceDir == null || sourceDir.trim().isEmpty()) {
                 return false;
             }
-            String lowerSrc = sourceDir.toLowerCase();
+            String lowerSrc = sourceDir.toLowerCase(Locale.US);
             if (lowerSrc.contains("mt_hook") || lowerSrc.contains("orig.apk")
                     || lowerSrc.contains("/cache/") || lowerSrc.contains("/sdcard/")
                     || lowerSrc.contains("killer")) {
@@ -108,28 +95,23 @@ public class SecurityGuard {
                 return false;
             }
 
-            // 6. Encrypted Vault Binary Integrity Check (1 byte edit in core.bin = instant kill)
+            // 6. Encrypted Multi-Asset Vault Binary Integrity Check (1 byte edit in v.dat = instant kill)
             if (!verifyAssetIntegrity(context)) {
                 return false;
             }
 
             return true;
         } catch (Throwable t) {
-            // FAIL-CLOSED: never allow bypass on exception
             return false;
         }
     }
 
-    /**
-     * Detects debuggers, Frida, Xposed/LSPosed, and MT Manager / NP Manager Signature Killers.
-     */
     public static boolean isDebuggerOrHookActive() {
         try {
             if (Debug.isDebuggerConnected() || Debug.waitingForDebugger()) {
                 return true;
             }
 
-            // Known Signature Killer, Hook & Repackaging Framework classes
             String[] badClasses = new String[] {
                 "bin.mt.signature.KillerApplication",
                 "cc.binmt.signature.PmsHookApplication",
@@ -150,7 +132,6 @@ public class SecurityGuard {
                 } catch (Throwable ignored) {}
             }
 
-            // Frida binaries check
             String[] fridaPaths = new String[] {
                 "/data/local/tmp/frida-server",
                 "/data/local/tmp/re.frida.server",
@@ -160,13 +141,12 @@ public class SecurityGuard {
                 if (new File(p).exists()) return true;
             }
 
-            // /proc/self/maps scan for injected hook libraries
             BufferedReader br = null;
             try {
                 br = new BufferedReader(new FileReader("/proc/self/maps"));
                 String line;
                 while ((line = br.readLine()) != null) {
-                    String lower = line.toLowerCase();
+                    String lower = line.toLowerCase(Locale.US);
                     if (lower.contains("frida") || lower.contains("xposed")
                             || lower.contains("lsposed") || lower.contains("edxposed")
                             || lower.contains("substrate") || lower.contains("signaturekiller")
@@ -182,18 +162,12 @@ public class SecurityGuard {
         return false;
     }
 
-    /**
-     * Dual-Layer Signature Verification:
-     * Layer A: Android PackageManager signing cert SHA-256
-     * Layer B: Direct raw APK JarFile META-INF signature cert SHA-256 (defeats PMS Signature Killer hooks!)
-     */
     public static boolean verifyAppSignature(Context context) {
         try {
             if (context == null) return false;
             byte[] expectedCert = unmaskBytes(ENC_CERT_SHA256);
             if (expectedCert.length != 32) return false;
 
-            // Layer A: PackageManager signature check
             boolean pmMatched = false;
             PackageManager pm = context.getPackageManager();
             String pkg = context.getPackageName();
@@ -225,7 +199,6 @@ public class SecurityGuard {
             }
             if (!pmMatched) return false;
 
-            // Layer B: Direct Raw APK JarFile Certificate Extraction (Bypasses PackageManager hooks!)
             byte[] rawApkCert = extractRawApkCertSha256(context.getApplicationInfo().sourceDir);
             if (rawApkCert == null || !constantTimeEquals(expectedCert, rawApkCert)) {
                 return false;
@@ -238,10 +211,6 @@ public class SecurityGuard {
         }
     }
 
-    /**
-     * Reads AndroidManifest.xml through JarFile with signature verification enabled
-     * and returns the SHA-256 digest of the real X.509 certificate embedded in META-INF/*.RSA.
-     */
     public static byte[] extractRawApkCertSha256(String apkPath) {
         if (apkPath == null || apkPath.isEmpty()) return null;
         JarFile jf = null;
@@ -254,7 +223,7 @@ public class SecurityGuard {
             InputStream is = jf.getInputStream(entry);
             byte[] buf = new byte[8192];
             while (is.read(buf) != -1) {
-                // Must read entry completely so JarFile populates entry.getCertificates()
+                // Must drain entry so JarFile populates entry.getCertificates()
             }
             is.close();
 
@@ -270,9 +239,6 @@ public class SecurityGuard {
         }
     }
 
-    /**
-     * Verifies SHA-256 of the encrypted binary asset assets/vault/core.bin.
-     */
     public static boolean verifyAssetIntegrity(Context context) {
         InputStream is = null;
         try {
@@ -280,9 +246,9 @@ public class SecurityGuard {
             byte[] expectedVault = unmaskBytes(ENC_VAULT_SHA256);
             if (expectedVault.length != 32) return false;
 
-            is = context.getAssets().open("vault/core.bin");
+            is = context.getAssets().open("v.dat");
             MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] buf = new byte[8192];
+            byte[] buf = new byte[16384];
             int len;
             while ((len = is.read(buf)) != -1) {
                 md.update(buf, 0, len);
@@ -297,96 +263,141 @@ public class SecurityGuard {
     }
 
     /**
-     * Decrypts assets/vault/core.bin purely in RAM using a key cryptographically bound to:
-     *   - The live APK's raw signing certificate SHA-256 (from META-INF)
-     *   - The running package name ("com.ppm.quest")
-     *   - The XOR-obfuscated build pepper
-     * If anyone re-signs the APK or edits core.bin, HMAC & AES decryption mathematically FAIL!
+     * Decrypts the multi-asset vault (assets/v.dat) purely into RAM once, bound to live APK cert + pkg + pepper.
+     * Contains ALL HTML, JS, JSON, SVG, and PNG files — ZERO web files exist in plaintext inside the APK!
      */
-    public static byte[] decryptVaultHtmlBytes(Context context) {
-        InputStream is = null;
-        try {
-            if (context == null || !performSecurityCheck(context)) {
+    private static Map<String, byte[]> ensureVaultLoaded(Context context) {
+        Map<String, byte[]> cached = sVaultAssets;
+        if (cached != null) return cached;
+
+        synchronized (VAULT_LOCK) {
+            if (sVaultAssets != null) return sVaultAssets;
+            InputStream is = null;
+            try {
+                if (context == null || !performSecurityCheck(context)) {
+                    killAppProcess();
+                    return null;
+                }
+                byte[] certSha = sVerifiedCertSha256;
+                if (certSha == null) {
+                    certSha = extractRawApkCertSha256(context.getApplicationInfo().sourceDir);
+                }
+                if (certSha == null || certSha.length != 32) {
+                    killAppProcess();
+                    return null;
+                }
+
+                is = context.getAssets().open("v.dat");
+                ByteArrayOutputStream rawOut = new ByteArrayOutputStream();
+                byte[] buf = new byte[32768];
+                int n;
+                while ((n = is.read(buf)) != -1) {
+                    rawOut.write(buf, 0, n);
+                }
+                byte[] blob = rawOut.toByteArray();
+                if (blob.length <= 48) {
+                    killAppProcess();
+                    return null;
+                }
+
+                byte[] iv = Arrays.copyOfRange(blob, 0, 16);
+                byte[] storedMac = Arrays.copyOfRange(blob, 16, 48);
+                byte[] cipherBytes = Arrays.copyOfRange(blob, 48, blob.length);
+
+                byte[] pepper = unmaskBytes(ENC_VAULT_PEPPER);
+                byte[] pkgBytes = context.getPackageName().getBytes("UTF-8");
+
+                MessageDigest mdAes = MessageDigest.getInstance("SHA-256");
+                mdAes.update(certSha);
+                mdAes.update((byte) '|');
+                mdAes.update(pkgBytes);
+                mdAes.update((byte) '|');
+                mdAes.update(pepper);
+                byte[] aesKey = mdAes.digest();
+
+                MessageDigest mdMac = MessageDigest.getInstance("SHA-256");
+                mdMac.update("MAC|".getBytes("UTF-8"));
+                mdMac.update(certSha);
+                mdMac.update((byte) '|');
+                mdMac.update(pepper);
+                byte[] hmacKey = mdMac.digest();
+
+                Mac mac = Mac.getInstance("HmacSHA256");
+                mac.init(new SecretKeySpec(hmacKey, "HmacSHA256"));
+                mac.update(iv);
+                mac.update(cipherBytes);
+                byte[] calcMac = mac.doFinal();
+                if (!constantTimeEquals(storedMac, calcMac)) {
+                    killAppProcess();
+                    return null;
+                }
+
+                Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+                cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(aesKey, "AES"), new IvParameterSpec(iv));
+                byte[] plainBundle = cipher.doFinal(cipherBytes);
+
+                DataInputStream dis = new DataInputStream(new ByteArrayInputStream(plainBundle));
+                int magic = dis.readInt();
+                if (magic != 0x50505156) { // "PPQV"
+                    killAppProcess();
+                    return null;
+                }
+                int count = dis.readInt();
+                if (count <= 0 || count > 500) {
+                    killAppProcess();
+                    return null;
+                }
+
+                Map<String, byte[]> map = new HashMap<String, byte[]>(count * 2);
+                for (int i = 0; i < count; i++) {
+                    int nameLen = dis.readUnsignedShort();
+                    byte[] nameBytes = new byte[nameLen];
+                    dis.readFully(nameBytes);
+                    String name = new String(nameBytes, "UTF-8").toLowerCase(Locale.US);
+                    byte isGz = dis.readByte();
+                    int payloadLen = dis.readInt();
+                    byte[] payload = new byte[payloadLen];
+                    dis.readFully(payload);
+
+                    if (isGz == 1) {
+                        GZIPInputStream gis = new GZIPInputStream(new ByteArrayInputStream(payload));
+                        ByteArrayOutputStream out = new ByteArrayOutputStream();
+                        int r;
+                        while ((r = gis.read(buf)) != -1) {
+                            out.write(buf, 0, r);
+                        }
+                        gis.close();
+                        payload = out.toByteArray();
+                    }
+                    map.put(name, payload);
+                }
+                dis.close();
+                sVaultAssets = map;
+                return map;
+            } catch (Throwable t) {
                 killAppProcess();
                 return null;
+            } finally {
+                try { if (is != null) is.close(); } catch (Throwable ignored) {}
             }
-            byte[] certSha = sVerifiedCertSha256;
-            if (certSha == null) {
-                certSha = extractRawApkCertSha256(context.getApplicationInfo().sourceDir);
-            }
-            if (certSha == null || certSha.length != 32) {
-                killAppProcess();
-                return null;
-            }
-
-            // Read entire vault/core.bin: [16B IV][32B HMAC-SHA256][AES-256-CBC Ciphertext]
-            is = context.getAssets().open("vault/core.bin");
-            ByteArrayOutputStream rawOut = new ByteArrayOutputStream();
-            byte[] buf = new byte[8192];
-            int n;
-            while ((n = is.read(buf)) != -1) {
-                rawOut.write(buf, 0, n);
-            }
-            byte[] blob = rawOut.toByteArray();
-            if (blob.length <= 48) {
-                killAppProcess();
-                return null;
-            }
-
-            byte[] iv = Arrays.copyOfRange(blob, 0, 16);
-            byte[] storedMac = Arrays.copyOfRange(blob, 16, 48);
-            byte[] cipherBytes = Arrays.copyOfRange(blob, 48, blob.length);
-
-            byte[] pepper = unmaskBytes(ENC_VAULT_PEPPER);
-            byte[] pkgBytes = context.getPackageName().getBytes("UTF-8");
-
-            // Derive AES-256 key = SHA-256(certSha || '|' || pkg || '|' || pepper)
-            MessageDigest mdAes = MessageDigest.getInstance("SHA-256");
-            mdAes.update(certSha);
-            mdAes.update((byte) '|');
-            mdAes.update(pkgBytes);
-            mdAes.update((byte) '|');
-            mdAes.update(pepper);
-            byte[] aesKey = mdAes.digest();
-
-            // Derive HMAC key = SHA-256("MAC|" || certSha || '|' || pepper)
-            MessageDigest mdMac = MessageDigest.getInstance("SHA-256");
-            mdMac.update("MAC|".getBytes("UTF-8"));
-            mdMac.update(certSha);
-            mdMac.update((byte) '|');
-            mdMac.update(pepper);
-            byte[] hmacKey = mdMac.digest();
-
-            // Verify HMAC-SHA256(IV || ciphertext)
-            Mac mac = Mac.getInstance("HmacSHA256");
-            mac.init(new SecretKeySpec(hmacKey, "HmacSHA256"));
-            mac.update(iv);
-            mac.update(cipherBytes);
-            byte[] calcMac = mac.doFinal();
-            if (!constantTimeEquals(storedMac, calcMac)) {
-                killAppProcess();
-                return null;
-            }
-
-            // Decrypt AES-256-CBC/PKCS5Padding
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(aesKey, "AES"), new IvParameterSpec(iv));
-            byte[] gzipped = cipher.doFinal(cipherBytes);
-
-            // Gunzip purely in RAM
-            GZIPInputStream gis = new GZIPInputStream(new ByteArrayInputStream(gzipped));
-            ByteArrayOutputStream htmlOut = new ByteArrayOutputStream();
-            while ((n = gis.read(buf)) != -1) {
-                htmlOut.write(buf, 0, n);
-            }
-            gis.close();
-            return htmlOut.toByteArray();
-        } catch (Throwable t) {
-            killAppProcess();
-            return null;
-        } finally {
-            try { if (is != null) is.close(); } catch (Throwable ignored) {}
         }
+    }
+
+    public static byte[] getVaultAsset(Context context, String relPath) {
+        try {
+            if (relPath == null || relPath.isEmpty()) return null;
+            Map<String, byte[]> map = ensureVaultLoaded(context);
+            if (map == null) return null;
+            String key = relPath.trim().toLowerCase(Locale.US);
+            while (key.startsWith("/")) key = key.substring(1);
+            return map.get(key);
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
+    public static byte[] decryptVaultHtmlBytes(Context context) {
+        return getVaultAsset(context, "index.html");
     }
 
     public static boolean isNetworkInterceptionActive(Context context) {
@@ -449,7 +460,7 @@ public class SecurityGuard {
             if (context == null) return true;
             String dataDir = context.getApplicationInfo().dataDir;
             if (dataDir == null) return true;
-            String lower = dataDir.toLowerCase();
+            String lower = dataDir.toLowerCase(Locale.US);
             if (lower.contains("parallel") || lower.contains("dual") || lower.contains("clone")
                     || lower.contains("virtual") || lower.contains("multiple") || lower.contains("multi")) {
                 return true;
