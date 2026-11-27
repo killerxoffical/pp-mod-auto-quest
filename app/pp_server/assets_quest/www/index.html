@@ -702,51 +702,35 @@
             letter-spacing: -0.01em !important;
         }
 
-        /* --- Splash Screen Desktop vs Mobile Frame Adaptations --- */
-        @media (min-width: 520px) {
-            #splashScreen {
-                background: #f1f5f9 !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                padding: 18px 12px !important;
-            }
-
-            .splash-inner-frame {
-                position: relative;
-                width: 100%;
-                max-width: 28rem;
-                height: min(900px, calc(100dvh - 36px));
-                max-height: 900px;
-                border-radius: 36px;
-                border: 1px solid rgba(226, 232, 240, 0.9);
-                box-shadow: 0 25px 70px -15px rgba(15, 23, 42, 0.15);
-                overflow: hidden;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                background: #ffffff;
-            }
+        /* --- Splash Screen Fullscreen Mobile App Frame (Edge-to-Edge on ALL Phones & Emulators) --- */
+        #splashScreen {
+            background: #ffffff !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            height: 100dvh !important;
         }
 
-        @media (max-width: 519px) {
-            #splashScreen {
-                background: #ffffff !important;
-            }
-
-            .splash-inner-frame {
-                position: absolute;
-                inset: 0;
-                width: 100%;
-                height: 100%;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                overflow: hidden;
-                background: #ffffff;
-            }
+        .splash-inner-frame {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 0;
+            border: none;
+            box-shadow: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #ffffff;
         }
 
         /* --- Floating Frosted Bottom Navigation Dock (Apple Light Theme - Zero Box Backgrounds) --- */
@@ -2592,21 +2576,19 @@
                 })();
             </script>
 
-            <div class="relative z-10 flex flex-col items-center justify-center">
-                <div class="flex items-center justify-center">
-                    <lottie-player id="splashLottie"
-                        src="https://lottie.host/41d6fc95-7f61-416c-b296-53a5836c22c2/BgBmgewgEu.json"
-                        background="transparent" speed="1" style="width: 230px; height: 230px;" loop
-                        autoplay></lottie-player>
+            <div class="relative z-10 flex flex-col items-center justify-center px-6" onclick="window._dismissSplash && window._dismissSplash(true)">
+                <div class="w-24 h-24 rounded-3xl bg-white/90 border border-emerald-200/80 shadow-xl flex items-center justify-center p-3 mb-4 splash-text-container">
+                    <img src="pp_quest_logo.png" alt="PP QUEST" class="w-full h-full object-contain drop-shadow-sm"
+                        onerror="this.onerror=null;this.src='PPCOIN.png'">
                 </div>
-                <div class="splash-text-container text-center mt-2 space-y-1.5">
+                <div class="splash-text-container text-center space-y-1.5">
                     <h2 class="text-3xl sm:text-4xl font-black tracking-tight text-slate-900">
-                        <span class="splash-brand-text">PP MOD</span>
+                        <span class="splash-brand-text">PP QUEST</span>
                     </h2>
                     <div class="flex items-center justify-center gap-1.5 pt-0.5">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
                         <p
-                            class="text-[9.5px] sm:text-[10px] text-slate-400 font-extrabold tracking-[0.25em] uppercase">
+                            class="text-[9.5px] sm:text-[10px] text-slate-500 font-extrabold tracking-[0.25em] uppercase">
                             POWERED BY VAREON STUDIO</p>
                     </div>
                 </div>
@@ -2615,7 +2597,7 @@
     </div>
     <script>
         var _splashStartTime = Date.now();
-        var _minSplashDuration = 4000; // ঠিক ৪ সেকেন্ড ফ্ল্যাশ স্ক্রিন চালু থাকবে
+        var _minSplashDuration = 1500; // দ্রুত ও স্মুথ ১.৫ সেকেন্ড স্প্ল্যাশ স্ক্রিন
         var _dismissScheduled = false;
 
         window._balDataReady = false;
@@ -2698,10 +2680,10 @@
             }, wait);
         };
 
-        // Safety fallback (ঠিক ৪.২ সেকেন্ডে সুন্দরভাবে অ্যাপে ঢুকবে)
+        // Safety fallback (ঠিক ২.৪ সেকেন্ডে সুন্দরভাবে অ্যাপে ঢুকবে)
         setTimeout(function () {
-            window._dismissSplash && window._dismissSplash();
-        }, 4200);
+            window._dismissSplash && window._dismissSplash(true);
+        }, 2400);
 
         // Fallback for balance animation in case of slow network
         setTimeout(function () {
@@ -9739,14 +9721,12 @@
             questBox.classList.remove('hidden');
 
             try {
-                // ১. লাইভ নো-ক্যাশ ফেচ (Render direct + Cloudflare Zero-Downtime Fallback)
+                // ১. লাইভ ফেচ (কোনো CORS preflight header ছাড়াই Render direct + Cloudflare Zero-Downtime Fallback)
                 let services = [];
                 try {
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 6000);
+                    const timeoutId = setTimeout(() => controller.abort(), 8000);
                     const sRes = await fetch(`https://pp-mod-auto-quest.onrender.com/api/portal/services?_t=${Date.now()}`, {
-                        cache: 'no-store',
-                        headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache' },
                         signal: controller.signal
                     });
                     clearTimeout(timeoutId);
@@ -9770,6 +9750,26 @@
                     } catch(cfErr) {
                         console.warn('Cloudflare services fallback error:', cfErr);
                     }
+                }
+
+                // নেটওয়ার্ক ত্রুটির কারণে সার্ভিস লিস্ট লোড না হলে কখনোই ভুল করে অটো-রিফান্ড করবে না!
+                if (!services || services.length === 0) {
+                    questBox.innerHTML = `
+                        <div class="p-4 bg-amber-50 border-2 border-amber-300 rounded-2xl text-left space-y-2.5 shadow-xs">
+                            <p class="text-xs font-extrabold text-amber-900">⚠️ সার্ভার থেকে গেম লিস্ট লোড করা যায়নি (নেটওয়ার্ক ধীরগতি)।</p>
+                            <p class="text-[11px] font-semibold text-amber-800">আপনার অর্ডার সুরক্ষিত আছে — নিচের বাটনে চাপ দিয়ে আবার যাচাই করুন।</p>
+                            <button type="button" onclick="checkGameInPublicPortal('${(gameTitle || window._payGame || '').toString().replace(/'/g, "\\'")}')"
+                                class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow cursor-pointer">
+                                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                                <span>পুনরায় চেক করুন</span>
+                            </button>
+                        </div>`;
+                    const oneTapQuestBox = document.getElementById('oneTapQuestBox');
+                    if (oneTapQuestBox) {
+                        oneTapQuestBox.innerHTML = questBox.innerHTML;
+                        oneTapQuestBox.classList.remove('hidden');
+                    }
+                    return;
                 }
 
                 // স্মার্ট গেম নাম নরম্যালাইজার ও ফাজি ম্যাচার
@@ -13299,10 +13299,7 @@ async function executeServerQuestUnlock() {
             // ২. পাবলিক পোর্টাল সার্ভিসেস থেকে সরাসরি লাইভ গেম লোড (এডমিন অফারস সম্পূর্ণ বাদ)
             window.syncPortalGamesToGrid = async function () {
                 try {
-                    const res = await fetch(`https://pp-mod-auto-quest.onrender.com/api/portal/services?_t=${Date.now()}`, {
-                        cache: 'no-store',
-                        headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache' }
-                    });
+                    const res = await fetch(`https://pp-mod-auto-quest.onrender.com/api/portal/services?_t=${Date.now()}`);
                     const pData = await res.json();
                     if (pData && pData.ok && Array.isArray(pData.services) && pData.services.length) {
                         // ১. ফিল্টারিং: লেভেল আপ গেম ইউজার পোর্টালে সম্পূর্ণ হাইড
@@ -13344,7 +13341,7 @@ async function executeServerQuestUnlock() {
 
                 // ফেইলওভার: ক্লাউডফ্লেয়ার মিরর (Zero Downtime Fallback for all 47 games)
                 try {
-                    const cfRes = await fetch(`https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services?_t=${Date.now()}`, { cache: 'no-store' });
+                    const cfRes = await fetch(`https://ppmod-api.tredarskvt.workers.dev/api/cloud/portal-services?_t=${Date.now()}`);
                     const cfData = await cfRes.json();
                     const cfObj = (cfData && cfData.data) ? cfData.data : cfData;
                     if (cfObj && typeof cfObj === 'object') {
