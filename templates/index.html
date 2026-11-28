@@ -2428,7 +2428,11 @@
                     <div style="padding:18px; border-radius:14px; background:var(--bg-secondary); border:1px solid var(--border-color); margin-bottom:20px;">
                         <div style="font-size:13.5px; font-weight:800; color:var(--text-primary); margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
                             <span>➕ Create New PP CLOUD VIP Account</span>
-                            <button type="button" class="btn-inspect-action" style="padding:5px 10px; font-size:11px;" onclick="generateCloudVipPassword()">🎲 Generate Strong Password</button>
+                            <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+                                <button type="button" class="btn-inspect-action" style="padding:5px 10px; font-size:11px; color:#38bdf8;" onclick="copyCloudVipDomain()" title="Copy @ppclod.com to clipboard">📋 Copy @ppclod.com</button>
+                                <button type="button" class="btn-inspect-action" style="padding:5px 10px; font-size:11px; color:#10b981; font-weight:800;" onclick="generateCloudVipRandomBoth()">🎲 Random Email + Pass</button>
+                                <button type="button" class="btn-inspect-action" style="padding:5px 10px; font-size:11px;" onclick="generateCloudVipPassword()">🔑 Random Pass</button>
+                            </div>
                         </div>
                         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px;">
                             <div class="form-field" style="margin:0;">
@@ -2436,8 +2440,8 @@
                                 <input id="cvCreateName" type="text" class="form-input-element" placeholder="e.g. Tanvir VIP">
                             </div>
                             <div class="form-field" style="margin:0;">
-                                <label>Login Email / ID *</label>
-                                <input id="cvCreateLogin" type="text" class="form-input-element" placeholder="e.g. tanvir@ppcloud.vip">
+                                <label>Login Email * <span style="font-weight:600; color:#38bdf8; font-size:10.5px;">(auto @ppclod.com)</span></label>
+                                <input id="cvCreateLogin" type="text" class="form-input-element" placeholder="e.g. tanvir@ppclod.com">
                             </div>
                             <div class="form-field" style="margin:0;">
                                 <label>Password *</label>
@@ -8515,7 +8519,37 @@
 
         /* ==================== PP CLOUD VIP VAULT MANAGER ==================== */
         const CLOUD_VIP_API = "https://ppmod-api.tredarskvt.workers.dev";
+        const CLOUD_VIP_DOMAIN = "@ppclod.com";
         let _cloudVipUsersCache = [];
+
+        function copyCloudVipDomain() {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(CLOUD_VIP_DOMAIN).then(() => {
+                    if (typeof showToast === "function") showToast(`Copied "${CLOUD_VIP_DOMAIN}"!`, "success");
+                }).catch(() => prompt("Copy Domain:", CLOUD_VIP_DOMAIN));
+            } else {
+                prompt("Copy Domain:", CLOUD_VIP_DOMAIN);
+            }
+            const inp = document.getElementById("cvCreateLogin");
+            if (inp) {
+                const cur = inp.value.trim();
+                if (cur && !cur.includes("@")) {
+                    inp.value = cur + CLOUD_VIP_DOMAIN;
+                }
+                inp.focus();
+            }
+        }
+
+        function generateCloudVipRandomBoth() {
+            const nameRaw = (document.getElementById("cvCreateName")?.value || "").trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+            const prefix = nameRaw.length >= 2 ? nameRaw.slice(0, 10) : ("vip" + ["x", "pro", "user", "acc", "king"][Math.floor(Math.random() * 5)]);
+            const randNum = Math.floor(1000 + Math.random() * 9000);
+            const emailVal = `${prefix}${randNum}${CLOUD_VIP_DOMAIN}`;
+            const loginEl = document.getElementById("cvCreateLogin");
+            if (loginEl) loginEl.value = emailVal;
+            generateCloudVipPassword();
+            if (typeof showToast === "function") showToast(`Generated: ${emailVal}`, "success");
+        }
 
         function generateCloudVipPassword() {
             const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#";
@@ -8663,7 +8697,14 @@
 
         async function createCloudVipUser() {
             const name = (document.getElementById("cvCreateName")?.value || "").trim();
-            const loginId = (document.getElementById("cvCreateLogin")?.value || "").trim();
+            let loginId = (document.getElementById("cvCreateLogin")?.value || "").trim().toLowerCase();
+            if (loginId && !loginId.includes("@")) {
+                loginId = loginId + CLOUD_VIP_DOMAIN;
+                const loginEl = document.getElementById("cvCreateLogin");
+                if (loginEl) loginEl.value = loginId;
+            } else if (loginId && loginId.endsWith("@")) {
+                loginId = loginId + CLOUD_VIP_DOMAIN.slice(1);
+            }
             const password = (document.getElementById("cvCreatePass")?.value || "").trim();
             const plan = document.getElementById("cvCreatePlan")?.value || "basic";
             const days = Number(document.getElementById("cvCreateDays")?.value || 30);
