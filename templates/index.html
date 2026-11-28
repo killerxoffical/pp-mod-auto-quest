@@ -2437,15 +2437,15 @@
                         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px;">
                             <div class="form-field" style="margin:0;">
                                 <label>Customer Name</label>
-                                <input id="cvCreateName" type="text" class="form-input-element" placeholder="e.g. Tanvir VIP">
+                                <input id="cvCreateName" name="cv_new_name" type="text" autocomplete="off" class="form-input-element" placeholder="e.g. Tanvir VIP">
                             </div>
                             <div class="form-field" style="margin:0;">
                                 <label>Login Email * <span style="font-weight:600; color:#38bdf8; font-size:10.5px;">(auto @ppclod.com)</span></label>
-                                <input id="cvCreateLogin" type="text" class="form-input-element" placeholder="e.g. tanvir@ppclod.com">
+                                <input id="cvCreateLogin" name="cv_new_login" type="text" autocomplete="off" class="form-input-element" placeholder="e.g. tanvir@ppclod.com">
                             </div>
                             <div class="form-field" style="margin:0;">
                                 <label>Password *</label>
-                                <input id="cvCreatePass" type="text" class="form-input-element" placeholder="Min 4 chars">
+                                <input id="cvCreatePass" name="cv_new_pass" type="text" autocomplete="off" class="form-input-element" placeholder="Min 4 chars">
                             </div>
                             <div class="form-field" style="margin:0;">
                                 <label>Slot Package *</label>
@@ -2470,7 +2470,7 @@
                             </div>
                             <div class="form-field" style="margin:0;">
                                 <label>Admin Note (Optional)</label>
-                                <input id="cvCreateNote" type="text" class="form-input-element" placeholder="bKash / TG username">
+                                <input id="cvCreateNote" name="cv_new_note" type="text" autocomplete="off" class="form-input-element" placeholder="bKash / TG username">
                             </div>
                         </div>
                         <div style="margin-top:14px; display:flex; justify-content:flex-end; gap:10px; align-items:center;">
@@ -2483,7 +2483,8 @@
 
                     <!-- Search & Filter -->
                     <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; align-items:center;">
-                        <input id="cvSearchInput" type="text" class="form-input-element" style="flex:1; min-width:220px;" placeholder="🔍 Search by Name, Login ID, UID, or Note..." oninput="renderCloudVipTable()">
+                        <input id="cvSearchInput" name="cv_filter_q" type="search" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')" class="form-input-element" style="flex:1; min-width:220px;" placeholder="🔍 Search by Name, Login ID, UID, or Note..." oninput="renderCloudVipTable()">
+                        <button type="button" class="btn-inspect-action" style="padding:8px 11px; font-size:11.5px;" onclick="document.getElementById('cvSearchInput').value=''; renderCloudVipTable();" title="Clear Search">✕ Clear</button>
                         <select id="cvPlanFilter" class="form-input-element" style="width:160px;" onchange="renderCloudVipTable()">
                             <option value="all">All Plans</option>
                             <option value="basic">Basic (10)</option>
@@ -8582,6 +8583,10 @@
         }
 
         async function loadCloudVipUsers() {
+            const searchEl = document.getElementById("cvSearchInput");
+            if (searchEl && searchEl.value === "Scheduled Server Maintenance") {
+                searchEl.value = "";
+            }
             const tbody = document.getElementById("cvUsersTableBody");
             if (tbody) {
                 tbody.innerHTML = `<tr><td colspan="5" style="padding:22px; text-align:center; color:var(--text-muted);">Loading PP CLOUD VIP accounts from Cloudflare D1...</td></tr>`;
