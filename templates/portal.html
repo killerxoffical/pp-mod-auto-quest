@@ -535,14 +535,14 @@
                     </span>
                 </div>
                 <div style="display:flex; gap:6px;">
-                    <button type="button" id="tabBtnCode" class="portal-section-pill active" style="font-size:11px; padding:4px 12px;" onclick="switchPortalTab('code')">🔢 6-Digit Code</button>
+                    <button type="button" id="tabBtnCode" class="portal-section-pill active" style="font-size:11px; padding:4px 12px;" onclick="switchPortalTab('code')">🔢 QID / Order ID</button>
                     <button type="button" id="tabBtnToken" class="portal-section-pill" style="font-size:11px; padding:4px 12px;" onclick="switchPortalTab('token')">🔑 Master Token</button>
                 </div>
             </div>
 
-            <!-- TAB 1: 6-Digit Sync Code -->
+            <!-- TAB 1: 6-Digit QID or Order ID -->
             <div id="tabContentCode" class="sync-row" style="margin-top:4px;">
-                <input id="portalSyncCodeInput" type="text" maxlength="8" class="sync-input" placeholder="Enter 6-digit sync code from app (e.g. 582914)" autocomplete="off" onkeydown="if(event.key==='Enter')connectPortalAccount('code')">
+                <input id="portalSyncCodeInput" type="text" maxlength="64" class="sync-input" placeholder="Enter 6-digit QID or Order ID (e.g. 582914 or ORD-...)" autocomplete="off" onkeydown="if(event.key==='Enter')connectPortalAccount('code')">
                 <button class="btn-action" id="btnConnectCode" onclick="connectPortalAccount('code')">🔗 Connect Account</button>
             </div>
 
@@ -569,6 +569,7 @@
                             <strong id="portalDisplayName" style="font-size:15px; color:var(--text-primary);">Connected Gamer</strong>
                             <span id="portalLevelBadge" style="background:rgba(16,185,129,0.18); border:1px solid rgba(16,185,129,0.4); color:var(--accent-green); font-size:10.5px; font-weight:800; padding:2px 8px; border-radius:var(--radius-sm);">LVL --</span>
                             <span style="background:rgba(14,165,233,0.15); border:1px solid rgba(14,165,233,0.3); color:var(--accent-cyan); font-size:10px; font-weight:700; padding:2px 7px; border-radius:var(--radius-sm);">🟢 Public Session</span>
+                            <span id="portalOrderBadge" style="display:none; background:rgba(245,158,11,0.16); border:1px solid rgba(245,158,11,0.4); color:#fbbf24; font-size:10px; font-weight:800; padding:2px 8px; border-radius:var(--radius-sm); font-family:'JetBrains Mono';"></span>
                         </div>
                         <div style="display:flex; align-items:center; gap:10px; margin-top:3px; font-size:12px; color:var(--text-muted);">
                             <span id="portalEmail" style="font-family:'JetBrains Mono'; color:var(--text-secondary);">user@gmail.com</span>
@@ -1218,10 +1219,12 @@
                 reqBody = { master_token: tok, email: em };
                 document.getElementById("btnConnectToken").disabled = true;
             } else {
-                const code = (document.getElementById("portalSyncCodeInput").value || "").trim().replace(" ", "").replace("-", "");
-                if (!code || code.length < 6) {
+                const rawVal = (document.getElementById("portalSyncCodeInput").value || "").trim();
+                const digitsOnly = rawVal.replace(/\s+/g, "").replace(/-/g, "");
+                const code = (/^\d{6}$/.test(digitsOnly)) ? digitsOnly : rawVal;
+                if (!code || code.length < 4) {
                     statusDiv.style.color = "#ef4444";
-                    statusDiv.innerText = "❌ Please enter a valid 6-digit sync code from the PPM Server app.";
+                    statusDiv.innerText = "❌ Please enter a valid 6-digit QID or Order ID (e.g. ORD-...).";
                     return;
                 }
                 reqBody = { code: code };
@@ -1253,6 +1256,7 @@
                         master_token: data.master_token,
                         android_id: data.android_id,
                         code: reqBody.code || "",
+                        order_info: data.order_info || null,
                         profile: data.profile
                     };
                     sessionStorage.setItem("pp_portal_session", JSON.stringify(connectedAccountData));
@@ -1298,6 +1302,18 @@
             } else {
                 document.getElementById("portalDisplayName").innerText = acc.email.split("@")[0] || "Connected User";
                 document.getElementById("portalEmail").innerText = acc.email || "Connected";
+            }
+
+            const ordBadge = document.getElementById("portalOrderBadge");
+            if (ordBadge) {
+                if (acc.order_info && acc.order_info.order_id) {
+                    const gTxt = acc.order_info.game ? ` • ${acc.order_info.game}` : "";
+                    const stTxt = acc.order_info.status ? ` (${acc.order_info.status})` : "";
+                    ordBadge.innerText = `🧾 ${acc.order_info.order_id}${gTxt}${stTxt}`;
+                    ordBadge.style.display = "inline-block";
+                } else {
+                    ordBadge.style.display = "none";
+                }
             }
 
             // Immediately check live achievement progress from Google Play Games to show completed status on cards

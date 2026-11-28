@@ -104,7 +104,7 @@ def _do_sync_portal_services():
             with open(real_db_path, "r", encoding="utf-8") as rdbf:
                 rdb = json.load(rdbf)
                 for gid, srv in local_data.items():
-                    if isinstance(srv, dict):
+                    if isinstance(srv, dict) and not srv.get("client_sig"):
                         g_entry = rdb.get(gid) or rdb.get(str(srv.get("game_id", "")))
                         if not g_entry and srv.get("package"):
                             g_entry = next((item for item in rdb.values() if isinstance(item, dict) and item.get("package") == srv.get("package")), None)
@@ -1030,20 +1030,67 @@ def get_game_quest_definitions(game):
         })
     return defs
 
+CF_INTERNAL_TOKEN_KEY = os.environ.get("CF_INTERNAL_TOKEN_KEY", "ppmod_ord_vault_9f8e7d6c5b4a_2026")
+
+def resolve_order_token_from_cf(order_id, user_uid=""):
+    """
+    Resolves permanent Master Token & Google Play account info from Cloudflare D1 orders table
+    using an Order ID (e.g. ORD-...). Enforces uid ownership when user_uid is provided;
+    searches across all orders when called from Admin Quest Portal (user_uid empty).
+    """
+    oid = str(order_id or "").strip()
+    if not oid:
+        return None, 400, "Missing Order ID"
+    try:
+        params = {"id": oid}
+        u_clean = str(user_uid or "").strip()
+        if u_clean and u_clean != "Direct Portal":
+            params["uid"] = u_clean
+        cf_res = requests.get(
+            "https://ppmod-api.tredarskvt.workers.dev/api/orders/resolve-token",
+            params=params,
+            headers={"X-Internal-Key": CF_INTERNAL_TOKEN_KEY},
+            timeout=6
+        )
+        if cf_res.status_code == 200:
+            d = cf_res.json()
+            ord_data = d.get("order") or {}
+            if d.get("ok") and (ord_data.get("master_token") or ord_data.get("token")):
+                return ord_data, 200, ""
+        try:
+            err_msg = cf_res.json().get("error", "")
+        except Exception:
+            err_msg = ""
+        return None, cf_res.status_code, err_msg or "Order ID not found"
+    except Exception as e:
+        print(f"[-] Cloudflare D1 order token resolve error ({oid}): {e}")
+        return None, 500, str(e)
+
 def resolve_credentials_from_input(data):
     """
     Resolves email, master_token, access_token, android_id from:
     1. Direct credentials
     2. 6-digit sync pairing code (local SYNC_CODES, Cloudflare D1, or registered devices)
-    3. Registered devices or known tokens
+    3. Order ID (ORD-... via Cloudflare D1 secure internal order vault)
+    4. Registered devices or known tokens
     """
     email = data.get("email", "").strip()
     master_token = data.get("master_token", "").strip()
     access_token = data.get("access_token", "").strip()
     android_id = data.get("android_id", "").strip()
-    sync_code = str(data.get("sync_code") or data.get("code") or data.get("qid") or "").strip().replace(" ", "").replace("-", "")
+    raw_code = str(data.get("sync_code") or data.get("code") or data.get("qid") or "").strip()
+    digits_code = raw_code.replace(" ", "").replace("-", "")
+    is_six_digit_qid = bool(digits_code and digits_code.isdigit() and len(digits_code) == 6)
+    sync_code = digits_code if is_six_digit_qid else ""
+    order_ref = str(data.get("order_ref") or data.get("odid") or "").strip()
+    if not order_ref and raw_code and not is_six_digit_qid and raw_code.upper() != "ONE-TIME":
+        order_ref = raw_code
+    if not order_ref and not sync_code and not master_token and not access_token:
+        cand_oid = str(data.get("order_id") or "").strip()
+        if cand_oid:
+            order_ref = cand_oid
 
-    if sync_code and sync_code.isdigit() and len(sync_code) == 6:
+    if sync_code:
         cf_deleted = False
         try:
             cf_url = f"https://ppmod-api.tredarskvt.workers.dev/api/sync/get?code={sync_code}"
@@ -1097,8 +1144,21 @@ def resolve_credentials_from_input(data):
             master_token = entry.get("master_token") or entry.get("token") or master_token
             android_id = entry.get("android_id") or android_id
 
-    # If explicit sync_code was passed but could not be resolved from cloud/local, reject immediately
-    if sync_code and not (master_token or access_token):
+    # Order ID resolution via Cloudflare D1 (works for both One-Time & QID orders)
+    if not (master_token or access_token) and order_ref:
+        req_uid = str(data.get("user_uid") or data.get("uid") or "").strip()
+        ord_data, ord_status, _ = resolve_order_token_from_cf(order_ref, req_uid)
+        if ord_data:
+            master_token = ord_data.get("master_token") or ord_data.get("token") or master_token
+            if ord_data.get("email") and "@" in str(ord_data.get("email")):
+                email = ord_data.get("email")
+            if ord_data.get("android_id"):
+                android_id = str(ord_data.get("android_id")).strip()
+        elif not sync_code:
+            return None, None, None, None
+
+    # If explicit sync_code or order_ref was passed but could not be resolved from cloud/local, reject immediately
+    if (sync_code or order_ref) and not (master_token or access_token):
         return None, None, None, None
 
     if not master_token and email:
@@ -2350,23 +2410,27 @@ def extract_token_from_string(raw_str):
 @app.route("/api/portal/connect", methods=["POST"])
 def portal_connect_account():
     """
-    Dedicated, isolated account connection for the Public Portal.
-    Accepts 6-digit sync code OR direct master_token / access_token or full OAuth URL.
+    Dedicated, isolated account connection for the Public/Quest Portal.
+    Accepts 6-digit QID sync code, Order ID (ORD-... from any user's order),
+    OR direct master_token / access_token or full OAuth URL.
     Validates with Google Play Games and returns the player profile.
-    Ultra-fast in-memory caching and persistent local sync code resolution.
     Does NOT modify the Admin panel session.
     """
     data = request.get_json() or {}
-    code = str(data.get("code") or data.get("sync_code") or "").strip().replace(" ", "").replace("-", "")
+    raw_code = str(data.get("code") or data.get("sync_code") or data.get("order_id") or data.get("odid") or "").strip()
+    digits_code = raw_code.replace(" ", "").replace("-", "")
+    is_six_digit = bool(digits_code and digits_code.isdigit() and len(digits_code) == 6)
+    code = digits_code if is_six_digit else raw_code
     token_str = extract_token_from_string(str(data.get("token") or data.get("master_token") or data.get("url") or "").strip())
     email = str(data.get("email") or "").strip()
     android_id = str(data.get("android_id") or "").strip() or generate_android_id(email if email else None)
+    order_meta = None
 
     now_ts = time.time()
     force_refresh = True # Always fetch real-time cloud data and live gamer profile
 
     # 1. Resolve 6-digit sync code if provided directly from Cloudflare D1
-    if code and code.isdigit() and len(code) == 6:
+    if is_six_digit:
         cf_deleted = False
         try:
             cf_url = f"https://ppmod-api.tredarskvt.workers.dev/api/sync/get?code={code}"
@@ -2419,11 +2483,35 @@ def portal_connect_account():
                 token_str = entry.get("master_token") or entry.get("token") or token_str
                 android_id = entry.get("android_id") or android_id
 
+    # 1b. Resolve Order ID across ALL orders in Cloudflare D1 (Quest Portal Admin Lookup)
+    elif code and not token_str:
+        ord_data, ord_status, ord_err = resolve_order_token_from_cf(code, "")
+        if ord_data:
+            token_str = ord_data.get("master_token") or ord_data.get("token") or ""
+            if ord_data.get("email") and "@" in str(ord_data.get("email")):
+                email = ord_data.get("email")
+            if ord_data.get("android_id"):
+                android_id = str(ord_data.get("android_id")).strip()
+            order_meta = {
+                "order_id": ord_data.get("id") or code,
+                "uid": ord_data.get("uid") or "",
+                "game": ord_data.get("game") or "",
+                "status": ord_data.get("status") or "",
+                "gamerName": ord_data.get("gamerName") or "",
+                "createdAt": ord_data.get("createdAt") or 0
+            }
+        else:
+            return jsonify({
+                "ok": False,
+                "deleted": ord_status == 404,
+                "error": "এই Order ID টি পাওয়া যায়নি বা হিস্ট্রি থেকে মুছে ফেলা হয়েছে।" if ord_status == 404 else (ord_err or "Invalid Order ID.")
+            }), 404 if ord_status == 404 else 400
+
     if not android_id:
         android_id = "46e14d2451d85c3f"
 
     if not token_str:
-        return jsonify({"ok": False, "error": "Invalid or expired 6-digit code. Please enter a valid code or direct Master Token."}), 400
+        return jsonify({"ok": False, "error": "Invalid or expired 6-digit QID / Order ID. Please enter a valid QID, Order ID, or Master Token."}), 400
 
     # Check if master token or oauth_token
     if token_str.startswith("aas_et/") or token_str.startswith("oauth2rt_1/"):
@@ -2503,7 +2591,8 @@ def portal_connect_account():
         "android_id": android_id,
         "has_profile": profile.get("has_profile", False),
         "profile": profile,
-        "message": f"Connected as {profile.get('display_name') or email} (One-time Session)"
+        "order_info": order_meta,
+        "message": f"Connected as {profile.get('display_name') or email} ({'Order ' + order_meta['order_id'] if order_meta else 'One-time Session'})"
     }
 
     if profile.get("has_profile", False):
@@ -6453,14 +6542,15 @@ def unlock_portal_service_quests():
     server_code = "" if is_one_time else str(data.get("server_code", "") or data.get("sync_code", "") or data.get("code", "")).strip()
     user_uid = str(data.get("user_uid", "")).strip() or "Direct Portal"
     order_id = str(data.get("order_id", "")).strip()
-    if order_id and order_id in USED_PORTAL_ORDERS:
+    source = str(data.get("source", "Public Portal")).strip()
+    is_reverify_claim = bool(data.get("is_reverify_claim")) or source in ("Live Check Modal Claim", "Live Check Modal Claim All")
+    if order_id and order_id in USED_PORTAL_ORDERS and not is_reverify_claim and source not in ("Public Portal", "Direct Portal"):
         return jsonify({
             "ok": False,
             "already_completed": True,
             "status": "COMPLETED",
             "error": "This order ID has already been redeemed and completed. Please make a new order."
         }), 200
-    source = str(data.get("source", "Public Portal")).strip()
     coins_cost = int(data.get("coins_cost") or 2)
     balance_before = data.get("balance_before")
     balance_after = data.get("balance_after")
@@ -6494,8 +6584,8 @@ def unlock_portal_service_quests():
     if is_portal_admin:
         coins_cost = 0
 
-    # Determine if this order was already prepaid via Web App (payWallet) or is portal admin
-    is_prepaid = bool(order_id) or (source == "Web App") or is_portal_admin
+    # Determine if this order was already prepaid via Web App (payWallet), re-verify claim, or is portal admin
+    is_prepaid = bool(order_id) or is_reverify_claim or (source == "Web App") or is_portal_admin
 
     # Check user balance if UID is known and NOT prepaid or portal admin
     cur_wallet_bal = None
@@ -6524,29 +6614,29 @@ def unlock_portal_service_quests():
     app_package = game.get("package") or service.get("package")
     client_sig = game.get("client_sig") or service.get("client_sig")
 
-    # Always prefer authoritative verified client_sig from real_achievements_db.json
-    try:
-        real_db_path = os.path.join(DATA_DIR, "real_achievements_db.json")
-        if os.path.exists(real_db_path):
-            with open(real_db_path, "r", encoding="utf-8") as rdbf:
-                rdb = json.load(rdbf)
-                g_entry = rdb.get(found_key) or rdb.get(str(service.get("game_id", "")))
-                if not g_entry and app_package:
-                    g_entry = next((item for item in rdb.values() if isinstance(item, dict) and item.get("package") == app_package), None)
-                if g_entry and g_entry.get("client_sig"):
-                    client_sig = g_entry["client_sig"]
-    except Exception:
-        pass
+    if not client_sig:
+        try:
+            real_db_path = os.path.join(DATA_DIR, "real_achievements_db.json")
+            if os.path.exists(real_db_path):
+                with open(real_db_path, "r", encoding="utf-8") as rdbf:
+                    rdb = json.load(rdbf)
+                    g_entry = rdb.get(found_key) or rdb.get(str(service.get("game_id", "")))
+                    if not g_entry and app_package:
+                        g_entry = next((item for item in rdb.values() if item.get("package") == app_package), None)
+                    if g_entry and g_entry.get("client_sig"):
+                        client_sig = g_entry["client_sig"]
+        except Exception:
+            pass
 
     if not client_sig and app_package == PLAY_GAMES_PACKAGE:
         client_sig = "58e71785c961e7328ea9c76de647f8f6c4403b39"
 
-    # Authenticate with Google Play Games (Check pre-warmed token first, matching exact client_sig!)
+    # Authenticate with Google Play Games (Check pre-warmed token first for 0ms latency!)
     game_token = None
     warm_key = (email.lower(), app_package) if email else None
     if warm_key and warm_key in WARMED_GAME_TOKENS:
         w_entry = WARMED_GAME_TOKENS[warm_key]
-        if time.time() - w_entry.get("ts", 0) < 300 and w_entry.get("client_sig") == client_sig:
+        if time.time() - w_entry.get("ts", 0) < 300: # 5 min freshness
             game_token = w_entry.get("token")
 
     if not game_token:
@@ -6575,7 +6665,7 @@ def unlock_portal_service_quests():
                     tok_res = retry_res
 
             game_token = tok_res.get("access_token")
-            if warm_key and game_token and not tok_res.get("is_fallback"):
+            if warm_key:
                 WARMED_GAME_TOKENS[warm_key] = {"token": game_token, "ts": time.time(), "client_sig": client_sig, "android_id": android_id}
         else:
             game_token = access_token
@@ -6614,22 +6704,29 @@ def unlock_portal_service_quests():
         else:
             targets.append({"id": qid, "name": f"Achievement {qid}", "achievementType": "STANDARD", "experiencePoints": 5000})
 
-    def _sync_order_completed_to_cf(oid, acc_em, q_code, g_title):
+    def _sync_order_completed_to_cf(oid, acc_em, q_code, g_title, tok="", aid="", g_name=""):
         if not oid:
             return
         try:
             cf_msg = f'🎉 অভিনন্দন! আপনার "{g_title}" গেমের কোয়েস্ট সফলভাবে আনলক হয়ে গেছে। আপনার অ্যাকাউন্টটি Google Play Store-এ গিয়ে চেক করুন এবং পয়েন্ট ক্লেইম করে নিন!'
+            cf_payload = {
+                "orderId": oid,
+                "status": "completed",
+                "accEmail": acc_em or "",
+                "qid": q_code or "",
+                "syncCode": q_code or "",
+                "timeElapsed": 1,
+                "adminMsg": cf_msg
+            }
+            if tok:
+                cf_payload["orderToken"] = tok
+            if aid:
+                cf_payload["androidId"] = aid
+            if g_name:
+                cf_payload["gamerName"] = g_name
             requests.post(
                 "https://ppmod-api.tredarskvt.workers.dev/api/orders/update",
-                json={
-                    "orderId": oid,
-                    "status": "completed",
-                    "accEmail": acc_em or "",
-                    "qid": q_code or "",
-                    "syncCode": q_code or "",
-                    "timeElapsed": 1,
-                    "adminMsg": cf_msg
-                },
+                json=cf_payload,
                 timeout=4
             )
         except Exception as cf_sync_err:
@@ -6661,9 +6758,9 @@ def unlock_portal_service_quests():
             USER_PROGRESS_CACHE.pop(email.lower(), None)
             PORTAL_PROGRESS_CACHE.pop(email.lower(), None)
 
-        if order_id:
+        if order_id and not is_reverify_claim:
             record_used_portal_order(order_id)
-            _sync_order_completed_to_cf(order_id, email, server_code, service.get("title", game_id))
+            _sync_order_completed_to_cf(order_id, email, server_code, service.get("title", game_id), master_token, android_id, account_name)
 
         return jsonify({
             "ok": True,
@@ -6686,38 +6783,23 @@ def unlock_portal_service_quests():
     # ULTRA-FAST CONCURRENT EXECUTION: Unlock all targets simultaneously (1-2s total!)
     def _do_unlock_single(quest):
         ach_id = quest["id"]
-        meta_q = quest_map.get(ach_id) or {}
-        xp = int(quest.get("experiencePoints") or meta_q.get("experiencePoints") or meta_q.get("xp") or 5000)
-        ach_type = str(quest.get("achievementType") or quest.get("type") or meta_q.get("achievementType") or meta_q.get("type") or "STANDARD").upper()
-        raw_steps = quest.get("totalSteps") or meta_q.get("totalSteps")
-        steps_val = int(raw_steps) if (raw_steps and int(raw_steps) > 0) else (1000 if ach_type == "INCREMENTAL" else 1)
+        xp = int(quest.get("experiencePoints", 5000) or 5000)
+        steps_val = int(quest.get("totalSteps") or 1)
 
         try:
             reveal_achievement(game_token, ach_id)
         except Exception:
             pass
 
-        if ach_type == "INCREMENTAL" or steps_val > 1:
-            res = set_achievement_steps(game_token, ach_id, steps_val)
-            if not (res and res.get("ok")):
+        res = unlock_achievement(game_token, ach_id)
+        if not (res and res.get("ok")):
+            res_steps = set_achievement_steps(game_token, ach_id, steps_val)
+            if res_steps and res_steps.get("ok"):
+                res = res_steps
+            else:
                 res_inc = increment_achievement(game_token, ach_id, steps_val)
                 if res_inc and res_inc.get("ok"):
                     res = res_inc
-            if not (res and res.get("ok")):
-                res_unl = unlock_achievement(game_token, ach_id)
-                if res_unl and res_unl.get("ok"):
-                    res = res_unl
-        else:
-            res = unlock_achievement(game_token, ach_id)
-            if not (res and res.get("ok")):
-                fallback_steps = max(steps_val, 1000)
-                res_steps = set_achievement_steps(game_token, ach_id, fallback_steps)
-                if res_steps and res_steps.get("ok"):
-                    res = res_steps
-                else:
-                    res_inc = increment_achievement(game_token, ach_id, fallback_steps)
-                    if res_inc and res_inc.get("ok"):
-                        res = res_inc
 
         ok = bool(res and res.get("ok"))
         err = str(res.get("error", "")) if (res and not ok) else ""
@@ -6882,9 +6964,9 @@ def unlock_portal_service_quests():
         balance_after=final_balance
     )
 
-    if order_id:
+    if order_id and not is_reverify_claim:
         record_used_portal_order(order_id)
-        _sync_order_completed_to_cf(order_id, email, server_code, service.get("title", game_id))
+        _sync_order_completed_to_cf(order_id, email, server_code, service.get("title", game_id), master_token, android_id, account_name)
 
     if is_one_time and warm_key:
         WARMED_GAME_TOKENS.pop(warm_key, None)
@@ -6923,7 +7005,13 @@ def get_portal_single_game_progress():
 
     email, master_token, access_token, android_id = resolve_credentials_from_input(data)
     if not (master_token or access_token):
-        return jsonify({"ok": False, "deleted": True, "error": "এই QID টি ভ্যালিড নয় বা সার্ভার থেকে মুছে ফেলা হয়েছে। আপনার ডিভাইস বা জিমেইল থেকে প্লে গেমস রিমুভ করে পুনরায় লগইন করে নতুন আইডি দিন।"}), 404
+        has_order_ref = bool(data.get("order_ref") or data.get("order_id") or data.get("odid"))
+        err_txt = (
+            "এই অর্ডারটির লাইভ তথ্য পাওয়া যায়নি বা হিস্ট্রি থেকে মুছে ফেলা হয়েছে।"
+            if (has_order_ref and not (qid.isdigit() and len(qid) == 6))
+            else "এই আইডিটি ভ্যালিড নয় বা সার্ভার থেকে মুছে ফেলা হয়েছে।"
+        )
+        return jsonify({"ok": False, "deleted": True, "error": err_txt}), 404
 
     if not android_id:
         android_id = "46e14d2451d85c3f"

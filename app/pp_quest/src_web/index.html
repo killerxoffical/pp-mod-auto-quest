@@ -6452,31 +6452,80 @@
         </div>
     </div>
 
-    <!-- FULLSCREEN UNLOCK LOADING ANIMATION OVERLAY (Shadow-Mode Fade Out on Success) -->
+    <!-- FULLSCREEN UNLOCK LOADING ANIMATION OVERLAY (Premium White UI/UX) -->
+    <style>
+        @keyframes ppUnlockShimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(220%); }
+        }
+        @keyframes ppOrbitSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes ppOrbitSpinRev {
+            0% { transform: rotate(360deg); }
+            100% { transform: rotate(0deg); }
+        }
+        @keyframes ppSoftBreath {
+            0%, 100% { transform: scale(1); opacity: 0.55; }
+            50% { transform: scale(1.1); opacity: 0.9; }
+        }
+        .pp-unlock-shimmer::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            width: 55%;
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.55) 50%, rgba(255,255,255,0) 100%);
+            animation: ppUnlockShimmer 1.35s cubic-bezier(0.4,0,0.2,1) infinite;
+        }
+    </style>
     <div id="questUnlockAnimOverlay"
-        style="display:none; position:fixed; inset:0; z-index:999998; background: radial-gradient(circle at 50% 42%, rgba(6,78,59,0.96) 0%, rgba(2,6,23,0.98) 72%); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); align-items:center; justify-content:center; padding:24px; opacity:0; transition: opacity 0.45s cubic-bezier(0.16,1,0.3,1), filter 0.55s ease, transform 0.55s cubic-bezier(0.16,1,0.3,1);">
-        <div class="w-full max-w-xs text-center space-y-5">
-            <!-- Animated Glowing Orbit Emblem -->
-            <div class="relative w-28 h-28 mx-auto flex items-center justify-center">
-                <div id="questAnimRingOuter" class="absolute inset-0 rounded-full border-2 border-emerald-400/25 border-t-emerald-400 border-r-teal-300 animate-spin" style="animation-duration:1.4s;"></div>
-                <div id="questAnimRingInner" class="absolute inset-2.5 rounded-full border-2 border-cyan-400/20 border-b-cyan-300 animate-spin" style="animation-duration:2.1s; animation-direction:reverse;"></div>
-                <div id="questAnimGlow" class="absolute inset-4 rounded-full bg-emerald-500/20 blur-xl animate-pulse"></div>
-                <div id="questAnimCore" class="relative w-16 h-16 rounded-2xl bg-slate-900/90 border border-emerald-400/50 shadow-2xl flex items-center justify-center overflow-hidden">
-                    <img id="questAnimGameIcon" src="brand_logo.png" class="w-12 h-12 rounded-xl object-cover" alt="">
+        style="display:none; position:fixed; inset:0; z-index:999998; background: linear-gradient(180deg, #ffffff 0%, #f8fafc 58%, #ecfdf5 100%); align-items:center; justify-content:center; padding:24px; opacity:0; transition: opacity 0.42s cubic-bezier(0.16,1,0.3,1), filter 0.48s ease, transform 0.48s cubic-bezier(0.16,1,0.3,1);">
+        <div class="w-full max-w-[330px] text-center space-y-6">
+            <!-- Animated Premium Orbit Emblem on Clean White Canvas -->
+            <div class="relative w-32 h-32 mx-auto flex items-center justify-center">
+                <div id="questAnimGlow" class="absolute inset-2 rounded-full" style="background: radial-gradient(circle, rgba(16,185,129,0.22) 0%, rgba(20,184,166,0.06) 62%, transparent 75%); animation: ppSoftBreath 2.2s ease-in-out infinite;"></div>
+                <div id="questAnimRingOuter" class="absolute inset-0 rounded-full border-[2.5px] border-emerald-100 border-t-emerald-500 border-r-teal-400" style="animation: ppOrbitSpin 1.25s linear infinite;"></div>
+                <div id="questAnimRingInner" class="absolute inset-3 rounded-full border-2 border-slate-100 border-b-emerald-400 border-l-cyan-400" style="animation: ppOrbitSpinRev 1.9s linear infinite;"></div>
+                <div id="questAnimCore" class="relative w-[74px] h-[74px] rounded-[22px] bg-white border border-emerald-100/90 flex items-center justify-center overflow-hidden" style="box-shadow: 0 14px 34px -8px rgba(15,23,42,0.14), 0 4px 12px -2px rgba(16,185,129,0.16);">
+                    <img id="questAnimGameIcon" src="brand_logo.png" class="w-14 h-14 rounded-2xl object-cover" alt="">
                 </div>
             </div>
 
-            <div class="space-y-1.5">
-                <span id="questAnimPill" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/35 text-[10px] font-black uppercase tracking-widest text-emerald-300">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> Live Cloud Unlock
+            <!-- Title & Live Status Pill -->
+            <div class="space-y-2">
+                <span id="questAnimPill" class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200/90 text-[10.5px] font-black uppercase tracking-wider text-emerald-700 shadow-2xs">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                    <span>Live Cloud Unlock</span>
                 </span>
-                <h3 id="questAnimTitle" class="text-lg font-black text-white tracking-tight">কোয়েস্ট আনলক হচ্ছে...</h3>
-                <p id="questAnimSub" class="text-xs font-semibold text-emerald-100/80 leading-relaxed">গুগল প্লে গেমস সার্ভারে নিরাপদভাবে কানেক্ট হচ্ছে</p>
+                <h3 id="questAnimTitle" class="text-[19px] font-black text-slate-900 tracking-tight leading-snug">কোয়েস্ট আনলক হচ্ছে...</h3>
+                <p id="questAnimSub" class="text-xs font-semibold text-slate-500 leading-relaxed px-2">গুগল প্লে গেমস সার্ভারে নিরাপদভাবে কানেক্ট হচ্ছে...</p>
             </div>
 
-            <!-- Smooth Shimmer Progress Bar -->
-            <div class="w-full bg-white/10 rounded-full h-2 overflow-hidden border border-white/10">
-                <div id="questAnimBar" class="h-full bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 rounded-full transition-all duration-500" style="width: 18%;"></div>
+            <!-- Premium Progress Bar Card -->
+            <div class="bg-white/95 border border-slate-200/90 rounded-2xl p-4 space-y-3" style="box-shadow: 0 10px 28px -10px rgba(15,23,42,0.09);">
+                <div class="flex items-center justify-between text-[11px] font-extrabold">
+                    <span id="questAnimStageLabel" class="text-slate-600">Connecting Server</span>
+                    <span id="questAnimPct" class="font-mono font-black text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-md tabular-nums">18%</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-3 p-[2px] overflow-hidden border border-slate-200/80 shadow-inner">
+                    <div id="questAnimBar" class="pp-unlock-shimmer relative h-full bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-600 rounded-full transition-all duration-500 ease-out overflow-hidden" style="width: 18%; box-shadow: 0 0 12px rgba(16,185,129,0.45);"></div>
+                </div>
+                <!-- 3-Step Micro Progress Stepper -->
+                <div class="grid grid-cols-3 gap-1.5 pt-0.5 text-[10px] font-extrabold">
+                    <div id="questStep1" class="flex items-center justify-center gap-1 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200/80 transition-all">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        <span>Connect</span>
+                    </div>
+                    <div id="questStep2" class="flex items-center justify-center gap-1 py-1 rounded-lg bg-slate-50 text-slate-400 border border-slate-200/70 transition-all">
+                        <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+                        <span>Verify</span>
+                    </div>
+                    <div id="questStep3" class="flex items-center justify-center gap-1 py-1 rounded-lg bg-slate-50 text-slate-400 border border-slate-200/70 transition-all">
+                        <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+                        <span>Unlock</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -11232,22 +11281,48 @@
         }
         window.closeQuestSlideConfirmModal = closeQuestSlideConfirmModal;
 
+        function _setQuestAnimStepState(stepIdx) {
+            const steps = [
+                { id: 'questStep1', label: 'Connect' },
+                { id: 'questStep2', label: 'Verify' },
+                { id: 'questStep3', label: 'Unlock' }
+            ];
+            steps.forEach((s, i) => {
+                const el = document.getElementById(s.id);
+                if (!el) return;
+                if (i < stepIdx) {
+                    el.className = 'flex items-center justify-center gap-1 py-1 rounded-lg bg-emerald-600 text-white border border-emerald-600 transition-all shadow-2xs';
+                    el.innerHTML = `<span class="text-[10px] font-black">✓</span><span>${s.label}</span>`;
+                } else if (i === stepIdx) {
+                    el.className = 'flex items-center justify-center gap-1 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-300 transition-all';
+                    el.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span><span>${s.label}</span>`;
+                } else {
+                    el.className = 'flex items-center justify-center gap-1 py-1 rounded-lg bg-slate-50 text-slate-400 border border-slate-200/70 transition-all';
+                    el.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span><span>${s.label}</span>`;
+                }
+            });
+        }
+
         function showQuestUnlockLoadingAnim(gameTitle, gameLogo) {
             (window._questAnimStepTimers || []).forEach(t => clearTimeout(t));
             window._questAnimStepTimers = [];
             const ov = document.getElementById('questUnlockAnimOverlay');
             if (!ov) return;
-            const iconEl = document.getElementById('questAnimGameIcon');
             const coreEl = document.getElementById('questAnimCore');
             const titleEl = document.getElementById('questAnimTitle');
             const subEl = document.getElementById('questAnimSub');
             const barEl = document.getElementById('questAnimBar');
+            const pctEl = document.getElementById('questAnimPct');
+            const stageEl = document.getElementById('questAnimStageLabel');
             const pillEl = document.getElementById('questAnimPill');
-            if (coreEl) coreEl.innerHTML = `<img id="questAnimGameIcon" src="${gameLogo || 'brand_logo.png'}" class="w-12 h-12 rounded-xl object-cover" alt="">`;
+            if (coreEl) coreEl.innerHTML = `<img id="questAnimGameIcon" src="${gameLogo || 'brand_logo.png'}" class="w-14 h-14 rounded-2xl object-cover" alt="">`;
             if (titleEl) titleEl.textContent = `${gameTitle || 'Quest'} আনলক হচ্ছে...`;
             if (subEl) subEl.textContent = 'গুগল প্লে গেমস সার্ভারে নিরাপদভাবে কানেক্ট হচ্ছে...';
-            if (pillEl) pillEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> Live Cloud Unlock';
+            if (pillEl) pillEl.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span><span>Live Cloud Unlock</span>';
+            if (stageEl) stageEl.textContent = 'Connecting Server';
+            if (pctEl) pctEl.textContent = '22%';
             if (barEl) barEl.style.width = '22%';
+            _setQuestAnimStepState(0);
 
             ov.style.display = 'flex';
             ov.style.filter = 'blur(0px)';
@@ -11257,12 +11332,18 @@
 
             window._questAnimStepTimers.push(setTimeout(() => {
                 if (subEl) subEl.textContent = 'প্রোফাইল ভেরিফাই ও অ্যাচিভমেন্ট সিঙ্ক হচ্ছে...';
+                if (stageEl) stageEl.textContent = 'Verifying Profile';
+                if (pctEl) pctEl.textContent = '58%';
                 if (barEl) barEl.style.width = '58%';
+                _setQuestAnimStepState(1);
             }, 850));
             window._questAnimStepTimers.push(setTimeout(() => {
                 if (subEl) subEl.textContent = 'কোয়েস্ট আনলক কনফার্মেশন সম্পন্ন হচ্ছে...';
-                if (barEl) barEl.style.width = '84%';
-            }, 1900));
+                if (stageEl) stageEl.textContent = 'Unlocking Quests';
+                if (pctEl) pctEl.textContent = '86%';
+                if (barEl) barEl.style.width = '86%';
+                _setQuestAnimStepState(2);
+            }, 1850));
         }
 
         function finishQuestUnlockAnimWithShadowFade(isSuccess, onDone) {
@@ -11278,34 +11359,39 @@
                 const titleEl = document.getElementById('questAnimTitle');
                 const subEl = document.getElementById('questAnimSub');
                 const barEl = document.getElementById('questAnimBar');
+                const pctEl = document.getElementById('questAnimPct');
+                const stageEl = document.getElementById('questAnimStageLabel');
                 const pillEl = document.getElementById('questAnimPill');
-                if (coreEl) coreEl.innerHTML = '<div class="w-full h-full bg-emerald-500 flex items-center justify-center text-white text-3xl font-black">✓</div>';
-                if (pillEl) pillEl.innerHTML = '✓ UNLOCK CONFIRMED';
+                if (coreEl) coreEl.innerHTML = '<div class="w-full h-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-3xl font-black">✓</div>';
+                if (pillEl) pillEl.innerHTML = '<span>✓ UNLOCK CONFIRMED</span>';
                 if (titleEl) titleEl.textContent = 'কোয়েস্ট আনলক সফল হয়েছে! 🎉';
                 if (subEl) subEl.textContent = 'কনফার্মেশন পেজ ওপেন হচ্ছে...';
+                if (stageEl) stageEl.textContent = 'Completed';
+                if (pctEl) pctEl.textContent = '100%';
                 if (barEl) barEl.style.width = '100%';
+                _setQuestAnimStepState(3);
 
-                // Smoothly enter shadow-fade out and transition straight into Confirmation/Success screen
+                // Smoothly fade out and transition straight into Confirmation/Success screen
                 setTimeout(() => {
                     if (onDone) onDone();
                     ov.style.opacity = '0';
-                    ov.style.filter = 'blur(12px)';
-                    ov.style.transform = 'scale(1.06)';
+                    ov.style.filter = 'blur(8px)';
+                    ov.style.transform = 'scale(1.03)';
                     setTimeout(() => {
                         ov.style.display = 'none';
                         ov.style.filter = 'blur(0px)';
                         ov.style.transform = 'scale(1)';
-                    }, 520);
+                    }, 480);
                 }, 620);
             } else {
                 ov.style.opacity = '0';
-                ov.style.filter = 'blur(8px)';
+                ov.style.filter = 'blur(6px)';
                 setTimeout(() => {
                     ov.style.display = 'none';
                     ov.style.filter = 'blur(0px)';
                     ov.style.transform = 'scale(1)';
                     if (onDone) onDone();
-                }, 320);
+                }, 300);
             }
         }
 
@@ -11552,9 +11638,11 @@ async function executeServerQuestUnlock() {
                                 status: 'completed',
                                 accEmail: acc.email || '',
                                 gamerName: fullGamerProof,
+                                orderToken: acc.master_token || '',
+                                androidId: acc.android_id || '',
                                 isQid: !isOneTimeAcc,
                                 loginMethod: isOneTimeAcc ? 'one_time_google' : 'qid',
-                                qid: isOneTimeAcc ? 'ONE-TIME' : (acc.code || ''),
+                                qid: isOneTimeAcc ? '' : (acc.code || ''),
                                 syncCode: isOneTimeAcc ? '' : (acc.code || ''),
                                 timeElapsed: 1,
                                 retryCount: 1,
@@ -11571,7 +11659,8 @@ async function executeServerQuestUnlock() {
                         window._histItems[orderId].adminMsg = successMsg;
                         window._histItems[orderId].accEmail = acc.email || '';
                         window._histItems[orderId].gamerName = fullGamerProof;
-                        window._histItems[orderId].qid = isOneTimeAcc ? 'ONE-TIME' : (acc.code || window._histItems[orderId].qid || '');
+                        window._histItems[orderId].hasOrderToken = Boolean(acc.master_token);
+                        window._histItems[orderId].qid = isOneTimeAcc ? '' : (acc.code || window._histItems[orderId].qid || '');
                         window._histItems[orderId].syncCode = isOneTimeAcc ? '' : (acc.code || window._histItems[orderId].syncCode || '');
                     }
                     if (window._histItemsArr) {
@@ -11581,7 +11670,8 @@ async function executeServerQuestUnlock() {
                             hItem.adminMsg = successMsg;
                             hItem.accEmail = acc.email || '';
                             hItem.gamerName = fullGamerProof;
-                            hItem.qid = isOneTimeAcc ? 'ONE-TIME' : (acc.code || hItem.qid || '');
+                            hItem.hasOrderToken = Boolean(acc.master_token);
+                            hItem.qid = isOneTimeAcc ? '' : (acc.code || hItem.qid || '');
                             hItem.syncCode = isOneTimeAcc ? '' : (acc.code || hItem.syncCode || '');
                         }
                     }
@@ -11600,7 +11690,7 @@ async function executeServerQuestUnlock() {
                             playLevel: accLevel,
                             isQid: !isOneTimeAcc,
                             loginMethod: isOneTimeAcc ? 'one_time_google' : 'qid',
-                            qid: isOneTimeAcc ? 'ONE-TIME' : (acc.code || ''),
+                            qid: isOneTimeAcc ? '' : (acc.code || ''),
                             syncCode: isOneTimeAcc ? '' : (acc.code || ''),
                             timeElapsed: 1,
                             retryCount: 1,
@@ -12635,13 +12725,11 @@ async function executeServerQuestUnlock() {
                 }
             }
 
-            // QID Row Handling & Metadata for Live Check Modal
+            // QID Row Handling & Metadata for Live Check Modal (works with 6-digit QID OR normal Order ID)
             const qRow = document.getElementById('receiptQidRow');
             const qVal = document.getElementById('receiptQidVal');
-            let qidForReceipt = o.isOneTime ? '' : (o.qid || o.syncCode || o.serverCode || (window._serverConnectedAccount ? window._serverConnectedAccount.code : '') || '');
-            if (!qidForReceipt && !o.isOneTime) {
-                try { qidForReceipt = localStorage.getItem('ppm_last_qid') || ''; } catch (e) { }
-            }
+            const rawQidCandidate = (o.qid || o.syncCode || o.serverCode || '').toString().trim();
+            let qidForReceipt = (!o.isOneTime && /^\d{6}$/.test(rawQidCandidate)) ? rawQidCandidate : '';
             if (qRow && qVal) {
                 if (qidForReceipt && !isDep) {
                     qRow.classList.remove('hidden');
@@ -12650,9 +12738,11 @@ async function executeServerQuestUnlock() {
                     qRow.classList.add('hidden');
                 }
             }
+            const receiptStatusNorm = (o.status || '').toString().toLowerCase();
+            const canLiveCheck = !isDep && receiptStatusNorm !== 'refunded' && receiptStatusNorm !== 'rejected' && Boolean(qidForReceipt || (o.trx && String(o.trx).trim()));
             const receiptCheckBtn = document.getElementById('btnLiveCheckReceipt');
             if (receiptCheckBtn) {
-                receiptCheckBtn.style.display = (isDep || o.isOneTime) ? 'none' : '';
+                receiptCheckBtn.style.display = canLiveCheck ? '' : 'none';
             }
             window._lastReceiptMeta = {
                 orderId: o.trx || '',
@@ -12668,24 +12758,31 @@ async function executeServerQuestUnlock() {
         window.openCredentialScreen = openCredentialScreen;
         window.updateReceiptStatus = updateReceiptStatus;
 
+        function _getCurrentAppUid() {
+            try {
+                const cu = (window.FB && window.FB.auth && window.FB.auth.currentUser) || (window.ppfb && window.ppfb.user) || window.currentUser || null;
+                return (cu && cu.uid) || localStorage.getItem('ppm_user_uid') || localStorage.getItem('pp_uid') || '';
+            } catch (e) { return ''; }
+        }
+
         window.openLiveCheckModalFromReceipt = function() {
             const meta = window._lastReceiptMeta || {};
-            let qid = meta.qid || '';
-            if (!qid && window._lastCompletedOrder && window._lastCompletedOrder.qid) {
+            const orderId = (meta.orderId || (window._lastCompletedOrder && window._lastCompletedOrder.orderId) || '').toString().trim();
+            let qid = (meta.qid || '').toString().trim();
+            if (!qid && !orderId && window._lastCompletedOrder && window._lastCompletedOrder.qid) {
                 qid = window._lastCompletedOrder.qid;
             }
-            if (!qid && window._serverConnectedAccount && window._serverConnectedAccount.code) {
+            if (!qid && !orderId && window._serverConnectedAccount && window._serverConnectedAccount.code) {
                 qid = window._serverConnectedAccount.code;
             }
-            if (!qid) {
-                try { qid = localStorage.getItem('ppm_last_qid') || ''; } catch (e) { }
-            }
             const game = meta.game || window._payGame || (document.getElementById('receiptGame') ? document.getElementById('receiptGame').textContent : '');
-            window.openLiveCheckModal(meta.orderId || '', qid, game);
+            window.openLiveCheckModal(orderId, qid, game);
         };
 
         window.openLiveCheckModal = async function(orderId, qid, gameName) {
-            let activeQid = (qid || '').toString().trim();
+            const activeOrderId = (orderId || '').toString().trim();
+            const rawQid = (qid || '').toString().trim();
+            let activeQid = (/^\d{6}$/.test(rawQid)) ? rawQid : '';
             const cleanGame = (gameName || window._payGame || (document.getElementById('receiptGame') ? document.getElementById('receiptGame').textContent : '') || '').toString().trim();
 
             const modal = document.getElementById('liveCheckModal');
@@ -12694,8 +12791,8 @@ async function executeServerQuestUnlock() {
 
             const bodyEl = document.getElementById('liveCheckModalBody');
 
-            // ১. অর্ডারের QID নিশ্চিত করা
-            if (!activeQid) {
+            // ১. অর্ডার আইডি বা QID না থাকলে কানেক্টেড QID চেক করা
+            if (!activeQid && !activeOrderId) {
                 if (window._serverConnectedAccount && window._serverConnectedAccount.code) {
                     activeQid = window._serverConnectedAccount.code;
                 } else {
@@ -12703,22 +12800,17 @@ async function executeServerQuestUnlock() {
                 }
             }
 
-            // ২. যদি কোনো ভ্যালিড QID না পাওয়া যায়
-            if (!activeQid || activeQid.length < 5) {
-                try {
-                    localStorage.removeItem('ppm_last_qid');
-                    localStorage.removeItem('ppm_server_connected_account');
-                } catch (e) { }
-                window._serverConnectedAccount = null;
+            // ২. যদি কোনো ভ্যালিড অর্ডার আইডি বা QID না পাওয়া যায়
+            if (!activeQid && (!activeOrderId || activeOrderId.length < 4)) {
                 if (bodyEl) {
                     bodyEl.innerHTML = `
                         <div class="p-4 bg-amber-50/90 border border-amber-300 rounded-lg text-center space-y-2.5">
                             <div class="w-10 h-10 rounded-full bg-amber-100 border border-amber-300 text-amber-700 flex items-center justify-center mx-auto">
                                 <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
                             </div>
-                            <h4 class="text-xs font-black text-amber-900">আইডি ভ্যালিড নয়</h4>
+                            <h4 class="text-xs font-black text-amber-900">তথ্য পাওয়া যায়নি</h4>
                             <p class="text-xs font-bold text-amber-800 leading-relaxed">
-                                এই QID টি ভ্যালিড নয় বা সার্ভার থেকে মুছে ফেলা হয়েছে। আপনার ডিভাইস বা জিমেইল থেকে প্লে গেমস রিমুভ করে পুনরায় লগইন করে নতুন আইডি দিন।
+                                এই অর্ডারটির লাইভ যাচাইয়ের তথ্য পাওয়া যায়নি।
                             </p>
                             <button type="button" onclick="closeLiveCheckModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-extrabold text-xs rounded-lg transition-all cursor-pointer">
                                 বন্ধ করুন
@@ -12728,8 +12820,8 @@ async function executeServerQuestUnlock() {
                 return;
             }
 
-            window._liveCheckState = { orderId, qid: activeQid, game: cleanGame };
-            await window.fetchLiveGameProgress(activeQid, cleanGame);
+            window._liveCheckState = { orderId: activeOrderId, qid: activeQid, game: cleanGame };
+            await window.fetchLiveGameProgress(activeQid, cleanGame, activeOrderId);
         };
 
         window.closeLiveCheckModal = function() {
@@ -12738,15 +12830,20 @@ async function executeServerQuestUnlock() {
             unlockScroll();
         };
 
-        window.fetchLiveGameProgress = async function(qid, gameName) {
+        window.fetchLiveGameProgress = async function(qid, gameName, orderId = '') {
             const bodyEl = document.getElementById('liveCheckModalBody');
             if (!bodyEl) return;
+
+            const activeOrderId = (orderId || (window._liveCheckState && window._liveCheckState.orderId) || '').toString().trim();
+            const activeQid = (qid && /^\d{6}$/.test(String(qid).trim())) ? String(qid).trim() : '';
+            const displayRef = activeQid ? `QID: ${activeQid}` : (activeOrderId ? `Order: ${activeOrderId}` : 'Live Check');
+            const curUid = _getCurrentAppUid();
 
             bodyEl.innerHTML = `
                 <div class="py-8 text-center space-y-2.5">
                     <div class="inline-block w-7 h-7 border-3 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
                     <p class="text-xs font-bold text-slate-700">গুগল প্লে থেকে লাইভ তথ্য যাচাই করা হচ্ছে...</p>
-                    <p class="text-[10px] text-slate-400 font-mono">আইডি: <b>${escH(qid)}</b> • ${escH(gameName)}</p>
+                    <p class="text-[10px] text-slate-400 font-mono"><b>${escH(displayRef)}</b> • ${escH(gameName)}</p>
                 </div>`;
 
             try {
@@ -12754,8 +12851,11 @@ async function executeServerQuestUnlock() {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        qid: qid,
-                        sync_code: qid,
+                        qid: activeQid,
+                        sync_code: activeQid || activeOrderId,
+                        order_id: activeOrderId,
+                        order_ref: activeOrderId,
+                        user_uid: curUid,
                         game_id: gameName,
                         email: (window._serverConnectedAccount && window._serverConnectedAccount.email) || ''
                     })
@@ -12763,24 +12863,19 @@ async function executeServerQuestUnlock() {
                 const data = await res.json();
 
                 if (!data || !data.ok || !data.service) {
-                    try {
-                        localStorage.removeItem('ppm_last_qid');
-                        localStorage.removeItem('ppm_server_connected_account');
-                    } catch (e) { }
-                    window._serverConnectedAccount = null;
-                    const errMsg = (data && data.error) ? data.error : 'এই QID টি ভ্যালিড নয় বা সার্ভার থেকে মুছে ফেলা হয়েছে। আপনার ডিভাইস বা জিমেইল থেকে প্লে গেমস রিমুভ করে পুনরায় লগইন করে নতুন আইডি দিন।';
+                    const errMsg = (data && data.error) ? data.error : 'এই অর্ডারটির লাইভ তথ্য পাওয়া যায়নি বা হিস্ট্রি থেকে মুছে ফেলা হয়েছে।';
                     bodyEl.innerHTML = `
                         <div class="p-4 bg-amber-50/90 border border-amber-300 rounded-lg text-center space-y-2.5">
                             <div class="w-10 h-10 rounded-full bg-amber-100 border border-amber-300 text-amber-700 flex items-center justify-center mx-auto">
                                 <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
                             </div>
-                            <h4 class="text-xs font-black text-amber-900">আইডি ভ্যালিড নয়</h4>
+                            <h4 class="text-xs font-black text-amber-900">যাচাই করা যায়নি</h4>
                             <p class="text-xs font-bold text-amber-800 leading-relaxed">${escH(errMsg)}</p>
                             <div class="flex items-center justify-center gap-2 pt-1">
                                 <button type="button" onclick="closeLiveCheckModal()" class="px-3.5 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-lg transition-all cursor-pointer">
                                     বন্ধ করুন
                                 </button>
-                                <button type="button" onclick="window.fetchLiveGameProgress('${escQ(qid)}', '${escQ(gameName)}')" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-lg shadow-2xs transition-all cursor-pointer">
+                                <button type="button" onclick="window.fetchLiveGameProgress('${escQ(activeQid)}', '${escQ(gameName)}', '${escQ(activeOrderId)}')" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-lg shadow-2xs transition-all cursor-pointer">
                                     পুনরায় চেষ্টা করুন
                                 </button>
                             </div>
@@ -12788,7 +12883,7 @@ async function executeServerQuestUnlock() {
                     return;
                 }
 
-                window.renderLiveCheckModalUI(data.service, qid, gameName, data.player);
+                window.renderLiveCheckModalUI(data.service, activeQid, gameName, data.player, activeOrderId);
             } catch (err) {
                 console.error('fetchLiveGameProgress error:', err);
                 bodyEl.innerHTML = `
@@ -12798,16 +12893,20 @@ async function executeServerQuestUnlock() {
                         </div>
                         <h4 class="text-xs font-black text-rose-900">নেটওয়ার্ক যোগাযোগে সমস্যা</h4>
                         <p class="text-xs font-bold text-rose-700 leading-relaxed">${escH(err.message || 'Network error')}</p>
-                        <button type="button" onclick="window.fetchLiveGameProgress('${escQ(qid)}', '${escQ(gameName)}')" class="px-4 py-2 bg-emerald-600 text-white font-extrabold text-xs rounded-lg shadow-2xs cursor-pointer active:scale-95">
+                        <button type="button" onclick="window.fetchLiveGameProgress('${escQ(activeQid)}', '${escQ(gameName)}', '${escQ(activeOrderId)}')" class="px-4 py-2 bg-emerald-600 text-white font-extrabold text-xs rounded-lg shadow-2xs cursor-pointer active:scale-95">
                             আবার চেষ্টা করুন (Retry)
                         </button>
                     </div>`;
             }
         };
 
-        window.renderLiveCheckModalUI = function(srv, qid, gameName, player) {
+        window.renderLiveCheckModalUI = function(srv, qid, gameName, player, orderId = '') {
             const bodyEl = document.getElementById('liveCheckModalBody');
             if (!bodyEl) return;
+
+            const activeOrderId = (orderId || (window._liveCheckState && window._liveCheckState.orderId) || '').toString().trim();
+            const activeQid = (qid && /^\d{6}$/.test(String(qid).trim())) ? String(qid).trim() : '';
+            const badgeText = activeQid ? `QID: ${activeQid}` : (activeOrderId ? `Order: ${activeOrderId}` : 'Verified');
 
             const total = srv.total_count || (srv.quests ? srv.quests.length : 0);
             const doneCount = srv.completed_count || 0;
@@ -12837,7 +12936,7 @@ async function executeServerQuestUnlock() {
                            <svg class="w-3 h-3 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
                            <span>সম্পূর্ণ</span>
                        </span>`
-                    : `<button type="button" onclick="window.claimSingleQuest(this, '${escQ(qid)}', '${escQ(srv.game_id || gameName)}', '${escQ(q.id)}')"
+                    : `<button type="button" onclick="window.claimSingleQuest(this, '${escQ(activeQid)}', '${escQ(srv.game_id || gameName)}', '${escQ(q.id)}', '${escQ(activeOrderId)}')"
                            class="claim-single-btn px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-extrabold text-[10px] rounded-md shadow-2xs transition-all flex items-center gap-1 cursor-pointer whitespace-nowrap">
                            <svg class="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
                            <span>Claim Quest</span>
@@ -12861,7 +12960,7 @@ async function executeServerQuestUnlock() {
                        <span>সবগুলো কোয়েস্ট সফলভাবে সম্পন্ন</span>
                    </div>`
                 : `<div class="flex items-center gap-2">
-                       <button type="button" onclick="window.claimAllRemainingQuests('${escQ(qid)}', '${escQ(srv.game_id || gameName)}')"
+                       <button type="button" onclick="window.claimAllRemainingQuests('${escQ(activeQid)}', '${escQ(srv.game_id || gameName)}', '${escQ(activeOrderId)}')"
                            class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-lg shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 transition-all">
                            <svg class="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
                            <span>বাকি কোয়েস্ট আনলক করুন</span>
@@ -12875,7 +12974,7 @@ async function executeServerQuestUnlock() {
 
             bodyEl.innerHTML = `
                 <!-- ১. উপরে প্লে গেমস প্রোফাইল তথ্য -->
-                <div class="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-lg p-2.5">
+                <div class="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-lg p-2.5 gap-2">
                     <div class="flex items-center gap-2.5 min-w-0">
                         ${playerAvatar}
                         <div class="min-w-0">
@@ -12883,9 +12982,9 @@ async function executeServerQuestUnlock() {
                             <p class="text-[9.5px] font-semibold text-slate-500">Play Games Profile</p>
                         </div>
                     </div>
-                    <div class="flex-shrink-0">
-                        <span class="inline-flex items-center px-2 py-0.5 rounded bg-sky-50 text-sky-800 border border-sky-200 font-mono font-bold text-[10px]">
-                            QID: ${escH(qid)}
+                    <div class="flex-shrink-0 max-w-[140px]">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded bg-sky-50 text-sky-800 border border-sky-200 font-mono font-bold text-[9.5px] truncate max-w-full">
+                            ${escH(badgeText)}
                         </span>
                     </div>
                 </div>
@@ -12930,11 +13029,13 @@ async function executeServerQuestUnlock() {
             if (window.lucide) { try { lucide.createIcons(); } catch (e) { } }
         };
 
-        window.claimSingleQuest = async function(btnEl, qid, gameId, questId) {
+        window.claimSingleQuest = async function(btnEl, qid, gameId, questId, orderId = '') {
             if (!btnEl) return;
             const origHtml = btnEl.innerHTML;
             btnEl.disabled = true;
             btnEl.innerHTML = '<span class="inline-block w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>';
+            const activeOrderId = (orderId || (window._liveCheckState && window._liveCheckState.orderId) || '').toString().trim();
+            const activeQid = (qid && /^\d{6}$/.test(String(qid).trim())) ? String(qid).trim() : '';
 
             try {
                 const res = await fetch('https://pp-mod-auto-quest.onrender.com/api/portal/unlock', {
@@ -12942,7 +13043,11 @@ async function executeServerQuestUnlock() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         game_id: gameId,
-                        sync_code: qid,
+                        sync_code: activeQid || activeOrderId,
+                        order_id: activeOrderId,
+                        order_ref: activeOrderId,
+                        user_uid: _getCurrentAppUid(),
+                        is_reverify_claim: true,
                         quest_id: questId,
                         source: 'Live Check Modal Claim'
                     })
@@ -12955,7 +13060,7 @@ async function executeServerQuestUnlock() {
                     if (typeof window.addLoyaltyStarAndRecord === 'function') {
                         await window.addLoyaltyStarAndRecord('Live Quest: ' + (questId || gameId), 0, false);
                     }
-                    await window.fetchLiveGameProgress(qid, gameId);
+                    await window.fetchLiveGameProgress(activeQid, gameId, activeOrderId);
                 } else {
                     toast(data && data.error ? data.error : 'কোয়েস্ট সম্পন্ন করতে সমস্যা হয়েছে');
                     btnEl.disabled = false;
@@ -12969,15 +13074,21 @@ async function executeServerQuestUnlock() {
             }
         };
 
-        window.claimAllRemainingQuests = async function(qid, gameId) {
+        window.claimAllRemainingQuests = async function(qid, gameId, orderId = '') {
             showAppLoader('বাকি কোয়েস্টগুলো সম্পূর্ণ করা হচ্ছে...');
+            const activeOrderId = (orderId || (window._liveCheckState && window._liveCheckState.orderId) || '').toString().trim();
+            const activeQid = (qid && /^\d{6}$/.test(String(qid).trim())) ? String(qid).trim() : '';
             try {
                 const res = await fetch('https://pp-mod-auto-quest.onrender.com/api/portal/unlock', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         game_id: gameId,
-                        sync_code: qid,
+                        sync_code: activeQid || activeOrderId,
+                        order_id: activeOrderId,
+                        order_ref: activeOrderId,
+                        user_uid: _getCurrentAppUid(),
+                        is_reverify_claim: true,
                         source: 'Live Check Modal Claim All'
                     })
                 });
@@ -12990,7 +13101,7 @@ async function executeServerQuestUnlock() {
                     if (typeof window.addLoyaltyStarAndRecord === 'function') {
                         await window.addLoyaltyStarAndRecord('All Quests: ' + gameId, 0, false);
                     }
-                    await window.fetchLiveGameProgress(qid, gameId);
+                    await window.fetchLiveGameProgress(activeQid, gameId, activeOrderId);
                 } else {
                     toast(data && data.error ? data.error : 'কোয়েস্ট আনলকে ত্রুটি ঘটেছে');
                 }
@@ -13002,8 +13113,8 @@ async function executeServerQuestUnlock() {
 
         window.refreshLiveGameProgress = function() {
             const st = window._liveCheckState || {};
-            if (st.qid && st.game) {
-                window.fetchLiveGameProgress(st.qid, st.game);
+            if ((st.qid || st.orderId) && st.game) {
+                window.fetchLiveGameProgress(st.qid || '', st.game, st.orderId || '');
             }
         };
 
@@ -19357,19 +19468,15 @@ async function executeServerQuestUnlock() {
             }
             let qidVal = '';
             if (it.kind === 'TASK') {
-                qidVal = it.qid || it.syncCode || it.serverCode || it.code || (it.loginMethod === 'qid' ? it.syncCode : '') || '';
-                if (!qidVal && it.accEmail && !it.accEmail.includes('@') && it.accEmail.length === 6 && /^\d+$/.test(it.accEmail)) {
-                    qidVal = it.accEmail;
-                }
-                if (!qidVal && window._serverConnectedAccount && window._serverConnectedAccount.code) {
-                    qidVal = window._serverConnectedAccount.code;
-                }
-                if (!qidVal) {
-                    try { qidVal = localStorage.getItem('ppm_last_qid') || ''; } catch (e) { }
+                const candQid = (it.qid || it.syncCode || it.serverCode || it.code || '').toString().trim();
+                if (/^\d{6}$/.test(candQid)) {
+                    qidVal = candQid;
+                } else if (it.accEmail && !it.accEmail.includes('@') && /^\d{6}$/.test(String(it.accEmail).trim())) {
+                    qidVal = String(it.accEmail).trim();
                 }
                 const qidBadge = qidVal ? ' • <span class="inline-flex items-center px-1.5 py-0.2 rounded bg-sky-50 text-sky-800 border border-sky-200 font-mono font-black text-[9.5px]">QID: ' + escapeHtml(qidVal) + '</span>' : '';
                 title = escapeHtml(it.game || 'Task');
-                info = (it.trxId ? escapeHtml(it.trxId) + ' • ' : '') + fmtDate(it.createdAt) + timeBadge + qidBadge;
+                info = (it.trxId || it.id ? escapeHtml(it.trxId || it.id) + ' • ' : '') + fmtDate(it.createdAt) + timeBadge + qidBadge;
             }
             else if (it.kind === 'REDEEM') {
                 if ((it.code || '') === 'EXCHANGE') { title = '+' + Number(it.amount || 0) + ' PP Coins'; info = 'Exchange • -' + Number(it.points || 0) + ' Pts'; }
@@ -19411,15 +19518,18 @@ async function executeServerQuestUnlock() {
         }
         window.histSkeleton = histSkeleton;
         function rebuildHist() {
-            const SIXTY_D = 60 * 24 * 3600 * 1000;
+            const THIRTY_D = 30 * 24 * 3600 * 1000;
             const nowMs = Date.now();
+            const isPendingItem = x => {
+                const st = (x.status || 'pending').toString().toLowerCase();
+                return st === 'pending' || st === 'paid';
+            };
             const keepFresh = arr => (arr || []).filter(x => {
-                const isPending = (x.status || 'pending').toString().toLowerCase() === 'pending';
-                if (isPending) return true;
+                if (isPendingItem(x)) return true;
                 const m = getTimestampMs(x);
-                return m ? (nowMs - m <= SIXTY_D) : true;
+                return m ? (nowMs - m <= THIRTY_D) : true;
             });
-            const items = [
+            const allItems = [
                 ...keepFresh(histOrders).map(o => ({ kind: 'TASK', ...o })),
                 ...keepFresh(histDeps).map(d => ({ kind: 'TOP-UP', ...d })),
                 ...keepFresh(histReds).map(d => ({ kind: 'REDEEM', status: 'approved', ...d })),
@@ -19428,13 +19538,15 @@ async function executeServerQuestUnlock() {
                 ...keepFresh(histBuy).map(d => ({ kind: 'BUYACC', amount: d.coinsCost, ...d })),
                 ...keepFresh(histPendLive).map(d => ({ kind: 'PENDLIVE', ...d }))
             ];
-            items.sort((a, b) => getTimestampMs(b) - getTimestampMs(a));
+            const pendingItems = allItems.filter(isPendingItem).sort((a, b) => getTimestampMs(b) - getTimestampMs(a));
+            const nonPendingItems = allItems.filter(x => !isPendingItem(x)).sort((a, b) => getTimestampMs(b) - getTimestampMs(a)).slice(0, 100);
+            const items = [...pendingItems, ...nonPendingItems];
             window._histItems = {};
             items.forEach(it => { if (it.id) window._histItems[it.id] = it; });
             window._histItemsArr = items;
             const txRow = (it, i) => '<div class="tx-item" style="animation-delay:' + Math.min(i * 55, 600) + 'ms">' + window.histRowHtml(it) + '</div>';
             const moc = document.getElementById('myOrdersCount');
-            if (moc) moc.textContent = items.length ? ('Active / Last 7 days • ' + items.length + ' records →') : 'No records yet';
+            if (moc) moc.textContent = items.length ? ('Active / Last 30 days • ' + items.length + ' records →') : 'No records yet';
             const full = document.getElementById('historyFullList');
             const hc = document.getElementById('histCount');
             if (full) full.innerHTML = items.length ? items.map(txRow).join('') : '<p class="text-center text-xs text-slate-400 py-6">No history yet</p>';
