@@ -335,6 +335,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             settings.setBuiltInZoomControls(false);
             settings.setUseWideViewPort(true);
             settings.setLoadWithOverviewMode(true);
+            settings.setSupportMultipleWindows(true);
+            settings.setJavaScriptCanOpenWindowsAutomatically(true);
             if (android.os.Build.VERSION.SDK_INT >= 21) {
                 settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
             }
@@ -349,7 +351,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             mainAppWebView.setLongClickable(false);
             mainAppWebView.setOnLongClickListener(new SuppressLongClickListener());
             mainAppWebView.setWebViewClient(new SafeMainWebClient(this));
-            mainAppWebView.setWebChromeClient(new android.webkit.WebChromeClient());
+            mainAppWebView.setWebChromeClient(new MainWebChromeClient(this));
             mainAppWebView.addJavascriptInterface(new AndroidBridge(this), "AndroidBridge");
             loadEncryptedVaultUi(mainAppWebView, this);
         } catch (Throwable t) {
@@ -1112,13 +1114,32 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 url = SecurityGuard.getRenderApi();
             }
             url = url.trim();
-            if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            String low = url.toLowerCase();
+            if (!low.startsWith("http://") && !low.startsWith("https://")
+                    && !low.startsWith("tg://") && !low.startsWith("market://")
+                    && !low.startsWith("mailto:") && !low.startsWith("tel:")
+                    && !low.startsWith("intent://")) {
                 url = "https://" + url;
             }
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            Intent intent;
+            if (url.toLowerCase().startsWith("intent://")) {
+                intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
+            } else {
+                intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            }
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
         } catch (Throwable t) {
             Log.e(TAG, "openBrowserUrl error", t);
+            try {
+                if (url != null && !url.trim().isEmpty()) {
+                    Intent fallback = new Intent(Intent.ACTION_VIEW, Uri.parse(url.trim()));
+                    fallback.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(Intent.createChooser(fallback, "Open link with"));
+                }
+            } catch (Throwable ignored) {
+                Toast.makeText(this, "লিংকটি ওপেন করার জন্য ব্রাউজার পাওয়া যায়নি।", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -1544,6 +1565,11 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         }
 
         @JavascriptInterface
+        public void openExternalUrl(final String url) {
+            activity.runOnUiThread(new OpenBrowserRunnable(activity, url));
+        }
+
+        @JavascriptInterface
         public void syncCloudAccounts() {
             activity.runOnUiThread(new SyncCloudRunnable(activity));
         }
@@ -1889,6 +1915,17 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         notifPollHandler = new Handler(Looper.getMainLooper());
         notifPollRunnable = new NotifPollRunnable(this);
         notifPollHandler.postDelayed(notifPollRunnable, 3000);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        try {
+            if (mainAppWebView != null) {
+                mainAppWebView.postDelayed(new ResumeWebNotifyRunnable(mainAppWebView), 120);
+            }
+        } catch (Throwable ignored) {
+        }
     }
 
     @Override
@@ -2937,6 +2974,45 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         }
 
         @Override
+        public boolean shouldOverrideUrlLoading(WebView view, android.webkit.WebResourceRequest request) {
+            try {
+                if (Build.VERSION.SDK_INT >= 21 && request != null && request.getUrl() != null) {
+                    String u = request.getUrl().toString();
+                    if (handleExternalNavigation(u)) {
+                        return true;
+                    }
+                }
+            } catch (Throwable ignored) {
+            }
+            return super.shouldOverrideUrlLoading(view, request);
+        }
+
+        @Override
+        @SuppressWarnings("deprecation")
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            try {
+                if (handleExternalNavigation(url)) {
+                    return true;
+                }
+            } catch (Throwable ignored) {
+            }
+            return super.shouldOverrideUrlLoading(view, url);
+        }
+
+        private boolean handleExternalNavigation(String url) {
+            if (url == null || url.trim().isEmpty()) return false;
+            String low = url.trim().toLowerCase();
+            if (low.startsWith("file:///android_asset/") || low.startsWith("about:") || low.startsWith("javascript:") || low.startsWith("data:")) {
+                return false;
+            }
+            if (activity != null) {
+                activity.openBrowserUrl(url);
+                return true;
+            }
+            return false;
+        }
+
+        @Override
         public void onReceivedSslError(WebView view, android.webkit.SslErrorHandler handler,
                 android.net.http.SslError error) {
             // Gracefully proceed on emulators with outdated root CA certificates or
@@ -3095,6 +3171,90 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             if (web != null) {
                 String js = "javascript:(function(){ if(window.showEmulatorAccountPrompt) window.showEmulatorAccountPrompt(); else if(window.setLoginBtnLoading) window.setLoginBtnLoading(false); })();";
                 web.loadUrl(js);
+            }
+        }
+    }
+
+    public static class ResumeWebNotifyRunnable implements Runnable {
+        private final WebView web;
+
+        public ResumeWebNotifyRunnable(WebView w) {
+            this.web = w;
+        }
+
+        @Override
+        public void run() {
+            if (web != null) {
+                try {
+                    String js = "(function(){ if(window.handleDirectTaskReturn){ window.handleDirectTaskReturn(); } })();";
+                    if (Build.VERSION.SDK_INT >= 19) {
+                        web.evaluateJavascript(js, null);
+                    } else {
+                        web.loadUrl("javascript:" + js);
+                    }
+                } catch (Throwable ignored) {
+                }
+            }
+        }
+    }
+
+    public static class PopupInterceptClient extends android.webkit.WebViewClient {
+        private final MainActivity activity;
+
+        public PopupInterceptClient(MainActivity act) {
+            this.activity = act;
+        }
+
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, android.webkit.WebResourceRequest request) {
+            try {
+                if (Build.VERSION.SDK_INT >= 21 && request != null && request.getUrl() != null && activity != null) {
+                    activity.openBrowserUrl(request.getUrl().toString());
+                }
+            } catch (Throwable ignored) {
+            }
+            try { if (view != null) view.destroy(); } catch (Throwable ignored) {}
+            return true;
+        }
+
+        @Override
+        @SuppressWarnings("deprecation")
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            try {
+                if (url != null && activity != null) {
+                    activity.openBrowserUrl(url);
+                }
+            } catch (Throwable ignored) {
+            }
+            try { if (view != null) view.destroy(); } catch (Throwable ignored) {}
+            return true;
+        }
+    }
+
+    public static class MainWebChromeClient extends android.webkit.WebChromeClient {
+        private final MainActivity activity;
+
+        public MainWebChromeClient(MainActivity act) {
+            this.activity = act;
+        }
+
+        @Override
+        public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, android.os.Message resultMsg) {
+            try {
+                if (activity == null || resultMsg == null) return false;
+                WebView.HitTestResult hr = (view != null) ? view.getHitTestResult() : null;
+                if (hr != null && hr.getExtra() != null && !hr.getExtra().trim().isEmpty()) {
+                    activity.openBrowserUrl(hr.getExtra().trim());
+                    return false;
+                }
+                WebView tmp = new WebView(activity);
+                tmp.setWebViewClient(new PopupInterceptClient(activity));
+                WebView.WebViewTransport transport = (WebView.WebViewTransport) resultMsg.obj;
+                transport.setWebView(tmp);
+                resultMsg.sendToTarget();
+                return true;
+            } catch (Throwable t) {
+                return false;
             }
         }
     }

@@ -53,7 +53,67 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <script>
+        // 1. Safe External Link Opener (Android Native Browser Bridge + Web Fallback)
+        window.openSafeExternalUrl = function (url) {
+            try {
+                var target = String(url || '').trim();
+                if (!target || target === '#') return false;
+                if (!/^(https?:|tg:|market:|mailto:|tel:|intent:)/i.test(target)) {
+                    target = 'https://' + target;
+                }
+                if (window.AndroidBridge) {
+                    if (typeof window.AndroidBridge.openExternalUrl === 'function') {
+                        window.AndroidBridge.openExternalUrl(target);
+                        return true;
+                    }
+                    if (typeof window.AndroidBridge.openBrowser === 'function') {
+                        window.AndroidBridge.openBrowser(target);
+                        return true;
+                    }
+                }
+                window.open(target, '_blank', 'noopener,noreferrer');
+                return true;
+            } catch (e) {
+                try { window.open(url, '_blank'); } catch (_) {}
+                return false;
+            }
+        };
+
+        // 2. High-FPS Lucide Icon Coalescer (Prevents 100+ synchronous full-DOM SVG scans causing lag)
+        (function () {
+            function patchLucide() {
+                if (!window.lucide || window.lucide._ppPatched) return;
+                var origCreate = window.lucide.createIcons.bind(window.lucide);
+                var rafId = 0;
+                var lastRun = 0;
+                var pendingOpts = null;
+                window.lucide.createIcons = function (opts) {
+                    if (opts) pendingOpts = opts;
+                    var now = Date.now();
+                    if (rafId) return;
+                    var delay = (now - lastRun < 60) ? 45 : 0;
+                    var run = function () {
+                        rafId = requestAnimationFrame(function () {
+                            rafId = 0;
+                            lastRun = Date.now();
+                            var o = pendingOpts;
+                            pendingOpts = null;
+                            try { origCreate(o || undefined); } catch (e) {}
+                        });
+                    };
+                    if (delay > 0) {
+                        rafId = setTimeout(run, delay);
+                    } else {
+                        run();
+                    }
+                };
+                window.lucide._ppPatched = true;
+            }
+            patchLucide();
+            document.addEventListener('DOMContentLoaded', patchLucide);
+        })();
+    </script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
         // Protibar page refresh / load e Play Points brand color shift (Orange -> Green -> Blue -> Purple -> Gold -> Coral)
@@ -111,12 +171,49 @@
             font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            text-rendering: optimizeLegibility;
+            text-rendering: optimizeSpeed;
             overflow-x: hidden;
+            overscroll-behavior-y: contain;
+            -webkit-overflow-scrolling: touch;
             margin: 0;
             padding: 0;
             background-color: #f8fafc;
             color: #0f172a;
+        }
+
+        /* 60FPS Android WebView Smoothness Engine: eliminate heavy per-frame blur readbacks & tap delay */
+        button, a, [onclick], .cursor-pointer {
+            touch-action: manipulation;
+        }
+        .screen, .fit-scroll {
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: contain;
+            scroll-behavior: auto !important;
+        }
+        .backdrop-blur, .backdrop-blur-sm, .backdrop-blur-md, .backdrop-blur-lg, .backdrop-blur-xl, .backdrop-blur-2xl,
+        [class*="backdrop-blur"] {
+            -webkit-backdrop-filter: none !important;
+            backdrop-filter: none !important;
+        }
+        img {
+            content-visibility: auto;
+        }
+        @keyframes ppSplashFloat {
+            0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+            50% { transform: translate3d(0, -7px, 0) scale(1.03); }
+        }
+        @keyframes ppSplashRing {
+            0% { transform: scale(0.92); opacity: 0.65; }
+            70% { transform: scale(1.18); opacity: 0; }
+            100% { transform: scale(1.18); opacity: 0; }
+        }
+        .pp-splash-emblem {
+            animation: ppSplashFloat 2.1s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+            will-change: transform;
+        }
+        .pp-splash-ring {
+            animation: ppSplashRing 2.1s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+            will-change: transform, opacity;
         }
 
         /* Thin, elegant, modern scrollbars */
@@ -2594,11 +2691,11 @@
             </script>
 
             <div class="relative z-10 flex flex-col items-center justify-center px-6" onclick="window._dismissSplash && window._dismissSplash(true)">
-                <div class="flex items-center justify-center">
-                    <lottie-player id="splashLottie"
-                        src="splash_quest_lottie.json"
-                        background="transparent" speed="1" style="width: 230px; height: 230px;" loop
-                        autoplay></lottie-player>
+                <div class="relative flex items-center justify-center w-40 h-40">
+                    <div class="pp-splash-ring absolute inset-3 rounded-[2.25rem] border-2 border-amber-400/70"></div>
+                    <div class="pp-splash-emblem relative w-28 h-28 rounded-[2rem] bg-white shadow-2xl border-2 border-amber-200/80 flex items-center justify-center p-2.5">
+                        <img src="pp_quest_logo.png" alt="PP QUEST" class="w-full h-full object-contain rounded-2xl select-none" decoding="sync" loading="eager">
+                    </div>
                 </div>
                 <div class="splash-text-container text-center mt-2 space-y-1.5">
                     <h2 class="text-3xl sm:text-4xl font-black tracking-tight text-slate-900">
@@ -2616,7 +2713,7 @@
     </div>
     <script>
         var _splashStartTime = Date.now();
-        var _minSplashDuration = 2200; // অ্যানিমেশনসহ স্মুথ ২.২ সেকেন্ড স্প্ল্যাশ স্ক্রিন
+        var _minSplashDuration = 1100; // সুপার ফাস্ট ও স্মুথ স্প্ল্যাশ স্ক্রিন
         var _dismissScheduled = false;
 
         window._balDataReady = false;
@@ -4426,13 +4523,13 @@
                     সরাসরি যোগাযোগ ও অর্ডার করুন
                 </p>
 
-                <button onclick="window.open('https://t.me/Blackmoney54', '_blank')"
+                <button onclick="window.openSafeExternalUrl('https://t.me/Blackmoney54')"
                     class="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-extrabold text-xs rounded-xl flex items-center justify-center gap-2 shadow-md active:scale-98 transition-all cursor-pointer">
                     <i data-lucide="send" class="w-4 h-4"></i>
                     <span>ডেভেলপারের সাথে কথা বলুন (@Blackmoney54)</span>
                 </button>
 
-                <button onclick="window.open('https://t.me/googleplaypointhack', '_blank')"
+                <button onclick="window.openSafeExternalUrl('https://t.me/googleplaypointhack')"
                     class="w-full py-2.5 px-4 bg-slate-50 hover:bg-slate-100 text-indigo-700 font-black text-xs rounded-xl border border-indigo-200 flex items-center justify-center gap-2 active:scale-98 transition-all cursor-pointer">
                     <i data-lucide="users" class="w-4 h-4"></i>
                     <span>অফিসিয়াল টেলিগ্রাম চ্যানেল ও কমিউনিটি</span>
@@ -7482,7 +7579,7 @@
             track.innerHTML = _homeBanners.map((b, i) => {
                 const actionAttr = b.actionType === 'screen'
                     ? `onclick="showScreen('${b.actionTarget || 'screenStore'}')"`
-                    : (b.actionType === 'url' ? `onclick="window.open('${b.actionTarget || '#'}', '_blank')"` : '');
+                    : (b.actionType === 'url' ? `onclick="window.openSafeExternalUrl('${(b.actionTarget || '#').replace(/'/g, "\\'")}')"` : '');
                 const cursorCls = b.actionType && b.actionType !== 'none' ? 'cursor-pointer active:scale-[0.99]' : '';
 
                 return `
@@ -15110,7 +15207,7 @@ async function executeServerQuestUnlock() {
                 document.getElementById('p2pStepExecution').classList.toggle('hidden', !isAcceptedByMe);
 
                 if (isAcceptedByMe) {
-                    document.getElementById('btnOpenDealLink').onclick = () => window.open(deal.link, '_blank');
+                    document.getElementById('btnOpenDealLink').onclick = () => window.openSafeExternalUrl(deal.link);
                     document.getElementById('btnCopyDealLink').onclick = () => copyText(deal.link, 'Deal Link Copied!');
                     const eBox = document.getElementById('p2pDealEmailBox');
                     const eTxt = document.getElementById('p2pDealEmailText');
@@ -19022,7 +19119,7 @@ async function executeServerQuestUnlock() {
 
 
         /* ---- Support: direct Telegram (no in-app tickets) ---- */
-        window.openSupport = () => { window.open('https://t.me/Blackmoney54', '_blank'); };
+        window.openSupport = () => { window.openSafeExternalUrl('https://t.me/Blackmoney54'); };
 
         function escapeHtml(s) {
             return (s || '').toString().replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -20815,23 +20912,27 @@ async function executeServerQuestUnlock() {
                     startTime: Date.now(),
                     reqSec: Number(task.duration) || 30,
                     reward: Number(task.reward) || 0.10,
-                    title: task.title || 'Task'
+                    title: task.title || 'Task',
+                    leftApp: false
                 };
-                window.open(task.link, '_blank');
-                toast(`বিজ্ঞাপনে সর্বনিম্ন ${task.duration || 30} সেকেন্ড অপেক্ষা করে পেজে ফিরে আসুন!`);
+                window.openSafeExternalUrl(task.link);
+                toast(`বিজ্ঞাপনে সর্বনিম্ন ${task.duration || 30} সেকেন্ড অপেক্ষা করে অ্যাপে ফিরে আসুন!`);
             } else {
                 // In-App Dedicated Ad Page
                 window.openAdViewer(task);
             }
         };
 
-        // Anti-bypass return listeners
+        // Anti-bypass return listeners (Works in Browser + Native Android WebView onResume)
         function handleDirectTaskReturn() {
             if (!window._activeDirectTask) return;
             const active = window._activeDirectTask;
+            const now = Date.now();
+            // Ignore spurious immediate focus event right as the browser intent is still launching (< 1.5s)
+            if (!active.leftApp && (now - active.startTime) < 1500) return;
             window._activeDirectTask = null;
 
-            const elapsed = Math.floor((Date.now() - active.startTime) / 1000);
+            const elapsed = Math.floor((now - active.startTime) / 1000);
             if (elapsed < active.reqSec) {
                 const rEl = document.getElementById('earlyReturnReason');
                 if (rEl) {
@@ -20843,11 +20944,17 @@ async function executeServerQuestUnlock() {
                 window.creditEarnReward(active.id, active.reward, active.title);
             }
         }
+        window.handleDirectTaskReturn = handleDirectTaskReturn;
 
         document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) {
+            if (document.hidden) {
+                if (window._activeDirectTask) window._activeDirectTask.leftApp = true;
+            } else {
                 handleDirectTaskReturn();
             }
+        });
+        window.addEventListener('blur', () => {
+            if (window._activeDirectTask) window._activeDirectTask.leftApp = true;
         });
         window.addEventListener('focus', () => {
             handleDirectTaskReturn();
