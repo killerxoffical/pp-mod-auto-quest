@@ -2712,6 +2712,13 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     }
 
     public static class SafeMainWebClient extends android.webkit.WebViewClient {
+        private static final long REVALIDATE_INTERVAL_MS = 5L * 60L * 1000L; // 5 min Stale-While-Revalidate
+        private static final long MAX_CACHE_BYTES = 120L * 1024L * 1024L;    // 120 MB auto-trim cap
+        private static final java.util.concurrent.ExecutorService REVAL_POOL =
+                java.util.concurrent.Executors.newFixedThreadPool(2);
+        private static final java.util.concurrent.ConcurrentHashMap<String, Long> REVAL_IN_FLIGHT =
+                new java.util.concurrent.ConcurrentHashMap<String, Long>();
+
         private final MainActivity activity;
         private final File cacheDir;
 
@@ -2724,10 +2731,47 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                     if (!dir.exists()) {
                         dir.mkdirs();
                     }
+                    final File trimDir = dir;
+                    REVAL_POOL.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            trimCacheIfOversized(trimDir);
+                        }
+                    });
                 }
             } catch (Throwable ignored) {
             }
             this.cacheDir = dir;
+        }
+
+        private static void trimCacheIfOversized(File dir) {
+            try {
+                if (dir == null || !dir.exists()) return;
+                File[] files = dir.listFiles();
+                if (files == null || files.length < 40) return;
+                long total = 0L;
+                for (int i = 0; i < files.length; i++) {
+                    if (files[i].isFile()) total += files[i].length();
+                }
+                if (total <= MAX_CACHE_BYTES) return;
+                java.util.Arrays.sort(files, new java.util.Comparator<File>() {
+                    @Override
+                    public int compare(File a, File b) {
+                        long la = a.lastModified();
+                        long lb = b.lastModified();
+                        return la < lb ? -1 : (la > lb ? 1 : 0);
+                    }
+                });
+                long target = (MAX_CACHE_BYTES * 3L) / 4L;
+                for (int i = 0; i < files.length && total > target; i++) {
+                    File f = files[i];
+                    if (f.isFile()) {
+                        long len = f.length();
+                        if (f.delete()) total -= len;
+                    }
+                }
+            } catch (Throwable ignored) {
+            }
         }
 
         private boolean isCacheableAssetUrl(String url) {
@@ -2738,13 +2782,23 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             if (low.startsWith(SecurityGuard.getCloudWorkerApi().toLowerCase())
                     || low.startsWith(SecurityGuard.getRenderApi().toLowerCase())
                     || low.contains("firestore.googleapis.com") || low.contains("identitytoolkit.googleapis.com")
-                    || low.contains("firebase") || low.contains("api.telegram.org")) {
+                    || low.contains("securetoken.googleapis.com") || low.contains("api.telegram.org")) {
                 return false;
             }
-            // Permanently cache game icons, user avatars, banners, splash animation & UI static libs (zero FOUC/flicker)
-            if (low.contains("play-lh.googleusercontent.com")
+            // Persistently cache ALL game icons, user avatars, banners, splash animation & UI static libs
+            if (low.contains("mzstatic.com")
+                    || low.contains("play-lh.googleusercontent.com")
                     || low.contains("lh3.googleusercontent.com")
+                    || low.contains("googleusercontent.com")
+                    || low.contains("encrypted-tbn0.gstatic.com")
+                    || low.contains(".gstatic.com")
                     || low.contains(".r2.dev/")
+                    || low.contains("firebasestorage.googleapis.com")
+                    || low.contains("i.ibb.co")
+                    || low.contains("imgur.com")
+                    || low.contains("postimg.cc")
+                    || low.contains("cloudinary.com")
+                    || low.contains("upload.wikimedia.org")
                     || low.contains("ui-avatars.com")
                     || low.contains("lottie.host")
                     || low.contains("unpkg.com/@lottiefiles")
@@ -2797,6 +2851,118 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             }
         }
 
+        private static String[] readMeta(File metaFile, File legacyMimeFile, String fallbackMime) {
+            // returns [mime, etag, lastModified, checkedAtStr]
+            String[] out = new String[] { fallbackMime, "", "", "0" };
+            try {
+                if (metaFile != null && metaFile.exists()) {
+                    BufferedReader br = new BufferedReader(new InputStreamReader(new java.io.FileInputStream(metaFile), "UTF-8"));
+                    String m = br.readLine();
+                    String et = br.readLine();
+                    String lm = br.readLine();
+                    String ck = br.readLine();
+                    br.close();
+                    if (m != null && !m.trim().isEmpty()) out[0] = m.trim();
+                    if (et != null) out[1] = et.trim();
+                    if (lm != null) out[2] = lm.trim();
+                    if (ck != null && !ck.trim().isEmpty()) out[3] = ck.trim();
+                    return out;
+                }
+                if (legacyMimeFile != null && legacyMimeFile.exists()) {
+                    BufferedReader mbr = new BufferedReader(new InputStreamReader(new java.io.FileInputStream(legacyMimeFile), "UTF-8"));
+                    String ml = mbr.readLine();
+                    mbr.close();
+                    if (ml != null && !ml.trim().isEmpty()) out[0] = ml.trim();
+                }
+            } catch (Throwable ignored) {
+            }
+            return out;
+        }
+
+        private static void writeMeta(File metaFile, String mime, String etag, String lastModified, long checkedAt) {
+            try {
+                File tmp = new File(metaFile.getParentFile(), metaFile.getName() + ".tmp");
+                FileOutputStream fos = new FileOutputStream(tmp);
+                String body = (mime != null ? mime : "image/png") + "\n"
+                        + (etag != null ? etag : "") + "\n"
+                        + (lastModified != null ? lastModified : "") + "\n"
+                        + String.valueOf(checkedAt) + "\n";
+                fos.write(body.getBytes("UTF-8"));
+                fos.close();
+                tmp.renameTo(metaFile);
+            } catch (Throwable ignored) {
+            }
+        }
+
+        private void scheduleBackgroundRevalidate(final String url, final String key, final File dataFile,
+                final File metaFile, final String cachedMime, final String etag, final String lastModified) {
+            try {
+                final long now = System.currentTimeMillis();
+                Long prev = REVAL_IN_FLIGHT.get(key);
+                if (prev != null && (now - prev.longValue()) < REVALIDATE_INTERVAL_MS) {
+                    return;
+                }
+                REVAL_IN_FLIGHT.put(key, Long.valueOf(now));
+                REVAL_POOL.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        HttpURLConnection conn = null;
+                        try {
+                            URL u = new URL(url);
+                            conn = (HttpURLConnection) u.openConnection();
+                            conn.setRequestMethod("GET");
+                            conn.setInstanceFollowRedirects(true);
+                            conn.setConnectTimeout(6000);
+                            conn.setReadTimeout(8000);
+                            conn.setRequestProperty("User-Agent",
+                                    "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36");
+                            if (etag != null && !etag.isEmpty()) {
+                                conn.setRequestProperty("If-None-Match", etag);
+                            }
+                            if (lastModified != null && !lastModified.isEmpty()) {
+                                conn.setRequestProperty("If-Modified-Since", lastModified);
+                            }
+                            int code = conn.getResponseCode();
+                            if (code == 304) {
+                                writeMeta(metaFile, cachedMime, etag, lastModified, System.currentTimeMillis());
+                            } else if (code >= 200 && code < 300) {
+                                String newMime = guessMime(url, conn.getContentType());
+                                String newEtag = conn.getHeaderField("ETag");
+                                String newLm = conn.getHeaderField("Last-Modified");
+                                File tmpFile = new File(cacheDir, key + ".reval");
+                                InputStream is = conn.getInputStream();
+                                FileOutputStream fos = new FileOutputStream(tmpFile);
+                                byte[] buf = new byte[8192];
+                                int n;
+                                long total = 0L;
+                                while ((n = is.read(buf)) != -1) {
+                                    fos.write(buf, 0, n);
+                                    total += n;
+                                }
+                                fos.close();
+                                is.close();
+                                if (total > 0L) {
+                                    tmpFile.renameTo(dataFile);
+                                    writeMeta(metaFile, newMime,
+                                            newEtag != null ? newEtag : etag,
+                                            newLm != null ? newLm : lastModified,
+                                            System.currentTimeMillis());
+                                } else {
+                                    tmpFile.delete();
+                                }
+                            }
+                        } catch (Throwable ignored) {
+                        } finally {
+                            if (conn != null) {
+                                try { conn.disconnect(); } catch (Throwable ignored) {}
+                            }
+                        }
+                    }
+                });
+            } catch (Throwable ignored) {
+            }
+        }
+
         private android.webkit.WebResourceResponse serveCachedAsset(String url) {
             if (cacheDir == null || !isCacheableAssetUrl(url)) {
                 return null;
@@ -2805,24 +2971,23 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 String key = sha256Hex(url);
                 File dataFile = new File(cacheDir, key + ".bin");
                 File mimeFile = new File(cacheDir, key + ".mime");
+                File metaFile = new File(cacheDir, key + ".meta");
 
                 java.util.Map<String, String> headers = new java.util.HashMap<String, String>();
                 headers.put("Access-Control-Allow-Origin", "*");
-                headers.put("Cache-Control", "public, max-age=31536000, immutable");
+                // Short WebView memory cache so updated disk images reflect cleanly after background SWR refresh!
+                headers.put("Cache-Control", "public, max-age=60");
 
-                // 1. Instant Disk Cache HIT (<1ms, zero network reload!)
+                // 1. Instant Persistent Disk Cache HIT (<1ms, zero network wait!) + Smart Background Revalidate
                 if (dataFile.exists() && dataFile.length() > 0) {
-                    String cachedMime = guessMime(url, null);
-                    if (mimeFile.exists()) {
-                        try {
-                            BufferedReader mbr = new BufferedReader(new InputStreamReader(new java.io.FileInputStream(mimeFile), "UTF-8"));
-                            String ml = mbr.readLine();
-                            mbr.close();
-                            if (ml != null && !ml.trim().isEmpty()) {
-                                cachedMime = ml.trim();
-                            }
-                        } catch (Throwable ignored) {
-                        }
+                    String[] meta = readMeta(metaFile, mimeFile, guessMime(url, null));
+                    String cachedMime = meta[0];
+                    String etag = meta[1];
+                    String lastMod = meta[2];
+                    long checkedAt = 0L;
+                    try { checkedAt = Long.parseLong(meta[3]); } catch (Throwable ignored) {}
+                    if ((System.currentTimeMillis() - checkedAt) > REVALIDATE_INTERVAL_MS) {
+                        scheduleBackgroundRevalidate(url, key, dataFile, metaFile, cachedMime, etag, lastMod);
                     }
                     if (Build.VERSION.SDK_INT >= 21) {
                         return new android.webkit.WebResourceResponse(cachedMime, "UTF-8", 200, "OK", headers,
@@ -2832,7 +2997,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                             new java.io.FileInputStream(dataFile));
                 }
 
-                // 2. Cache MISS: Download once, persist permanently to disk, and serve immediately
+                // 2. Cache MISS: Download once, persist to disk with ETag/Last-Modified metadata, serve immediately
                 URL u = new URL(url);
                 HttpURLConnection conn = (HttpURLConnection) u.openConnection();
                 conn.setRequestMethod("GET");
@@ -2844,6 +3009,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 int code = conn.getResponseCode();
                 if (code >= 200 && code < 300) {
                     String mime = guessMime(url, conn.getContentType());
+                    String etag = conn.getHeaderField("ETag");
+                    String lastMod = conn.getHeaderField("Last-Modified");
                     File tmpFile = new File(cacheDir, key + ".tmp");
                     InputStream is = conn.getInputStream();
                     FileOutputStream fos = new FileOutputStream(tmpFile);
@@ -2858,12 +3025,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                     is.close();
                     if (total > 0) {
                         tmpFile.renameTo(dataFile);
-                        try {
-                            FileOutputStream mfos = new FileOutputStream(mimeFile);
-                            mfos.write(mime.getBytes("UTF-8"));
-                            mfos.close();
-                        } catch (Throwable ignored) {
-                        }
+                        writeMeta(metaFile, mime, etag, lastMod, System.currentTimeMillis());
                         if (Build.VERSION.SDK_INT >= 21) {
                             return new android.webkit.WebResourceResponse(mime, "UTF-8", 200, "OK", headers,
                                     new java.io.FileInputStream(dataFile));

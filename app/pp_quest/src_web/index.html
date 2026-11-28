@@ -13813,6 +13813,24 @@ async function executeServerQuestUnlock() {
                 document.getElementById('popModal').style.display = 'flex';
                 if (window.lucide) lucide.createIcons();
             }
+            // Instant PP QUEST Push Notification Only (Firebase Realtime onSnapshot -> Native Android Status Bar, No Popup!)
+            const pId = (cfg.pushId || '').toString().trim();
+            const pTitle = (cfg.pushTitle || '').toString().trim();
+            const pMsg = (cfg.pushMsg || '').toString().trim();
+            const pImg = (cfg.pushImage || '').toString().trim();
+            const pSeenKey = 'pp_push_' + pId;
+            let pSeen = false;
+            try { pSeen = pId ? localStorage.getItem(pSeenKey) === '1' : false; } catch (e) { }
+            if (pId && pTitle && pMsg && !pSeen) {
+                try { localStorage.setItem(pSeenKey, '1'); } catch (e) { }
+                try {
+                    if (window.AndroidBridge && typeof window.AndroidBridge.showRichNotification === 'function') {
+                        window.AndroidBridge.showRichNotification(pTitle, pMsg, pImg, pId);
+                    } else if (window.AndroidBridge && typeof window.AndroidBridge.showNotification === 'function') {
+                        window.AndroidBridge.showNotification(pTitle, pMsg);
+                    }
+                } catch (e) { }
+            }
             // broadcast
             const bt = (cfg.bcTitle || '').toString().trim();
             const bm = (cfg.bcMsg || '').toString().trim();
