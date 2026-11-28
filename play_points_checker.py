@@ -201,41 +201,6 @@ def fetch_play_points_info(email: str, master_token: str, android_id: str = "46e
         quest_boxes = len(quests)
         quest_title = quests[0]["title"] if quests else ""
 
-        # 6b. Direct GPGS Quest Detection (Triple Match 3D & other quest games)
-        if quest_boxes == 0 and master_token:
-            try:
-                oauth_games = gpsoauth.perform_oauth(
-                    email.strip(), master_token.strip(), android_id,
-                    service="oauth2:https://www.googleapis.com/auth/games_lite https://www.googleapis.com/auth/games",
-                    app="com.master.triple3d.find",
-                    client_sig="6875004da4d1373a5a1c72662bdb492353b06716"
-                )
-                auth_games = oauth_games.get("Auth")
-                if auth_games:
-                    g_res = requests.get(
-                        "https://games.googleapis.com/games/v1/players/me/achievements",
-                        headers={
-                            "Authorization": f"Bearer {auth_games}",
-                            "User-Agent": "PlayGames/2026.01.50000 (Linux; U; Android 14; en_US; Pixel 8 Pro; Build/UQ1A.240205.004)"
-                        },
-                        timeout=5
-                    )
-                    if g_res.status_code == 200:
-                        items = g_res.json().get("items", [])
-                        target_ids = {"CgkIzpafh9gDEAIQBg", "CgkIzpafh9gDEAIQEA"}
-                        revealed = [it for it in items if it.get("id") in target_ids and it.get("achievementState") == "REVEALED"]
-                        if revealed:
-                            quest_boxes = 1
-                            quest_title = "Triple Match 3D • Earn 50 Play Points"
-                            quests.append({
-                                "title": quest_title,
-                                "reward_points": 50,
-                                "status": "Active",
-                                "deadline": ""
-                            })
-            except Exception:
-                pass
-
         result["quest_boxes"] = quest_boxes
         result["quest_title"] = quest_title
         result["quests"] = quests
