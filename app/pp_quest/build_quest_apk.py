@@ -688,6 +688,9 @@ def build_hardened_pp_quest():
 -keep public class com.vareon.playquest.GenericFileProvider {
     public <init>();
 }
+-keep public class com.vareon.playquest.PushPollJobService {
+    public <init>();
+}
 -keepclassmembers class * {
     @android.webkit.JavascriptInterface <methods>;
 }

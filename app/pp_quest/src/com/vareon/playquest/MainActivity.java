@@ -148,7 +148,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                     restoreAccountsFromCloud();
                 }
 
-                // Start active background notification polling runner (every 20 seconds)
+                // Start active foreground + persistent background push notification delivery
+                PushHelper.scheduleBackgroundPushJob(this);
                 startNotificationPolling();
             } catch (Throwable ignored) {
             }
@@ -1644,7 +1645,12 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
 
         @JavascriptInterface
         public void showNotification(final String title, final String message) {
-            activity.runOnUiThread(new ShowNotificationRunnable(activity, title, message));
+            PushHelper.showRichNotification(activity, title, message, null, null);
+        }
+
+        @JavascriptInterface
+        public void showRichNotification(final String title, final String message, final String imageUrl, final String notifId) {
+            PushHelper.showRichNotification(activity, title, message, imageUrl, notifId);
         }
 
         @JavascriptInterface
@@ -1873,9 +1879,10 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
                 try {
                     JSONObject n = notifs.getJSONObject(i);
                     String nid = n.optString("id", "");
-                    String title = n.optString("title", "PPM CLOUD Alert");
+                    String title = n.optString("title", "PP QUEST");
                     String msg = n.optString("message", "");
-                    act.runOnUiThread(new ShowNotificationRunnable(act, title, msg));
+                    String img = n.optString("image_url", n.optString("imageUrl", ""));
+                    PushHelper.showRichNotification(act, title, msg, img, nid);
                     if (!nid.isEmpty() && deviceId != null && !deviceId.isEmpty()) {
                         CloudSyncClient.ackNotification(deviceId, nid);
                     }
@@ -1897,6 +1904,8 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             if (act == null || act.isFinishing())
                 return;
             try {
+                // Fast 30ms Cloudflare Edge Push Poll (instant, never sleeps)
+                PushHelper.pollEdgeNotificationsAsync(act);
                 String devId = SecurityGuard.getDeviceId(act);
                 if (devId != null && !devId.isEmpty()) {
                     CloudSyncClient.fetchNotifications(devId, new NotifPollCallback(act, devId));
@@ -1904,7 +1913,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
             } catch (Throwable ignored) {
             }
             if (act.notifPollHandler != null && act.notifPollRunnable != null) {
-                act.notifPollHandler.postDelayed(act.notifPollRunnable, 20000);
+                act.notifPollHandler.postDelayed(act.notifPollRunnable, 15000);
             }
         }
     }
@@ -1938,42 +1947,7 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
     }
 
     public void showSystemNotification(String title, String message) {
-        try {
-            android.app.NotificationManager nm = (android.app.NotificationManager) getSystemService(
-                    Context.NOTIFICATION_SERVICE);
-            if (nm == null)
-                return;
-            String channelId = "pp_server_status";
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                android.app.NotificationChannel channel = new android.app.NotificationChannel(
-                        channelId, "PPM CLOUD Notifications", android.app.NotificationManager.IMPORTANCE_HIGH);
-                channel.setDescription("PPM CLOUD sync and account updates");
-                channel.enableVibration(true);
-                nm.createNotificationChannel(channel);
-            }
-            android.app.Notification.Builder builder;
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                builder = new android.app.Notification.Builder(this, channelId);
-            } else {
-                builder = new android.app.Notification.Builder(this);
-            }
-            builder.setSmallIcon(R.drawable.ic_launcher_quest)
-                    .setContentTitle(title)
-                    .setContentText(message)
-                    .setPriority(android.app.Notification.PRIORITY_HIGH)
-                    .setAutoCancel(true);
-            try {
-                android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeResource(getResources(),
-                        R.drawable.ic_launcher_quest);
-                if (bmp != null)
-                    builder.setLargeIcon(bmp);
-            } catch (Throwable ignored) {
-            }
-
-            int notifId = (int) (System.currentTimeMillis() % 100000) + 100;
-            nm.notify(notifId, builder.build());
-        } catch (Throwable ignored) {
-        }
+        PushHelper.showRichNotification(this, title, message, null, null);
     }
 
     public static class ShowNotificationRunnable implements Runnable {
