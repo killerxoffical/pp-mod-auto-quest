@@ -11,10 +11,14 @@ def fetch_play_points_info(email: str, master_token: str, android_id: str = "46e
         "email": email,
         "has_play_points": False,
         "play_points_status": "not_enrolled",
+        "token_expired": False,
         "tier": "None",
         "points": 0,
         "has_perk": False,
         "claimed": True,
+        "quest_boxes": 0,
+        "quest_title": "",
+        "quests": [],
         "status_text": "Not Enrolled"
     }
 
@@ -30,6 +34,18 @@ def fetch_play_points_info(email: str, master_token: str, android_id: str = "46e
         )
         merge_url = oauth_res.get("Auth")
         if not merge_url or not merge_url.startswith("https://"):
+            # Verify whether the master token itself is expired/revoked on Google's servers
+            err_str = str(oauth_res.get("Error") or "")
+            chk_games = gpsoauth.perform_oauth(
+                email.strip(), master_token.strip(), android_id,
+                service="oauth2:https://www.googleapis.com/auth/games",
+                app="com.google.android.play.games",
+                client_sig="38918a453d07199354f8b19af05ec6562ced5788"
+            )
+            if "Auth" not in chk_games:
+                result["token_expired"] = True
+                result["play_points_status"] = "token_expired"
+                result["status_text"] = f"Session Expired ({chk_games.get('Error') or err_str or 'BadAuthentication'}) — Please Re-login"
             return result
 
         s = requests.Session()
@@ -249,6 +265,14 @@ def generate_play_points_web_url(email: str, master_token: str, android_id: str 
         merge_url = oauth_res.get("Auth")
         if merge_url and merge_url.startswith("https://"):
             return {"ok": True, "url": merge_url, "target": target_url}
+        chk_games = gpsoauth.perform_oauth(
+            email.strip(), master_token.strip(), android_id or "46e14d2451d85c3f",
+            service="oauth2:https://www.googleapis.com/auth/games",
+            app="com.google.android.play.games",
+            client_sig="38918a453d07199354f8b19af05ec6562ced5788"
+        )
+        if "Auth" not in chk_games:
+            return {"ok": False, "token_expired": True, "error": "Google session expired on this account. Tap Re-login to refresh."}
         return {"ok": False, "error": oauth_res.get("Error") or "Could not create Play Points session. Try Re-login."}
     except Exception as e:
         return {"ok": False, "error": str(e)}

@@ -1340,6 +1340,21 @@ def check_play_points_status(email, master_token, android_id, country):
                 "quests": web_info.get("quests", []),
                 "status_text": web_info.get("status_text", "")
             }
+        elif web_info and web_info.get("token_expired"):
+            return {
+                "balance": "$0.00",
+                "has_play_points": False,
+                "play_points_status": "token_expired",
+                "token_expired": True,
+                "tier": "None",
+                "points": 0,
+                "has_perk": False,
+                "claimed": True,
+                "quest_boxes": 0,
+                "quest_title": "",
+                "quests": [],
+                "status_text": web_info.get("status_text", "Google Session Expired — Tap Re-login")
+            }
         elif web_info and web_info.get("play_points_status") in ("not_enrolled", "unsupported_region") and web_info.get("points", 0) == 0 and str(web_info.get("tier", "None")).lower() == "none":
             return {
                 "balance": "$0.00",
@@ -1672,6 +1687,7 @@ def get_account_live_data():
         "balance": balance,
         "has_play_points": has_play_points,
         "play_points_status": pp_status,
+        "token_expired": bool(pp_info.get("token_expired", False)),
         "tier": tier,
         "points": points,
         "has_perk": has_perk,
@@ -1723,7 +1739,11 @@ def api_account_playpoints_session():
     from play_points_checker import generate_play_points_web_url
     res = generate_play_points_web_url(email, token, android_id, tab=tab)
     if not res.get("ok"):
-        return jsonify({"ok": False, "error": res.get("error", "Session error")}), 400
+        return jsonify({
+            "ok": False,
+            "token_expired": bool(res.get("token_expired", False)),
+            "error": res.get("error", "Session error")
+        }), 401 if res.get("token_expired") else 400
     return jsonify({
         "ok": True,
         "url": res["url"],
