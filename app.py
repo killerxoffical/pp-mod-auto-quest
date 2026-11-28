@@ -1336,7 +1336,9 @@ def check_play_points_status(email, master_token, android_id, country):
                 "has_perk": web_info.get("has_perk", False),
                 "claimed": web_info.get("claimed", True),
                 "quest_boxes": web_info.get("quest_boxes", 0),
-                "quest_title": web_info.get("quest_title", "")
+                "quest_title": web_info.get("quest_title", ""),
+                "quests": web_info.get("quests", []),
+                "status_text": web_info.get("status_text", "")
             }
         elif web_info and web_info.get("play_points_status") in ("not_enrolled", "unsupported_region") and web_info.get("points", 0) == 0 and str(web_info.get("tier", "None")).lower() == "none":
             return {
@@ -1675,7 +1677,59 @@ def get_account_live_data():
         "has_perk": has_perk,
         "claimed": claimed,
         "quest_boxes": pp_info.get("quest_boxes", 0),
-        "quest_title": pp_info.get("quest_title", "")
+        "quest_title": pp_info.get("quest_title", ""),
+        "quests": pp_info.get("quests", []),
+        "status_text": pp_info.get("status_text", "")
+    })
+
+
+@app.route("/api/account/playpoints_session", methods=["POST"])
+def api_account_playpoints_session():
+    """
+    Returns an authenticated Google Play Points web session URL (Perks or Earn/Quest Boxes)
+    for a saved 6-digit QID so PP CLOUD users can claim Friday Weekly Perks & view Quest Boxes
+    even after removing the Gmail from their Android phone.
+    """
+    data = request.get_json() or {}
+    code = str(data.get("code", "")).strip().replace(" ", "").replace("-", "")
+    tab = str(data.get("tab", "perks")).strip().lower()
+    if not code:
+        return jsonify({"ok": False, "error": "Missing 6-digit QID code"}), 400
+
+    email = ""
+    token = ""
+    android_id = "46e14d2451d85c3f"
+    try:
+        cf_url = f"https://ppmod-api.tredarskvt.workers.dev/api/sync/get?code={code}"
+        cf_res = requests.get(cf_url, timeout=5)
+        if cf_res.status_code == 403:
+            err_msg = "PP CLOUD subscription expired or suspended."
+            try:
+                err_msg = cf_res.json().get("error") or err_msg
+            except Exception:
+                pass
+            return jsonify({"ok": False, "cloudExpired": True, "error": err_msg}), 403
+        if cf_res.status_code == 200:
+            acc = cf_res.json().get("account", {})
+            email = (acc.get("email") or "").strip().lower()
+            token = (acc.get("token") or acc.get("master_token") or "").strip()
+            android_id = (acc.get("android_id") or android_id).strip()
+    except Exception:
+        pass
+
+    if not token or not email:
+        return jsonify({"ok": False, "error": "Account token not found in Cloud Vault"}), 404
+
+    from play_points_checker import generate_play_points_web_url
+    res = generate_play_points_web_url(email, token, android_id, tab=tab)
+    if not res.get("ok"):
+        return jsonify({"ok": False, "error": res.get("error", "Session error")}), 400
+    return jsonify({
+        "ok": True,
+        "url": res["url"],
+        "target": res["target"],
+        "email": email,
+        "tab": tab
     })
 
 @app.route("/api/sync/delete", methods=["POST"])

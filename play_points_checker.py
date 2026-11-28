@@ -139,26 +139,51 @@ def fetch_play_points_info(email: str, master_token: str, android_id: str = "46e
             result["claimed"] = not has_claim_btn
             result["status_text"] = "Claim Available 🎁" if has_claim_btn else "Weekly Perk Claimed"
 
-        # 6. Detect Real Google Play Quest Chests / Boxes
-        quest_boxes = 0
-        quest_title = ""
+        # 6. Detect Real Google Play Quest Chests / Boxes (Both Perks & Earn tabs!)
+        quests = []
+        seen_q = set()
+
+        def _extract_quests_from_html(page_html):
+            if not page_html:
+                return
+            patterns = [
+                (r'Complete a new quest to earn\s+(\d[\d,]*)\s+Play Points', "New Quest"),
+                (r'Keep going to earn\s+(\d[\d,]*)\s+Play Points', "In Progress"),
+                (r'Earn\s+(\d[\d,]*)\s+Play Points(?:\s+quest|\s+chest|\s+when|\s+by)', "Quest Box"),
+            ]
+            for pat, qstatus in patterns:
+                for m in re.finditer(pat, page_html, re.IGNORECASE):
+                    pts_num = int(m.group(1).replace(",", ""))
+                    ctx_slice = page_html[m.start():min(len(page_html), m.end() + 600)]
+                    dl_m = re.search(r'(Ends in\s+\d+\s*[dh]|Start by\s+\d{1,2}/\d{1,2}/\d{2,4})', ctx_slice, re.IGNORECASE)
+                    deadline = dl_m.group(1).strip() if dl_m else ""
+                    key = (pts_num, qstatus)
+                    if key not in seen_q:
+                        seen_q.add(key)
+                        quests.append({
+                            "title": f"Earn {pts_num} Play Points",
+                            "reward_points": pts_num,
+                            "status": qstatus,
+                            "deadline": deadline
+                        })
+
         try:
-            chest_matches = re.findall(r'Keep going to earn\s+(\d+)\s+Play Points', html, re.IGNORECASE)
-            if chest_matches:
-                quest_boxes = len(chest_matches)
-                quest_title = f"Earn {chest_matches[0]} Play Points Quest"
-            else:
-                earn_res = s.get("https://play.google.com/store/points/earn", timeout=6)
-                if earn_res.status_code == 200:
-                    earn_matches = re.findall(r'Keep going to earn\s+(\d+)\s+Play Points', earn_res.text, re.IGNORECASE)
-                    if earn_matches:
-                        quest_boxes = len(earn_matches)
-                        quest_title = f"Earn {earn_matches[0]} Play Points Quest"
-                    elif "Start this quest" in earn_res.text or "more steps to earn your reward" in earn_res.text:
-                        quest_boxes = 1
-                        quest_title = "Play Points Quest Chest"
+            _extract_quests_from_html(html)
+            earn_res = s.get("https://play.google.com/store/points/earn", timeout=7)
+            if earn_res.status_code == 200:
+                _extract_quests_from_html(earn_res.text)
+                if not quests and ("Start this quest" in earn_res.text or "more steps to earn your reward" in earn_res.text):
+                    quests.append({
+                        "title": "Play Points Quest Box",
+                        "reward_points": 50,
+                        "status": "Available",
+                        "deadline": ""
+                    })
         except Exception:
             pass
+
+        quest_boxes = len(quests)
+        quest_title = quests[0]["title"] if quests else ""
 
         # 6b. Direct GPGS Quest Detection (Triple Match 3D & other quest games)
         if quest_boxes == 0 and master_token:
@@ -185,18 +210,48 @@ def fetch_play_points_info(email: str, master_token: str, android_id: str = "46e
                         revealed = [it for it in items if it.get("id") in target_ids and it.get("achievementState") == "REVEALED"]
                         if revealed:
                             quest_boxes = 1
-                            quest_title = "Triple Match 3D • Earn 50 Play Points Chest"
+                            quest_title = "Triple Match 3D • Earn 50 Play Points"
+                            quests.append({
+                                "title": quest_title,
+                                "reward_points": 50,
+                                "status": "Active",
+                                "deadline": ""
+                            })
             except Exception:
                 pass
 
         result["quest_boxes"] = quest_boxes
         result["quest_title"] = quest_title
+        result["quests"] = quests
 
         return result
 
     except Exception as e:
         print(f"[-] fetch_play_points_info error for {email}: {e}")
         return result
+
+
+def generate_play_points_web_url(email: str, master_token: str, android_id: str = "46e14d2451d85c3f", tab: str = "perks") -> dict:
+    """
+    Generates an authenticated Google MergeSession URL for play.google.com/store/points/perks or /earn
+    so users can inspect Quest Boxes and claim Friday Weekly Perks inside PP CLOUD even if Gmail is removed from phone.
+    """
+    if not master_token or not email:
+        return {"ok": False, "error": "Missing email or master token"}
+    target_url = "https://play.google.com/store/points/earn" if str(tab).lower() == "earn" else "https://play.google.com/store/points/perks"
+    try:
+        oauth_res = gpsoauth.perform_oauth(
+            email.strip(), master_token.strip(), android_id or "46e14d2451d85c3f",
+            service=f"weblogin:continue={target_url}",
+            app="com.google.android.gms",
+            client_sig="38918a453d07199354f8b19af05ec6562ced5788"
+        )
+        merge_url = oauth_res.get("Auth")
+        if merge_url and merge_url.startswith("https://"):
+            return {"ok": True, "url": merge_url, "target": target_url}
+        return {"ok": False, "error": oauth_res.get("Error") or "Could not create Play Points session. Try Re-login."}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
 
 if __name__ == "__main__":
     t1 = "aas_et/AKppINaKiXtxZcbp8PQBxdY4Hy3MLobU5ONHlNbtjZAJJSKVWetfEmDfTYvm3u01dXFoRj4RKHrD1YKEGAnMxFOvYq0nwRQikpfxOrZRQUjj7OKJky2Dl_NFChbQfAS-cJkKaUAgyAJeyUa6tfcwLYRFWCAulQWziZUMXQIqwpjOBbfxlF0XxBtn_wUvu94tEc4mfImRp6KtX6zdtNss3UELimi0_a7dyCD1ge-n4bUs"
