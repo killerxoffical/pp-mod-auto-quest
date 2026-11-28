@@ -3752,37 +3752,67 @@ def ack_device_notification():
 def admin_send_push_notification():
     """
     Admin sends a push notification from the web console.
-    Can target 'all' or a specific device_id.
+    Can target 'pp_quest' (Cloudflare D1 Edge -> PP QUEST Android App),
+    'all' (Both PP QUEST + PP Server), 'pp_server', or a specific device_id.
     """
     data = request.get_json() or {}
     title = data.get("title", "").strip()
     message = data.get("message", "").strip()
-    target = data.get("target", "all").strip() or "all"
-    image_url = data.get("image_url", "").strip()
+    target = data.get("target", "pp_quest").strip() or "pp_quest"
+    image_url = (data.get("image_url") or data.get("imageUrl") or "").strip()
 
     if not title or not message:
         return jsonify({"ok": False, "error": "Title and Message are required"}), 400
 
     notif_id = f"notif_{int(time.time())}_{random.randint(100, 999)}"
-    all_notifs = load_push_notifications()
-    new_notif = {
-        "id": notif_id,
-        "target": target,
-        "title": title,
-        "message": message,
-        "image_url": image_url,
-        "created_at": time.strftime("%Y-%m-%d %H:%M:%S"),
-        "acked_devices": []
-    }
-    all_notifs.append(new_notif)
-    save_push_notifications(all_notifs)
+    edge_delivered = False
+    edge_error = ""
+
+    # 1. Forward to Cloudflare D1 Edge Push for PP QUEST Android App (instant + background delivery)
+    if target in ("pp_quest", "all", "both"):
+        try:
+            cf_push_resp = requests.post(
+                f"{CF_WORKER_API}/api/push/send",
+                json={
+                    "id": notif_id,
+                    "target": "all",
+                    "title": title,
+                    "message": message,
+                    "imageUrl": image_url
+                },
+                timeout=10
+            )
+            if cf_push_resp.status_code == 200 and (cf_push_resp.json() or {}).get("ok"):
+                edge_delivered = True
+            else:
+                edge_error = f"HTTP {cf_push_resp.status_code}"
+        except Exception as ex:
+            edge_error = str(ex)
+
+    # 2. Queue in Render notification store (PP Server / individual device targeting / fallback)
+    if target != "pp_quest":
+        render_target = "all" if target in ("all", "both", "pp_server") else target
+        all_notifs = load_push_notifications()
+        new_notif = {
+            "id": notif_id,
+            "target": render_target,
+            "title": title,
+            "message": message,
+            "image_url": image_url,
+            "created_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "acked_devices": []
+        }
+        all_notifs.append(new_notif)
+        save_push_notifications(all_notifs)
 
     return jsonify({
         "ok": True,
         "status": "success",
         "notification_id": notif_id,
         "queued_for": target,
-        "message": f"Push notification successfully queued for {target}."
+        "edge_delivered": edge_delivered,
+        "edge_error": edge_error,
+        "message": f"Push notification sent to {target} (PP QUEST Edge: {'OK' if edge_delivered else 'Skipped/Err'})."
     })
 
 @app.route("/api/admin/user/<device_id>", methods=["GET"])

@@ -2380,28 +2380,28 @@
                                 📲
                             </div>
                             <div>
-                                <h3 style="font-size:18px; font-weight:800; color:var(--text-primary); margin:0;">1-Time
-                                    Push Notification Console</h3>
+                                <h3 style="font-size:18px; font-weight:800; color:var(--text-primary); margin:0;">PP QUEST &amp; Server Push Notification Console</h3>
                                 <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">
-                                    Broadcast instant system shade push notifications directly to user Android devices
-                                    (Supports custom title, banner images &amp; single-device targeting).
+                                    Send instant push notifications directly to <strong>PP QUEST Android App</strong> (Cloudflare Edge + Background) or <strong>PP Server</strong> devices with custom title &amp; banner images.
                                 </p>
                             </div>
                         </div>
-                        <span class="badge-status active">🟢 Live Broadcast Operational</span>
+                        <span class="badge-status active">🟢 PP QUEST Edge Push Active</span>
                     </div>
 
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:14px;">
                         <div class="form-field">
-                            <label>Target Audience / Device</label>
+                            <label>Target App / Device</label>
                             <select id="notifTargetSelect" class="form-input-element">
-                                <option value="all">📢 All Registered Mobile Devices</option>
+                                <option value="pp_quest">⚡ PP QUEST App (All Users — Fast Edge Push)</option>
+                                <option value="all">📢 Both PP QUEST + PP Server (All Devices)</option>
+                                <option value="pp_server">🖥️ PP Server App Only</option>
                             </select>
                         </div>
                         <div class="form-field">
                             <label>Notification Title</label>
                             <input id="notifTitleInput" type="text" class="form-input-element"
-                                placeholder="e.g. Special XP Bonus Available! 🎁" value="PPM Server Enterprise">
+                                placeholder="e.g. নতুন গেম কোয়েস্ট লাইভ হয়েছে!" value="PP QUEST">
                         </div>
                     </div>
 
@@ -4941,7 +4941,10 @@
                     // Populate Push Notification Target Dropdown
                     const targetSelect = document.getElementById("notifTargetSelect");
                     if (targetSelect) {
-                        targetSelect.innerHTML = `<option value="all">📢 All Registered Mobile Devices</option>`;
+                        targetSelect.innerHTML =
+                            `<option value="pp_quest">⚡ PP QUEST App (All Users — Fast Edge Push)</option>` +
+                            `<option value="all">📢 Both PP QUEST + PP Server (All Devices)</option>` +
+                            `<option value="pp_server">🖥️ PP Server App Only</option>`;
                         const seen = new Set();
                         data.users.forEach(u => {
                             if (u.device_id && !seen.has(u.device_id)) {
@@ -6033,7 +6036,8 @@
                 });
                 const data = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
                 if (res.ok && (data.ok || data.status === "success")) {
-                    showToast(`✅ Push notification sent successfully to ${data.queued_for || 'devices'}!`, "success");
+                    const edgeTag = data.edge_delivered ? " • PP QUEST Edge: OK" : "";
+                    showToast(`✅ Push notification sent to ${data.queued_for || 'devices'}${edgeTag}!`, "success");
                     const msgInput = document.getElementById("notifMessageInput");
                     if (msgInput) msgInput.value = "";
                 } else {
