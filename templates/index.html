@@ -1631,6 +1631,12 @@
                         </svg>
                         <span>Users &amp; Accounts</span>
                     </a>
+                    <a class="nav-item" id="navCloudVip" onclick="switchAdminTab('cloud_vip')">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM11 17l-3.5-3.5 1.41-1.41L11 14.17l4.59-4.59L17 11l-6 6z" />
+                        </svg>
+                        <span>PP Cloud VIP Vault</span>
+                    </a>
                     <a class="nav-item" id="navNotifications" onclick="switchAdminTab('notifications')">
                         <svg viewBox="0 0 24 24">
                             <path
@@ -2365,6 +2371,148 @@
                             <div class="spinner" style="margin:0 auto 12px; border-top-color:var(--accent-cyan);"></div>
                             Loading Public Portal Services...
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW 3B: PP CLOUD VIP VAULT MANAGER -->
+            <section id="viewCloudVip" class="admin-view-panel hidden">
+                <div class="glass-card" style="padding:24px; margin-bottom:18px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; border-bottom:1px solid var(--border-color); padding-bottom:16px; margin-bottom:18px;">
+                        <div style="display:flex; align-items:center; gap:14px;">
+                            <div style="width:48px; height:48px; border-radius:var(--radius-md); background:linear-gradient(135deg, rgba(245,158,11,0.22), rgba(16,185,129,0.22)); display:flex; align-items:center; justify-content:center; font-size:24px; border:1px solid rgba(245,158,11,0.35);">
+                                ☁️
+                            </div>
+                            <div>
+                                <h3 style="font-size:18px; font-weight:800; color:var(--text-primary); margin:0;">PP CLOUD — Paid VIP Account Vault Manager</h3>
+                                <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">
+                                    Package: <strong>com.ppm.cloud.vip</strong> • Basic (10 Emails) • Classic (25 Emails) • VIP (Unlimited) • 7-Day Renewal Grace Auto-Purge
+                                </p>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <a href="/download/PP_Cloud.apk" class="btn-inspect-action" style="padding:9px 14px; font-size:12px; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+                                📦 Download PP_Cloud.apk
+                            </a>
+                            <button class="btn-sync-protocol" style="padding:9px 14px; font-size:12px;" onclick="loadCloudVipUsers()">
+                                🔄 Refresh Vault
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Summary Stats -->
+                    <div id="cloudVipStatsRow" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(135px, 1fr)); gap:12px; margin-bottom:20px;">
+                        <div style="padding:12px 14px; border-radius:12px; background:var(--bg-secondary); border:1px solid var(--border-color);">
+                            <div style="font-size:11px; color:var(--text-muted); font-weight:700;">TOTAL VIP USERS</div>
+                            <div id="cvStatTotal" style="font-size:22px; font-weight:900; color:var(--text-primary); margin-top:2px;">0</div>
+                        </div>
+                        <div style="padding:12px 14px; border-radius:12px; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25);">
+                            <div style="font-size:11px; color:#10b981; font-weight:700;">ACTIVE</div>
+                            <div id="cvStatActive" style="font-size:22px; font-weight:900; color:#10b981; margin-top:2px;">0</div>
+                        </div>
+                        <div style="padding:12px 14px; border-radius:12px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.25);">
+                            <div style="font-size:11px; color:#f59e0b; font-weight:700;">7D GRACE (LOCKED)</div>
+                            <div id="cvStatGrace" style="font-size:22px; font-weight:900; color:#f59e0b; margin-top:2px;">0</div>
+                        </div>
+                        <div style="padding:12px 14px; border-radius:12px; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25);">
+                            <div style="font-size:11px; color:#ef4444; font-weight:700;">PURGED / SUSPENDED</div>
+                            <div id="cvStatPurged" style="font-size:22px; font-weight:900; color:#ef4444; margin-top:2px;">0</div>
+                        </div>
+                        <div style="padding:12px 14px; border-radius:12px; background:rgba(14,165,233,0.08); border:1px solid rgba(14,165,233,0.25);">
+                            <div style="font-size:11px; color:#0ea5e9; font-weight:700;">SAVED GMAIL SLOTS</div>
+                            <div id="cvStatEmails" style="font-size:22px; font-weight:900; color:#0ea5e9; margin-top:2px;">0</div>
+                        </div>
+                    </div>
+
+                    <!-- Create New VIP User Form -->
+                    <div style="padding:18px; border-radius:14px; background:var(--bg-secondary); border:1px solid var(--border-color); margin-bottom:20px;">
+                        <div style="font-size:13.5px; font-weight:800; color:var(--text-primary); margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+                            <span>➕ Create New PP CLOUD VIP Account</span>
+                            <button type="button" class="btn-inspect-action" style="padding:5px 10px; font-size:11px;" onclick="generateCloudVipPassword()">🎲 Generate Strong Password</button>
+                        </div>
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px;">
+                            <div class="form-field" style="margin:0;">
+                                <label>Customer Name</label>
+                                <input id="cvCreateName" type="text" class="form-input-element" placeholder="e.g. Tanvir VIP">
+                            </div>
+                            <div class="form-field" style="margin:0;">
+                                <label>Login Email / ID *</label>
+                                <input id="cvCreateLogin" type="text" class="form-input-element" placeholder="e.g. tanvir@ppcloud.vip">
+                            </div>
+                            <div class="form-field" style="margin:0;">
+                                <label>Password *</label>
+                                <input id="cvCreatePass" type="text" class="form-input-element" placeholder="Min 4 chars">
+                            </div>
+                            <div class="form-field" style="margin:0;">
+                                <label>Slot Package *</label>
+                                <select id="cvCreatePlan" class="form-input-element">
+                                    <option value="basic">🥉 Basic — 10 Emails</option>
+                                    <option value="classic">🥈 Classic — 25 Emails</option>
+                                    <option value="vip">👑 VIP — Unlimited Emails</option>
+                                </select>
+                            </div>
+                            <div class="form-field" style="margin:0;">
+                                <label>Validity Duration *</label>
+                                <select id="cvCreateDays" class="form-input-element">
+                                    <option value="30" selected>30 Days (1 Month)</option>
+                                    <option value="7">7 Days (Weekly)</option>
+                                    <option value="15">15 Days</option>
+                                    <option value="60">60 Days (2 Months)</option>
+                                    <option value="90">90 Days (3 Months)</option>
+                                    <option value="180">180 Days (6 Months)</option>
+                                    <option value="365">365 Days (1 Year)</option>
+                                    <option value="0">♾️ Lifetime (Never Expires)</option>
+                                </select>
+                            </div>
+                            <div class="form-field" style="margin:0;">
+                                <label>Admin Note (Optional)</label>
+                                <input id="cvCreateNote" type="text" class="form-input-element" placeholder="bKash / TG username">
+                            </div>
+                        </div>
+                        <div style="margin-top:14px; display:flex; justify-content:flex-end; gap:10px; align-items:center;">
+                            <span id="cvCreateMsg" style="font-size:12px; color:var(--text-secondary);"></span>
+                            <button type="button" id="cvCreateBtn" class="btn-sync-protocol" style="padding:10px 22px; font-size:13px; font-weight:800;" onclick="createCloudVipUser()">
+                                ✅ Create VIP Account &amp; Copy Login
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Search & Filter -->
+                    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; align-items:center;">
+                        <input id="cvSearchInput" type="text" class="form-input-element" style="flex:1; min-width:220px;" placeholder="🔍 Search by Name, Login ID, UID, or Note..." oninput="renderCloudVipTable()">
+                        <select id="cvPlanFilter" class="form-input-element" style="width:160px;" onchange="renderCloudVipTable()">
+                            <option value="all">All Plans</option>
+                            <option value="basic">Basic (10)</option>
+                            <option value="classic">Classic (25)</option>
+                            <option value="vip">VIP (Unlimited)</option>
+                        </select>
+                        <select id="cvStatusFilter" class="form-input-element" style="width:180px;" onchange="renderCloudVipTable()">
+                            <option value="all">All Status</option>
+                            <option value="active">Active Only</option>
+                            <option value="grace">7-Day Grace (Locked)</option>
+                            <option value="purged">Purged</option>
+                            <option value="suspended">Suspended</option>
+                        </select>
+                    </div>
+
+                    <!-- VIP Users Table -->
+                    <div style="overflow-x:auto; border-radius:12px; border:1px solid var(--border-color);">
+                        <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
+                            <thead>
+                                <tr style="background:var(--bg-secondary); text-align:left; border-bottom:1px solid var(--border-color);">
+                                    <th style="padding:11px 12px; font-weight:800;">User &amp; Credentials</th>
+                                    <th style="padding:11px 12px; font-weight:800;">Package &amp; Slots</th>
+                                    <th style="padding:11px 12px; font-weight:800;">Expiry &amp; Status</th>
+                                    <th style="padding:11px 12px; font-weight:800;">Device Lock</th>
+                                    <th style="padding:11px 12px; font-weight:800; text-align:right;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cvUsersTableBody">
+                                <tr>
+                                    <td colspan="5" style="padding:26px; text-align:center; color:var(--text-muted);">Click "Refresh Vault" or open tab to load PP CLOUD VIP users...</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </section>
@@ -3876,6 +4024,7 @@
             document.getElementById("navGames").classList.toggle("active", tab === "games");
             document.getElementById("navAddGame").classList.toggle("active", tab === "add_game");
             document.getElementById("navUsers").classList.toggle("active", tab === "users");
+            if (document.getElementById("navCloudVip")) document.getElementById("navCloudVip").classList.toggle("active", tab === "cloud_vip");
             if (document.getElementById("navPortal")) document.getElementById("navPortal").classList.toggle("active", tab === "portal");
             if (document.getElementById("navNotifications")) document.getElementById("navNotifications").classList.toggle("active", tab === "notifications");
             if (document.getElementById("navApk")) document.getElementById("navApk").classList.toggle("active", tab === "apk");
@@ -3883,11 +4032,13 @@
             document.getElementById("viewGames").classList.toggle("hidden", tab !== "games");
             document.getElementById("viewAddGame").classList.toggle("hidden", tab !== "add_game");
             document.getElementById("viewUsers").classList.toggle("hidden", tab !== "users");
+            if (document.getElementById("viewCloudVip")) document.getElementById("viewCloudVip").classList.toggle("hidden", tab !== "cloud_vip");
             if (document.getElementById("viewPortal")) document.getElementById("viewPortal").classList.toggle("hidden", tab !== "portal");
             if (document.getElementById("viewNotifications")) document.getElementById("viewNotifications").classList.toggle("hidden", tab !== "notifications");
             if (document.getElementById("viewApk")) document.getElementById("viewApk").classList.toggle("hidden", tab !== "apk");
 
             if (tab === "users") loadUsersList();
+            if (tab === "cloud_vip") loadCloudVipUsers();
             if (tab === "portal") loadPortalServices();
             if (tab === "notifications") loadNotificationAudience();
             if (tab === "apk") loadAppVersionConfig();
@@ -8360,6 +8511,268 @@
                 bPub.style.color = (mode === "public") ? "var(--accent-green)" : "var(--text-muted)";
             }
             renderPortalServicesGrid();
+        }
+
+        /* ==================== PP CLOUD VIP VAULT MANAGER ==================== */
+        const CLOUD_VIP_API = "https://ppmod-api.tredarskvt.workers.dev";
+        let _cloudVipUsersCache = [];
+
+        function generateCloudVipPassword() {
+            const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#";
+            let out = "PP";
+            for (let i = 0; i < 8; i++) out += chars[Math.floor(Math.random() * chars.length)];
+            const el = document.getElementById("cvCreatePass");
+            if (el) el.value = out;
+        }
+
+        function formatCloudVipShareText(u) {
+            const planMap = { basic: "Basic (10 Emails)", classic: "Classic (25 Emails)", vip: "VIP (Unlimited Emails)" };
+            const expTxt = (!u.expiresAt || Number(u.expiresAt) === 0)
+                ? "Lifetime"
+                : new Date(Number(u.expiresAt)).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+            return `☁️ PP CLOUD VIP ACCESS\n━━━━━━━━━━━━━━━━\n👤 Name: ${u.name || "VIP Member"}\n📧 Login ID: ${u.loginId}\n🔑 Password: ${u.password}\n📦 Package: ${planMap[u.plan] || u.plan}\n⏳ Valid Until: ${expTxt}\n📱 App Download: https://pp-mod-auto-quest.onrender.com/download/PP_Cloud.apk\n━━━━━━━━━━━━━━━━\n⚠️ 1 Device Lock Active • মেয়াদ শেষ হলে ৭ দিনের মধ্যে রিনিউ না করলে সব ডেটা অটো মুছে যাবে।`;
+        }
+
+        function copyCloudVipCredentials(uid) {
+            const u = _cloudVipUsersCache.find(x => x.uid === uid);
+            if (!u) return;
+            const txt = formatCloudVipShareText(u);
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(txt).then(() => {
+                    if (typeof showToast === "function") showToast("VIP Login Credentials copied for Telegram!", "success");
+                    else alert("Copied!");
+                }).catch(() => prompt("Copy VIP Credentials:", txt));
+            } else {
+                prompt("Copy VIP Credentials:", txt);
+            }
+        }
+
+        async function loadCloudVipUsers() {
+            const tbody = document.getElementById("cvUsersTableBody");
+            if (tbody) {
+                tbody.innerHTML = `<tr><td colspan="5" style="padding:22px; text-align:center; color:var(--text-muted);">Loading PP CLOUD VIP accounts from Cloudflare D1...</td></tr>`;
+            }
+            try {
+                const res = await fetch(`${CLOUD_VIP_API}/api/admin/cloud/users`, { cache: "no-store" });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error(data.error || "Failed to load");
+                _cloudVipUsersCache = data.users || [];
+                const s = data.summary || {};
+                const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = String(v ?? 0); };
+                setTxt("cvStatTotal", s.total || _cloudVipUsersCache.length);
+                setTxt("cvStatActive", s.active || 0);
+                setTxt("cvStatGrace", s.grace || 0);
+                setTxt("cvStatPurged", (s.purged || 0) + (s.suspended || 0));
+                setTxt("cvStatEmails", s.totalSavedEmails || 0);
+                renderCloudVipTable();
+            } catch (e) {
+                if (tbody) {
+                    tbody.innerHTML = `<tr><td colspan="5" style="padding:22px; text-align:center; color:#ef4444;">Failed to load PP CLOUD VIP users: ${e.message} (Make sure Cloudflare Worker is deployed!)</td></tr>`;
+                }
+            }
+        }
+
+        function renderCloudVipTable() {
+            const tbody = document.getElementById("cvUsersTableBody");
+            if (!tbody) return;
+            const q = (document.getElementById("cvSearchInput")?.value || "").trim().toLowerCase();
+            const planF = document.getElementById("cvPlanFilter")?.value || "all";
+            const statusF = document.getElementById("cvStatusFilter")?.value || "all";
+
+            const filtered = _cloudVipUsersCache.filter(u => {
+                const st = (u.state && u.state.state) ? u.state.state : "active";
+                if (planF !== "all" && u.plan !== planF) return false;
+                if (statusF !== "all" && st !== statusF) return false;
+                if (q) {
+                    const hay = `${u.name || ""} ${u.loginId || ""} ${u.uid || ""} ${u.note || ""}`.toLowerCase();
+                    if (!hay.includes(q)) return false;
+                }
+                return true;
+            });
+
+            if (!filtered.length) {
+                tbody.innerHTML = `<tr><td colspan="5" style="padding:24px; text-align:center; color:var(--text-muted);">No PP CLOUD VIP users found. Create your first VIP account above!</td></tr>`;
+                return;
+            }
+
+            const esc = (s) => String(s || "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c]));
+            tbody.innerHTML = filtered.map(u => {
+                const st = u.state || { state: "active", active: true };
+                const planBadge = u.plan === "vip"
+                    ? `<span style="padding:3px 9px; border-radius:999px; font-size:11px; font-weight:800; background:rgba(245,158,11,0.18); color:#f59e0b; border:1px solid rgba(245,158,11,0.35);">👑 VIP • Unlimited</span>`
+                    : (u.plan === "classic"
+                        ? `<span style="padding:3px 9px; border-radius:999px; font-size:11px; font-weight:800; background:rgba(139,92,246,0.18); color:#a78bfa; border:1px solid rgba(139,92,246,0.35);">🥈 Classic • 25</span>`
+                        : `<span style="padding:3px 9px; border-radius:999px; font-size:11px; font-weight:800; background:rgba(14,165,233,0.16); color:#38bdf8; border:1px solid rgba(14,165,233,0.3);">🥉 Basic • 10</span>`);
+
+                const slotStr = Number(u.maxEmails) < 0 ? `${u.usedSlots || 0} / ∞` : `${u.usedSlots || 0} / ${u.maxEmails}`;
+                const slotPct = Number(u.maxEmails) > 0 ? Math.min(100, Math.round(((u.usedSlots || 0) / Number(u.maxEmails)) * 100)) : 25;
+                const slotColor = (Number(u.maxEmails) > 0 && (u.usedSlots || 0) >= Number(u.maxEmails)) ? "#ef4444" : "#10b981";
+
+                let statusHtml = "";
+                if (st.state === "active") {
+                    const expInfo = st.lifetime
+                        ? "♾️ Lifetime"
+                        : `${st.daysLeft}d left (${new Date(Number(u.expiresAt)).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "2-digit" })})`;
+                    statusHtml = `<span style="color:#10b981; font-weight:800;">● Active</span><div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">${expInfo}</div>`;
+                } else if (st.state === "grace") {
+                    const hrs = Math.max(1, Math.ceil((st.graceRemainingMs || 0) / 3600000));
+                    const gTxt = hrs >= 24 ? `${Math.ceil(hrs / 24)}d left to renew` : `${hrs}h left to renew`;
+                    statusHtml = `<span style="color:#f59e0b; font-weight:800;">⏳ Expired (7d Grace)</span><div style="font-size:11px; color:#f59e0b; margin-top:2px;">QID Locked • ${gTxt}</div>`;
+                } else if (st.state === "purged") {
+                    statusHtml = `<span style="color:#ef4444; font-weight:800;">🗑️ Expired &amp; Purged</span><div style="font-size:11px; color:var(--text-muted); margin-top:2px;">All Gmail tokens wiped</div>`;
+                } else {
+                    statusHtml = `<span style="color:#ef4444; font-weight:800;">⛔ Suspended</span><div style="font-size:11px; color:var(--text-muted); margin-top:2px;">App &amp; QID Blocked</div>`;
+                }
+
+                const devHtml = u.deviceId
+                    ? `<span style="font-family:monospace; font-size:11px; color:#10b981; background:rgba(16,185,129,0.1); padding:3px 7px; border-radius:6px;">🔒 ${esc(u.deviceId.slice(0, 10))}…</span>`
+                    : `<span style="font-size:11px; color:var(--text-muted);">🔓 Unlocked (Ready)</span>`;
+
+                const toggleStatusLabel = u.status === "suspended" ? "▶️ Activate" : "⏸️ Suspend";
+                const nextStatus = u.status === "suspended" ? "active" : "suspended";
+
+                return `<tr style="border-bottom:1px solid var(--border-color);">
+                    <td style="padding:11px 12px;">
+                        <div style="font-weight:800; color:var(--text-primary);">${esc(u.name)}</div>
+                        <div style="font-family:monospace; font-size:11.5px; color:var(--accent-cyan);">${esc(u.loginId)}</div>
+                        <div style="font-family:monospace; font-size:11px; color:var(--text-muted);">Pass: <strong>${esc(u.password)}</strong>${u.note ? ` • ${esc(u.note)}` : ""}</div>
+                    </td>
+                    <td style="padding:11px 12px;">
+                        ${planBadge}
+                        <div style="margin-top:6px; font-size:11.5px; font-weight:700; color:var(--text-primary);">Slots: ${slotStr}</div>
+                        <div style="width:110px; height:5px; border-radius:999px; background:rgba(148,163,184,0.2); overflow:hidden; margin-top:3px;">
+                            <div style="width:${slotPct}%; height:100%; background:${slotColor};"></div>
+                        </div>
+                    </td>
+                    <td style="padding:11px 12px;">${statusHtml}</td>
+                    <td style="padding:11px 12px;">${devHtml}</td>
+                    <td style="padding:11px 12px; text-align:right;">
+                        <div style="display:flex; gap:6px; justify-content:flex-end; flex-wrap:wrap;">
+                            <button class="btn-inspect-action" style="padding:5px 9px; font-size:11px;" onclick="copyCloudVipCredentials('${esc(u.uid)}')" title="Copy Telegram Message">📋 Copy</button>
+                            <button class="btn-inspect-action" style="padding:5px 9px; font-size:11px; color:#10b981;" onclick="renewCloudVipUser('${esc(u.uid)}')" title="Renew / Extend Days">⏳ Renew</button>
+                            <button class="btn-inspect-action" style="padding:5px 9px; font-size:11px; color:#a78bfa;" onclick="changeCloudVipPlan('${esc(u.uid)}', '${esc(u.plan)}')" title="Upgrade / Downgrade Plan">📦 Plan</button>
+                            <button class="btn-inspect-action" style="padding:5px 9px; font-size:11px; color:#38bdf8;" onclick="changeCloudVipPass('${esc(u.uid)}')" title="Change Password">🔑 Pass</button>
+                            <button class="btn-inspect-action" style="padding:5px 9px; font-size:11px; color:#f59e0b;" onclick="resetCloudVipDevice('${esc(u.uid)}')" title="Reset 1-Device Lock">📱 Reset Dev</button>
+                            <button class="btn-inspect-action" style="padding:5px 9px; font-size:11px;" onclick="toggleCloudVipStatus('${esc(u.uid)}', '${nextStatus}')">${toggleStatusLabel}</button>
+                            <button class="btn-inspect-action" style="padding:5px 9px; font-size:11px; color:#ef4444;" onclick="deleteCloudVipUser('${esc(u.uid)}', '${esc(u.loginId)}')">🗑️</button>
+                        </div>
+                    </td>
+                </tr>`;
+            }).join("");
+        }
+
+        async function createCloudVipUser() {
+            const name = (document.getElementById("cvCreateName")?.value || "").trim();
+            const loginId = (document.getElementById("cvCreateLogin")?.value || "").trim();
+            const password = (document.getElementById("cvCreatePass")?.value || "").trim();
+            const plan = document.getElementById("cvCreatePlan")?.value || "basic";
+            const days = Number(document.getElementById("cvCreateDays")?.value || 30);
+            const note = (document.getElementById("cvCreateNote")?.value || "").trim();
+            const msgEl = document.getElementById("cvCreateMsg");
+            const btn = document.getElementById("cvCreateBtn");
+
+            if (!loginId || !password) {
+                if (msgEl) msgEl.textContent = "⚠️ Login Email/ID and Password are required!";
+                return;
+            }
+            if (btn) btn.disabled = true;
+            if (msgEl) msgEl.textContent = "Creating VIP account...";
+            try {
+                const res = await fetch(`${CLOUD_VIP_API}/api/admin/cloud/users/create`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, loginId, password, plan, days, note })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error(data.error || "Failed to create");
+                if (msgEl) msgEl.textContent = "✅ VIP User Created & Credentials Copied!";
+                document.getElementById("cvCreateName").value = "";
+                document.getElementById("cvCreateLogin").value = "";
+                document.getElementById("cvCreatePass").value = "";
+                document.getElementById("cvCreateNote").value = "";
+                await loadCloudVipUsers();
+                if (data.user && data.user.uid) copyCloudVipCredentials(data.user.uid);
+            } catch (e) {
+                if (msgEl) msgEl.textContent = "❌ " + e.message;
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        async function updateCloudVipApi(payload) {
+            const res = await fetch(`${CLOUD_VIP_API}/api/admin/cloud/users/update`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (!res.ok || !data.ok) throw new Error(data.error || "Update failed");
+            await loadCloudVipUsers();
+            return data;
+        }
+
+        async function renewCloudVipUser(uid) {
+            const inp = prompt("কত দিন Extend/Renew করবেন? (e.g. 30, 90, বা Lifetime এর জন্য 0 লিখুন):", "30");
+            if (inp === null) return;
+            const days = Number(inp.trim());
+            if (isNaN(days) || days < 0) return alert("সঠিক দিন সংখ্যা দিন।");
+            try {
+                if (days === 0) await updateCloudVipApi({ uid, setDays: 0 });
+                else await updateCloudVipApi({ uid, extendDays: days });
+                if (typeof showToast === "function") showToast(days === 0 ? "Set to Lifetime!" : `Extended by +${days} days!`, "success");
+            } catch (e) { alert("Error: " + e.message); }
+        }
+
+        async function changeCloudVipPlan(uid, curPlan) {
+            const inp = prompt("নতুন প্যাকেজ লিখুন:\nbasic (10 Emails)\nclassic (25 Emails)\nvip (Unlimited)", curPlan || "basic");
+            if (!inp) return;
+            const p = inp.trim().toLowerCase();
+            if (!["basic", "classic", "vip"].includes(p)) return alert("শুধুমাত্র basic, classic, অথবা vip লিখুন।");
+            try {
+                await updateCloudVipApi({ uid, plan: p });
+                if (typeof showToast === "function") showToast(`Plan changed to ${p.toUpperCase()}!`, "success");
+            } catch (e) { alert("Error: " + e.message); }
+        }
+
+        async function changeCloudVipPass(uid) {
+            const inp = prompt("নতুন Password লিখুন (কমপক্ষে ৪ অক্ষর):");
+            if (!inp || inp.trim().length < 4) return;
+            try {
+                await updateCloudVipApi({ uid, password: inp.trim() });
+                if (typeof showToast === "function") showToast("Password updated!", "success");
+            } catch (e) { alert("Error: " + e.message); }
+        }
+
+        async function resetCloudVipDevice(uid) {
+            if (!confirm("এই ইউজারের 1-Device Lock রিসেট করবেন? ইউজার নতুন ফোনে লগইন করতে পারবে।")) return;
+            try {
+                await updateCloudVipApi({ uid, resetDevice: true });
+                if (typeof showToast === "function") showToast("Device Lock Reset!", "success");
+            } catch (e) { alert("Error: " + e.message); }
+        }
+
+        async function toggleCloudVipStatus(uid, nextStatus) {
+            const msg = nextStatus === "suspended" ? "এই VIP ইউজারকে Suspend করবেন? (App + সব QID সাথে সাথে বন্ধ হবে)" : "এই VIP ইউজারকে আবার Activate করবেন?";
+            if (!confirm(msg)) return;
+            try {
+                await updateCloudVipApi({ uid, status: nextStatus });
+                if (typeof showToast === "function") showToast(`Status updated to ${nextStatus}!`, "success");
+            } catch (e) { alert("Error: " + e.message); }
+        }
+
+        async function deleteCloudVipUser(uid, loginId) {
+            if (!confirm(`⚠️ সতর্কতা: "${loginId}" এবং এর সেভ করা সমস্ত Google Account / QID চিরতরে ডিলিট হবে! নিশ্চিত?`)) return;
+            try {
+                const res = await fetch(`${CLOUD_VIP_API}/api/admin/cloud/users/delete`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ uid })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error(data.error || "Delete failed");
+                await loadCloudVipUsers();
+                if (typeof showToast === "function") showToast("VIP User & all saved Gmail tokens deleted!", "success");
+            } catch (e) { alert("Error: " + e.message); }
         }
 
     </script>

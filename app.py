@@ -1092,6 +1092,7 @@ def resolve_credentials_from_input(data):
 
     if sync_code:
         cf_deleted = False
+        cf_cloud_blocked = False
         try:
             cf_url = f"https://ppmod-api.tredarskvt.workers.dev/api/sync/get?code={sync_code}"
             cf_res = requests.get(cf_url, timeout=4)
@@ -1104,6 +1105,11 @@ def resolve_credentials_from_input(data):
                         email = acc.get("email")
                     if acc.get("android_id"):
                         android_id = acc.get("android_id")
+            elif cf_res.status_code == 403:
+                cf_cloud_blocked = True
+                SYNC_CODES.pop(sync_code, None)
+                save_sync_codes(SYNC_CODES)
+                PORTAL_PROFILE_CACHE.pop(sync_code, None)
             elif cf_res.status_code == 404:
                 cf_deleted = True
                 SYNC_CODES.pop(sync_code, None)
@@ -1111,6 +1117,9 @@ def resolve_credentials_from_input(data):
                 PORTAL_PROFILE_CACHE.pop(sync_code, None)
         except Exception:
             pass
+
+        if cf_cloud_blocked:
+            return None, None, None, None
 
         if cf_deleted:
             # Code was deleted from Cloudflare D1 store — wipe completely from local memory/disk and DO NOT revive
@@ -1597,6 +1606,13 @@ def get_account_live_data():
                     if not email:
                         email = acc.get("email", "").lower()
                     country = acc.get("country", "US")
+            elif cf_res.status_code == 403:
+                err_msg = "PP CLOUD subscription expired or suspended."
+                try:
+                    err_msg = cf_res.json().get("error") or err_msg
+                except Exception:
+                    pass
+                return jsonify({"ok": False, "cloudExpired": True, "error": err_msg}), 403
         except Exception:
             pass
 
@@ -2215,6 +2231,15 @@ def claim_sync_code():
     try:
         cf_url = f"https://ppmod-api.tredarskvt.workers.dev/api/sync/get?code={code}"
         cf_res = requests.get(cf_url, timeout=4)
+        if cf_res.status_code == 403:
+            err_msg = "PP CLOUD subscription expired or suspended."
+            try:
+                err_msg = cf_res.json().get("error") or err_msg
+            except Exception:
+                pass
+            SYNC_CODES.pop(code, None)
+            save_sync_codes(SYNC_CODES)
+            return jsonify({"ok": False, "cloudExpired": True, "error": err_msg}), 403
         if cf_res.status_code == 200:
             cf_data = cf_res.json()
             if cf_data.get("ok") and cf_data.get("account"):
@@ -2432,6 +2457,7 @@ def portal_connect_account():
     # 1. Resolve 6-digit sync code if provided directly from Cloudflare D1
     if is_six_digit:
         cf_deleted = False
+        cf_cloud_blocked_msg = None
         try:
             cf_url = f"https://ppmod-api.tredarskvt.workers.dev/api/sync/get?code={code}"
             cf_res = requests.get(cf_url, timeout=4)
@@ -2453,10 +2479,22 @@ def portal_connect_account():
                         "android_id": android_id
                     }
                     save_sync_codes(SYNC_CODES)
+            elif cf_res.status_code == 403:
+                cf_cloud_blocked_msg = "আপনার PP CLOUD সাবস্ক্রিপশনের মেয়াদ শেষ হয়ে গেছে! QID বন্ধ আছে — রিনিউ করতে অ্যাডমিনের সাথে যোগাযোগ করুন।"
+                try:
+                    cf_cloud_blocked_msg = cf_res.json().get("error") or cf_cloud_blocked_msg
+                except Exception:
+                    pass
             elif cf_res.status_code == 404:
                 cf_deleted = True
         except Exception as e:
             print(f"[-] Cloudflare D1 query portal connect: {e}")
+
+        if cf_cloud_blocked_msg:
+            SYNC_CODES.pop(code, None)
+            save_sync_codes(SYNC_CODES)
+            PORTAL_PROFILE_CACHE.pop(code, None)
+            return jsonify({"ok": False, "cloudExpired": True, "error": cf_cloud_blocked_msg}), 403
 
         if cf_deleted:
             # Permanently purged from Cloud Vault! Purge all local traces!
