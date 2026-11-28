@@ -37,7 +37,28 @@ public class PushHelper {
     private static final String PREF_NAME = "pp_push_dedup_v2";
     private static final String KEY_SEEN_IDS = "seen_ids";
     private static final String KEY_LAST_TS = "last_ts";
+    private static final String KEY_USER_UID = "logged_in_uid";
     private static final int PUSH_JOB_ID = 7741;
+
+    public static void setLoggedInUid(Context ctx, String uid) {
+        if (ctx == null) return;
+        try {
+            SharedPreferences sp = ctx.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+            sp.edit().putString(KEY_USER_UID, uid != null ? uid.trim() : "").apply();
+        } catch (Throwable ignored) {
+        }
+    }
+
+    public static String getLoggedInUid(Context ctx) {
+        if (ctx == null) return "";
+        try {
+            SharedPreferences sp = ctx.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+            String u = sp.getString(KEY_USER_UID, "");
+            return u != null ? u.trim() : "";
+        } catch (Throwable ignored) {
+            return "";
+        }
+    }
 
     public static void scheduleBackgroundPushJob(Context ctx) {
         if (ctx == null || Build.VERSION.SDK_INT < 21) return;
@@ -122,7 +143,15 @@ public class PushHelper {
             String apiBase = SecurityGuard.getCloudWorkerApi();
             if (TextUtils.isEmpty(apiBase)) return;
 
-            URL url = new URL(apiBase + "/api/push/latest?since=" + lastTs + "&limit=5");
+            String savedUid = getLoggedInUid(ctx);
+            String fullUrl = apiBase + "/api/push/latest?since=" + lastTs + "&limit=5";
+            if (!TextUtils.isEmpty(savedUid)) {
+                try {
+                    fullUrl += "&uid=" + java.net.URLEncoder.encode(savedUid, "UTF-8");
+                } catch (Throwable ignored) {
+                }
+            }
+            URL url = new URL(fullUrl);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setConnectTimeout(6000);

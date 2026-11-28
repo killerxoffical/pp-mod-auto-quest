@@ -1654,6 +1654,17 @@ public class MainActivity extends Activity implements CloudSyncClient.SyncCallba
         }
 
         @JavascriptInterface
+        public void setLoggedInUid(final String uid) {
+            try {
+                PushHelper.setLoggedInUid(activity, uid);
+                if (uid != null && !uid.trim().isEmpty()) {
+                    PushHelper.pollEdgeNotificationsAsync(activity);
+                }
+            } catch (Throwable ignored) {
+            }
+        }
+
+        @JavascriptInterface
         public void updateAccountData(final String code, final int points, final String tier) {
             boolean hasPP = !"None".equalsIgnoreCase(tier);
             activity.runOnUiThread(new UpdateAccountDataRunnable(activity, code, points, tier, hasPP,

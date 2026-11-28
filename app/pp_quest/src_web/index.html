@@ -1088,10 +1088,15 @@
             flex-shrink: 0;
         }
 
-        /* --- Game Selection Grid & Tactile Cards (List Box Style) --- */
+        /* --- Game Selection Grid & Tactile Cards (60fps GPU-Accelerated List Box Style) --- */
         .pp-game-card, .tx-item {
             content-visibility: auto;
             contain-intrinsic-size: 62px;
+            contain: layout style paint;
+        }
+        #gameGrid {
+            contain: layout style;
+            -webkit-overflow-scrolling: touch;
         }
         #screenPayment:not(.hidden) {
             display: flex !important;
@@ -1101,6 +1106,8 @@
         #gameGrid .game-card {
             content-visibility: auto;
             contain-intrinsic-size: 56px;
+            contain: layout style paint;
+            touch-action: manipulation;
             position: relative;
             display: flex;
             align-items: center;
@@ -1114,7 +1121,7 @@
             overflow: hidden;
             height: 56px;
             box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
-            transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+            transition: transform 0.14s ease, border-color 0.14s ease, background 0.14s ease;
         }
 
         #gameGrid .game-card::after {
@@ -7893,43 +7900,54 @@
             if (lbl) lbl.innerText = `Games (${num})`;
         };
 
+        let _gameFilterTimer = null;
         window.filterGames = function (query) {
             const q = (query || '').trim().toLowerCase();
-            const cards = document.querySelectorAll('#gameGrid .game-card');
             const clearBtn = document.getElementById('gameSearchClearBtn');
             if (clearBtn) {
                 clearBtn.style.display = q.length > 0 ? 'flex' : 'none';
             }
-            let visibleCount = 0;
-            cards.forEach(card => {
-                const nameEl = card.querySelector('.g-name');
-                const name = nameEl ? nameEl.textContent.toLowerCase() : card.textContent.toLowerCase();
-                if (!q || name.includes(q)) {
-                    card.style.display = '';
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
+            if (_gameFilterTimer) clearTimeout(_gameFilterTimer);
+            const runFilter = () => {
+                const cards = document.querySelectorAll('#gameGrid .game-card');
+                let visibleCount = 0;
+                cards.forEach(card => {
+                    const nameEl = card.querySelector('.g-name');
+                    const name = nameEl ? nameEl.textContent.toLowerCase() : card.textContent.toLowerCase();
+                    if (!q || name.includes(q)) {
+                        if (card.style.display !== '') card.style.display = '';
+                        visibleCount++;
+                    } else {
+                        if (card.style.display !== 'none') card.style.display = 'none';
+                    }
+                });
 
-            // Empty state feedback inside grid
-            let emptyMsg = document.getElementById('gameSearchEmpty');
-            const grid = document.getElementById('gameGrid');
-            if (visibleCount === 0 && q.length > 0) {
-                if (!emptyMsg && grid) {
-                    emptyMsg = document.createElement('div');
-                    emptyMsg.id = 'gameSearchEmpty';
-                    emptyMsg.className = 'col-span-full py-8 text-center text-slate-400 select-none';
-                    emptyMsg.innerHTML = '<i data-lucide="search-x" class="w-8 h-8 mx-auto mb-2 text-slate-400 opacity-60"></i><p class="text-xs font-bold text-slate-600">কোনো গেম পাওয়া যায়নি</p><p class="text-[11px] text-slate-400 mt-0.5">অন্য নাম লিখে চেষ্টা করুন</p>';
-                    grid.appendChild(emptyMsg);
-                    if (window.lucide) { try { lucide.createIcons(); } catch (e) { } }
+                let emptyMsg = document.getElementById('gameSearchEmpty');
+                const grid = document.getElementById('gameGrid');
+                if (visibleCount === 0 && q.length > 0) {
+                    if (!emptyMsg && grid) {
+                        emptyMsg = document.createElement('div');
+                        emptyMsg.id = 'gameSearchEmpty';
+                        emptyMsg.className = 'col-span-full py-8 text-center text-slate-400 select-none';
+                        emptyMsg.innerHTML = '<i data-lucide="search-x" class="w-8 h-8 mx-auto mb-2 text-slate-400 opacity-60"></i><p class="text-xs font-bold text-slate-600">কোনো গেম পাওয়া যায়নি</p><p class="text-[11px] text-slate-400 mt-0.5">অন্য নাম লিখে চেষ্টা করুন</p>';
+                        grid.appendChild(emptyMsg);
+                        if (window.lucide) { try { lucide.createIcons(); } catch (e) { } }
+                    } else if (emptyMsg) {
+                        emptyMsg.style.display = 'block';
+                    }
                 } else if (emptyMsg) {
-                    emptyMsg.style.display = 'block';
+                    emptyMsg.style.display = 'none';
                 }
-            } else if (emptyMsg) {
-                emptyMsg.style.display = 'none';
-            }
+            };
+            if (!q) { runFilter(); } else { _gameFilterTimer = setTimeout(runFilter, 95); }
         };
+
+        // Smoothness boost: ensure async image decoding on all game logos
+        try {
+            document.addEventListener('DOMContentLoaded', () => {
+                document.querySelectorAll('#gameGrid img').forEach(im => { try { im.decoding = 'async'; } catch (e) { } });
+            });
+        } catch (e) { }
 
         window.clearGameSearch = function () {
             const inp = document.getElementById('gameSearchInput');
@@ -10585,6 +10603,9 @@
                 localStorage.setItem('pp_sso_session', JSON.stringify(u));
                 localStorage.setItem('ppm_user_uid', u.uid);
                 localStorage.setItem('pp_uid', u.uid);
+                if (window.AndroidBridge && typeof window.AndroidBridge.setLoggedInUid === 'function') {
+                    window.AndroidBridge.setLoggedInUid(u.uid);
+                }
                 if (window.ppfb.customName) localStorage.setItem('pp_cached_name_' + u.uid, window.ppfb.customName);
                 if (window.ppfb.avatar) localStorage.setItem('pp_cached_avatar_' + u.uid, window.ppfb.avatar);
                 if (window.ppfb.tgChatId) localStorage.setItem('pp_cached_tg_' + u.uid, window.ppfb.tgChatId);
@@ -18325,22 +18346,91 @@ async function executeServerQuestUnlock() {
             if (window.lucide) lucide.createIcons();
             return '';
         }
+        // Anti-Spam Auth Rate Limit Guard: Max 5 attempts -> 1-hour (3600s) lockout (Local + Cloudflare Edge)
+        const AUTH_RL_MAX = 5;
+        const AUTH_RL_LOCK_MS = 60 * 60 * 1000;
+        function _getLocalAuthRl(action) {
+            try {
+                const raw = JSON.parse(localStorage.getItem('ppm_auth_rl_' + action) || 'null');
+                if (raw && typeof raw === 'object') return raw;
+            } catch (e) { }
+            return { count: 0, lockedUntil: 0, windowStart: Date.now() };
+        }
+        function _setLocalAuthRl(action, rec) {
+            try { localStorage.setItem('ppm_auth_rl_' + action, JSON.stringify(rec)); } catch (e) { }
+        }
+        function _fmtLockBn(ms) {
+            const mins = Math.max(1, Math.ceil(ms / 60000));
+            return mins >= 60 ? `${Math.ceil(mins / 60)} ঘণ্টা` : `${mins} মিনিট`;
+        }
+        async function checkAuthRateLimit(action, identifier, recordNow = true) {
+            const now = Date.now();
+            const rec = _getLocalAuthRl(action);
+            if (rec.lockedUntil && now < rec.lockedUntil) {
+                return { ok: false, error: `🔒 ৫ বারের বেশি চেষ্টা করায় আপনার অ্যাক্সেস সাময়িকভাবে ব্লক করা হয়েছে। অনুগ্রহ করে ${_fmtLockBn(rec.lockedUntil - now)} পর চেষ্টা করুন।` };
+            }
+            if (!rec.windowStart || (now - rec.windowStart) > AUTH_RL_LOCK_MS) {
+                rec.count = 0; rec.windowStart = now; rec.lockedUntil = 0;
+            }
+            if (recordNow) {
+                rec.count = (Number(rec.count) || 0) + 1;
+                if (rec.count >= AUTH_RL_MAX) {
+                    rec.lockedUntil = now + AUTH_RL_LOCK_MS;
+                }
+                _setLocalAuthRl(action, rec);
+            }
+            try {
+                const res = await fetch(`${CF_API}/api/auth/rate-check`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action, identifier: (identifier || '').toLowerCase(), record: recordNow })
+                });
+                const d = await res.json().catch(() => null);
+                if (d && d.locked) {
+                    rec.lockedUntil = now + ((Number(d.retryAfterSec) || 3600) * 1000);
+                    _setLocalAuthRl(action, rec);
+                    return { ok: false, error: d.error || `🔒 নিরাপত্তার কারণে ১ ঘণ্টার জন্য লক করা হয়েছে।` };
+                }
+            } catch (e) { }
+            if (recordNow && rec.lockedUntil && now < rec.lockedUntil) {
+                return { ok: false, error: `🔒 ৫ বারের বেশি চেষ্টা করায় ১ ঘণ্টার জন্য সাময়িকভাবে লক করা হয়েছে।` };
+            }
+            return { ok: true };
+        }
+        function resetAuthRateLimit(action, identifier) {
+            try { localStorage.removeItem('ppm_auth_rl_' + action); } catch (e) { }
+            fetch(`${CF_API}/api/auth/rate-reset`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, identifier: (identifier || '').toLowerCase() })
+            }).catch(() => { });
+        }
+
         window.ppfb.loginEmail = async () => {
             if (!auth) { toast('Loading, please wait...'); return; }
             const email = (document.getElementById('emEmail').value || '').trim();
             const pass = document.getElementById('emPass').value || '';
             if (!email || !pass) { emMsg('Email o password din', false); return; }
+            const rlCheck = await checkAuthRateLimit('login', email, false);
+            if (!rlCheck.ok) {
+                emMsg(rlCheck.error, false);
+                toast(rlCheck.error);
+                return;
+            }
             const orig = emBusy('btnEmLogin', true);
             openAuth3DModal('loading', 'Logging in...', 'Verifying email and password credentials...');
             try {
                 localStorage.removeItem('pp_logged_out');
                 await _emLogin(auth, email, pass);
-                openAuth3DModal('success', 'Login Successful!', 'Welcome back to PP MOD!');
+                resetAuthRateLimit('login', email);
+                openAuth3DModal('success', 'Login Successful!', 'Welcome back to PP QUEST!');
             } catch (e) {
                 console.warn(e);
-                emMsg(emErr(e), false);
+                const rlFail = await checkAuthRateLimit('login', email, true);
+                const finalMsg = rlFail.ok ? emErr(e) : rlFail.error;
+                emMsg(finalMsg, false);
                 emBusy('btnEmLogin', false, orig);
-                openAuth3DModal('error', 'Login Failed', emErr(e));
+                openAuth3DModal('error', 'Login Failed', finalMsg);
             }
         };
         window.ppfb.registerEmail = async () => {
@@ -18351,8 +18441,14 @@ async function executeServerQuestUnlock() {
             if (!name) { emMsg('Apnar nam din', false); return; }
             if (!email || !pass) { emMsg('Email o password din', false); return; }
             if (pass.length < 6) { emMsg('Password minimum 6 character', false); return; }
+            const rlCheck = await checkAuthRateLimit('register', email, true);
+            if (!rlCheck.ok) {
+                emMsg(rlCheck.error, false);
+                toast(rlCheck.error);
+                return;
+            }
             const orig = emBusy('btnEmReg', true);
-            openAuth3DModal('loading', 'Creating Account...', 'Registering your PP MOD profile...');
+            openAuth3DModal('loading', 'Creating Account...', 'Registering your PP QUEST profile...');
             try {
                 localStorage.removeItem('pp_logged_out');
                 const cred = await _emReg(auth, email, pass);
@@ -18371,6 +18467,12 @@ async function executeServerQuestUnlock() {
             if (!auth) { toast('Loading, please wait...'); return; }
             const email = (document.getElementById('emForgotEmail').value || '').trim();
             if (!email) { emMsg('Email din', false); return; }
+            const rlCheck = await checkAuthRateLimit('forgot_pass', email, true);
+            if (!rlCheck.ok) {
+                emMsg(rlCheck.error, false);
+                toast(rlCheck.error);
+                return;
+            }
             const orig = emBusy('btnEmReset', true);
             try {
                 await _emReset(auth, email);
@@ -20649,6 +20751,9 @@ async function executeServerQuestUnlock() {
                     try {
                         localStorage.setItem('ppm_user_uid', u.uid);
                         localStorage.setItem('pp_uid', u.uid);
+                        if (window.AndroidBridge && typeof window.AndroidBridge.setLoggedInUid === 'function') {
+                            window.AndroidBridge.setLoggedInUid(u.uid);
+                        }
                     } catch (e) { }
                     window._loginAt = Date.now();
                     // Fresh state on login: clear previously selected game & active card states
