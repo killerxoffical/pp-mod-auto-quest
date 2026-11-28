@@ -7005,13 +7005,11 @@ def get_portal_single_game_progress():
 
     email, master_token, access_token, android_id = resolve_credentials_from_input(data)
     if not (master_token or access_token):
-        has_order_ref = bool(data.get("order_ref") or data.get("order_id") or data.get("odid"))
-        err_txt = (
-            "এই অর্ডারটির লাইভ তথ্য পাওয়া যায়নি বা হিস্ট্রি থেকে মুছে ফেলা হয়েছে।"
-            if (has_order_ref and not (qid.isdigit() and len(qid) == 6))
-            else "এই আইডিটি ভ্যালিড নয় বা সার্ভার থেকে মুছে ফেলা হয়েছে।"
-        )
-        return jsonify({"ok": False, "deleted": True, "error": err_txt}), 404
+        return jsonify({
+            "ok": False,
+            "deleted": True,
+            "error": "ভেরিফাই সফল হয়নি। অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন অথবা অর্ডার আইডি দিয়ে সাপোর্টে যোগাযোগ করুন।"
+        }), 404
 
     if not android_id:
         android_id = "46e14d2451d85c3f"
@@ -7051,6 +7049,12 @@ def get_portal_single_game_progress():
                     WARMED_GAME_TOKENS[warm_key] = {"token": game_token, "ts": time.time(), "client_sig": client_sig, "android_id": android_id}
         elif access_token:
             game_token = access_token
+
+    if not game_token:
+        return jsonify({
+            "ok": False,
+            "error": "ভেরিফাই সফল হয়নি। অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন অথবা অর্ডার আইডি দিয়ে সাপোর্টে যোগাযোগ করুন।"
+        }), 401
 
     live_unlocked_ids = set()
     if email:

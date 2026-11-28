@@ -82,7 +82,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
         editSecretKey.setText(storage.getSecretKey());
 
         checkPermissions();
-        requestBatteryExemptionIfNeeded();
 
         if (storage.isEnabled()) {
             startGatewayService();
@@ -115,12 +114,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 perms = new String[] {
                     Manifest.permission.RECEIVE_SMS,
                     Manifest.permission.READ_SMS,
+                    Manifest.permission.READ_PHONE_STATE,
                     Manifest.permission.POST_NOTIFICATIONS
                 };
             } else {
                 perms = new String[] {
                     Manifest.permission.RECEIVE_SMS,
-                    Manifest.permission.READ_SMS
+                    Manifest.permission.READ_SMS,
+                    Manifest.permission.READ_PHONE_STATE
                 };
             }
 
@@ -134,7 +135,29 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
             if (needsRequest) {
                 requestPermissions(perms, PERMISSION_REQ_CODE);
+            } else {
+                requestBatteryExemptionIfNeeded();
             }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_REQ_CODE) {
+            boolean smsOk = Build.VERSION.SDK_INT < 23
+                || (checkSelfPermission(Manifest.permission.RECEIVE_SMS) == PackageManager.PERMISSION_GRANTED
+                    && checkSelfPermission(Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED);
+            if (smsOk) {
+                if (storage != null && storage.isEnabled()) {
+                    startGatewayService();
+                }
+                Toast.makeText(this, "All SMS Permissions Granted • Gateway Ready!", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Please Allow SMS Permission for Auto Payment Gateway!", Toast.LENGTH_LONG).show();
+            }
+            requestBatteryExemptionIfNeeded();
+            updateUi();
         }
     }
 
